@@ -3,7 +3,20 @@ export * from './resistance.value-object';
 export * from './evolution.value-object';
 export { Attack } from './attack.value-object';
 export { Ability } from './ability.value-object';
-export * from './card-rule.value-object';
+
+// Card Rules
+export { CardRule, CardRuleFactory } from './card-rule.value-object';
+export type {
+  RuleMetadata,
+  MovementRuleMetadata,
+  AttackRuleMetadata,
+  DamageRuleMetadata,
+  StatusRuleMetadata,
+  PrizeRuleMetadata,
+  EvolutionRuleMetadata,
+  PlayRuleMetadata,
+  EnergyRuleMetadata,
+} from './card-rule.value-object';
 
 // Attack Preconditions
 export {

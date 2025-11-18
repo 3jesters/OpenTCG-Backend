@@ -12,4 +12,6 @@ export * from './game-event-type.enum';
 export * from './ability-effect-type.enum';
 export * from './usage-limit.enum';
 export * from './legacy-ability-type.enum';
+export * from './card-rule-type.enum';
+export * from './rule-priority.enum';
 

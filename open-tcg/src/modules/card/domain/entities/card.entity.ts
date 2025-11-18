@@ -5,6 +5,8 @@ import {
   Rarity,
   TrainerType,
   EnergyType,
+  CardRuleType,
+  RulePriority,
 } from '../enums';
 import {
   Weakness,
@@ -14,6 +16,7 @@ import {
   Ability,
   CardRule,
 } from '../value-objects';
+import { CardRuleValidator } from '../services/card-rule.validator';
 
 /**
  * Card Domain Entity
@@ -373,6 +376,8 @@ export class Card {
   }
 
   setCardRules(rules: CardRule[]): void {
+    // Validate all rules
+    CardRuleValidator.validateAll(rules);
     this._cardRules = rules;
   }
 
@@ -453,7 +458,7 @@ export class Card {
     // Check if card has a rule preventing retreat
     if (this._cardRules) {
       const hasRetreatBlock = this._cardRules.some(
-        (rule) => rule.ruleType === 'CANNOT_RETREAT',
+        (rule) => rule.ruleType === CardRuleType.CANNOT_RETREAT,
       );
       if (hasRetreatBlock) {
         return false;
@@ -476,6 +481,49 @@ export class Card {
 
   hasResistance(): boolean {
     return this._resistance !== undefined;
+  }
+
+  // ========================================
+  // Card Rules Methods
+  // ========================================
+
+  /**
+   * Check if card has any rules
+   */
+  hasRules(): boolean {
+    return !!this._cardRules && this._cardRules.length > 0;
+  }
+
+  /**
+   * Get rules of a specific type
+   */
+  getRulesByType(ruleType: CardRuleType): CardRule[] {
+    if (!this._cardRules) {
+      return [];
+    }
+    return this._cardRules.filter((rule) => rule.ruleType === ruleType);
+  }
+
+  /**
+   * Get rules sorted by priority (highest first)
+   */
+  getRulesByPriority(): CardRule[] {
+    if (!this._cardRules) {
+      return [];
+    }
+    return [...this._cardRules].sort(
+      (a, b) => b.getPriorityValue() - a.getPriorityValue(),
+    );
+  }
+
+  /**
+   * Check if a specific rule type applies to this card
+   */
+  hasRuleType(ruleType: CardRuleType): boolean {
+    if (!this._cardRules) {
+      return false;
+    }
+    return this._cardRules.some((rule) => rule.ruleType === ruleType);
   }
 
   // ========================================

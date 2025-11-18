@@ -370,9 +370,120 @@ See [ABILITY-EFFECTS.md](./ABILITY-EFFECTS.md) for complete documentation.
 
 ## Card Rules
 
-Special rules that modify card behavior:
-- **rulesText**: Human-readable rules printed on card (e.g., "This Pokémon can't retreat")
-- **cardRules**: Programmatic representation for game engine (placeholder)
+Card rules are **always-on modifications** or restrictions that apply to cards, different from abilities which are active effects.
+
+### Structure
+
+```typescript
+class CardRule {
+  ruleType: CardRuleType;      // Type of rule (26 types across 8 categories)
+  text: string;                 // Human-readable description
+  conditions?: Condition[];     // When rule applies (optional)
+  priority: RulePriority;       // Execution order (HIGHEST to LOWEST)
+  metadata?: RuleMetadata;      // Rule-specific data
+}
+```
+
+### Rule Categories (26 Types)
+
+1. **Movement Rules** (3 types)
+   - `CANNOT_RETREAT`: Pokémon can't retreat
+   - `FREE_RETREAT`: Retreat cost is 0
+   - `FORCED_SWITCH`: Must switch after certain actions
+
+2. **Attack Rules** (3 types)
+   - `CANNOT_ATTACK`: Pokémon can't attack
+   - `ATTACK_COST_MODIFICATION`: Modify energy costs
+   - `ATTACK_RESTRICTION`: Restrictions on which attacks can be used
+
+3. **Damage Rules** (3 types)
+   - `DAMAGE_IMMUNITY`: Prevent damage from certain sources
+   - `DAMAGE_REDUCTION_RULE`: Reduce damage taken
+   - `INCREASED_DAMAGE_TAKEN`: Take more damage
+
+4. **Status Rules** (3 types)
+   - `STATUS_IMMUNITY`: Can't be affected by specific status conditions
+   - `EFFECT_IMMUNITY`: Can't be affected by certain effects
+   - `CANNOT_BE_CONFUSED`: Specific immunity to Confusion
+
+5. **Prize Rules** (2 types)
+   - `EXTRA_PRIZE_CARDS`: Opponent takes extra prizes when KO'd
+   - `NO_PRIZE_CARDS`: Opponent doesn't take prizes when KO'd
+
+6. **Evolution Rules** (3 types)
+   - `CAN_EVOLVE_TURN_ONE`: Can evolve first turn
+   - `CANNOT_EVOLVE`: Can't evolve
+   - `SKIP_EVOLUTION_STAGE`: Can skip evolution stages
+
+7. **Play Rules** (3 types)
+   - `PLAY_RESTRICTION`: Restrictions on when/how to play
+   - `ONCE_PER_GAME`: Can only use once per game
+   - `DISCARD_AFTER_USE`: Discard after use
+
+8. **Energy Rules** (3 types)
+   - `ENERGY_COST_REDUCTION`: Reduce energy costs
+   - `EXTRA_ENERGY_ATTACHMENT`: Can attach extra energy
+   - `ENERGY_TYPE_CHANGE`: Change energy types
+
+### Priority System
+
+Rules execute in priority order (highest first):
+- **HIGHEST** (5): Critical game rules (once per game)
+- **HIGH** (4): Important restrictions & immunities
+- **NORMAL** (3): Standard modifications (default)
+- **LOW** (2): Minor adjustments
+- **LOWEST** (1): Conditional bonuses
+
+### Example Rules
+
+**VMAX Prize Rule:**
+```typescript
+CardRuleFactory.extraPrizeCards(3);
+// "When this Pokémon is Knocked Out, your opponent takes 3 more Prize cards"
+```
+
+**Cannot Retreat:**
+```typescript
+CardRuleFactory.cannotRetreat();
+// "This Pokémon can't retreat"
+```
+
+**Damage Immunity:**
+```typescript
+CardRuleFactory.damageImmunity('Pokémon-EX');
+// "Prevent all damage done to this Pokémon by attacks from Pokémon-EX"
+```
+
+**Conditional Cost Reduction:**
+```typescript
+CardRuleFactory.attackCostReduction(
+  1,
+  [ConditionFactory.selfHasDamage()],
+  'per damage counter'
+);
+// "This Pokémon's attacks cost 1 less Energy per damage counter on it"
+```
+
+### Card Entity Methods
+
+```typescript
+// Set rules
+card.setCardRules([rule1, rule2]);
+
+// Check if card has rules
+card.hasRules(); // boolean
+
+// Get rules by type
+card.getRulesByType(CardRuleType.EXTRA_PRIZE_CARDS); // CardRule[]
+
+// Get rules sorted by priority
+card.getRulesByPriority(); // CardRule[] (highest first)
+
+// Check if specific rule type exists
+card.hasRuleType(CardRuleType.CANNOT_RETREAT); // boolean
+```
+
+See [CARD-RULES.md](./CARD-RULES.md) for complete documentation.
 
 ## Subtypes
 
@@ -411,6 +522,10 @@ Additional information about the card:
 - `hasAbility()`: Check if card has an ability
 - `hasWeakness()`: Check if card has weakness
 - `hasResistance()`: Check if card has resistance
+- `hasRules()`: Check if card has any rules
+- `getRulesByType(type)`: Get rules of specific type
+- `getRulesByPriority()`: Get rules sorted by priority
+- `hasRuleType(type)`: Check if card has specific rule type
 
 ## Factory Methods
 
@@ -429,20 +544,24 @@ Card.createEnergyCard(instanceId, cardId, pokemonNumber, name, ...);
 
 ## Implementation Status
 
-### ✅ Phase 1 Complete
+### ✅ Phase 1 Complete - Card Module Domain Layer
 1. **Card Entity**: 30+ fields with business logic
 2. **Attack Preconditions**: Type-safe precondition system (COIN_FLIP, DAMAGE_CHECK, ENERGY_CHECK)
 3. **Attack Effects**: 8 core effect types with validation
 4. **Generic Condition System**: Reusable conditions for effects, abilities, and rules
 5. **Ability Effects**: 13 effect types (5 shared, 8 ability-specific) with 3 activation types
 6. **Game Event System**: Reusable game event types for triggers
-7. **Validation**: Comprehensive validators for all systems
-8. **Factory Methods**: Easy creation with type safety
-9. **Complete Documentation**: Detailed guides and examples
+7. **Card Rules**: 26 rule types across 8 categories with priority system
+8. **Legacy Ability Adapter**: Support for Pokémon Power, Poké-Body, Poké-Power
+9. **Validation**: Comprehensive validators for all systems
+10. **Factory Methods**: Easy creation with type safety
+11. **Complete Documentation**: Detailed guides and examples
+12. **Test Coverage**: 400+ unit tests covering all domain logic
 
-### 🔄 Phase 2 (To Be Implemented)
-1. **Card Rules**: Programmatic rule execution (last placeholder)
-2. **Game Engine Integration**: Execute preconditions, effects, and conditions
-3. **Effect Resolution**: Handle complex effect interactions and ordering
-4. **Additional Effect Types**: Expand as needed for more card mechanics
+### 🔄 Phase 2 (Next Steps)
+1. **Game Engine Integration**: Execute preconditions, effects, and conditions in gameplay
+2. **Effect Resolution**: Handle complex effect interactions and ordering
+3. **State Management**: Track game state, damage counters, status conditions
+4. **Turn System**: Implement turn phases and action validation
+5. **Additional Effect Types**: Expand as needed for more card mechanics
 
