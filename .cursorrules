@@ -1,0 +1,512 @@
+# OpenTCG Project Rules
+
+## Project Overview
+This is an open-source NestJS **backend** monolith application following clean architecture principles, TDD practices, and dependency injection patterns. All external dependencies including database access are abstracted and injected.
+
+## Architecture Principles
+
+### Clean Architecture Layers
+- **Domain Layer**: Business entities, value objects, domain services, and repository interfaces (no framework dependencies)
+- **Application Layer**: Use cases (business workflows), application DTOs, and port interfaces
+- **Infrastructure Layer**: Database implementations, external API clients, file systems, etc.
+- **Presentation Layer**: REST controllers (HTTP only), request/response DTOs, guards, pipes
+
+### Architecture Rules
+- Business logic MUST be isolated in the domain layer
+- Dependencies point inward (outer layers depend on inner layers, never the reverse)
+- All external dependencies (databases, APIs, file systems) MUST be abstracted behind interfaces
+- Domain entities MUST be framework-agnostic (plain TypeScript classes)
+- Controllers are thin - they only handle HTTP concerns, delegate to use cases
+
+## Project Structure
+
+```
+src/
+├── modules/
+│   └── [module-name]/
+│       ├── domain/
+│       │   ├── entities/
+│       │   ├── value-objects/
+│       │   ├── repositories/  (interfaces only)
+│       │   └── services/      (domain services)
+│       ├── application/
+│       │   ├── use-cases/
+│       │   ├── dto/
+│       │   └── ports/         (interfaces for external services)
+│       ├── infrastructure/
+│       │   ├── persistence/   (repository implementations)
+│       │   │   ├── entities/  (ORM entities)
+│       │   │   ├── mappers/   (domain ↔ ORM)
+│       │   │   └── repositories/
+│       │   ├── external/      (third-party integrations)
+│       │   └── config/
+│       ├── presentation/
+│       │   ├── controllers/
+│       │   ├── dto/           (request/response DTOs)
+│       │   ├── guards/
+│       │   └── pipes/
+│       ├── docs/              (business logic & rules documentation)
+│       │   ├── business-rules.md
+│       │   ├── use-cases.md
+│       │   └── domain-model.md
+│       └── [module-name].module.ts
+├── shared/
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+└── main.ts
+```
+
+## Module Documentation
+
+### docs/ Folder Structure
+Each module MUST have its own `docs/` folder containing:
+- `business-rules.md`: Domain rules, constraints, and invariants
+- `use-cases.md`: Application use cases and flows
+- `domain-model.md`: Entity relationships and domain concepts
+
+### When to Update docs/
+- Create/update documentation for:
+  - New business rules or domain logic
+  - New use cases or workflows
+  - Complex domain models or relationships
+  - Architectural decisions (ADRs)
+- Do NOT document:
+  - Minor code changes
+  - Refactoring that doesn't change behavior
+  - Test additions
+  - Style or formatting changes
+
+## Database Architecture
+
+### Entity Separation
+- **Domain Entities**: Framework-agnostic, contain business logic (in `domain/entities/`)
+- **ORM Entities**: Database-specific, decorated with ORM decorators (in `infrastructure/persistence/entities/`)
+- **Mappers**: Convert between domain and ORM entities (in `infrastructure/persistence/mappers/`)
+- Never mix business logic with ORM entities
+
+### Example Structure
+```
+src/modules/user/
+├── domain/
+│   ├── entities/
+│   │   └── user.entity.ts          (Pure TypeScript domain entity)
+│   └── repositories/
+│       └── user.repository.interface.ts
+├── infrastructure/
+│   └── persistence/
+│       ├── entities/
+│       │   └── user.orm-entity.ts   (TypeORM/Prisma entity with decorators)
+│       ├── mappers/
+│       │   └── user.mapper.ts       (Maps between domain & ORM)
+│       └── repositories/
+│           └── user.repository.ts   (Repository implementation)
+```
+
+### Domain Entity Example
+```typescript
+// domain/entities/user.entity.ts (NO framework dependencies)
+export class User {
+  constructor(
+    public readonly id: string,
+    public readonly email: string,
+    private name: string,
+    public readonly createdAt: Date,
+  ) {
+    this.validateEmail(email);
+  }
+
+  // Business logic in domain entity
+  changeName(newName: string): void {
+    if (newName.length < 2) {
+      throw new Error('Name must be at least 2 characters');
+    }
+    this.name = newName;
+  }
+
+  getName(): string {
+    return this.name;
+  }
+
+  private validateEmail(email: string): void {
+    if (!email.includes('@')) {
+      throw new Error('Invalid email');
+    }
+  }
+}
+```
+
+### ORM Entity Example
+```typescript
+// infrastructure/persistence/entities/user.orm-entity.ts (TypeORM decorators)
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+
+@Entity('users')
+export class UserOrmEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  email: string;
+
+  @Column()
+  name: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+}
+```
+
+### Mapper Example
+```typescript
+// infrastructure/persistence/mappers/user.mapper.ts
+export class UserMapper {
+  static toDomain(ormEntity: UserOrmEntity): User {
+    return new User(
+      ormEntity.id,
+      ormEntity.email,
+      ormEntity.name,
+      ormEntity.createdAt,
+    );
+  }
+
+  static toOrm(domain: User): UserOrmEntity {
+    const ormEntity = new UserOrmEntity();
+    ormEntity.id = domain.id;
+    ormEntity.email = domain.email;
+    ormEntity.name = domain.getName();
+    ormEntity.createdAt = domain.createdAt;
+    return ormEntity;
+  }
+}
+```
+
+## Database Dependency Injection
+
+### Repository Pattern
+```typescript
+// domain/repositories/user.repository.interface.ts
+export interface IUserRepository {
+  findById(id: string): Promise<User | null>;
+  save(user: User): Promise<User>;
+  delete(id: string): Promise<void>;
+}
+export const IUserRepository = Symbol('IUserRepository');
+
+// infrastructure/persistence/repositories/user.repository.ts
+@Injectable()
+export class TypeOrmUserRepository implements IUserRepository {
+  constructor(
+    @InjectRepository(UserOrmEntity)
+    private readonly userEntityRepository: Repository<UserOrmEntity>,
+  ) {}
+
+  async findById(id: string): Promise<User | null> {
+    const entity = await this.userEntityRepository.findOne({ where: { id } });
+    return entity ? UserMapper.toDomain(entity) : null;
+  }
+
+  async save(user: User): Promise<User> {
+    const entity = UserMapper.toOrm(user);
+    const saved = await this.userEntityRepository.save(entity);
+    return UserMapper.toDomain(saved);
+  }
+}
+
+// module.ts
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([UserOrmEntity]),
+    ConfigModule,
+  ],
+  providers: [
+    {
+      provide: IUserRepository,
+      useClass: TypeOrmUserRepository,
+    },
+    CreateUserUseCase,
+  ],
+  controllers: [UserController],
+})
+export class UserModule {}
+
+// application/use-cases/create-user.use-case.ts
+@Injectable()
+export class CreateUserUseCase {
+  constructor(
+    @Inject(IUserRepository)
+    private readonly userRepository: IUserRepository,
+  ) {}
+
+  async execute(dto: CreateUserDto): Promise<User> {
+    const user = User.create(dto);
+    return await this.userRepository.save(user);
+  }
+}
+```
+
+### Database Module Setup
+```typescript
+// app.module.ts or database.module.ts
+@Module({
+  imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST'),
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_DATABASE'),
+        entities: [__dirname + '/**/*.orm-entity{.ts,.js}'],
+        synchronize: configService.get('NODE_ENV') === 'development',
+      }),
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Transaction Handling
+```typescript
+@Injectable()
+export class TransferMoneyUseCase {
+  constructor(
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
+    @Inject(IAccountRepository)
+    private readonly accountRepository: IAccountRepository,
+  ) {}
+
+  async execute(dto: TransferMoneyDto): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      const fromAccount = await manager.findOne(AccountOrmEntity, { 
+        where: { id: dto.fromAccountId } 
+      });
+      const toAccount = await manager.findOne(AccountOrmEntity, { 
+        where: { id: dto.toAccountId } 
+      });
+      
+      fromAccount.withdraw(dto.amount);
+      toAccount.deposit(dto.amount);
+      
+      await manager.save([fromAccount, toAccount]);
+    });
+  }
+}
+```
+
+## Testing Requirements
+
+### Test Coverage
+- Unit test coverage: minimum 80%
+- Domain layer: 100% coverage (all business logic)
+- Application layer (use cases): 100% coverage
+- Infrastructure layer: minimum 70%
+- Controllers: minimum 70%
+
+### Test Organization
+```
+src/
+└── modules/
+    └── [module-name]/
+        ├── domain/
+        │   ├── entities/
+        │   │   ├── user.entity.ts
+        │   │   └── user.entity.spec.ts
+        │   └── services/
+        │       ├── user-domain.service.ts
+        │       └── user-domain.service.spec.ts
+        ├── application/
+        │   └── use-cases/
+        │       ├── create-user.use-case.ts
+        │       └── create-user.use-case.spec.ts
+        └── presentation/
+            └── controllers/
+                ├── user.controller.ts
+                └── user.controller.spec.ts
+
+test/
+└── e2e/
+    └── [module-name].e2e-spec.ts
+```
+
+### Database Testing
+```typescript
+describe('CreateUserUseCase', () => {
+  let useCase: CreateUserUseCase;
+  let mockRepository: jest.Mocked<IUserRepository>;
+
+  beforeEach(() => {
+    mockRepository = {
+      findById: jest.fn(),
+      save: jest.fn(),
+      delete: jest.fn(),
+    };
+
+    useCase = new CreateUserUseCase(mockRepository);
+  });
+
+  it('should save user through repository', async () => {
+    // Test with mocked repository - no real database
+    const dto = { email: 'test@example.com' };
+    mockRepository.save.mockResolvedValue(new User());
+
+    await useCase.execute(dto);
+
+    expect(mockRepository.save).toHaveBeenCalled();
+  });
+});
+```
+
+## API Design (Backend REST API)
+
+### Backend Scope
+- This is a backend-only project exposing REST APIs
+- No frontend code in this repository
+- Controllers handle HTTP concerns only (presentation layer)
+- All business logic remains in application/domain layers
+
+### RESTful Conventions
+- Use proper HTTP methods (GET, POST, PUT, PATCH, DELETE)
+- Use plural resource names (`/users`, not `/user`)
+- Return appropriate HTTP status codes:
+  - 200: Success (GET, PUT, PATCH)
+  - 201: Created (POST)
+  - 204: No Content (DELETE)
+  - 400: Bad Request (validation errors)
+  - 401: Unauthorized (authentication required)
+  - 403: Forbidden (insufficient permissions)
+  - 404: Not Found (resource doesn't exist)
+  - 409: Conflict (business rule violation)
+  - 500: Internal Server Error
+- Version your API (`/api/v1/...`)
+- Use query parameters for filtering, sorting, pagination
+- Use path parameters for resource identification
+
+### DTOs Example
+```typescript
+// presentation/dto/create-user.dto.ts
+export class CreateUserDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @MinLength(2)
+  @MaxLength(50)
+  name: string;
+}
+
+// presentation/dto/user-response.dto.ts
+export class UserResponseDto {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: Date;
+
+  static fromDomain(user: User): UserResponseDto {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      createdAt: user.createdAt,
+    };
+  }
+}
+
+// presentation/controllers/user.controller.ts
+@Controller('api/v1/users')
+export class UserController {
+  constructor(
+    private readonly createUserUseCase: CreateUserUseCase,
+  ) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
+    const user = await this.createUserUseCase.execute(dto);
+    return UserResponseDto.fromDomain(user);
+  }
+}
+```
+
+## Monolith Architecture
+
+### Module Design
+- Organize by business domains (vertical slices), not by technical layers
+- Each module should be highly cohesive and loosely coupled
+- Modules can depend on shared modules but not on each other directly
+- Use events for inter-module communication (EventEmitter or message bus)
+- Design modules to be potentially extractable to microservices later
+
+### Shared Code
+- Place truly shared code in `src/shared/`
+- Shared should contain: common DTOs, base classes, utilities, shared domain concepts
+- Be conservative with shared code (prefer duplication over wrong abstraction)
+
+## Environment & Configuration
+
+### Configuration Management
+- Use NestJS ConfigModule for all configuration
+- Store configuration in environment variables
+- Provide sensible defaults
+- Validate environment variables on startup
+- Never commit secrets or sensitive data
+- Use .env for local development
+- Example:
+```typescript
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string().valid('development', 'production', 'test'),
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.number().default(5432),
+        DB_USERNAME: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
+        DB_DATABASE: Joi.string().required(),
+      }),
+    }),
+  ],
+})
+```
+
+## Open Source Guidelines
+
+### Code Quality
+- Follow consistent coding style (enforced by ESLint and Prettier)
+- Use TypeScript strictly (no `any` types unless absolutely necessary)
+- Export public APIs clearly from modules
+- Write self-documenting code
+
+### Contribution Workflow
+- Keep PRs small and focused
+- Each commit should be atomic and have a clear message
+- Follow conventional commits specification (feat:, fix:, docs:, refactor:, test:, chore:)
+- Include tests with every feature or bug fix
+- Update module documentation when business logic changes
+
+## Quick Reference Checklist
+
+Before committing code, verify:
+- [ ] Tests written and passing (TDD)
+- [ ] Clean architecture layers respected
+- [ ] Dependency injection used for ALL dependencies
+- [ ] Database access through injected repository interfaces only
+- [ ] Repository interfaces in domain layer, implementations in infrastructure
+- [ ] Database configuration injected via ConfigService
+- [ ] Business logic is in domain/application layers
+- [ ] External dependencies are abstracted behind interfaces
+- [ ] Code follows SOLID principles
+- [ ] Type safety maintained (no `any`)
+- [ ] Meaningful names for classes, functions, variables
+- [ ] Error handling implemented
+- [ ] DTOs validated with class-validator
+- [ ] Repository interfaces are mocked in unit tests
+- [ ] No hardcoded database connections or credentials
+- [ ] Module docs/ updated if business logic changed
+- [ ] Conventional commit message prepared

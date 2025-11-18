@@ -1,0 +1,14 @@
+export enum PokemonType {
+  FIRE = 'FIRE',
+  WATER = 'WATER',
+  GRASS = 'GRASS',
+  ELECTRIC = 'ELECTRIC',
+  PSYCHIC = 'PSYCHIC',
+  FIGHTING = 'FIGHTING',
+  DARKNESS = 'DARKNESS',
+  METAL = 'METAL',
+  FAIRY = 'FAIRY',
+  DRAGON = 'DRAGON',
+  COLORLESS = 'COLORLESS',
+}
+
