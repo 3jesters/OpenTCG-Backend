@@ -1,17 +1,10 @@
 import { EnergyType } from '../enums';
 import { PreconditionType } from '../enums/precondition-type.enum';
+import { AttackEffectType } from '../enums/attack-effect-type.enum';
 import { AttackPrecondition } from './attack-precondition.value-object';
+import { AttackEffect } from './attack-effect.value-object';
 import { AttackPreconditionValidator } from '../services/attack-precondition.validator';
-
-/**
- * Attack Effect (Placeholder)
- * Will be expanded later to handle structured attack effects
- */
-export interface AttackEffect {
-  effectType: string; // Placeholder for effect types
-  value?: any; // Effect parameters (to be defined)
-  condition?: string; // When effect applies
-}
+import { AttackEffectValidator } from '../services/attack-effect.validator';
 
 /**
  * Attack Value Object
@@ -24,7 +17,7 @@ export class Attack {
     public readonly damage: string, // e.g., "90", "30+", "20×", "" (for non-damage)
     public readonly text: string, // Human-readable effect description
     public readonly preconditions?: AttackPrecondition[], // Conditions before attack (e.g., coin flips)
-    public readonly effects?: AttackEffect[], // Structured effects (placeholder)
+    public readonly effects?: AttackEffect[], // Structured effects
   ) {
     this.validate();
   }
@@ -46,6 +39,15 @@ export class Attack {
         AttackPreconditionValidator.validateAll(this.preconditions);
       } catch (error) {
         throw new Error(`Attack "${this.name}" has invalid preconditions: ${error.message}`);
+      }
+    }
+
+    // Validate effects if present
+    if (this.effects && this.effects.length > 0) {
+      try {
+        AttackEffectValidator.validateAll(this.effects);
+      } catch (error) {
+        throw new Error(`Attack "${this.name}" has invalid effects: ${error.message}`);
       }
     }
   }
@@ -86,6 +88,23 @@ export class Attack {
       return [];
     }
     return this.preconditions.filter((p) => p.type === type);
+  }
+
+  /**
+   * Check if attack has effects
+   */
+  hasEffects(): boolean {
+    return !!this.effects && this.effects.length > 0;
+  }
+
+  /**
+   * Get effects of a specific type
+   */
+  getEffectsByType(type: AttackEffectType): AttackEffect[] {
+    if (!this.effects) {
+      return [];
+    }
+    return this.effects.filter((e) => e.effectType === type);
   }
 
   equals(other: Attack): boolean {

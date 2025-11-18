@@ -1,7 +1,9 @@
 import { EnergyType } from '../enums/energy-type.enum';
 import { PreconditionType } from '../enums/precondition-type.enum';
+import { AttackEffectType } from '../enums/attack-effect-type.enum';
 import { Attack } from './attack.value-object';
 import { AttackPreconditionFactory } from './attack-precondition.value-object';
+import { AttackEffectFactory } from './attack-effect.value-object';
 
 describe('Attack Value Object', () => {
   describe('constructor', () => {
@@ -66,6 +68,39 @@ describe('Attack Value Object', () => {
           ],
         );
       }).toThrow('Attack "Test" has invalid preconditions');
+    });
+
+    it('should create a valid attack with effects', () => {
+      const attack = new Attack(
+        'Thunder Shock',
+        [EnergyType.ELECTRIC],
+        '10',
+        'May paralyze the defending Pokémon.',
+        undefined,
+        [AttackEffectFactory.statusCondition('PARALYZED')],
+      );
+
+      expect(attack.effects).toHaveLength(1);
+      expect(attack.effects![0].effectType).toBe(AttackEffectType.STATUS_CONDITION);
+    });
+
+    it('should throw error if effect is invalid', () => {
+      expect(() => {
+        new Attack(
+          'Test',
+          [EnergyType.COLORLESS],
+          '20',
+          'text',
+          undefined,
+          [
+            {
+              effectType: AttackEffectType.HEAL,
+              target: 'self',
+              amount: 0, // Invalid: < 1
+            },
+          ],
+        );
+      }).toThrow('Attack "Test" has invalid effects');
     });
   });
 
@@ -284,6 +319,134 @@ describe('Attack Value Object', () => {
         PreconditionType.ENERGY_CHECK,
       );
       expect(preconditions).toHaveLength(1);
+    });
+  });
+
+  describe('hasEffects', () => {
+    it('should return true if attack has effects', () => {
+      const attack = new Attack(
+        'Test',
+        [EnergyType.COLORLESS],
+        '20',
+        'text',
+        undefined,
+        [AttackEffectFactory.heal('self', 10)],
+      );
+      expect(attack.hasEffects()).toBe(true);
+    });
+
+    it('should return false if no effects', () => {
+      const attack = new Attack('Test', [EnergyType.COLORLESS], '20', 'text');
+      expect(attack.hasEffects()).toBe(false);
+    });
+
+    it('should return false if empty effects array', () => {
+      const attack = new Attack(
+        'Test',
+        [EnergyType.COLORLESS],
+        '20',
+        'text',
+        undefined,
+        [],
+      );
+      expect(attack.hasEffects()).toBe(false);
+    });
+  });
+
+  describe('getEffectsByType', () => {
+    it('should return effects of specific type', () => {
+      const attack = new Attack(
+        'Test',
+        [EnergyType.COLORLESS],
+        '20',
+        'text',
+        undefined,
+        [
+          AttackEffectFactory.statusCondition('PARALYZED'),
+          AttackEffectFactory.damageModifier(30),
+          AttackEffectFactory.heal('self', 20),
+        ],
+      );
+
+      const statusEffects = attack.getEffectsByType(AttackEffectType.STATUS_CONDITION);
+      expect(statusEffects).toHaveLength(1);
+
+      const healEffects = attack.getEffectsByType(AttackEffectType.HEAL);
+      expect(healEffects).toHaveLength(1);
+
+      const preventEffects = attack.getEffectsByType(AttackEffectType.PREVENT_DAMAGE);
+      expect(preventEffects).toHaveLength(0);
+    });
+
+    it('should return empty array if no effects', () => {
+      const attack = new Attack('Test', [EnergyType.COLORLESS], '20', 'text');
+      const result = attack.getEffectsByType(AttackEffectType.HEAL);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('complex attacks with preconditions and effects', () => {
+    it('should create attack with both preconditions and effects', () => {
+      const attack = new Attack(
+        'Thunder Shock',
+        [EnergyType.ELECTRIC],
+        '20',
+        'Flip a coin. If heads, the Defending Pokémon is now Paralyzed.',
+        [AttackPreconditionFactory.coinFlip(1, 'Flip a coin')],
+        [AttackEffectFactory.statusCondition('PARALYZED')],
+      );
+
+      expect(attack.hasPreconditions()).toBe(true);
+      expect(attack.hasEffects()).toBe(true);
+    });
+
+    it('should create attack with multiple effects', () => {
+      const attack = new Attack(
+        'Fire Blast',
+        [EnergyType.FIRE, EnergyType.FIRE, EnergyType.COLORLESS],
+        '120',
+        'Discard 2 Fire Energy from this Pokémon. This attack does 20 recoil damage.',
+        undefined,
+        [
+          AttackEffectFactory.discardEnergy('self', 2, EnergyType.FIRE),
+          AttackEffectFactory.recoilDamage(20),
+        ],
+      );
+
+      expect(attack.hasEffects()).toBe(true);
+      expect(attack.getEffectsByType(AttackEffectType.DISCARD_ENERGY)).toHaveLength(1);
+      expect(attack.getEffectsByType(AttackEffectType.RECOIL_DAMAGE)).toHaveLength(1);
+    });
+
+    it('should create healing attack', () => {
+      const attack = new Attack(
+        'Synthesis',
+        [EnergyType.GRASS],
+        '',
+        'Heal 30 damage from this Pokémon.',
+        undefined,
+        [AttackEffectFactory.heal('self', 30)],
+      );
+
+      expect(attack.dealsDamage()).toBe(false);
+      expect(attack.hasEffects()).toBe(true);
+      const healEffects = attack.getEffectsByType(AttackEffectType.HEAL);
+      expect(healEffects[0].amount).toBe(30);
+    });
+
+    it('should create attack with conditional damage modifier', () => {
+      const attack = new Attack(
+        'Revenge',
+        [EnergyType.FIGHTING],
+        '30+',
+        'If this Pokémon has damage, this attack does 30 more damage.',
+        undefined,
+        [AttackEffectFactory.damageModifier(30)],
+      );
+
+      expect(attack.hasEffects()).toBe(true);
+      const modifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
+      expect(modifiers[0].modifier).toBe(30);
     });
   });
 });

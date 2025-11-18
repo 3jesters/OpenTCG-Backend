@@ -195,12 +195,104 @@ Preconditions are structured as:
 }
 ```
 
+## Attack Effects
+
+Attack effects define what happens when an attack executes. Each attack can have multiple effects.
+
+### Effect Structure
+All effects share a common structure:
+- **effectType**: Type of effect (DISCARD_ENERGY, STATUS_CONDITION, etc.)
+- **target**: Who is affected (self, defending, benched)
+- **requiredConditions**: Optional conditions that must be met
+
+### 8 Core Effect Types
+
+1. **DISCARD_ENERGY**: Discard energy from this or defending Pokémon
+2. **STATUS_CONDITION**: Apply status (Paralyzed, Poisoned, Burned, Asleep, Confused)
+3. **DAMAGE_MODIFIER**: Increase or decrease attack damage
+4. **HEAL**: Heal damage from this or defending Pokémon
+5. **PREVENT_DAMAGE**: Prevent damage during next/this turn
+6. **RECOIL_DAMAGE**: This Pokémon takes recoil damage
+7. **ENERGY_ACCELERATION**: Attach energy from deck/discard/hand
+8. **SWITCH_POKEMON**: Switch this Pokémon with benched
+
+### Example Effects
+
+**Simple Status Effect:**
+```typescript
+{
+  effectType: AttackEffectType.STATUS_CONDITION,
+  target: 'defending',
+  statusCondition: 'PARALYZED'
+}
+```
+
+**Conditional Effect:**
+```typescript
+{
+  effectType: AttackEffectType.DAMAGE_MODIFIER,
+  modifier: 30,
+  requiredConditions: [
+    { type: ConditionType.SELF_HAS_DAMAGE }
+  ]
+}
+```
+
+**Complex Effect:**
+```typescript
+{
+  effectType: AttackEffectType.DISCARD_ENERGY,
+  target: 'self',
+  amount: 2,
+  energyType: EnergyType.FIRE
+}
+```
+
+See [ATTACK-EFFECTS.md](./ATTACK-EFFECTS.md) for complete documentation.
+
+---
+
+## Generic Condition System
+
+Conditions are reusable requirements that can be attached to effects, abilities, and rules. They determine when something should trigger or apply.
+
+### Condition Categories
+
+1. **Always**: No requirements
+2. **Coin Flip Based**: COIN_FLIP_SUCCESS, COIN_FLIP_FAILURE
+3. **Self Conditions**: SELF_HAS_DAMAGE, SELF_NO_DAMAGE, SELF_HAS_STATUS, etc.
+4. **Opponent Conditions**: OPPONENT_CONFUSED, OPPONENT_HAS_DAMAGE, etc.
+5. **Board State**: STADIUM_IN_PLAY, OPPONENT_HAS_BENCHED, etc.
+
+### Example Conditions
+
+```typescript
+// Simple condition
+{ type: ConditionType.SELF_HAS_DAMAGE }
+
+// Condition with value
+{
+  type: ConditionType.SELF_HAS_ENERGY_TYPE,
+  value: { energyType: EnergyType.FIRE, minimumAmount: 3 }
+}
+
+// Multiple conditions (AND logic)
+[
+  { type: ConditionType.COIN_FLIP_SUCCESS },
+  { type: ConditionType.OPPONENT_HAS_DAMAGE }
+]
+```
+
+See [CONDITION-SYSTEM.md](./CONDITION-SYSTEM.md) for complete documentation.
+
+---
+
 ## Abilities
 
 Abilities are passive or triggered effects that Pokémon can have:
 - **Name**: Ability name
 - **Text**: Human-readable description
-- **Effects**: Structured effects for game engine (placeholder)
+- **Effects**: Structured effects for game engine (placeholder - to be implemented)
 
 ## Card Rules
 
@@ -261,11 +353,21 @@ Card.createTrainerCard(instanceId, cardId, pokemonNumber, name, ...);
 Card.createEnergyCard(instanceId, cardId, pokemonNumber, name, ...);
 ```
 
-## Future Enhancements
+## Implementation Status
 
-### Placeholders (To Be Implemented)
-1. **Attack Effects**: Structured representation of attack effects for game engine
-2. **Ability Effects**: Structured representation of ability effects
-3. **Card Rules**: Structured rules for game engine execution
-4. **Effect System**: Complete effect resolution system
+### ✅ Phase 1 Complete
+1. **Card Entity**: 30+ fields with business logic
+2. **Attack Preconditions**: Type-safe precondition system (COIN_FLIP, DAMAGE_CHECK, ENERGY_CHECK)
+3. **Attack Effects**: 8 core effect types with validation
+4. **Generic Condition System**: Reusable conditions for effects, abilities, and rules
+5. **Validation**: Comprehensive validators for all systems
+6. **Factory Methods**: Easy creation with type safety
+7. **Complete Documentation**: Detailed guides and examples
+
+### 🔄 Phase 2 (To Be Implemented)
+1. **Ability Effects**: Structured ability system (similar to attack effects)
+2. **Card Rules**: Programmatic rule execution
+3. **Game Engine Integration**: Execute preconditions, effects, and conditions
+4. **Effect Resolution**: Handle complex effect interactions and ordering
+5. **Additional Effect Types**: Expand as needed for more card mechanics
 
