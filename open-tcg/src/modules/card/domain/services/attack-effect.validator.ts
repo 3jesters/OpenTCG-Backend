@@ -1,4 +1,5 @@
 import { AttackEffectType } from '../enums/attack-effect-type.enum';
+import { TargetType } from '../enums/target-type.enum';
 import {
   AttackEffect,
   DiscardEnergyEffect,
@@ -105,7 +106,7 @@ export class AttackEffectValidator {
       throw new Error('Status condition target is required');
     }
 
-    if (effect.target !== 'defending') {
+    if (effect.target !== TargetType.DEFENDING) {
       throw new Error('Status condition target must be "defending"');
     }
 
@@ -222,7 +223,7 @@ export class AttackEffectValidator {
       throw new Error('Recoil damage target is required');
     }
 
-    if (effect.target !== 'self') {
+    if (effect.target !== TargetType.SELF) {
       throw new Error('Recoil damage target must be "self"');
     }
 
@@ -298,7 +299,7 @@ export class AttackEffectValidator {
       throw new Error('Switch Pokémon target is required');
     }
 
-    if (effect.target !== 'self') {
+    if (effect.target !== TargetType.SELF) {
       throw new Error('Switch Pokémon target must be "self"');
     }
 
@@ -306,7 +307,7 @@ export class AttackEffectValidator {
       throw new Error('Switch Pokémon "with" is required');
     }
 
-    if (effect.with !== 'benched') {
+    if (effect.with !== TargetType.BENCHED_YOURS) {
       throw new Error('Switch Pokémon "with" must be "benched"');
     }
 

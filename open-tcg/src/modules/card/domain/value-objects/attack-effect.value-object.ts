@@ -1,5 +1,6 @@
 import { AttackEffectType } from '../enums/attack-effect-type.enum';
 import { EnergyType } from '../enums/energy-type.enum';
+import { TargetType } from '../enums/target-type.enum';
 import { Condition } from './condition.value-object';
 
 /**
@@ -8,7 +9,7 @@ import { Condition } from './condition.value-object';
  */
 export interface DiscardEnergyEffect {
   effectType: AttackEffectType.DISCARD_ENERGY;
-  target: 'self' | 'defending';
+  target: TargetType.SELF | TargetType.DEFENDING;
   amount: number | 'all'; // Number of energy or 'all'
   energyType?: EnergyType; // Optional: discard specific energy type
   requiredConditions?: Condition[];
@@ -20,7 +21,7 @@ export interface DiscardEnergyEffect {
  */
 export interface StatusConditionEffect {
   effectType: AttackEffectType.STATUS_CONDITION;
-  target: 'defending';
+  target: TargetType.DEFENDING;
   statusCondition: 'PARALYZED' | 'POISONED' | 'BURNED' | 'ASLEEP' | 'CONFUSED';
   requiredConditions?: Condition[];
 }
@@ -41,7 +42,7 @@ export interface DamageModifierEffect {
  */
 export interface HealEffect {
   effectType: AttackEffectType.HEAL;
-  target: 'self' | 'defending';
+  target: TargetType.SELF | TargetType.DEFENDING;
   amount: number; // Amount of damage to heal
   requiredConditions?: Condition[];
 }
@@ -52,7 +53,7 @@ export interface HealEffect {
  */
 export interface PreventDamageEffect {
   effectType: AttackEffectType.PREVENT_DAMAGE;
-  target: 'self' | 'defending';
+  target: TargetType.SELF | TargetType.DEFENDING;
   duration: 'next_turn' | 'this_turn';
   amount?: number | 'all'; // Optional: prevent specific amount or all damage
   requiredConditions?: Condition[];
@@ -64,7 +65,7 @@ export interface PreventDamageEffect {
  */
 export interface RecoilDamageEffect {
   effectType: AttackEffectType.RECOIL_DAMAGE;
-  target: 'self';
+  target: TargetType.SELF;
   amount: number; // Amount of recoil damage
   requiredConditions?: Condition[];
 }
@@ -75,7 +76,7 @@ export interface RecoilDamageEffect {
  */
 export interface EnergyAccelerationEffect {
   effectType: AttackEffectType.ENERGY_ACCELERATION;
-  target: 'self' | 'benched';
+  target: TargetType.SELF | TargetType.BENCHED_YOURS;
   source: 'deck' | 'discard' | 'hand';
   energyType?: EnergyType; // Optional: specific energy type
   count: number; // Number of energy cards to attach
@@ -89,8 +90,8 @@ export interface EnergyAccelerationEffect {
  */
 export interface SwitchPokemonEffect {
   effectType: AttackEffectType.SWITCH_POKEMON;
-  target: 'self';
-  with: 'benched';
+  target: TargetType.SELF;
+  with: TargetType.BENCHED_YOURS;
   selector: 'choice' | 'random'; // Player chooses or random
   requiredConditions?: Condition[];
 }
@@ -118,7 +119,7 @@ export class AttackEffectFactory {
    * Create a discard energy effect
    */
   static discardEnergy(
-    target: 'self' | 'defending',
+    target: TargetType.SELF | TargetType.DEFENDING,
     amount: number | 'all',
     energyType?: EnergyType,
     requiredConditions?: Condition[],
@@ -141,7 +142,7 @@ export class AttackEffectFactory {
   ): StatusConditionEffect {
     return {
       effectType: AttackEffectType.STATUS_CONDITION,
-      target: 'defending',
+      target: TargetType.DEFENDING,
       statusCondition,
       requiredConditions,
     };
@@ -165,7 +166,7 @@ export class AttackEffectFactory {
    * Create a heal effect
    */
   static heal(
-    target: 'self' | 'defending',
+    target: TargetType.SELF | TargetType.DEFENDING,
     amount: number,
     requiredConditions?: Condition[],
   ): HealEffect {
@@ -181,7 +182,7 @@ export class AttackEffectFactory {
    * Create a prevent damage effect
    */
   static preventDamage(
-    target: 'self' | 'defending',
+    target: TargetType.SELF | TargetType.DEFENDING,
     duration: 'next_turn' | 'this_turn',
     amount?: number | 'all',
     requiredConditions?: Condition[],
@@ -204,7 +205,7 @@ export class AttackEffectFactory {
   ): RecoilDamageEffect {
     return {
       effectType: AttackEffectType.RECOIL_DAMAGE,
-      target: 'self',
+      target: TargetType.SELF,
       amount,
       requiredConditions,
     };
@@ -214,7 +215,7 @@ export class AttackEffectFactory {
    * Create an energy acceleration effect
    */
   static energyAcceleration(
-    target: 'self' | 'benched',
+    target: TargetType.SELF | TargetType.BENCHED_YOURS,
     source: 'deck' | 'discard' | 'hand',
     count: number,
     energyType?: EnergyType,
@@ -241,8 +242,8 @@ export class AttackEffectFactory {
   ): SwitchPokemonEffect {
     return {
       effectType: AttackEffectType.SWITCH_POKEMON,
-      target: 'self',
-      with: 'benched',
+      target: TargetType.SELF,
+      with: TargetType.BENCHED_YOURS,
       selector,
       requiredConditions,
     };

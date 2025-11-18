@@ -4,6 +4,7 @@ import { AbilityEffectFactory } from '../value-objects/ability-effect.value-obje
 import { EnergyType } from '../enums/energy-type.enum';
 import { PokemonType } from '../enums/pokemon-type.enum';
 import { CardType } from '../enums/card-type.enum';
+import { TargetType } from '../enums/target-type.enum';
 
 describe('AbilityEffectValidator', () => {
   describe('validate - General', () => {
@@ -36,7 +37,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate heal effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.heal('self', 30),
+          AbilityEffectFactory.heal(TargetType.SELF, 30),
         );
       }).not.toThrow();
     });
@@ -55,7 +56,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.HEAL,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 0,
         });
       }).toThrow('Heal amount must be at least 1');
@@ -65,7 +66,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.HEAL,
-          target: 'self',
+          target: TargetType.SELF,
           amount: -10,
         });
       }).toThrow('Heal amount must be at least 1');
@@ -76,7 +77,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate prevent damage effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.preventDamage('self', 'permanent', 20),
+          AbilityEffectFactory.preventDamage(TargetType.SELF, 'permanent', 20),
         );
       }).not.toThrow();
     });
@@ -84,7 +85,7 @@ describe('AbilityEffectValidator', () => {
     it('should accept "all" as amount', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.preventDamage('self', 'permanent', 'all'),
+          AbilityEffectFactory.preventDamage(TargetType.SELF, 'permanent', 'all'),
         );
       }).not.toThrow();
     });
@@ -93,7 +94,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.PREVENT_DAMAGE,
-          target: 'self',
+          target: TargetType.SELF,
           duration: 'forever' as any,
         });
       }).toThrow('Duration must be');
@@ -142,7 +143,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate energy acceleration effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.energyAcceleration('self', 'discard', 1),
+          AbilityEffectFactory.energyAcceleration(TargetType.SELF, 'discard', 1),
         );
       }).not.toThrow();
     });
@@ -151,7 +152,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.ENERGY_ACCELERATION,
-          target: 'self',
+          target: TargetType.SELF,
           source: 'trash' as any,
           count: 1,
         });
@@ -162,7 +163,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.ENERGY_ACCELERATION,
-          target: 'self',
+          target: TargetType.SELF,
           source: 'discard',
           count: 0,
         });
@@ -194,7 +195,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.SWITCH_POKEMON,
-          target: 'self',
+          target: TargetType.SELF,
           with: 'benched_yours',
           selector: 'manual' as any,
         });
@@ -262,7 +263,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate boost attack effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.boostAttack('all_yours', 10),
+          AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10),
         );
       }).not.toThrow();
     });
@@ -271,7 +272,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.BOOST_ATTACK,
-          target: 'self',
+          target: TargetType.SELF,
           modifier: 0,
         });
       }).toThrow('Modifier must be a non-zero number');
@@ -281,7 +282,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.BOOST_ATTACK,
-          target: 'self',
+          target: TargetType.SELF,
           modifier: -10,
         });
       }).not.toThrow();
@@ -292,7 +293,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate boost HP effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.boostHP('self', 30),
+          AbilityEffectFactory.boostHP(TargetType.SELF, 30),
         );
       }).not.toThrow();
     });
@@ -301,7 +302,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.BOOST_HP,
-          target: 'self',
+          target: TargetType.SELF,
           modifier: 0,
         });
       }).toThrow('Modifier must be a non-zero number');
@@ -312,7 +313,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate reduce damage effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.reduceDamage('self', 20),
+          AbilityEffectFactory.reduceDamage(TargetType.SELF, 20),
         );
       }).not.toThrow();
     });
@@ -320,7 +321,7 @@ describe('AbilityEffectValidator', () => {
     it('should accept "all" as amount', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.reduceDamage('self', 'all'),
+          AbilityEffectFactory.reduceDamage(TargetType.SELF, 'all'),
         );
       }).not.toThrow();
     });
@@ -329,7 +330,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.REDUCE_DAMAGE,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 0,
         });
       }).toThrow('Amount must be at least 1 or "all"');
@@ -368,7 +369,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate attach from discard effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.attachFromDiscard('self', 1),
+          AbilityEffectFactory.attachFromDiscard(TargetType.SELF, 1),
         );
       }).not.toThrow();
     });
@@ -377,7 +378,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.ATTACH_FROM_DISCARD,
-          target: 'self',
+          target: TargetType.SELF,
           count: 0,
         });
       }).toThrow('Count must be at least 1');
@@ -418,7 +419,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate array of effects', () => {
       const effects = [
         AbilityEffectFactory.drawCards(1),
-        AbilityEffectFactory.heal('self', 20),
+        AbilityEffectFactory.heal(TargetType.SELF, 20),
       ];
 
       expect(() => {
@@ -454,8 +455,8 @@ describe('AbilityEffectValidator', () => {
     it('should validate multiple effects', () => {
       const effects = [
         AbilityEffectFactory.drawCards(2),
-        AbilityEffectFactory.heal('all_yours', 10),
-        AbilityEffectFactory.boostAttack('all_yours', 20, [PokemonType.FIRE]),
+        AbilityEffectFactory.heal(TargetType.ALL_YOURS, 10),
+        AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 20, [PokemonType.FIRE]),
       ];
 
       expect(() => {

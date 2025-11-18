@@ -1,4 +1,5 @@
 import { AbilityEffectType } from '../enums/ability-effect-type.enum';
+import { TargetType } from '../enums/target-type.enum';
 import { ConditionValidator } from './condition.validator';
 import type {
   AbilityEffect,
@@ -221,11 +222,11 @@ export class AbilityEffectValidator {
   private static validateSwitchPokemon(
     effect: SwitchPokemonAbilityEffect,
   ): void {
-    if (effect.target !== 'self') {
+    if (effect.target !== TargetType.SELF) {
       throw new Error('Switch Pokémon target must be: self');
     }
 
-    if (effect.with !== 'benched_yours') {
+    if (effect.with !== TargetType.BENCHED_YOURS) {
       throw new Error('Switch with must be: benched_yours');
     }
 

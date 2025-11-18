@@ -14,4 +14,5 @@ export * from './usage-limit.enum';
 export * from './legacy-ability-type.enum';
 export * from './card-rule-type.enum';
 export * from './rule-priority.enum';
+export * from './target-type.enum';
 

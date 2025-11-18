@@ -6,6 +6,7 @@ import { UsageLimit } from '../enums/usage-limit.enum';
 import { AbilityEffectFactory } from './ability-effect.value-object';
 import { PokemonType } from '../enums/pokemon-type.enum';
 import { EnergyType } from '../enums/energy-type.enum';
+import { TargetType } from '../enums/target-type.enum';
 
 describe('Ability Value Object', () => {
   describe('constructor', () => {
@@ -14,7 +15,7 @@ describe('Ability Value Object', () => {
         'Blaze',
         'All your Fire Pokémon do 10 more damage',
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.boostAttack('all_yours', 10, [PokemonType.FIRE])],
+        [AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [PokemonType.FIRE])],
       );
 
       expect(ability.name).toBe('Blaze');
@@ -40,7 +41,7 @@ describe('Ability Value Object', () => {
         'Solar Power',
         'Once during your turn, you may heal 30 damage',
         AbilityActivationType.ACTIVATED,
-        [AbilityEffectFactory.heal('self', 30)],
+        [AbilityEffectFactory.heal(TargetType.SELF, 30)],
         undefined,
         UsageLimit.ONCE_PER_TURN,
       );
@@ -138,7 +139,7 @@ describe('Ability Value Object', () => {
           [
             {
               effectType: AbilityEffectType.HEAL,
-              target: 'self',
+              target: TargetType.SELF,
               amount: 0, // Invalid
             } as any,
           ],
@@ -216,7 +217,7 @@ describe('Ability Value Object', () => {
         AbilityActivationType.PASSIVE,
         [
           AbilityEffectFactory.drawCards(1),
-          AbilityEffectFactory.heal('self', 20),
+          AbilityEffectFactory.heal(TargetType.SELF, 20),
           AbilityEffectFactory.drawCards(2),
         ],
       );
@@ -363,7 +364,7 @@ describe('Ability Value Object', () => {
         'Blaze',
         'All your Fire Pokémon do 10 more damage to the opponent\'s Active Pokémon',
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.boostAttack('all_yours', 10, [PokemonType.FIRE])],
+        [AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [PokemonType.FIRE])],
       );
 
       expect(ability.isPassive()).toBe(true);
@@ -375,7 +376,7 @@ describe('Ability Value Object', () => {
         'Solar Power',
         'Once during your turn, you may heal 30 damage from 1 of your Pokémon',
         AbilityActivationType.ACTIVATED,
-        [AbilityEffectFactory.heal('benched_yours', 30)],
+        [AbilityEffectFactory.heal(TargetType.BENCHED_YOURS, 30)],
         undefined,
         UsageLimit.ONCE_PER_TURN,
       );
@@ -436,7 +437,7 @@ describe('Ability Value Object', () => {
         'As often as you like during your turn, move 1 damage counter from 1 of your Pokémon to another',
         AbilityActivationType.ACTIVATED,
         [
-          AbilityEffectFactory.heal('benched_yours', 10),
+          AbilityEffectFactory.heal(TargetType.BENCHED_YOURS, 10),
           // Would need damage effect (not yet implemented)
         ],
         undefined,
@@ -451,7 +452,7 @@ describe('Ability Value Object', () => {
         'Pure Heart',
         'Prevent all effects of your opponent\'s attacks, including damage, done to this Pokémon',
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.preventDamage('self', 'permanent', 'all')],
+        [AbilityEffectFactory.preventDamage(TargetType.SELF, 'permanent', 'all')],
       );
 
       expect(ability.isPassive()).toBe(true);
@@ -463,7 +464,7 @@ describe('Ability Value Object', () => {
         'Water Veil',
         'Prevent all damage done to this Pokémon by attacks from Fire Pokémon',
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.reduceDamage('self', 'all', PokemonType.FIRE)],
+        [AbilityEffectFactory.reduceDamage(TargetType.SELF, 'all', PokemonType.FIRE)],
       );
 
       expect(ability.getEffectsByType(AbilityEffectType.REDUCE_DAMAGE)).toHaveLength(1);
@@ -500,7 +501,7 @@ describe('Ability Value Object', () => {
         'Heal 20 damage and draw a card',
         AbilityActivationType.ACTIVATED,
         [
-          AbilityEffectFactory.heal('self', 20),
+          AbilityEffectFactory.heal(TargetType.SELF, 20),
           AbilityEffectFactory.drawCards(1),
         ],
         undefined,
@@ -516,7 +517,7 @@ describe('Ability Value Object', () => {
         'Morning Sun',
         'At the start of your turn, heal 10 damage',
         AbilityActivationType.TRIGGERED,
-        [AbilityEffectFactory.heal('self', 10)],
+        [AbilityEffectFactory.heal(TargetType.SELF, 10)],
         GameEventType.START_OF_TURN,
       );
 
@@ -528,7 +529,7 @@ describe('Ability Value Object', () => {
         'Power Boost',
         'When this Pokémon attacks, it does 10 more damage',
         AbilityActivationType.TRIGGERED,
-        [AbilityEffectFactory.boostAttack('self', 10)],
+        [AbilityEffectFactory.boostAttack(TargetType.SELF, 10)],
         GameEventType.WHEN_ATTACKING,
       );
 

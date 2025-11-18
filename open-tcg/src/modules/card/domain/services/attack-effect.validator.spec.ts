@@ -3,6 +3,7 @@ import { EnergyType } from '../enums/energy-type.enum';
 import { AttackEffectValidator } from './attack-effect.validator';
 import { AttackEffectFactory } from '../value-objects/attack-effect.value-object';
 import { ConditionFactory } from '../value-objects/condition.value-object';
+import { TargetType } from '../enums/target-type.enum';
 
 describe('AttackEffectValidator', () => {
   describe('validate', () => {
@@ -30,7 +31,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.HEAL,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 20,
           requiredConditions: [{ type: 'INVALID' as any }],
         }),
@@ -40,12 +41,12 @@ describe('AttackEffectValidator', () => {
 
   describe('DISCARD_ENERGY validation', () => {
     it('should validate valid discard energy effect', () => {
-      const effect = AttackEffectFactory.discardEnergy('self', 2);
+      const effect = AttackEffectFactory.discardEnergy(TargetType.SELF, 2);
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
     it('should validate discard all energy', () => {
-      const effect = AttackEffectFactory.discardEnergy('self', 'all');
+      const effect = AttackEffectFactory.discardEnergy(TargetType.SELF, 'all');
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
@@ -72,7 +73,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.DISCARD_ENERGY,
-          target: 'self',
+          target: TargetType.SELF,
         } as any),
       ).toThrow('Discard energy amount is required');
     });
@@ -81,7 +82,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.DISCARD_ENERGY,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 'invalid' as any,
         }),
       ).toThrow('Discard energy amount must be a number or "all"');
@@ -91,7 +92,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.DISCARD_ENERGY,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 0,
         }),
       ).toThrow('Discard energy amount must be at least 1');
@@ -101,7 +102,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.DISCARD_ENERGY,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 1.5,
         }),
       ).toThrow('Discard energy amount must be an integer');
@@ -210,12 +211,12 @@ describe('AttackEffectValidator', () => {
 
   describe('HEAL validation', () => {
     it('should validate heal self effect', () => {
-      const effect = AttackEffectFactory.heal('self', 20);
+      const effect = AttackEffectFactory.heal(TargetType.SELF, 20);
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
     it('should validate heal defending effect', () => {
-      const effect = AttackEffectFactory.heal('defending', 30);
+      const effect = AttackEffectFactory.heal(TargetType.DEFENDING, 30);
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
@@ -242,7 +243,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.HEAL,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 0,
         }),
       ).toThrow('Heal amount must be at least 1');
@@ -252,7 +253,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.HEAL,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 20.5,
         }),
       ).toThrow('Heal amount must be an integer');
@@ -261,17 +262,17 @@ describe('AttackEffectValidator', () => {
 
   describe('PREVENT_DAMAGE validation', () => {
     it('should validate prevent damage effect', () => {
-      const effect = AttackEffectFactory.preventDamage('self', 'next_turn');
+      const effect = AttackEffectFactory.preventDamage(TargetType.SELF, 'next_turn');
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
     it('should validate with specific amount', () => {
-      const effect = AttackEffectFactory.preventDamage('self', 'next_turn', 30);
+      const effect = AttackEffectFactory.preventDamage(TargetType.SELF, 'next_turn', 30);
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
     it('should validate with all damage', () => {
-      const effect = AttackEffectFactory.preventDamage('self', 'next_turn', 'all');
+      const effect = AttackEffectFactory.preventDamage(TargetType.SELF, 'next_turn', 'all');
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
@@ -288,7 +289,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.PREVENT_DAMAGE,
-          target: 'self',
+          target: TargetType.SELF,
           duration: 'invalid' as any,
         }),
       ).toThrow('Prevent damage duration must be "next_turn" or "this_turn"');
@@ -298,7 +299,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.PREVENT_DAMAGE,
-          target: 'self',
+          target: TargetType.SELF,
           duration: 'next_turn',
           amount: 0,
         }),
@@ -326,7 +327,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.RECOIL_DAMAGE,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 0,
         }),
       ).toThrow('Recoil damage amount must be at least 1');
@@ -335,14 +336,14 @@ describe('AttackEffectValidator', () => {
 
   describe('ENERGY_ACCELERATION validation', () => {
     it('should validate energy acceleration effect', () => {
-      const effect = AttackEffectFactory.energyAcceleration('self', 'deck', 1);
+      const effect = AttackEffectFactory.energyAcceleration(TargetType.SELF, 'deck', 1);
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
     it('should validate with all sources', () => {
       const sources = ['deck', 'discard', 'hand'] as const;
       sources.forEach((source) => {
-        const effect = AttackEffectFactory.energyAcceleration('self', source, 1);
+        const effect = AttackEffectFactory.energyAcceleration(TargetType.SELF, source, 1);
         expect(AttackEffectValidator.validate(effect)).toBe(true);
       });
     });
@@ -362,7 +363,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.ENERGY_ACCELERATION,
-          target: 'self',
+          target: TargetType.SELF,
           source: 'invalid' as any,
           count: 1,
         }),
@@ -373,7 +374,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.ENERGY_ACCELERATION,
-          target: 'self',
+          target: TargetType.SELF,
           source: 'deck',
           count: 0,
         }),
@@ -384,7 +385,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.ENERGY_ACCELERATION,
-          target: 'self',
+          target: TargetType.SELF,
           source: 'deck',
           count: 1,
           selector: 'invalid' as any,
@@ -419,7 +420,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.SWITCH_POKEMON,
-          target: 'self',
+          target: TargetType.SELF,
           with: 'invalid' as any,
           selector: 'choice',
         }),
@@ -430,7 +431,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.SWITCH_POKEMON,
-          target: 'self',
+          target: TargetType.SELF,
           with: 'benched',
           selector: 'invalid' as any,
         }),
@@ -443,7 +444,7 @@ describe('AttackEffectValidator', () => {
       const effects = [
         AttackEffectFactory.statusCondition('PARALYZED'),
         AttackEffectFactory.damageModifier(30),
-        AttackEffectFactory.heal('self', 20),
+        AttackEffectFactory.heal(TargetType.SELF, 20),
       ];
 
       expect(AttackEffectValidator.validateAll(effects)).toBe(true);
@@ -457,13 +458,13 @@ describe('AttackEffectValidator', () => {
 
     it('should throw error with index information if one is invalid', () => {
       const effects = [
-        AttackEffectFactory.heal('self', 20),
+        AttackEffectFactory.heal(TargetType.SELF, 20),
         {
           effectType: AttackEffectType.HEAL,
-          target: 'self',
+          target: TargetType.SELF,
           amount: 0, // Invalid
         },
-        AttackEffectFactory.heal('self', 30),
+        AttackEffectFactory.heal(TargetType.SELF, 30),
       ];
 
       expect(() =>

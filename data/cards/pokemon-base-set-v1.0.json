@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "author": "pokemon",
+    "setName": "Base Set",
+    "version": "1.0",
+    "official": true,
+    "dateReleased": "1999-01-09",
+    "totalCards": 1,
+    "description": "The original Pokémon TCG set that started it all",
+    "series": "Original Series",
+    "language": "en",
+    "region": "US",
+    "legalFormats": ["Unlimited"],
+    "lastUpdated": "2025-11-18",
+    "notes": "Sample file containing Alakazam from Base Set"
+  },
+  "cards": [
+    {
+      "name": "Alakazam",
+      "cardNumber": "1",
+      "pokemonNumber": "065",
+      "hp": 80,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Kadabra",
+      "pokemonType": "PSYCHIC",
+      "rarity": "RARE_HOLO",
+      "ability": {
+        "name": "Damage Swap",
+        "activationType": "ACTIVATED",
+        "usageLimit": "UNLIMITED",
+        "text": "As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pokémon to another as long as you don't Knock Out that Pokémon. This power can't be used if Alakazam is Asleep, Confused, or Paralyzed.",
+        "effects": []
+      },
+      "attacks": [
+        {
+          "name": "Confuse Ray",
+          "energyCost": ["PSYCHIC", "PSYCHIC", "PSYCHIC"],
+          "damage": "30",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Confused.",
+          "preconditions": [],
+          "effects": []
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 3,
+      "artist": "Ken Sugimori",
+      "description": "Its brain can outperform a supercomputer.",
+      "imageUrl": ""
+    }
+  ]
+}
+

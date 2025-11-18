@@ -4,6 +4,7 @@ import { AttackEffectType } from '../enums/attack-effect-type.enum';
 import { Attack } from './attack.value-object';
 import { AttackPreconditionFactory } from './attack-precondition.value-object';
 import { AttackEffectFactory } from './attack-effect.value-object';
+import { TargetType } from '../enums/target-type.enum';
 
 describe('Attack Value Object', () => {
   describe('constructor', () => {
@@ -95,7 +96,7 @@ describe('Attack Value Object', () => {
           [
             {
               effectType: AttackEffectType.HEAL,
-              target: 'self',
+              target: TargetType.SELF,
               amount: 0, // Invalid: < 1
             },
           ],

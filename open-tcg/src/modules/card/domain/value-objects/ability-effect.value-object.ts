@@ -2,6 +2,7 @@ import { AbilityEffectType } from '../enums/ability-effect-type.enum';
 import { PokemonType } from '../enums/pokemon-type.enum';
 import { EnergyType } from '../enums/energy-type.enum';
 import { CardType } from '../enums/card-type.enum';
+import { TargetType } from '../enums/target-type.enum';
 import { Condition } from './condition.value-object';
 
 /**
@@ -10,15 +11,7 @@ import { Condition } from './condition.value-object';
  */
 export interface AbilityEffect {
   effectType: AbilityEffectType;
-  target?:
-    | 'self'
-    | 'all_yours'
-    | 'all_opponents'
-    | 'defending'
-    | 'benched_yours'
-    | 'benched_opponents'
-    | 'active_yours'
-    | 'active_opponent';
+  target?: TargetType;
   requiredConditions?: Condition[];
 }
 
@@ -32,7 +25,11 @@ export interface AbilityEffect {
  */
 export interface HealAbilityEffect extends AbilityEffect {
   effectType: AbilityEffectType.HEAL;
-  target: 'self' | 'all_yours' | 'benched_yours' | 'active_yours';
+  target:
+    | TargetType.SELF
+    | TargetType.ALL_YOURS
+    | TargetType.BENCHED_YOURS
+    | TargetType.ACTIVE_YOURS;
   amount: number;
 }
 
@@ -43,11 +40,11 @@ export interface HealAbilityEffect extends AbilityEffect {
 export interface PreventDamageAbilityEffect extends AbilityEffect {
   effectType: AbilityEffectType.PREVENT_DAMAGE;
   target:
-    | 'self'
-    | 'all_yours'
-    | 'benched_yours'
-    | 'active_yours'
-    | 'defending';
+    | TargetType.SELF
+    | TargetType.ALL_YOURS
+    | TargetType.BENCHED_YOURS
+    | TargetType.ACTIVE_YOURS
+    | TargetType.DEFENDING;
   duration: 'next_turn' | 'this_turn' | 'permanent';
   amount?: number | 'all';
 }
@@ -58,7 +55,10 @@ export interface PreventDamageAbilityEffect extends AbilityEffect {
  */
 export interface StatusConditionAbilityEffect extends AbilityEffect {
   effectType: AbilityEffectType.STATUS_CONDITION;
-  target: 'defending' | 'all_opponents' | 'active_opponent';
+  target:
+    | TargetType.DEFENDING
+    | TargetType.ALL_OPPONENTS
+    | TargetType.ACTIVE_OPPONENT;
   statusCondition:
     | 'PARALYZED'
     | 'POISONED'
@@ -73,7 +73,11 @@ export interface StatusConditionAbilityEffect extends AbilityEffect {
  */
 export interface EnergyAccelerationAbilityEffect extends AbilityEffect {
   effectType: AbilityEffectType.ENERGY_ACCELERATION;
-  target: 'self' | 'benched_yours' | 'all_yours' | 'active_yours';
+  target:
+    | TargetType.SELF
+    | TargetType.BENCHED_YOURS
+    | TargetType.ALL_YOURS
+    | TargetType.ACTIVE_YOURS;
   source: 'deck' | 'discard' | 'hand';
   count: number;
   energyType?: EnergyType;
@@ -86,8 +90,8 @@ export interface EnergyAccelerationAbilityEffect extends AbilityEffect {
  */
 export interface SwitchPokemonAbilityEffect extends AbilityEffect {
   effectType: AbilityEffectType.SWITCH_POKEMON;
-  target: 'self';
-  with: 'benched_yours';
+  target: TargetType.SELF;
+  with: TargetType.BENCHED_YOURS;
   selector: 'choice' | 'random';
 }
 
@@ -123,7 +127,11 @@ export interface SearchDeckEffect extends AbilityEffect {
  */
 export interface BoostAttackEffect extends AbilityEffect {
   effectType: AbilityEffectType.BOOST_ATTACK;
-  target: 'self' | 'all_yours' | 'benched_yours' | 'active_yours';
+  target:
+    | TargetType.SELF
+    | TargetType.ALL_YOURS
+    | TargetType.BENCHED_YOURS
+    | TargetType.ACTIVE_YOURS;
   modifier: number;
   affectedTypes?: PokemonType[];
 }
@@ -134,7 +142,11 @@ export interface BoostAttackEffect extends AbilityEffect {
  */
 export interface BoostHPEffect extends AbilityEffect {
   effectType: AbilityEffectType.BOOST_HP;
-  target: 'self' | 'all_yours' | 'benched_yours' | 'active_yours';
+  target:
+    | TargetType.SELF
+    | TargetType.ALL_YOURS
+    | TargetType.BENCHED_YOURS
+    | TargetType.ACTIVE_YOURS;
   modifier: number;
 }
 
@@ -144,7 +156,11 @@ export interface BoostHPEffect extends AbilityEffect {
  */
 export interface ReduceDamageEffect extends AbilityEffect {
   effectType: AbilityEffectType.REDUCE_DAMAGE;
-  target: 'self' | 'all_yours' | 'benched_yours' | 'active_yours';
+  target:
+    | TargetType.SELF
+    | TargetType.ALL_YOURS
+    | TargetType.BENCHED_YOURS
+    | TargetType.ACTIVE_YOURS;
   amount: number | 'all';
   source?: PokemonType;
 }
@@ -166,7 +182,11 @@ export interface DiscardFromHandEffect extends AbilityEffect {
  */
 export interface AttachFromDiscardEffect extends AbilityEffect {
   effectType: AbilityEffectType.ATTACH_FROM_DISCARD;
-  target: 'self' | 'benched_yours' | 'all_yours' | 'active_yours';
+  target:
+    | TargetType.SELF
+    | TargetType.BENCHED_YOURS
+    | TargetType.ALL_YOURS
+    | TargetType.ACTIVE_YOURS;
   energyType?: EnergyType;
   count: number;
   selector?: 'choice' | 'random';
@@ -217,7 +237,11 @@ export class AbilityEffectFactory {
   // SHARED EFFECTS
 
   static heal(
-    target: 'self' | 'all_yours' | 'benched_yours' | 'active_yours',
+    target:
+      | TargetType.SELF
+      | TargetType.ALL_YOURS
+      | TargetType.BENCHED_YOURS
+      | TargetType.ACTIVE_YOURS,
     amount: number,
     conditions?: Condition[],
   ): HealAbilityEffect {
@@ -231,11 +255,11 @@ export class AbilityEffectFactory {
 
   static preventDamage(
     target:
-      | 'self'
-      | 'all_yours'
-      | 'benched_yours'
-      | 'active_yours'
-      | 'defending',
+      | TargetType.SELF
+      | TargetType.ALL_YOURS
+      | TargetType.BENCHED_YOURS
+      | TargetType.ACTIVE_YOURS
+      | TargetType.DEFENDING,
     duration: 'next_turn' | 'this_turn' | 'permanent',
     amount?: number | 'all',
     conditions?: Condition[],
@@ -256,7 +280,10 @@ export class AbilityEffectFactory {
       | 'BURNED'
       | 'ASLEEP'
       | 'CONFUSED',
-    target: 'defending' | 'all_opponents' | 'active_opponent' = 'defending',
+    target:
+      | TargetType.DEFENDING
+      | TargetType.ALL_OPPONENTS
+      | TargetType.ACTIVE_OPPONENT = TargetType.DEFENDING,
     conditions?: Condition[],
   ): StatusConditionAbilityEffect {
     return {
@@ -268,7 +295,11 @@ export class AbilityEffectFactory {
   }
 
   static energyAcceleration(
-    target: 'self' | 'benched_yours' | 'all_yours' | 'active_yours',
+    target:
+      | TargetType.SELF
+      | TargetType.BENCHED_YOURS
+      | TargetType.ALL_YOURS
+      | TargetType.ACTIVE_YOURS,
     source: 'deck' | 'discard' | 'hand',
     count: number,
     energyType?: EnergyType,
@@ -292,8 +323,8 @@ export class AbilityEffectFactory {
   ): SwitchPokemonAbilityEffect {
     return {
       effectType: AbilityEffectType.SWITCH_POKEMON,
-      target: 'self',
-      with: 'benched_yours',
+      target: TargetType.SELF,
+      with: TargetType.BENCHED_YOURS,
       selector,
       requiredConditions: conditions,
     };
@@ -334,7 +365,11 @@ export class AbilityEffectFactory {
   }
 
   static boostAttack(
-    target: 'self' | 'all_yours' | 'benched_yours' | 'active_yours',
+    target:
+      | TargetType.SELF
+      | TargetType.ALL_YOURS
+      | TargetType.BENCHED_YOURS
+      | TargetType.ACTIVE_YOURS,
     modifier: number,
     affectedTypes?: PokemonType[],
     conditions?: Condition[],
@@ -349,7 +384,11 @@ export class AbilityEffectFactory {
   }
 
   static boostHP(
-    target: 'self' | 'all_yours' | 'benched_yours' | 'active_yours',
+    target:
+      | TargetType.SELF
+      | TargetType.ALL_YOURS
+      | TargetType.BENCHED_YOURS
+      | TargetType.ACTIVE_YOURS,
     modifier: number,
     conditions?: Condition[],
   ): BoostHPEffect {
@@ -362,7 +401,11 @@ export class AbilityEffectFactory {
   }
 
   static reduceDamage(
-    target: 'self' | 'all_yours' | 'benched_yours' | 'active_yours',
+    target:
+      | TargetType.SELF
+      | TargetType.ALL_YOURS
+      | TargetType.BENCHED_YOURS
+      | TargetType.ACTIVE_YOURS,
     amount: number | 'all',
     source?: PokemonType,
     conditions?: Condition[],
@@ -392,7 +435,11 @@ export class AbilityEffectFactory {
   }
 
   static attachFromDiscard(
-    target: 'self' | 'benched_yours' | 'all_yours' | 'active_yours',
+    target:
+      | TargetType.SELF
+      | TargetType.BENCHED_YOURS
+      | TargetType.ALL_YOURS
+      | TargetType.ACTIVE_YOURS,
     count: number,
     energyType?: EnergyType,
     selector?: 'choice' | 'random',
