@@ -7,4 +7,9 @@ export * from './energy-type.enum';
 export * from './precondition-type.enum';
 export * from './condition-type.enum';
 export * from './attack-effect-type.enum';
+export * from './ability-activation-type.enum';
+export * from './game-event-type.enum';
+export * from './ability-effect-type.enum';
+export * from './usage-limit.enum';
+export * from './legacy-ability-type.enum';
 

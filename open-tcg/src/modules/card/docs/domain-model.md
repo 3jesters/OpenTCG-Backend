@@ -289,10 +289,84 @@ See [CONDITION-SYSTEM.md](./CONDITION-SYSTEM.md) for complete documentation.
 
 ## Abilities
 
-Abilities are passive or triggered effects that Pokémon can have:
-- **Name**: Ability name
-- **Text**: Human-readable description
-- **Effects**: Structured effects for game engine (placeholder - to be implemented)
+Abilities are passive, triggered, or activated effects that Pokémon can have. The ability system is fully implemented with structured effects and validation.
+
+### Ability Structure
+- **name**: Ability name
+- **text**: Human-readable description
+- **activationType**: How the ability activates (PASSIVE, TRIGGERED, or ACTIVATED)
+- **effects**: Array of structured effects
+- **triggerEvent**: Game event that triggers the ability (for TRIGGERED abilities)
+- **usageLimit**: Usage restriction (for ACTIVATED abilities): `UsageLimit.ONCE_PER_TURN` or `UsageLimit.UNLIMITED`
+
+### Activation Types
+
+**1. PASSIVE** - Always active, no player action required
+- Example: "All your Fire Pokémon do 10 more damage"
+
+**2. TRIGGERED** - Automatically activates on specific game events
+- Game Events: WHEN_PLAYED, WHEN_DAMAGED, WHEN_ATTACKING, WHEN_DEFENDING, BETWEEN_TURNS, WHEN_KNOCKED_OUT, START_OF_TURN, END_OF_TURN
+- Example: "When this Pokémon is damaged, draw a card"
+
+**3. ACTIVATED** - Player chooses to use it
+- Usage Limits: UsageLimit.ONCE_PER_TURN or UsageLimit.UNLIMITED
+- Example: "Once during your turn, you may heal 30 damage"
+
+### Ability Effects (13 types)
+
+**Shared with Attacks (5):**
+1. HEAL - Heal damage from Pokémon
+2. PREVENT_DAMAGE - Prevent damage
+3. STATUS_CONDITION - Apply status conditions
+4. ENERGY_ACCELERATION - Attach energy from deck/discard/hand
+5. SWITCH_POKEMON - Switch active/benched Pokémon
+
+**Ability-Specific (8):**
+6. DRAW_CARDS - Draw cards from deck
+7. SEARCH_DECK - Search deck for specific cards
+8. BOOST_ATTACK - Increase attack damage (for self or allies)
+9. BOOST_HP - Increase maximum HP
+10. REDUCE_DAMAGE - Reduce incoming damage
+11. DISCARD_FROM_HAND - Discard cards from hand
+12. ATTACH_FROM_DISCARD - Attach from discard pile
+13. RETRIEVE_FROM_DISCARD - Put cards from discard to hand
+
+### Example Abilities
+
+**Passive Ability:**
+```typescript
+const blaze = new Ability(
+  'Blaze',
+  'All your Fire Pokémon do 10 more damage',
+  AbilityActivationType.PASSIVE,
+  [AbilityEffectFactory.boostAttack('all_yours', 10, [PokemonType.FIRE])]
+);
+```
+
+**Triggered Ability:**
+```typescript
+const roughSkin = new Ability(
+  'Rough Skin',
+  'When this Pokémon is damaged, draw a card',
+  AbilityActivationType.TRIGGERED,
+  [AbilityEffectFactory.drawCards(1)],
+  GameEventType.WHEN_DAMAGED
+);
+```
+
+**Activated Ability:**
+```typescript
+const solarPower = new Ability(
+  'Solar Power',
+  'Once during your turn, you may heal 30 damage',
+  AbilityActivationType.ACTIVATED,
+  [AbilityEffectFactory.heal('benched_yours', 30)],
+  undefined,
+  UsageLimit.ONCE_PER_TURN
+);
+```
+
+See [ABILITY-EFFECTS.md](./ABILITY-EFFECTS.md) for complete documentation.
 
 ## Card Rules
 
@@ -360,14 +434,15 @@ Card.createEnergyCard(instanceId, cardId, pokemonNumber, name, ...);
 2. **Attack Preconditions**: Type-safe precondition system (COIN_FLIP, DAMAGE_CHECK, ENERGY_CHECK)
 3. **Attack Effects**: 8 core effect types with validation
 4. **Generic Condition System**: Reusable conditions for effects, abilities, and rules
-5. **Validation**: Comprehensive validators for all systems
-6. **Factory Methods**: Easy creation with type safety
-7. **Complete Documentation**: Detailed guides and examples
+5. **Ability Effects**: 13 effect types (5 shared, 8 ability-specific) with 3 activation types
+6. **Game Event System**: Reusable game event types for triggers
+7. **Validation**: Comprehensive validators for all systems
+8. **Factory Methods**: Easy creation with type safety
+9. **Complete Documentation**: Detailed guides and examples
 
 ### 🔄 Phase 2 (To Be Implemented)
-1. **Ability Effects**: Structured ability system (similar to attack effects)
-2. **Card Rules**: Programmatic rule execution
-3. **Game Engine Integration**: Execute preconditions, effects, and conditions
-4. **Effect Resolution**: Handle complex effect interactions and ordering
-5. **Additional Effect Types**: Expand as needed for more card mechanics
+1. **Card Rules**: Programmatic rule execution (last placeholder)
+2. **Game Engine Integration**: Execute preconditions, effects, and conditions
+3. **Effect Resolution**: Handle complex effect interactions and ordering
+4. **Additional Effect Types**: Expand as needed for more card mechanics
 
