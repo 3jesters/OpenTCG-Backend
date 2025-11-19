@@ -11,6 +11,8 @@ import { Resistance } from '../../domain/value-objects/resistance.value-object';
 import { Attack } from '../../domain/value-objects/attack.value-object';
 import { Ability } from '../../domain/value-objects/ability.value-object';
 import { Evolution } from '../../domain/value-objects/evolution.value-object';
+import { TrainerEffect } from '../../domain/value-objects/trainer-effect.value-object';
+import { EnergyProvision } from '../../domain/value-objects/energy-provision.value-object';
 import { CardType, Rarity } from '../../domain/enums';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -104,90 +106,167 @@ export class LoadCardsFromFileUseCase {
     const instanceId = uuidv4();
     const cardId = this.generateCardId(author, setName, version, dto);
 
-    // Create base card entity
-    const card = Card.createPokemonCard(
-      instanceId,
-      cardId,
-      dto.pokemonNumber,
-      dto.name,
-      `${author}-${setName}`, // Use as set name for now
-      dto.cardNumber,
-      dto.rarity || Rarity.COMMON, // Default to common if not specified
-      dto.description || '',
-      dto.artist,
-      dto.imageUrl || '',
-    );
+    // Determine card type (default to POKEMON for backward compatibility)
+    const cardType = dto.cardType || CardType.POKEMON;
+    const pokemonNumber = dto.pokemonNumber || '000'; // Default for non-Pokemon cards
 
-    // Set Pokemon-specific properties
-    if (dto.pokemonType) {
-      card.setPokemonType(dto.pokemonType);
-    }
-    if (dto.stage) {
-      card.setStage(dto.stage);
-    }
-    if (dto.hp) {
-      card.setHp(dto.hp);
-    }
-    if (dto.level !== undefined) {
-      card.setLevel(dto.level);
-    }
-    if (dto.retreatCost !== undefined) {
-      card.setRetreatCost(dto.retreatCost);
-    }
-
-    // Set evolution
-    if (dto.evolvesFrom && dto.stage) {
-      // For now, use a simple mapping - in production you'd look up the pokemon number
-      const evolution = new Evolution(
-        '000', // Placeholder pokemon number
-        dto.stage,
-        dto.evolvesFrom, // Store the name
-        undefined, // No special condition
+    // Create base card entity based on type
+    let card: Card;
+    if (cardType === CardType.TRAINER) {
+      card = Card.createTrainerCard(
+        instanceId,
+        cardId,
+        pokemonNumber,
+        dto.name,
+        `${author}-${setName}`,
+        dto.cardNumber,
+        dto.rarity || Rarity.COMMON,
+        dto.description || '',
+        dto.artist,
+        dto.imageUrl || '',
       );
-      card.setEvolvesFrom(evolution);
-    }
-
-    // Set weakness
-    if (dto.weakness) {
-      const weakness = new Weakness(dto.weakness.type, dto.weakness.modifier);
-      card.setWeakness(weakness);
-    }
-
-    // Set resistance
-    if (dto.resistance) {
-      const resistance = new Resistance(dto.resistance.type, dto.resistance.modifier);
-      card.setResistance(resistance);
-    }
-
-    // Set ability
-    if (dto.ability) {
-      // For now, pass empty array for effects
-      // In production, you'd convert DTOs to domain value objects
-      const ability = new Ability(
-        dto.ability.name,
-        dto.ability.text,
-        dto.ability.activationType,
-        [], // effects - to be implemented
-        dto.ability.triggerEvent,
-        dto.ability.usageLimit,
+    } else if (cardType === CardType.ENERGY) {
+      card = Card.createEnergyCard(
+        instanceId,
+        cardId,
+        pokemonNumber,
+        dto.name,
+        `${author}-${setName}`,
+        dto.cardNumber,
+        dto.rarity || Rarity.COMMON,
+        dto.description || '',
+        dto.artist,
+        dto.imageUrl || '',
       );
-      card.setAbility(ability);
+    } else {
+      // POKEMON card
+      card = Card.createPokemonCard(
+        instanceId,
+        cardId,
+        pokemonNumber,
+        dto.name,
+        `${author}-${setName}`,
+        dto.cardNumber,
+        dto.rarity || Rarity.COMMON,
+        dto.description || '',
+        dto.artist,
+        dto.imageUrl || '',
+      );
     }
 
-    // Set attacks
-    if (dto.attacks && dto.attacks.length > 0) {
-      for (const attackDto of dto.attacks) {
-        // For now, pass empty arrays for preconditions and effects
-        // In production, you'd convert DTOs to domain value objects
-        const attack = new Attack(
-          attackDto.name,
-          attackDto.energyCost,
-          attackDto.damage,
-          attackDto.text,
-          undefined, // preconditions - to be implemented
-          undefined, // effects - to be implemented
+    // Set Pokemon-specific properties (only for Pokemon cards)
+    if (cardType === CardType.POKEMON) {
+      if (dto.pokemonType) {
+        card.setPokemonType(dto.pokemonType);
+      }
+      if (dto.stage) {
+        card.setStage(dto.stage);
+      }
+      if (dto.hp) {
+        card.setHp(dto.hp);
+      }
+      if (dto.level !== undefined) {
+        card.setLevel(dto.level);
+      }
+      if (dto.retreatCost !== undefined) {
+        card.setRetreatCost(dto.retreatCost);
+      }
+
+      // Set evolution
+      if (dto.evolvesFrom && dto.stage) {
+        // For now, use a simple mapping - in production you'd look up the pokemon number
+        const evolution = new Evolution(
+          '000', // Placeholder pokemon number
+          dto.stage,
+          dto.evolvesFrom, // Store the name
+          undefined, // No special condition
         );
-        card.addAttack(attack);
+        card.setEvolvesFrom(evolution);
+      }
+
+      // Set weakness
+      if (dto.weakness) {
+        const weakness = new Weakness(dto.weakness.type, dto.weakness.modifier);
+        card.setWeakness(weakness);
+      }
+
+      // Set resistance
+      if (dto.resistance) {
+        const resistance = new Resistance(dto.resistance.type, dto.resistance.modifier);
+        card.setResistance(resistance);
+      }
+
+      // Set ability
+      if (dto.ability) {
+        // For now, pass empty array for effects
+        // In production, you'd convert DTOs to domain value objects
+        const ability = new Ability(
+          dto.ability.name,
+          dto.ability.text,
+          dto.ability.activationType,
+          [], // effects - to be implemented
+          dto.ability.triggerEvent,
+          dto.ability.usageLimit,
+        );
+        card.setAbility(ability);
+      }
+
+      // Set attacks
+      if (dto.attacks && dto.attacks.length > 0) {
+        for (const attackDto of dto.attacks) {
+          // For now, pass empty arrays for preconditions and effects
+          // In production, you'd convert DTOs to domain value objects
+          const attack = new Attack(
+            attackDto.name,
+            attackDto.energyCost,
+            attackDto.damage,
+            attackDto.text,
+            undefined, // preconditions - to be implemented
+            undefined, // effects - to be implemented
+          );
+          card.addAttack(attack);
+        }
+      }
+    }
+
+    // Set Trainer-specific properties (only for Trainer cards)
+    if (cardType === CardType.TRAINER) {
+      if (dto.trainerType) {
+        card.setTrainerType(dto.trainerType);
+      }
+
+      // Set trainer effects
+      if (dto.trainerEffects && dto.trainerEffects.length > 0) {
+        for (const effectDto of dto.trainerEffects) {
+          const effect = new TrainerEffect(
+            effectDto.effectType,
+            effectDto.target,
+            effectDto.value,
+            effectDto.cardType,
+            effectDto.condition,
+            effectDto.description,
+          );
+          card.addTrainerEffect(effect);
+        }
+      }
+    }
+
+    // Set Energy-specific properties (only for Energy cards)
+    if (cardType === CardType.ENERGY) {
+      if (dto.energyType) {
+        card.setEnergyType(dto.energyType);
+      }
+
+      // Set energy provision
+      if (dto.energyProvision) {
+        const provision = new EnergyProvision(
+          dto.energyProvision.energyTypes,
+          dto.energyProvision.amount,
+          dto.energyProvision.isSpecial,
+          dto.energyProvision.restrictions,
+          dto.energyProvision.additionalEffects,
+        );
+        card.setEnergyProvision(provision);
       }
     }
 

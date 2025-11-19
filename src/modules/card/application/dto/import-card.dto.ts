@@ -11,10 +11,15 @@ import { Type } from 'class-transformer';
 import { PokemonType } from '../../domain/enums/pokemon-type.enum';
 import { EvolutionStage } from '../../domain/enums/evolution-stage.enum';
 import { Rarity } from '../../domain/enums/rarity.enum';
+import { CardType } from '../../domain/enums/card-type.enum';
+import { TrainerType } from '../../domain/enums/trainer-type.enum';
+import { EnergyType } from '../../domain/enums/energy-type.enum';
 import { AbilityImportDto } from './ability-import.dto';
 import { AttackImportDto } from './attack-import.dto';
 import { WeaknessImportDto } from './weakness-import.dto';
 import { ResistanceImportDto } from './resistance-import.dto';
+import { TrainerEffectImportDto } from './trainer-effect-import.dto';
+import { EnergyProvisionImportDto } from './energy-provision-import.dto';
 
 /**
  * Import Card DTO
@@ -27,8 +32,13 @@ export class ImportCardDto {
   @IsString()
   cardNumber: string;
 
+  @IsOptional()
+  @IsEnum(CardType)
+  cardType?: CardType;
+
+  @IsOptional()
   @IsString()
-  pokemonNumber: string;
+  pokemonNumber?: string;
 
   @IsOptional()
   @IsNumber()
@@ -51,6 +61,14 @@ export class ImportCardDto {
   @IsOptional()
   @IsEnum(PokemonType)
   pokemonType?: PokemonType;
+
+  @IsOptional()
+  @IsEnum(TrainerType)
+  trainerType?: TrainerType;
+
+  @IsOptional()
+  @IsEnum(EnergyType)
+  energyType?: EnergyType;
 
   @IsOptional()
   @IsEnum(Rarity)
@@ -92,5 +110,16 @@ export class ImportCardDto {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TrainerEffectImportDto)
+  trainerEffects?: TrainerEffectImportDto[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => EnergyProvisionImportDto)
+  energyProvision?: EnergyProvisionImportDto;
 }
 

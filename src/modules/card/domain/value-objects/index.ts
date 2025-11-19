@@ -77,3 +77,9 @@ export type {
   AnyAbilityEffect,
 } from './ability-effect.value-object';
 
+// Trainer Effects
+export { TrainerEffect } from './trainer-effect.value-object';
+
+// Energy Provision
+export { EnergyProvision } from './energy-provision.value-object';
+

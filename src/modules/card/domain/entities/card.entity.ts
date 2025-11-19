@@ -15,6 +15,8 @@ import {
   Attack,
   Ability,
   CardRule,
+  TrainerEffect,
+  EnergyProvision,
 } from '../value-objects';
 import { CardRuleValidator } from '../services/card-rule.validator';
 
@@ -78,14 +80,13 @@ export class Card {
   // Trainer Card Specific
   // ========================================
   private _trainerType?: TrainerType;
-  private _trainerEffect?: string;
+  private _trainerEffects: TrainerEffect[]; // Structured effects for Trainer cards
 
   // ========================================
   // Energy Card Specific
   // ========================================
   private _energyType?: EnergyType;
-  private _isSpecialEnergy: boolean;
-  private _specialEnergyEffect?: string;
+  private _energyProvision?: EnergyProvision; // Structured energy provision
 
   // ========================================
   // Metadata
@@ -124,7 +125,7 @@ export class Card {
     this._subtypes = [];
     this._evolvesTo = [];
     this._attacks = [];
-    this._isSpecialEnergy = false;
+    this._trainerEffects = [];
 
     this.validate();
   }
@@ -225,20 +226,20 @@ export class Card {
     return this._trainerType;
   }
 
-  get trainerEffect(): string | undefined {
-    return this._trainerEffect;
+  get trainerEffects(): TrainerEffect[] {
+    return this._trainerEffects;
   }
 
   get energyType(): EnergyType | undefined {
     return this._energyType;
   }
 
-  get isSpecialEnergy(): boolean {
-    return this._isSpecialEnergy;
+  get energyProvision(): EnergyProvision | undefined {
+    return this._energyProvision;
   }
 
-  get specialEnergyEffect(): string | undefined {
-    return this._specialEnergyEffect;
+  get isSpecialEnergy(): boolean {
+    return this._energyProvision?.isSpecial ?? false;
   }
 
   get description(): string {
@@ -388,11 +389,18 @@ export class Card {
     this._trainerType = type;
   }
 
-  setTrainerEffect(effect: string): void {
+  addTrainerEffect(effect: TrainerEffect): void {
     if (this._cardType !== CardType.TRAINER) {
-      throw new Error('Trainer effect can only be set on Trainer cards');
+      throw new Error('Trainer effects can only be added to Trainer cards');
     }
-    this._trainerEffect = effect;
+    this._trainerEffects.push(effect);
+  }
+
+  setTrainerEffects(effects: TrainerEffect[]): void {
+    if (this._cardType !== CardType.TRAINER) {
+      throw new Error('Trainer effects can only be set on Trainer cards');
+    }
+    this._trainerEffects = effects;
   }
 
   setEnergyType(type: EnergyType): void {
@@ -402,22 +410,13 @@ export class Card {
     this._energyType = type;
   }
 
-  setIsSpecialEnergy(isSpecial: boolean): void {
+  setEnergyProvision(provision: EnergyProvision): void {
     if (this._cardType !== CardType.ENERGY) {
-      throw new Error('Special energy flag can only be set on Energy cards');
+      throw new Error('Energy provision can only be set on Energy cards');
     }
-    this._isSpecialEnergy = isSpecial;
+    this._energyProvision = provision;
   }
 
-  setSpecialEnergyEffect(effect: string): void {
-    if (this._cardType !== CardType.ENERGY) {
-      throw new Error('Special energy effect can only be set on Energy cards');
-    }
-    if (!this._isSpecialEnergy) {
-      throw new Error('Can only set special effect on special energy cards');
-    }
-    this._specialEnergyEffect = effect;
-  }
 
   setRegulationMark(mark: string): void {
     this._regulationMark = mark;

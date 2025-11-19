@@ -2234,7 +2234,20 @@
       "rarity": "RARE",
       "artist": "Ken Sugimori",
       "description": "Your opponent shuffles his or her hand into his or her deck, then draws 7 cards.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/75.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/75.png",
+      "trainerEffects": [
+        {
+          "effectType": "OPPONENT_SHUFFLES_HAND",
+          "target": "SELF",
+          "description": "Opponent shuffles hand into deck"
+        },
+        {
+          "effectType": "OPPONENT_DRAWS",
+          "target": "SELF",
+          "value": 7,
+          "description": "Opponent draws 7 cards"
+        }
+      ]
     },
     {
       "name": "Item Finder",
@@ -2244,7 +2257,22 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Discard 2 of the other cards from your hand in order to play this card. Put a Trainer card from your discard pile into your hand.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/76.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/76.png",
+      "trainerEffects": [
+        {
+          "effectType": "DISCARD_HAND",
+          "target": "SELF",
+          "value": 2,
+          "description": "Discard 2 cards from your hand"
+        },
+        {
+          "effectType": "RETRIEVE_FROM_DISCARD",
+          "target": "SELF",
+          "value": 1,
+          "cardType": "Trainer",
+          "description": "Retrieve a Trainer card from discard pile"
+        }
+      ]
     },
     {
       "name": "Lass",
@@ -2254,7 +2282,15 @@
       "rarity": "RARE",
       "artist": "Ken Sugimori",
       "description": "You and your opponent show each other your hands, then shuffle all the Trainer cards from your hands into your decks.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/77.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/77.png",
+      "trainerEffects": [
+        {
+          "effectType": "DISCARD_HAND",
+          "target": "SELF",
+          "cardType": "Trainer",
+          "description": "Shuffle all Trainer cards from both hands into decks"
+        }
+      ]
     },
     {
       "name": "Pokémon Breeder",
@@ -2264,7 +2300,14 @@
       "rarity": "RARE",
       "artist": "Ken Sugimori",
       "description": "Put a Stage 2 Evolution card from your hand on the matching Basic Pokémon. You can only play this card when you would be allowed to evolve that Pokémon anyway.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/78.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/78.png",
+      "trainerEffects": [
+        {
+          "effectType": "EVOLVE_POKEMON",
+          "target": "ALL_YOURS",
+          "description": "Evolve Basic Pokémon to Stage 2"
+        }
+      ]
     },
     {
       "name": "Pokémon Trader",
@@ -2274,7 +2317,21 @@
       "rarity": "RARE",
       "artist": "Ken Sugimori",
       "description": "Trade a Pokémon card from your hand for 1 of the Basic Pokémon or Evolution cards from your deck. Show that card to your opponent, then shuffle your deck.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/79.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/79.png",
+      "trainerEffects": [
+        {
+          "effectType": "TRADE_CARDS",
+          "target": "SELF",
+          "value": 1,
+          "cardType": "Pokemon",
+          "description": "Trade a Pokémon for one from your deck"
+        },
+        {
+          "effectType": "SHUFFLE_DECK",
+          "target": "SELF",
+          "description": "Shuffle your deck"
+        }
+      ]
     },
     {
       "name": "Scoop Up",
@@ -2284,7 +2341,15 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Choose 1 of your Pokémon in play and return its Basic Pokémon card to your hand. (Discard all cards attached to that card.)",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/80.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/80.png",
+      "trainerEffects": [
+        {
+          "effectType": "RETURN_TO_HAND",
+          "target": "ALL_YOURS",
+          "value": 1,
+          "description": "Return a Pokémon to hand"
+        }
+      ]
     },
     {
       "name": "Super Energy Removal",
@@ -2294,7 +2359,21 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Discard 1 Energy card attached to 1 of your own Pokémon in order to play this card. Choose 1 of your opponent's Pokémon and up to 2 Energy cards attached to it. Discard those Energy cards.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/81.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/81.png",
+      "trainerEffects": [
+        {
+          "effectType": "DISCARD_ENERGY",
+          "target": "ALL_YOURS",
+          "value": 1,
+          "description": "Discard 1 Energy from your Pokémon"
+        },
+        {
+          "effectType": "REMOVE_ENERGY",
+          "target": "ALL_OPPONENTS",
+          "value": 2,
+          "description": "Remove up to 2 Energy from opponent's Pokémon"
+        }
+      ]
     },
     {
       "name": "Defender",
@@ -2304,7 +2383,20 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Attach Defender to 1 of your Pokémon. At the end of your opponent's next turn, discard Defender. Damage done to that Pokémon by attacks is reduced by 20 (after applying Weakness and Resistance).",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/82.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/82.png",
+      "trainerEffects": [
+        {
+          "effectType": "ATTACH_TO_POKEMON",
+          "target": "ALL_YOURS",
+          "description": "Attach to your Pokémon"
+        },
+        {
+          "effectType": "REDUCE_DAMAGE",
+          "target": "SELF",
+          "value": 20,
+          "description": "Reduce damage taken by 20"
+        }
+      ]
     },
     {
       "name": "Energy Retrieval",
@@ -2314,7 +2406,22 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Trade 1 of the other cards in your hand for up to 2 basic Energy cards from your discard pile.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/83.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/83.png",
+      "trainerEffects": [
+        {
+          "effectType": "DISCARD_HAND",
+          "target": "SELF",
+          "value": 1,
+          "description": "Discard 1 card from hand"
+        },
+        {
+          "effectType": "RETRIEVE_ENERGY",
+          "target": "SELF",
+          "value": 2,
+          "cardType": "Energy",
+          "description": "Get up to 2 basic Energy from discard"
+        }
+      ]
     },
     {
       "name": "Full Heal",
@@ -2324,7 +2431,14 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Your Active Pokémon is no longer Asleep, Confused, Paralyzed, or Poisoned.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/84.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/84.png",
+      "trainerEffects": [
+        {
+          "effectType": "CURE_STATUS",
+          "target": "ACTIVE_YOURS",
+          "description": "Remove all status conditions from Active Pokémon"
+        }
+      ]
     },
     {
       "name": "Maintenance",
@@ -2334,7 +2448,21 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Shuffle 2 of the other cards from your hand into your deck in order to play this card. Then draw a card.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/85.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/85.png",
+      "trainerEffects": [
+        {
+          "effectType": "DISCARD_HAND",
+          "target": "SELF",
+          "value": 2,
+          "description": "Shuffle 2 cards into deck"
+        },
+        {
+          "effectType": "DRAW_CARDS",
+          "target": "SELF",
+          "value": 1,
+          "description": "Draw 1 card"
+        }
+      ]
     },
     {
       "name": "PlusPower",
@@ -2344,7 +2472,20 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Attach PlusPower to 1 of your Pokémon. At the end of your turn, discard PlusPower. If this Pokémon's attack does damage to the Defending Pokémon (after applying Weakness and Resistance), the attack does 10 more damage to the Defending Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/86.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/86.png",
+      "trainerEffects": [
+        {
+          "effectType": "ATTACH_TO_POKEMON",
+          "target": "ALL_YOURS",
+          "description": "Attach to your Pokémon"
+        },
+        {
+          "effectType": "INCREASE_DAMAGE",
+          "target": "SELF",
+          "value": 10,
+          "description": "Increase damage by 10"
+        }
+      ]
     },
     {
       "name": "Pokédex",
@@ -2354,7 +2495,15 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Look at up to 5 cards from the top of your deck and rearrange them as you like.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/87.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/87.png",
+      "trainerEffects": [
+        {
+          "effectType": "LOOK_AT_DECK",
+          "target": "SELF",
+          "value": 5,
+          "description": "Look at top 5 cards and rearrange"
+        }
+      ]
     },
     {
       "name": "Pokémon Center",
@@ -2364,7 +2513,20 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Remove all damage counters from all of your own Pokémon with damage counters on them, then discard all Energy cards attached to those Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/88.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/88.png",
+      "trainerEffects": [
+        {
+          "effectType": "HEAL",
+          "target": "ALL_YOURS",
+          "value": 999,
+          "description": "Remove all damage from your Pokémon"
+        },
+        {
+          "effectType": "DISCARD_ENERGY",
+          "target": "ALL_YOURS",
+          "description": "Discard all Energy from healed Pokémon"
+        }
+      ]
     },
     {
       "name": "Pokémon Flute",
@@ -2374,7 +2536,16 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Choose a Basic Pokémon card from your opponent's discard pile and put it onto his or her Bench. (You can't use this card if your opponent's Bench is full.)",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/89.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/89.png",
+      "trainerEffects": [
+        {
+          "effectType": "PUT_INTO_PLAY",
+          "target": "BENCHED_OPPONENTS",
+          "value": 1,
+          "cardType": "Basic Pokemon",
+          "description": "Put Basic Pokémon from opponent's discard onto their Bench"
+        }
+      ]
     },
     {
       "name": "Potion",
@@ -2384,7 +2555,15 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Remove up to 2 damage counters from 1 of your Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/90.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/90.png",
+      "trainerEffects": [
+        {
+          "effectType": "HEAL",
+          "target": "ALL_YOURS",
+          "value": 20,
+          "description": "Remove up to 2 damage counters (20 HP)"
+        }
+      ]
     },
     {
       "name": "Super Potion",
@@ -2394,7 +2573,21 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Discard 1 Energy card attached to 1 of your own Pokémon in order to play this card. Remove up to 4 damage counters from that Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/91.png"
+      "imageUrl": "https://www.pikawiz.com/images/baseset/91.png",
+      "trainerEffects": [
+        {
+          "effectType": "DISCARD_ENERGY",
+          "target": "ALL_YOURS",
+          "value": 1,
+          "description": "Discard 1 Energy from your Pokémon"
+        },
+        {
+          "effectType": "HEAL",
+          "target": "ALL_YOURS",
+          "value": 40,
+          "description": "Remove up to 4 damage counters (40 HP)"
+        }
+      ]
     },
     {
       "name": "Bill",
