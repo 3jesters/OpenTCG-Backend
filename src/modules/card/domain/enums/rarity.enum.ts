@@ -1,0 +1,11 @@
+export enum Rarity {
+  COMMON = 'COMMON',
+  UNCOMMON = 'UNCOMMON',
+  RARE = 'RARE',
+  HOLO_RARE = 'HOLO_RARE',
+  RARE_HOLO = 'RARE_HOLO',
+  ULTRA_RARE = 'ULTRA_RARE',
+  SECRET_RARE = 'SECRET_RARE',
+  PROMO = 'PROMO',
+}
+
