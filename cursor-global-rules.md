@@ -16,7 +16,7 @@ When helping with NestJS projects:
 11. Repository interfaces in domain layer, implementations in infrastructure layer
 12. Update module docs/ folder only when business logic changes
 13. Suggest meaningful variable and function names
-14. Mock repository interfaces in unit tests (no real database in unit tests)
+14. **CRITICAL:** Mock ONLY external dependencies (repositories, APIs, file system) - NEVER mock business logic being tested (entities, use cases, validators, domain services)
 
 ## Test-Driven Development (TDD)
 
@@ -40,6 +40,99 @@ When helping with NestJS projects:
 - E2E tests: Test complete user flows with real HTTP requests
 - Use factories or builders for test data creation
 - Keep tests independent (no shared state)
+
+### CRITICAL: What to Mock vs What NOT to Mock
+
+**✅ ALWAYS MOCK (External Dependencies):**
+- Repository interfaces (IUserRepository, ICardCache, etc.)
+- External APIs and services
+- File system access
+- Database connections
+- HTTP clients
+- Email services
+- Third-party integrations
+- ConfigService (when testing business logic)
+
+**❌ NEVER MOCK (Business Logic):**
+- Domain entities (User, Card, etc.)
+- Value objects (Attack, Ability, Weakness, etc.)
+- Domain services (validators, domain logic)
+- Use cases (application logic)
+- Business logic methods on the class you're testing
+
+**WHY:** You must test the REAL business logic to ensure it works correctly. Mocking business logic defeats the purpose of testing - you'd be testing mocks, not your actual code.
+
+**Example - CORRECT:**
+```typescript
+describe('GetCardByIdUseCase', () => {
+  let useCase: GetCardByIdUseCase;
+  let mockCardCache: jest.Mocked<ICardCache>; // ✅ Mock external dependency
+
+  beforeEach(() => {
+    mockCardCache = {
+      getCard: jest.fn(),
+      // ... other methods
+    };
+    useCase = new GetCardByIdUseCase(mockCardCache); // ✅ Test REAL use case
+  });
+
+  it('should throw NotFoundException when card does not exist', async () => {
+    mockCardCache.getCard.mockReturnValue(null); // ✅ Mock returns data
+    
+    // ✅ Testing REAL business logic in use case
+    await expect(useCase.execute('non-existent-id')).rejects.toThrow(
+      NotFoundException
+    );
+  });
+});
+```
+
+**Example - INCORRECT:**
+```typescript
+describe('GetCardByIdUseCase', () => {
+  let useCase: GetCardByIdUseCase;
+  
+  beforeEach(() => {
+    useCase = {
+      execute: jest.fn(), // ❌ WRONG: Mocking the business logic itself!
+    } as any;
+  });
+
+  it('should throw NotFoundException', async () => {
+    useCase.execute.mockRejectedValue(new NotFoundException());
+    
+    // ❌ WRONG: Testing the mock, not real business logic
+    await expect(useCase.execute('id')).rejects.toThrow();
+  });
+});
+```
+
+**Domain Entity Example - CORRECT:**
+```typescript
+describe('Card Entity', () => {
+  it('should validate HP is positive', () => {
+    const card = new Card(...); // ✅ Real entity instance
+    
+    // ✅ Testing REAL validation logic
+    expect(() => card.setHp(-10)).toThrow('HP must be positive');
+  });
+});
+```
+
+**Domain Service Example - CORRECT:**
+```typescript
+describe('AbilityEffectValidator', () => {
+  it('should validate heal amount', () => {
+    // ✅ Testing REAL validator logic
+    expect(() => {
+      AbilityEffectValidator.validate({
+        effectType: AbilityEffectType.HEAL,
+        amount: 0
+      });
+    }).toThrow('Heal amount must be at least 1');
+  });
+});
+```
 
 ### Test Example Structure
 ```typescript
