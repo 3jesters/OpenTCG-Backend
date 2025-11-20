@@ -1,0 +1,96 @@
+{
+  "id": "classic-water-starter-deck",
+  "name": "Classic Water Starter Deck",
+  "createdBy": "system",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2025-11-20T19:38:35.537Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-squirtle--65",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-wartortle--44",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-blastoise--2",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-poliwag--59",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-poliwhirl--40",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-poliwrath--13",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-seel--43",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-starmie--66",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-magikarp--55",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--91",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-removal--92",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--93",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--94",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--95",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--81",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pok-mon-breeder--78",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-water-energy--103",
+      "setName": "base-set",
+      "quantity": 23
+    }
+  ]
+}

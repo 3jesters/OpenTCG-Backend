@@ -1,0 +1,86 @@
+{
+  "id": "classic-fire-starter-deck",
+  "name": "Classic Fire Starter Deck",
+  "createdBy": "system",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2025-11-20T19:38:35.394Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-charmander--46",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-charmeleon--24",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-charizard--4",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-ponyta--60",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-magmar--36",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-vulpix--67",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-growlithe--28",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--91",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-removal--92",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--93",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--94",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--95",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--81",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pok-mon-breeder--78",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-fire-energy--99",
+      "setName": "base-set",
+      "quantity": 27
+    }
+  ]
+}

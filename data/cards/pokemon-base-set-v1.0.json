@@ -7,7 +7,8 @@
     "dateReleased": "1999-01-09",
     "description": "Pokemon Trading Card Game Base Set - Complete Set with Structured Effects",
     "series": "pokemon",
-    "totalCards": 102
+    "totalCards": 102,
+    "logoUrl": "https://www.pikawiz.com/images/logos/base1-logo.png"
   },
   "cards": [
     {

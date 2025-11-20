@@ -17,6 +17,12 @@ export interface IFileReader {
    * @returns True if file exists, false otherwise
    */
   fileExists(filename: string): Promise<boolean>;
+
+  /**
+   * List all card JSON files in the data directory
+   * @returns Array of filenames
+   */
+  listCardFiles(): Promise<string[]>;
 }
 
 // Symbol for dependency injection

@@ -7,7 +7,8 @@
     "dateReleased": "1999-10-10",
     "description": "Pokemon Trading Card Game Fossil Set - Complete 62 Card Set",
     "series": "pokemon",
-    "totalCards": 62
+    "totalCards": 62,
+    "logoUrl": "https://www.pikawiz.com/images/logos/base3-logo.png"
   },
   "cards": [
     {

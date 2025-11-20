@@ -63,5 +63,9 @@ export class CardFileMetadataDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
 }
 

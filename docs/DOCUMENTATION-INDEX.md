@@ -13,10 +13,10 @@ This project contains comprehensive documentation for both the **backend API** a
 ## 🔧 Backend Documentation
 
 ### [API.md](./API.md)
-**Complete REST API reference for the OpenTCG Backend**
+**Complete REST API reference for the OpenTCG Backend (Card API)**
 
 **Contains:**
-- All 5 API endpoints with examples
+- All 5 Card API endpoints with examples
 - Request/response formats
 - Data structures and enums
 - Error handling
@@ -24,15 +24,45 @@ This project contains comprehensive documentation for both the **backend API** a
 - Example workflows
 
 **Use this when:**
-- Implementing API calls in the frontend
-- Testing API endpoints
-- Understanding backend capabilities
-- Debugging API issues
+- Implementing Card API calls in the frontend
+- Testing Card API endpoints
+- Understanding card data structures
+- Debugging Card API issues
 
 **Quick Example:**
 ```bash
 # Search for Pikachu cards
 curl "http://localhost:3000/api/v1/cards/search?query=pikachu"
+```
+
+---
+
+### [DECK-API.md](./DECK-API.md)
+**Complete REST API reference for Deck Management**
+
+**Contains:**
+- All 6 Deck API endpoints with examples
+- Deck CRUD operations
+- Deck validation endpoints
+- Request/response formats
+- TypeScript interfaces
+- Frontend integration examples (React, Vue)
+- Error handling
+- UI/UX recommendations
+
+**Use this when:**
+- Implementing deck management features
+- Building deck builder interfaces
+- Validating decks against tournaments
+- Understanding deck data structures
+- Integrating deck APIs in frontend
+
+**Quick Example:**
+```bash
+# Create a new deck
+curl -X POST http://localhost:3000/api/v1/decks \
+  -H "Content-Type: application/json" \
+  -d '{"name":"My Deck","createdBy":"player-1","cards":[]}'
 ```
 
 ---
@@ -131,7 +161,8 @@ curl "http://localhost:3000/api/v1/cards/search?query=pikachu"
 
 | Document | Purpose | Size | Best For |
 |----------|---------|------|----------|
-| **API.md** | Backend API reference | Large | API integration, testing |
+| **API.md** | Card API reference | Large | Card API integration, testing |
+| **DECK-API.md** | Deck API reference | Large | Deck API integration, deck builder |
 | **FRONTEND-APP.md** | Complete frontend guide | Large | Architecture, planning |
 | **FRONTEND-QUICK-REFERENCE.md** | Developer cheat sheet | Small | Quick lookups, active dev |
 | **FRONTEND-COMPONENT-GUIDE.md** | UI component guide | Medium | Building components, design |
@@ -171,7 +202,7 @@ curl "http://localhost:3000/api/v1/cards/search?query=pikachu"
 
 ## 🗂️ What Each Document Covers
 
-### API Endpoints (in API.md)
+### Card API Endpoints (in API.md)
 ```
 1. POST   /api/v1/cards/load                    - Load card sets
 2. GET    /api/v1/cards/sets                    - List available sets
@@ -180,17 +211,30 @@ curl "http://localhost:3000/api/v1/cards/search?query=pikachu"
 5. GET    /api/v1/cards/:cardId                 - Get card details
 ```
 
+### Deck API Endpoints (in DECK-API.md)
+```
+1. POST   /api/v1/decks                         - Create deck
+2. GET    /api/v1/decks                         - List all decks
+3. GET    /api/v1/decks/:id                     - Get deck by ID
+4. PUT    /api/v1/decks/:id                     - Update deck
+5. DELETE /api/v1/decks/:id                     - Delete deck
+6. POST   /api/v1/decks/:id/validate            - Validate deck
+```
+
 ### Core Entities (in all frontend docs)
 ```
 1. CardSummary    - Lightweight card for grids/lists
 2. CardDetail     - Full card information
 3. CardSet        - Card set metadata
-4. Ability        - Pokemon ability
-5. Attack         - Pokemon attack
-6. Weakness       - Type weakness
-7. Resistance     - Type resistance
-8. SearchFilters  - Search parameters
-9. Enums          - CardType, PokemonType, Rarity, etc.
+4. Deck           - Player deck with cards
+5. DeckCard       - Card in deck with quantity
+6. ValidationResult - Deck validation result
+7. Ability        - Pokemon ability
+8. Attack         - Pokemon attack
+9. Weakness       - Type weakness
+10. Resistance     - Type resistance
+11. SearchFilters  - Search parameters
+12. Enums          - CardType, PokemonType, Rarity, etc.
 ```
 
 ### UI Components (in FRONTEND-COMPONENT-GUIDE.md)
@@ -260,8 +304,11 @@ curl "http://localhost:3000/api/v1/cards/search?query=pikachu"
 - **9 enums** for types, rarity, stages, etc.
 
 ### The APIs
-- **5 REST endpoints** for all operations
-- **Base URL:** `http://localhost:3000/api/v1/cards`
+- **5 Card REST endpoints** for card operations
+- **6 Deck REST endpoints** for deck management
+- **Base URLs:** 
+  - Cards: `http://localhost:3000/api/v1/cards`
+  - Decks: `http://localhost:3000/api/v1/decks`
 - **No authentication** currently required
 - **JSON responses** with standard error format
 
@@ -282,8 +329,10 @@ curl "http://localhost:3000/api/v1/cards/search?query=pikachu"
 
 | Topic | Look in |
 |-------|---------|
-| API endpoints | API.md |
+| Card API endpoints | API.md |
+| Deck API endpoints | DECK-API.md |
 | Entity structures | FRONTEND-APP.md or FRONTEND-QUICK-REFERENCE.md |
+| Deck entities | DECK-API.md |
 | Component code | FRONTEND-COMPONENT-GUIDE.md |
 | User flows | FRONTEND-APP.md |
 | Colors & styling | FRONTEND-QUICK-REFERENCE.md or FRONTEND-COMPONENT-GUIDE.md |

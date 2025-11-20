@@ -75,6 +75,14 @@ The **OpenTCG Frontend** is a web application that provides an interactive user 
 - Energy cost visualization
 - Attack/ability formatting
 
+#### 6. Deck Management
+- Create and edit decks
+- Add/remove cards with quantity controls
+- Deck validation against tournament rules
+- Deck list with filtering by tournament
+- Visual deck builder interface
+- Real-time card count and validation status
+
 ---
 
 ## Entities & Data Models
@@ -263,7 +271,58 @@ interface Resistance {
 
 ---
 
-### 8. Search Filters
+### 8. Deck
+
+Represents a player's deck of cards.
+
+```typescript
+interface Deck {
+  id: string;                    // UUID
+  name: string;                  // Deck name
+  createdBy: string;             // Creator identifier
+  createdAt: string;              // ISO 8601 date string
+  updatedAt: string;              // ISO 8601 date string
+  tournamentId?: string;          // Optional tournament ID
+  isValid: boolean;               // Validation status
+  cards: DeckCard[];              // Array of cards in deck
+  totalCards: number;             // Total card count (sum of quantities)
+}
+
+interface DeckCard {
+  cardId: string;                 // Card identifier
+  setName: string;                // Set name
+  quantity: number;               // Number of copies (minimum 1)
+}
+```
+
+**UI Usage:**
+- Deck list view
+- Deck builder interface
+- Deck detail view
+- Validation status display
+
+---
+
+### 9. Deck Validation Result
+
+Result of validating a deck against tournament rules.
+
+```typescript
+interface ValidationResult {
+  isValid: boolean;              // Whether deck passes validation
+  errors: string[];              // Array of error messages
+  warnings: string[];            // Array of warning messages
+}
+```
+
+**UI Usage:**
+- Validation feedback display
+- Error/warning lists
+- Inline validation indicators
+
+---
+
+### 10. Search Filters
 
 Search and filter parameters.
 
@@ -1287,5 +1346,7 @@ The architecture follows modern best practices with TypeScript, React, and clean
 
 ---
 
-**For Backend API Details:** See [/docs/API.md](/docs/API.md)
+**For Backend API Details:**
+- [Card API Documentation](./API.md)
+- [Deck API Documentation](./DECK-API.md)
 

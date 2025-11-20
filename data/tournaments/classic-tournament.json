@@ -1,0 +1,32 @@
+{
+  "id": "classic-tournament",
+  "name": "Classic Tournament",
+  "version": "1.0",
+  "description": "A classic tournament using only the original Pokemon TCG sets (Base Set, Jungle, Fossil) with some card restrictions.",
+  "author": "system",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "official": true,
+  "status": "ACTIVE",
+  "bannedSets": [],
+  "setBannedCards": {
+    "base-set": [],
+    "jungle": [],
+    "fossil": []
+  },
+  "deckRules": {
+    "minDeckSize": 60,
+    "maxDeckSize": 60,
+    "exactDeckSize": true,
+    "maxCopiesPerCard": 4,
+    "minBasicPokemon": 1,
+    "restrictedCards": []
+  },
+  "savedDecks": [],
+  "startDate": "2024-06-01T00:00:00.000Z",
+  "endDate": "2024-12-31T23:59:59.999Z",
+  "maxParticipants": 64,
+  "format": "Classic",
+  "regulationMarks": ["A", "B"]
+}
+

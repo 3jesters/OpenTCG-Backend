@@ -1,0 +1,25 @@
+{
+  "id": "default-tournament",
+  "name": "Default Tournament",
+  "version": "1.0",
+  "description": "Default tournament configuration with standard Pokemon TCG rules. All sets are allowed, standard deck construction rules apply.",
+  "author": "system",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "official": true,
+  "status": "ACTIVE",
+  "bannedSets": [],
+  "setBannedCards": {},
+  "deckRules": {
+    "minDeckSize": 60,
+    "maxDeckSize": 60,
+    "exactDeckSize": true,
+    "maxCopiesPerCard": 4,
+    "minBasicPokemon": 1,
+    "restrictedCards": []
+  },
+  "savedDecks": [],
+  "format": "Standard",
+  "regulationMarks": []
+}
+

@@ -7,7 +7,8 @@
     "dateReleased": "1999-06-16",
     "description": "Pokemon Trading Card Game Jungle Set - Complete 64 Card Set",
     "series": "pokemon",
-    "totalCards": 64
+    "totalCards": 64,
+    "logoUrl": "https://www.pikawiz.com/images/logos/base2-logo.png"
   },
   "cards": [
     {
@@ -214,7 +215,7 @@
       "attacks": [
         {
           "name": "Boyfriends",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": ["COLORLESS", "COLORLESS"],
           "damage": "20+",
           "text": "If Nidoking is on your Bench, this attack does 20 damage plus 20 more damage. If there is no Nidoking on your Bench, this attack does 20 damage."
         },
@@ -725,7 +726,7 @@
       "attacks": [
         {
           "name": "Boyfriends",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": ["COLORLESS", "COLORLESS"],
           "damage": "20+",
           "text": "If Nidoking is on your Bench, this attack does 20 damage plus 20 more damage. If there is no Nidoking on your Bench, this attack does 20 damage."
         },

@@ -57,9 +57,10 @@ export class SetSummaryDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Timestamp when the set was loaded into memory',
-    example: '2025-11-19T10:30:00.000Z',
+    description: 'URL to the set logo image',
+    example: 'https://www.pikawiz.com/images/logos/base1-logo.png',
+    required: false,
   })
-  loadedAt: Date;
+  logoUrl?: string;
 }
 

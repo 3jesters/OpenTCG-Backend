@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { readFile, access } from 'fs/promises';
+import { readFile, access, readdir } from 'fs/promises';
 import { join } from 'path';
 import { IFileReader } from '../../domain/ports/file-reader.interface';
 
@@ -39,6 +39,19 @@ export class FileReaderService implements IFileReader {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  async listCardFiles(): Promise<string[]> {
+    try {
+      const files = await readdir(this.dataDirectory);
+      // Filter for JSON files only
+      return files.filter((file) => file.endsWith('.json'));
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        throw new Error(`Data directory not found: ${this.dataDirectory}`);
+      }
+      throw error;
     }
   }
 }
