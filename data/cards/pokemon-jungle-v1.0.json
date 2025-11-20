@@ -1,0 +1,2074 @@
+{
+  "metadata": {
+    "author": "pokemon",
+    "setName": "jungle",
+    "version": "1.0",
+    "official": true,
+    "dateReleased": "1999-06-16",
+    "description": "Pokemon Trading Card Game Jungle Set - Complete 64 Card Set",
+    "series": "pokemon",
+    "totalCards": 64
+  },
+  "cards": [
+    {
+      "name": "Clefable",
+      "cardNumber": "1",
+      "pokemonNumber": "036",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Clefairy",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Metronome",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "Choose 1 of the Defending Pokémon's attacks. Metronome copies that attack except for its Energy costs. (You must still do anything else required for that attack.)"
+        },
+        {
+          "name": "Minimize",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "0",
+          "text": "All damage done to Clefable during your opponent's next turn is reduced by 20 (after applying Weakness and Resistance)."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 2,
+      "artist": "Ken Sugimori",
+      "description": "A timid fairy Pokémon that is rarely seen. It will run and hide the moment it senses people.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/1.png"
+    },
+    {
+      "name": "Electrode",
+      "cardNumber": "2",
+      "pokemonNumber": "101",
+      "hp": 80,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Voltorb",
+      "pokemonType": "ELECTRIC",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Tackle",
+          "energyCost": ["COLORLESS"],
+          "damage": "10",
+          "text": "Tackle does 10 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Chain Lightning",
+          "energyCost": ["ELECTRIC", "ELECTRIC", "ELECTRIC"],
+          "damage": "20",
+          "text": "If your opponent has any Benched Pokémon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Pokémon.)"
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "It stores electric energy under very high pressure. It often explodes with little or no provocation.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/2.png"
+    },
+    {
+      "name": "Flareon",
+      "cardNumber": "3",
+      "pokemonNumber": "136",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Eevee",
+      "pokemonType": "FIRE",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Quick Attack",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "10+",
+          "text": "Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage."
+        },
+        {
+          "name": "Flamethrower",
+          "energyCost": ["FIRE", "FIRE", "COLORLESS"],
+          "damage": "60",
+          "text": "Discard 1 Fire Energy card attached to Flareon in order to use this attack."
+        }
+      ],
+      "weakness": {
+        "type": "WATER",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "When storing thermal energy in its body, its temperature could soar to over 1600 degrees.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/3.png"
+    },
+    {
+      "name": "Jolteon",
+      "cardNumber": "4",
+      "pokemonNumber": "135",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Eevee",
+      "pokemonType": "ELECTRIC",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Quick Attack",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "10+",
+          "text": "Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage."
+        },
+        {
+          "name": "Pin Missile",
+          "energyCost": ["ELECTRIC", "ELECTRIC", "COLORLESS"],
+          "damage": "20×",
+          "text": "Flip 4 coins. This attack does 20 damage times the number of heads."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "It accumulates negative ions in the atmosphere to blast out 10000-volt lightning bolts.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/4.png"
+    },
+    {
+      "name": "Kangaskhan",
+      "cardNumber": "5",
+      "pokemonNumber": "115",
+      "hp": 90,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Fetch",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "Draw a card."
+        },
+        {
+          "name": "Comet Punch",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "20×",
+          "text": "Flip 4 coins. This attack does 20 damage times the number of heads."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 3,
+      "artist": "Ken Sugimori",
+      "description": "The infant rarely ventures out of its mother's protective pouch until it is 3 years old.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/5.png"
+    },
+    {
+      "name": "Mr. Mime",
+      "cardNumber": "6",
+      "pokemonNumber": "122",
+      "hp": 40,
+      "stage": "BASIC",
+      "pokemonType": "PSYCHIC",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Meditate",
+          "energyCost": ["PSYCHIC", "COLORLESS"],
+          "damage": "10+",
+          "text": "Does 10 damage plus 10 more damage for each damage counter on the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Keiji Kinebuchi",
+      "description": "If interrupted while it is miming, it will slap around the offender with its broad hands.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/6.png"
+    },
+    {
+      "name": "Nidoqueen",
+      "cardNumber": "7",
+      "pokemonNumber": "031",
+      "hp": 90,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Nidorina",
+      "pokemonType": "GRASS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Boyfriends",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "20+",
+          "text": "If Nidoking is on your Bench, this attack does 20 damage plus 20 more damage. If there is no Nidoking on your Bench, this attack does 20 damage."
+        },
+        {
+          "name": "Mega Punch",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS", "COLORLESS"],
+          "damage": "50",
+          "text": "Mega Punch does 50 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 3,
+      "artist": "Ken Sugimori",
+      "description": "Its hard scales provide strong protection. It uses its hefty bulk to execute powerful moves.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/7.png"
+    },
+    {
+      "name": "Pidgeot",
+      "cardNumber": "8",
+      "pokemonNumber": "018",
+      "hp": 80,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Pidgeotto",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Wing Attack",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "20",
+          "text": "Wing Attack does 20 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Hurricane",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "30",
+          "text": "Unless this attack Knocks Out the Defending Pokémon, return the Defending Pokémon and all cards attached to it to your opponent's hand."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Ken Sugimori",
+      "description": "When hunting, it skims the surface of water at high speed to pick off unwary prey such as Magikarp.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/8.png"
+    },
+    {
+      "name": "Pinsir",
+      "cardNumber": "9",
+      "pokemonNumber": "127",
+      "hp": 60,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Irongrip",
+          "energyCost": ["GRASS", "GRASS"],
+          "damage": "20",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
+        },
+        {
+          "name": "Guillotine",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS", "COLORLESS"],
+          "damage": "50",
+          "text": "Guillotine does 50 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "If it fails to crush the victim in its pincers, it will swing it around and toss it hard.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/9.png"
+    },
+    {
+      "name": "Scyther",
+      "cardNumber": "10",
+      "pokemonNumber": "123",
+      "hp": 70,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Swords Dance",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "During your next turn, Scyther's Slash attack's base damage is 60 instead of 30."
+        },
+        {
+          "name": "Slash",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "damage": "30",
+          "text": "Slash does 30 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Mitsuhiro Arita",
+      "description": "With ninja-like agility and speed, it can create the illusion that there is more than one.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/10.png"
+    },
+    {
+      "name": "Snorlax",
+      "cardNumber": "11",
+      "pokemonNumber": "143",
+      "hp": 90,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Body Slam",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "30",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 4,
+      "artist": "Ken Sugimori",
+      "description": "Very lazy. Just eats and sleeps. As its rotund bulk builds, it becomes steadily more slothful.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/11.png"
+    },
+    {
+      "name": "Vaporeon",
+      "cardNumber": "12",
+      "pokemonNumber": "134",
+      "hp": 80,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Eevee",
+      "pokemonType": "WATER",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Quick Attack",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "10+",
+          "text": "Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage."
+        },
+        {
+          "name": "Water Gun",
+          "energyCost": ["WATER", "WATER", "COLORLESS"],
+          "damage": "30+",
+          "text": "Does 30 damage plus 10 more damage for each Water Energy attached to Vaporeon but not used to pay for this attack's Energy cost."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "Lives close to water. Its long tail is ridged with a fin which is often mistaken for a mermaid's.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/12.png"
+    },
+    {
+      "name": "Venomoth",
+      "cardNumber": "13",
+      "pokemonNumber": "049",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Venonat",
+      "pokemonType": "GRASS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Venom Powder",
+          "energyCost": ["GRASS", "GRASS"],
+          "damage": "10",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Confused and Poisoned."
+        },
+        {
+          "name": "Psychic",
+          "energyCost": ["GRASS", "GRASS", "GRASS"],
+          "damage": "10+",
+          "text": "Does 10 damage plus 10 more damage for each Energy card attached to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Ken Sugimori",
+      "description": "The dust-like scales covering its wings are color coded to indicate the kinds of poison it has.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/13.png"
+    },
+    {
+      "name": "Victreebel",
+      "cardNumber": "14",
+      "pokemonNumber": "071",
+      "hp": 80,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Weepinbell",
+      "pokemonType": "GRASS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Lure",
+          "energyCost": ["GRASS"],
+          "damage": "0",
+          "text": "Switch 1 of your opponent's Benched Pokémon with the Defending Pokémon."
+        },
+        {
+          "name": "Acid",
+          "energyCost": ["GRASS", "GRASS", "GRASS"],
+          "damage": "40",
+          "text": "Flip a coin. If heads, the Defending Pokémon can't retreat during your opponent's next turn."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 2,
+      "artist": "Ken Sugimori",
+      "description": "Said to live in huge colonies deep in jungles, although no one has ever returned from there.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/14.png"
+    },
+    {
+      "name": "Vileplume",
+      "cardNumber": "15",
+      "pokemonNumber": "045",
+      "hp": 80,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Gloom",
+      "pokemonType": "GRASS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Petal Dance",
+          "energyCost": ["GRASS", "GRASS", "GRASS"],
+          "damage": "40×",
+          "text": "Flip 3 coins. This attack does 40 damage times the number of heads. Vileplume is now Confused (after doing damage)."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 2,
+      "artist": "Ken Sugimori",
+      "description": "The larger its petals, the more toxic pollen it contains. Its big head is heavy and hard to hold up.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/15.png"
+    },
+    {
+      "name": "Wigglytuff",
+      "cardNumber": "16",
+      "pokemonNumber": "040",
+      "hp": 80,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Jigglypuff",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE_HOLO",
+      "attacks": [
+        {
+          "name": "Lullaby",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "The Defending Pokémon is now Asleep."
+        },
+        {
+          "name": "Do the Wave",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "10+",
+          "text": "Does 10 damage plus 10 more damage for each of your Benched Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 2,
+      "artist": "Ken Sugimori",
+      "description": "The body is soft and rubbery. When angered, it will suck in air and inflate itself to an enormous size.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/16.png"
+    },
+    {
+      "name": "Clefable",
+      "cardNumber": "17",
+      "pokemonNumber": "036",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Clefairy",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Metronome",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "Choose 1 of the Defending Pokémon's attacks. Metronome copies that attack except for its Energy costs. (You must still do anything else required for that attack.)"
+        },
+        {
+          "name": "Minimize",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "0",
+          "text": "All damage done to Clefable during your opponent's next turn is reduced by 20 (after applying Weakness and Resistance)."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 2,
+      "artist": "Kagemaru Himeno",
+      "description": "A timid fairy Pokémon that is rarely seen. It will run and hide the moment it senses people.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/17.png"
+    },
+    {
+      "name": "Electrode",
+      "cardNumber": "18",
+      "pokemonNumber": "101",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Voltorb",
+      "pokemonType": "ELECTRIC",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Electric Shock",
+          "energyCost": ["ELECTRIC", "ELECTRIC"],
+          "damage": "50",
+          "text": "Flip a coin. If tails, Electrode does 10 damage to itself."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "It stores electric energy under very high pressure. It often explodes with little or no provocation.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/18.png"
+    },
+    {
+      "name": "Flareon",
+      "cardNumber": "19",
+      "pokemonNumber": "136",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Eevee",
+      "pokemonType": "FIRE",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Flare",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "20",
+          "text": "Flare does 20 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Dive Bomb",
+          "energyCost": ["FIRE", "FIRE", "FIRE"],
+          "damage": "80",
+          "text": "Flip a coin. If tails, this attack does nothing."
+        }
+      ],
+      "weakness": {
+        "type": "WATER",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "When storing thermal energy in its body, its temperature could soar to over 1600 degrees.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/19.png"
+    },
+    {
+      "name": "Jolteon",
+      "cardNumber": "20",
+      "pokemonNumber": "135",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Eevee",
+      "pokemonType": "ELECTRIC",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Double Kick",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "20×",
+          "text": "Flip 2 coins. This attack does 20 damage times the number of heads."
+        },
+        {
+          "name": "Thundershock",
+          "energyCost": ["ELECTRIC", "ELECTRIC", "COLORLESS"],
+          "damage": "30",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "It accumulates negative ions in the atmosphere to blast out 10000-volt lightning bolts.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/20.png"
+    },
+    {
+      "name": "Kangaskhan",
+      "cardNumber": "21",
+      "pokemonNumber": "115",
+      "hp": 90,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Fetch",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "Draw a card."
+        },
+        {
+          "name": "Comet Punch",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "20×",
+          "text": "Flip 4 coins. This attack does 20 damage times the number of heads."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 3,
+      "artist": "Kagemaru Himeno",
+      "description": "The infant rarely ventures out of its mother's protective pouch until it is 3 years old.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/21.png"
+    },
+    {
+      "name": "Mr. Mime",
+      "cardNumber": "22",
+      "pokemonNumber": "122",
+      "hp": 40,
+      "stage": "BASIC",
+      "pokemonType": "PSYCHIC",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Meditate",
+          "energyCost": ["PSYCHIC", "COLORLESS"],
+          "damage": "10+",
+          "text": "Does 10 damage plus 10 more damage for each damage counter on the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "If interrupted while it is miming, it will slap around the offender with its broad hands.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/22.png"
+    },
+    {
+      "name": "Nidoqueen",
+      "cardNumber": "23",
+      "pokemonNumber": "031",
+      "hp": 90,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Nidorina",
+      "pokemonType": "GRASS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Boyfriends",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "20+",
+          "text": "If Nidoking is on your Bench, this attack does 20 damage plus 20 more damage. If there is no Nidoking on your Bench, this attack does 20 damage."
+        },
+        {
+          "name": "Mega Punch",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS", "COLORLESS"],
+          "damage": "50",
+          "text": "Mega Punch does 50 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 3,
+      "artist": "Ken Sugimori",
+      "description": "Its hard scales provide strong protection. It uses its hefty bulk to execute powerful moves.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/23.png"
+    },
+    {
+      "name": "Pidgeot",
+      "cardNumber": "24",
+      "pokemonNumber": "018",
+      "hp": 80,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Pidgeotto",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Wing Attack",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "20",
+          "text": "Wing Attack does 20 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Hurricane",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "30",
+          "text": "Unless this attack Knocks Out the Defending Pokémon, return the Defending Pokémon and all cards attached to it to your opponent's hand."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Kagemaru Himeno",
+      "description": "When hunting, it skims the surface of water at high speed to pick off unwary prey such as Magikarp.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/24.png"
+    },
+    {
+      "name": "Pinsir",
+      "cardNumber": "25",
+      "pokemonNumber": "127",
+      "hp": 60,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Irongrip",
+          "energyCost": ["GRASS", "GRASS"],
+          "damage": "20",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
+        },
+        {
+          "name": "Guillotine",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS", "COLORLESS"],
+          "damage": "50",
+          "text": "Guillotine does 50 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "If it fails to crush the victim in its pincers, it will swing it around and toss it hard.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/25.png"
+    },
+    {
+      "name": "Scyther",
+      "cardNumber": "26",
+      "pokemonNumber": "123",
+      "hp": 70,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Swords Dance",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "During your next turn, Scyther's Slash attack's base damage is 60 instead of 30."
+        },
+        {
+          "name": "Slash",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "damage": "30",
+          "text": "Slash does 30 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Ken Sugimori",
+      "description": "With ninja-like agility and speed, it can create the illusion that there is more than one.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/26.png"
+    },
+    {
+      "name": "Snorlax",
+      "cardNumber": "27",
+      "pokemonNumber": "143",
+      "hp": 90,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Body Slam",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "30",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 4,
+      "artist": "Ken Sugimori",
+      "description": "Very lazy. Just eats and sleeps. As its rotund bulk builds, it becomes steadily more slothful.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/27.png"
+    },
+    {
+      "name": "Vaporeon",
+      "cardNumber": "28",
+      "pokemonNumber": "134",
+      "hp": 60,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Eevee",
+      "pokemonType": "WATER",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Focus Energy",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "During your next turn, Vaporeon's Bite attack's base damage is 60 instead of 30."
+        },
+        {
+          "name": "Bite",
+          "energyCost": ["WATER", "WATER", "COLORLESS"],
+          "damage": "30",
+          "text": "Bite does 30 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "Lives close to water. Its long tail is ridged with a fin which is often mistaken for a mermaid's.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/28.png"
+    },
+    {
+      "name": "Venomoth",
+      "cardNumber": "29",
+      "pokemonNumber": "049",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Venonat",
+      "pokemonType": "GRASS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Venom Powder",
+          "energyCost": ["GRASS", "GRASS"],
+          "damage": "10",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Confused and Poisoned."
+        },
+        {
+          "name": "Psychic",
+          "energyCost": ["GRASS", "GRASS", "GRASS"],
+          "damage": "10+",
+          "text": "Does 10 damage plus 10 more damage for each Energy card attached to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Mitsuhiro Arita",
+      "description": "The dust-like scales covering its wings are color coded to indicate the kinds of poison it has.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/29.png"
+    },
+    {
+      "name": "Victreebel",
+      "cardNumber": "30",
+      "pokemonNumber": "071",
+      "hp": 80,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Weepinbell",
+      "pokemonType": "GRASS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Lure",
+          "energyCost": ["GRASS"],
+          "damage": "0",
+          "text": "Switch 1 of your opponent's Benched Pokémon with the Defending Pokémon."
+        },
+        {
+          "name": "Acid",
+          "energyCost": ["GRASS", "GRASS", "GRASS"],
+          "damage": "40",
+          "text": "Flip a coin. If heads, the Defending Pokémon can't retreat during your opponent's next turn."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 2,
+      "artist": "Ken Sugimori",
+      "description": "Said to live in huge colonies deep in jungles, although no one has ever returned from there.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/30.png"
+    },
+    {
+      "name": "Vileplume",
+      "cardNumber": "31",
+      "pokemonNumber": "045",
+      "hp": 80,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Gloom",
+      "pokemonType": "GRASS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Petal Dance",
+          "energyCost": ["GRASS", "GRASS", "GRASS"],
+          "damage": "40×",
+          "text": "Flip 3 coins. This attack does 40 damage times the number of heads. Vileplume is now Confused (after doing damage)."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 2,
+      "artist": "Mitsuhiro Arita",
+      "description": "The larger its petals, the more toxic pollen it contains. Its big head is heavy and hard to hold up.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/31.png"
+    },
+    {
+      "name": "Wigglytuff",
+      "cardNumber": "32",
+      "pokemonNumber": "040",
+      "hp": 80,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Jigglypuff",
+      "pokemonType": "COLORLESS",
+      "rarity": "RARE",
+      "attacks": [
+        {
+          "name": "Lullaby",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "The Defending Pokémon is now Asleep."
+        },
+        {
+          "name": "Do the Wave",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "10+",
+          "text": "Does 10 damage plus 10 more damage for each of your Benched Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 2,
+      "artist": "Mitsuhiro Arita",
+      "description": "The body is soft and rubbery. When angered, it will suck in air and inflate itself to an enormous size.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/32.png"
+    },
+    {
+      "name": "Butterfree",
+      "cardNumber": "33",
+      "pokemonNumber": "012",
+      "hp": 70,
+      "stage": "STAGE_2",
+      "evolvesFrom": "Metapod",
+      "pokemonType": "GRASS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Whirlwind",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "20",
+          "text": "If your opponent has any Benched Pokémon, he or she chooses 1 of them and switches it with the Defending Pokémon. (Do the damage before switching the Pokémon.)"
+        },
+        {
+          "name": "Mega Drain",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "damage": "40",
+          "text": "Remove a number of damage counters from Butterfree equal to half the damage done to the Defending Pokémon (after applying Weakness and Resistance) (rounded up to the nearest 10). If Butterfree has fewer damage counters than that, remove all of them."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Mitsuhiro Arita",
+      "description": "In battle, it flaps its wings at high speed to release highly toxic dust into the air.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/33.png"
+    },
+    {
+      "name": "Dodrio",
+      "cardNumber": "34",
+      "pokemonNumber": "085",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Doduo",
+      "pokemonType": "COLORLESS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Fury Attack",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "20×",
+          "text": "Flip 3 coins. This attack does 20 damage times the number of heads."
+        },
+        {
+          "name": "Rage",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "30+",
+          "text": "Does 30 damage plus 10 more damage for each damage counter on Dodrio."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Mitsuhiro Arita",
+      "description": "Uses its three brains to execute complex plans. While two heads sleep, one head is said to stay awake.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/34.png"
+    },
+    {
+      "name": "Exeggutor",
+      "cardNumber": "35",
+      "pokemonNumber": "103",
+      "hp": 80,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Exeggcute",
+      "pokemonType": "GRASS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Teleport",
+          "energyCost": ["PSYCHIC"],
+          "damage": "0",
+          "text": "Switch Exeggutor with 1 of your Benched Pokémon."
+        },
+        {
+          "name": "Big Eggsplosion",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "damage": "20×",
+          "text": "Flip a number of coins equal to the number of Energy cards attached to Exeggutor. This attack does 20 damage times the number of heads."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 3,
+      "artist": "Mitsuhiro Arita",
+      "description": "Legend has it that on rare occasions, one of its heads will drop off and continue on as an Exeggcute.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/35.png"
+    },
+    {
+      "name": "Fearow",
+      "cardNumber": "36",
+      "pokemonNumber": "022",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Spearow",
+      "pokemonType": "COLORLESS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Agility",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "20",
+          "text": "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to Fearow."
+        },
+        {
+          "name": "Drill Peck",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "40",
+          "text": "Drill Peck does 40 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Mitsuhiro Arita",
+      "description": "With its huge and magnificent wings, it can keep aloft without ever having to land for rest.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/36.png"
+    },
+    {
+      "name": "Gloom",
+      "cardNumber": "37",
+      "pokemonNumber": "044",
+      "hp": 60,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Oddish",
+      "pokemonType": "GRASS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Poisonpowder",
+          "energyCost": ["GRASS"],
+          "damage": "0",
+          "text": "The Defending Pokémon is now Poisoned."
+        },
+        {
+          "name": "Foul Odor",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "damage": "30",
+          "text": "Both the Defending Pokémon and Gloom are now Confused (after doing damage)."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 2,
+      "artist": "Ken Sugimori",
+      "description": "The fluid that oozes from its mouth isn't drool. It is a nectar that is used to attract prey.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/37.png"
+    },
+    {
+      "name": "Lickitung",
+      "cardNumber": "38",
+      "pokemonNumber": "108",
+      "hp": 90,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Tongue Wrap",
+          "energyCost": ["COLORLESS"],
+          "damage": "10",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
+        },
+        {
+          "name": "Supersonic",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "0",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Confused."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 3,
+      "artist": "Ken Sugimori",
+      "description": "Its tongue can be extended like a chameleon's. It leaves a tingling sensation when it licks enemies.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/38.png"
+    },
+    {
+      "name": "Marowak",
+      "cardNumber": "39",
+      "pokemonNumber": "105",
+      "hp": 60,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Cubone",
+      "pokemonType": "FIGHTING",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Bonemerang",
+          "energyCost": ["FIGHTING", "FIGHTING"],
+          "damage": "30×",
+          "text": "Flip 2 coins. This attack does 30 damage times the number of heads."
+        },
+        {
+          "name": "Call for Friend",
+          "energyCost": ["FIGHTING", "FIGHTING", "COLORLESS"],
+          "damage": "0",
+          "text": "Search your deck for a Fighting Pokémon, show it to your opponent, and put it into your hand. Shuffle your deck afterward."
+        }
+      ],
+      "weakness": {
+        "type": "GRASS",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "ELECTRIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "The bone it holds is its key weapon. It throws the bone skillfully like a boomerang to KO targets.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/39.png"
+    },
+    {
+      "name": "Nidorina",
+      "cardNumber": "40",
+      "pokemonNumber": "030",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Nidoran♀",
+      "pokemonType": "GRASS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Supersonic",
+          "energyCost": ["GRASS", "GRASS"],
+          "damage": "0",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Confused."
+        },
+        {
+          "name": "Double Kick",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "damage": "30×",
+          "text": "Flip 2 coins. This attack does 30 damage times the number of heads."
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "The female's horn develops slowly. Prefers physical attacks such as clawing and biting.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/40.png"
+    },
+    {
+      "name": "Parasect",
+      "cardNumber": "41",
+      "pokemonNumber": "047",
+      "hp": 60,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Paras",
+      "pokemonType": "GRASS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Spore",
+          "energyCost": ["GRASS"],
+          "damage": "0",
+          "text": "The Defending Pokémon is now Asleep."
+        },
+        {
+          "name": "Slash",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "damage": "30",
+          "text": "Slash does 30 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "A host-parasite pair in which the parasite mushroom has taken over the host bug. Prefers damp places.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/41.png"
+    },
+    {
+      "name": "Persian",
+      "cardNumber": "42",
+      "pokemonNumber": "053",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Meowth",
+      "pokemonType": "COLORLESS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Scratch",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "20",
+          "text": "Scratch does 20 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Pounce",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "30",
+          "text": "If the Defending Pokémon attacks Persian during your opponent's next turn, any damage done by the attack is reduced by 10 (after applying Weakness and Resistance). (Benching either Pokémon ends this effect.)"
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Mitsuhiro Arita",
+      "description": "Although its fur has many admirers, it is tough to raise as a pet because of its fickle meanness.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/42.png"
+    },
+    {
+      "name": "Primeape",
+      "cardNumber": "43",
+      "pokemonNumber": "057",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Mankey",
+      "pokemonType": "FIGHTING",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Fury Swipes",
+          "energyCost": ["FIGHTING", "COLORLESS"],
+          "damage": "10×",
+          "text": "Flip 3 coins. This attack does 10 damage times the number of heads."
+        },
+        {
+          "name": "Tantrum",
+          "energyCost": ["FIGHTING", "FIGHTING", "COLORLESS"],
+          "damage": "50",
+          "text": "Flip a coin. If tails, Primeape is now Confused (after doing damage)."
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "Always furious and tenacious to boot. It will not abandon chasing its quarry until it is caught.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/43.png"
+    },
+    {
+      "name": "Rapidash",
+      "cardNumber": "44",
+      "pokemonNumber": "078",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Ponyta",
+      "pokemonType": "FIRE",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Stomp",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "20+",
+          "text": "Flip a coin. If heads, this attack does 20 damage plus 10 more damage; if tails, this attack does 20 damage."
+        },
+        {
+          "name": "Agility",
+          "energyCost": ["FIRE", "FIRE", "COLORLESS", "COLORLESS"],
+          "damage": "30",
+          "text": "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to Rapidash."
+        }
+      ],
+      "weakness": {
+        "type": "WATER",
+        "modifier": "×2"
+      },
+      "retreatCost": 0,
+      "artist": "Mitsuhiro Arita",
+      "description": "Very competitive, this Pokémon will chase anything that moves fast in the hopes of racing it.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/44.png"
+    },
+    {
+      "name": "Rhydon",
+      "cardNumber": "45",
+      "pokemonNumber": "112",
+      "hp": 100,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Rhyhorn",
+      "pokemonType": "FIGHTING",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Horn Attack",
+          "energyCost": ["FIGHTING", "FIGHTING", "COLORLESS"],
+          "damage": "30",
+          "text": "Horn Attack does 30 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Ram",
+          "energyCost": ["FIGHTING", "FIGHTING", "FIGHTING", "COLORLESS"],
+          "damage": "50",
+          "text": "Rhydon does 20 damage to itself."
+        }
+      ],
+      "weakness": {
+        "type": "GRASS",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "ELECTRIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 3,
+      "artist": "Ken Sugimori",
+      "description": "Protected by an armor-like hide, it is capable of living in molten lava of 3,600 degrees.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/45.png"
+    },
+    {
+      "name": "Seaking",
+      "cardNumber": "46",
+      "pokemonNumber": "119",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Goldeen",
+      "pokemonType": "WATER",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Horn Attack",
+          "energyCost": ["WATER"],
+          "damage": "10",
+          "text": "Horn Attack does 10 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Waterfall",
+          "energyCost": ["WATER", "WATER", "COLORLESS"],
+          "damage": "30",
+          "text": "Waterfall does 30 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "In the autumn spawning season, they can be seen swimming powerfully up rivers and creeks.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/46.png"
+    },
+    {
+      "name": "Tauros",
+      "cardNumber": "47",
+      "pokemonNumber": "128",
+      "hp": 60,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Stomp",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "20+",
+          "text": "Flip a coin. If heads, this attack does 20 damage plus 10 more damage; if tails, this attack does 20 damage."
+        },
+        {
+          "name": "Rampage",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "20+",
+          "text": "Does 20 damage plus 10 more damage for each damage counter on Tauros. Flip a coin. If tails, Tauros is now Confused (after doing damage)."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 2,
+      "artist": "Mitsuhiro Arita",
+      "description": "When it targets an enemy, it charges furiously while whipping its body with its long tails.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/47.png"
+    },
+    {
+      "name": "Weepinbell",
+      "cardNumber": "48",
+      "pokemonNumber": "070",
+      "hp": 70,
+      "stage": "STAGE_1",
+      "evolvesFrom": "Bellsprout",
+      "pokemonType": "GRASS",
+      "rarity": "UNCOMMON",
+      "attacks": [
+        {
+          "name": "Poisonpowder",
+          "energyCost": ["GRASS"],
+          "damage": "0",
+          "text": "The Defending Pokémon is now Poisoned."
+        },
+        {
+          "name": "Razor Leaf",
+          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "damage": "30",
+          "text": "Razor Leaf does 30 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "It spits out Poisonpowder to immobilize the enemy and then finishes it with a spray of Acid.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/48.png"
+    },
+    {
+      "name": "Bellsprout",
+      "cardNumber": "49",
+      "pokemonNumber": "069",
+      "hp": 40,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Call for Family",
+          "energyCost": ["GRASS"],
+          "damage": "0",
+          "text": "Search your deck for a Basic Pokémon named Bellsprout and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)"
+        },
+        {
+          "name": "Acid",
+          "energyCost": ["GRASS", "GRASS"],
+          "damage": "20",
+          "text": "Acid does 20 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "A carnivorous Pokémon that traps and eats bugs. It uses its root feet to soak up needed moisture.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/49.png"
+    },
+    {
+      "name": "Cubone",
+      "cardNumber": "50",
+      "pokemonNumber": "104",
+      "hp": 40,
+      "stage": "BASIC",
+      "pokemonType": "FIGHTING",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Snivel",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "Flip a coin. If heads, the Defending Pokémon can't attack Cubone during your opponent's next turn. (Benching either Pokémon ends this effect.)"
+        },
+        {
+          "name": "Rage",
+          "energyCost": ["FIGHTING", "COLORLESS"],
+          "damage": "10+",
+          "text": "Does 10 damage plus 10 more damage for each damage counter on Cubone."
+        }
+      ],
+      "weakness": {
+        "type": "GRASS",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "ELECTRIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "Because it never removes its skull helmet, no one has ever seen this Pokémon's real face.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/50.png"
+    },
+    {
+      "name": "Eevee",
+      "cardNumber": "51",
+      "pokemonNumber": "133",
+      "hp": 50,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Tail Wag",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "Flip a coin. If heads, the Defending Pokémon can't attack Eevee during your opponent's next turn. (Benching either Pokémon ends this effect.)"
+        },
+        {
+          "name": "Quick Attack",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "10+",
+          "text": "Flip a coin. If heads, this attack does 10 damage plus 20 more damage; if tails, this attack does 10 damage."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "Its genetic code is irregular. It may mutate if it is exposed to radiation from element stones.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/51.png"
+    },
+    {
+      "name": "Exeggcute",
+      "cardNumber": "52",
+      "pokemonNumber": "102",
+      "hp": 50,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Hypnosis",
+          "energyCost": ["PSYCHIC"],
+          "damage": "0",
+          "text": "The Defending Pokémon is now Asleep."
+        },
+        {
+          "name": "Leech Seed",
+          "energyCost": ["GRASS", "GRASS"],
+          "damage": "20",
+          "text": "Remove a number of damage counters from Exeggcute equal to half the damage done to the Defending Pokémon (after applying Weakness and Resistance) (rounded up to the nearest 10). If Exeggcute has fewer damage counters than that, remove all of them."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "Often mistaken for eggs. When disturbed, they quickly gather and attack in swarms.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/52.png"
+    },
+    {
+      "name": "Goldeen",
+      "cardNumber": "53",
+      "pokemonNumber": "118",
+      "hp": 40,
+      "stage": "BASIC",
+      "pokemonType": "WATER",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Horn Attack",
+          "energyCost": ["WATER"],
+          "damage": "10",
+          "text": "Horn Attack does 10 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "Its tail fin billows like an elegant ballroom dress, giving it the nickname of the Water Queen.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/53.png"
+    },
+    {
+      "name": "Jigglypuff",
+      "cardNumber": "54",
+      "pokemonNumber": "039",
+      "hp": 60,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "First Aid",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "Remove 1 damage counter from Jigglypuff."
+        },
+        {
+          "name": "Double-edge",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "40",
+          "text": "Jigglypuff does 20 damage to itself."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "When its huge eyes light up, it sings a mysteriously soothing melody that lulls its enemies to sleep.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/54.png"
+    },
+    {
+      "name": "Mankey",
+      "cardNumber": "55",
+      "pokemonNumber": "056",
+      "hp": 30,
+      "stage": "BASIC",
+      "pokemonType": "FIGHTING",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Peek",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "Look at 1 of the cards in your opponent's hand."
+        },
+        {
+          "name": "Scratch",
+          "energyCost": ["FIGHTING"],
+          "damage": "10",
+          "text": "Scratch does 10 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 0,
+      "artist": "Mitsuhiro Arita",
+      "description": "Extremely quick to anger. It could be docile one moment then thrashing away the next instant.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/55.png"
+    },
+    {
+      "name": "Meowth",
+      "cardNumber": "56",
+      "pokemonNumber": "052",
+      "hp": 50,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Pay Day",
+          "energyCost": ["COLORLESS", "COLORLESS"],
+          "damage": "10",
+          "text": "Flip a coin. If heads, draw a card."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "PSYCHIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "Adores circular objects. Wanders the streets on a nightly basis to look for dropped loose change.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/56.png"
+    },
+    {
+      "name": "Nidoran♀",
+      "cardNumber": "57",
+      "pokemonNumber": "029",
+      "hp": 60,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Fury Swipes",
+          "energyCost": ["COLORLESS"],
+          "damage": "10×",
+          "text": "Flip 3 coins. This attack does 10 damage times the number of heads."
+        },
+        {
+          "name": "Call for Family",
+          "energyCost": ["GRASS"],
+          "damage": "0",
+          "text": "Search your deck for a Basic Pokémon named Nidoran♂ and put it onto your Bench. Shuffle your deck afterward. (You can't use this attack if your Bench is full.)"
+        }
+      ],
+      "weakness": {
+        "type": "PSYCHIC",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "Although small, its venomous barbs render this Pokémon dangerous. The female has smaller horns.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/57.png"
+    },
+    {
+      "name": "Oddish",
+      "cardNumber": "58",
+      "pokemonNumber": "043",
+      "hp": 50,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Absorb",
+          "energyCost": ["GRASS"],
+          "damage": "10",
+          "text": "Remove 1 damage counter from Oddish."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "During the day, it keeps its face buried in the ground. At night, it wanders around sowing its seeds.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/58.png"
+    },
+    {
+      "name": "Paras",
+      "cardNumber": "59",
+      "pokemonNumber": "046",
+      "hp": 40,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Scratch",
+          "energyCost": ["COLORLESS"],
+          "damage": "10",
+          "text": "Scratch does 10 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Spore",
+          "energyCost": ["GRASS", "GRASS"],
+          "damage": "0",
+          "text": "The Defending Pokémon is now Asleep."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "Burrows to suck tree roots. The mushrooms on its back grow by drawing nutrients from the bug host.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/59.png"
+    },
+    {
+      "name": "Pikachu",
+      "cardNumber": "60",
+      "pokemonNumber": "025",
+      "hp": 60,
+      "stage": "BASIC",
+      "pokemonType": "ELECTRIC",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Growl",
+          "energyCost": ["COLORLESS"],
+          "damage": "0",
+          "text": "If the Defending Pokémon attacks Pikachu during your opponent's next turn, any damage done by the attack is reduced by 10 (after applying Weakness and Resistance). (Benching either Pokémon ends this effect.)"
+        },
+        {
+          "name": "Thundershock",
+          "energyCost": ["ELECTRIC", "COLORLESS"],
+          "damage": "20",
+          "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
+        }
+      ],
+      "weakness": {
+        "type": "FIGHTING",
+        "modifier": "×2"
+      },
+      "retreatCost": 1,
+      "artist": "Ken Sugimori",
+      "description": "When several of these Pokémon gather, their electricity could build and cause lightning storms.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/60.png"
+    },
+    {
+      "name": "Rhyhorn",
+      "cardNumber": "61",
+      "pokemonNumber": "111",
+      "hp": 70,
+      "stage": "BASIC",
+      "pokemonType": "FIGHTING",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Leer",
+          "energyCost": ["FIGHTING"],
+          "damage": "0",
+          "text": "Flip a coin. If heads, the Defending Pokémon can't attack Rhyhorn during your opponent's next turn. (Benching either Pokémon ends this effect.)"
+        },
+        {
+          "name": "Horn Attack",
+          "energyCost": ["FIGHTING", "FIGHTING", "COLORLESS"],
+          "damage": "30",
+          "text": "Horn Attack does 30 damage to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "GRASS",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "ELECTRIC",
+        "modifier": "-30"
+      },
+      "retreatCost": 3,
+      "artist": "Ken Sugimori",
+      "description": "Its massive bones are 1000 times harder than human bones. It can easily knock a trailer flying.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/61.png"
+    },
+    {
+      "name": "Spearow",
+      "cardNumber": "62",
+      "pokemonNumber": "021",
+      "hp": 50,
+      "stage": "BASIC",
+      "pokemonType": "COLORLESS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Peck",
+          "energyCost": ["COLORLESS"],
+          "damage": "10",
+          "text": "Peck does 10 damage to the Defending Pokémon."
+        },
+        {
+          "name": "Mirror Move",
+          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "damage": "0",
+          "text": "If Spearow was attacked last turn, do the final result of that attack on Spearow to the Defending Pokémon."
+        }
+      ],
+      "weakness": {
+        "type": "ELECTRIC",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 0,
+      "artist": "Ken Sugimori",
+      "description": "Eats bugs in grassy areas. It has to flap its short wings at high speed to stay airborne.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/62.png"
+    },
+    {
+      "name": "Venonat",
+      "cardNumber": "63",
+      "pokemonNumber": "048",
+      "hp": 40,
+      "stage": "BASIC",
+      "pokemonType": "GRASS",
+      "rarity": "COMMON",
+      "attacks": [
+        {
+          "name": "Leech Life",
+          "energyCost": ["GRASS", "COLORLESS"],
+          "damage": "10",
+          "text": "Remove a number of damage counters from Venonat equal to half the damage done to the Defending Pokémon (after applying Weakness and Resistance) (rounded up to the nearest 10). If Venonat has fewer damage counters than that, remove all of them."
+        }
+      ],
+      "weakness": {
+        "type": "FIRE",
+        "modifier": "×2"
+      },
+      "resistance": {
+        "type": "FIGHTING",
+        "modifier": "-30"
+      },
+      "retreatCost": 1,
+      "artist": "Mitsuhiro Arita",
+      "description": "Lives in the shadows of tall trees where it eats insects. It is attracted by light at night.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/63.png"
+    },
+    {
+      "name": "Poke Ball",
+      "cardNumber": "64",
+      "cardType": "TRAINER",
+      "trainerType": "ITEM",
+      "rarity": "COMMON",
+      "artist": "Keiji Kinebuchi",
+      "description": "Flip a coin. If heads, you may search your deck for any Basic Pokémon or Evolution card. Show that card to your opponent, then put it into your hand. Shuffle your deck afterward.",
+      "imageUrl": "https://www.pikawiz.com/images/jungle/64.png",
+      "trainerEffects": [
+        {
+          "effectType": "SEARCH_DECK",
+          "target": "SELF",
+          "value": 1,
+          "cardType": "POKEMON",
+          "condition": "if heads",
+          "description": "Flip a coin. If heads, search for any Basic or Evolution Pokémon"
+        }
+      ]
+    }
+  ]
+}
+
