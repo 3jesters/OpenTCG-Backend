@@ -1,0 +1,20 @@
+{
+  "id": "a7d7c7f8-fce1-4d53-bd01-4434c1a0e788",
+  "tournamentId": "classic-tournament",
+  "player1Id": "test",
+  "player2Id": "player-2",
+  "player1DeckId": "classic-fire-starter-deck",
+  "player2DeckId": "classic-grass-starter-deck",
+  "state": "DECK_VALIDATION",
+  "currentPlayer": null,
+  "firstPlayer": null,
+  "createdAt": "2025-11-23T08:36:39.887Z",
+  "updatedAt": "2025-11-23T08:36:53.622Z",
+  "startedAt": null,
+  "endedAt": null,
+  "winnerId": null,
+  "result": null,
+  "winCondition": null,
+  "cancellationReason": null,
+  "gameState": null
+}

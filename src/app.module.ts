@@ -5,9 +5,10 @@ import { CardModule } from './modules/card/card.module';
 import { SetModule } from './modules/set/set.module';
 import { TournamentModule } from './modules/tournament/tournament.module';
 import { DeckModule } from './modules/deck/deck.module';
+import { MatchModule } from './modules/match/match.module';
 
 @Module({
-  imports: [CardModule, SetModule, TournamentModule, DeckModule],
+  imports: [CardModule, SetModule, TournamentModule, DeckModule, MatchModule],
   controllers: [AppController],
   providers: [AppService],
 })

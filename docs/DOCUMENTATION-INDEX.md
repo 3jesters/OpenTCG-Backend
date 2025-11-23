@@ -67,6 +67,39 @@ curl -X POST http://localhost:3000/api/v1/decks \
 
 ---
 
+### [MATCH-API.md](./MATCH-API.md)
+**Complete REST API reference for Match Management**
+
+**Contains:**
+- All 5 Match API endpoints with examples
+- Match creation and joining
+- Match state management
+- Player action execution
+- State machine documentation
+- Request/response formats
+- TypeScript interfaces
+- Frontend integration examples (React hooks)
+- Error handling
+- Communication flow patterns
+
+**Use this when:**
+- Implementing match gameplay features
+- Building match UI components
+- Understanding match state machine
+- Executing player actions
+- Polling for match state updates
+- Integrating match APIs in frontend
+
+**Quick Example:**
+```bash
+# Create a new match
+curl -X POST http://localhost:3000/api/v1/matches \
+  -H "Content-Type: application/json" \
+  -d '{"tournamentId":"classic-tournament","player1Id":"player-1","player1DeckId":"deck-123"}'
+```
+
+---
+
 ## 🎨 Frontend Documentation
 
 ### [FRONTEND-APP.md](./FRONTEND-APP.md)
@@ -163,6 +196,7 @@ curl -X POST http://localhost:3000/api/v1/decks \
 |----------|---------|------|----------|
 | **API.md** | Card API reference | Large | Card API integration, testing |
 | **DECK-API.md** | Deck API reference | Large | Deck API integration, deck builder |
+| **MATCH-API.md** | Match API reference | Large | Match API integration, gameplay |
 | **FRONTEND-APP.md** | Complete frontend guide | Large | Architecture, planning |
 | **FRONTEND-QUICK-REFERENCE.md** | Developer cheat sheet | Small | Quick lookups, active dev |
 | **FRONTEND-COMPONENT-GUIDE.md** | UI component guide | Medium | Building components, design |
@@ -219,6 +253,16 @@ curl -X POST http://localhost:3000/api/v1/decks \
 4. PUT    /api/v1/decks/:id                     - Update deck
 5. DELETE /api/v1/decks/:id                     - Delete deck
 6. POST   /api/v1/decks/:id/validate            - Validate deck
+```
+
+### Match API Endpoints (in MATCH-API.md)
+```
+1. GET    /api/v1/matches                       - List matches (with filters)
+2. POST   /api/v1/matches                       - Create match
+3. POST   /api/v1/matches/:id/join               - Join match
+4. POST   /api/v1/matches/:id/start             - Start match
+5. GET    /api/v1/matches/:id/state              - Get match state
+6. POST   /api/v1/matches/:id/actions            - Execute player action
 ```
 
 ### Core Entities (in all frontend docs)
