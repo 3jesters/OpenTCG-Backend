@@ -2,35 +2,36 @@ import { AbilityEffectType } from '../enums/ability-effect-type.enum';
 import { EnergyType } from '../enums/energy-type.enum';
 import { PokemonType } from '../enums/pokemon-type.enum';
 import { CardType } from '../enums/card-type.enum';
+import { TargetType } from '../enums/target-type.enum';
 import { AbilityEffectFactory } from './ability-effect.value-object';
 import { ConditionFactory } from './condition.value-object';
 
 describe('Ability Effect Value Object', () => {
   describe('AbilityEffectFactory - Shared Effects', () => {
     it('should create heal effect', () => {
-      const effect = AbilityEffectFactory.heal('self', 30);
+      const effect = AbilityEffectFactory.heal(TargetType.SELF, 30);
 
       expect(effect.effectType).toBe(AbilityEffectType.HEAL);
-      expect(effect.target).toBe('self');
+      expect(effect.target).toBe(TargetType.SELF);
       expect(effect.amount).toBe(30);
     });
 
     it('should create heal effect for all your Pokémon', () => {
-      const effect = AbilityEffectFactory.heal('all_yours', 20);
+      const effect = AbilityEffectFactory.heal(TargetType.ALL_YOURS, 20);
 
-      expect(effect.target).toBe('all_yours');
+      expect(effect.target).toBe(TargetType.ALL_YOURS);
       expect(effect.amount).toBe(20);
     });
 
     it('should create prevent damage effect', () => {
       const effect = AbilityEffectFactory.preventDamage(
-        'self',
+        TargetType.SELF,
         'permanent',
         20,
       );
 
       expect(effect.effectType).toBe(AbilityEffectType.PREVENT_DAMAGE);
-      expect(effect.target).toBe('self');
+      expect(effect.target).toBe(TargetType.SELF);
       expect(effect.duration).toBe('permanent');
       expect(effect.amount).toBe(20);
     });
@@ -39,20 +40,20 @@ describe('Ability Effect Value Object', () => {
       const effect = AbilityEffectFactory.statusCondition('PARALYZED');
 
       expect(effect.effectType).toBe(AbilityEffectType.STATUS_CONDITION);
-      expect(effect.target).toBe('defending');
+      expect(effect.target).toBe(TargetType.DEFENDING);
       expect(effect.statusCondition).toBe('PARALYZED');
     });
 
     it('should create energy acceleration effect', () => {
       const effect = AbilityEffectFactory.energyAcceleration(
-        'self',
+        TargetType.SELF,
         'discard',
         1,
         EnergyType.FIRE,
       );
 
       expect(effect.effectType).toBe(AbilityEffectType.ENERGY_ACCELERATION);
-      expect(effect.target).toBe('self');
+      expect(effect.target).toBe(TargetType.SELF);
       expect(effect.source).toBe('discard');
       expect(effect.count).toBe(1);
       expect(effect.energyType).toBe(EnergyType.FIRE);
@@ -62,8 +63,8 @@ describe('Ability Effect Value Object', () => {
       const effect = AbilityEffectFactory.switchPokemon('choice');
 
       expect(effect.effectType).toBe(AbilityEffectType.SWITCH_POKEMON);
-      expect(effect.target).toBe('self');
-      expect(effect.with).toBe('benched_yours');
+      expect(effect.target).toBe(TargetType.SELF);
+      expect(effect.with).toBe(TargetType.BENCHED_YOURS);
       expect(effect.selector).toBe('choice');
     });
   });

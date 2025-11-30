@@ -27,6 +27,13 @@ export interface MatchJson {
   state: MatchState;
   currentPlayer: PlayerIdentifier | null;
   firstPlayer: PlayerIdentifier | null;
+  coinTossResult: PlayerIdentifier | null;
+  player1HasDrawnValidHand: boolean;
+  player2HasDrawnValidHand: boolean;
+  player1ReadyToStart: boolean;
+  player2ReadyToStart: boolean;
+  player1Approved?: boolean;
+  player2Approved?: boolean;
   createdAt: string;
   updatedAt: string;
   startedAt: string | null;
@@ -107,6 +114,13 @@ export class MatchMapper {
       state: match.state,
       currentPlayer: match.currentPlayer,
       firstPlayer: match.firstPlayer,
+      coinTossResult: match.coinTossResult,
+      player1HasDrawnValidHand: match.player1HasDrawnValidHand,
+      player2HasDrawnValidHand: match.player2HasDrawnValidHand,
+      player1ReadyToStart: match.player1ReadyToStart,
+      player2ReadyToStart: match.player2ReadyToStart,
+      player1Approved: match.player1Approved,
+      player2Approved: match.player2Approved,
       createdAt: match.createdAt.toISOString(),
       updatedAt: match.updatedAt.toISOString(),
       startedAt: match.startedAt?.toISOString() || null,
@@ -121,53 +135,40 @@ export class MatchMapper {
 
   /**
    * Convert JSON to domain entity
-   * Note: This is a simplified restoration. Full state restoration would require
-   * calling state transition methods in the correct order or adding a restore method to Match entity.
+   * Uses Match.restore() to properly restore all match state from persisted data
    */
   static toDomain(json: MatchJson): Match {
-    const match = new Match(json.id, json.tournamentId, new Date(json.createdAt));
+    const gameState = json.gameState
+      ? this.gameStateFromJson(json.gameState)
+      : null;
 
-    // Restore players by calling assignPlayer (this will set state appropriately)
-    // We need to bypass state checks for restoration, so we'll need to handle this carefully
-    // For now, we'll restore in a way that works with the current state machine
-
-    // If match is in CREATED or WAITING_FOR_PLAYERS, we can assign players normally
-    if (
-      json.state === MatchState.CREATED ||
-      json.state === MatchState.WAITING_FOR_PLAYERS
-    ) {
-      if (json.player1Id && json.player1DeckId) {
-        try {
-          match.assignPlayer(
-            json.player1Id,
-            json.player1DeckId,
-            PlayerIdentifier.PLAYER1,
-          );
-        } catch {
-          // Player already assigned or state mismatch - continue
-        }
-      }
-      if (json.player2Id && json.player2DeckId) {
-        try {
-          match.assignPlayer(
-            json.player2Id,
-            json.player2DeckId,
-            PlayerIdentifier.PLAYER2,
-          );
-        } catch {
-          // Player already assigned or state mismatch - continue
-        }
-      }
-    }
-
-    // For more advanced states, we would need to add restore methods to Match entity
-    // For now, this basic restoration works for initial states
-    // Full implementation would require:
-    // 1. A Match.restoreFromJson() method, or
-    // 2. A builder pattern, or
-    // 3. Making Match fields protected and using a subclass for restoration
-
-    return match;
+    return Match.restore(
+      json.id,
+      json.tournamentId,
+      new Date(json.createdAt),
+      new Date(json.updatedAt),
+      json.player1Id,
+      json.player2Id,
+      json.player1DeckId,
+      json.player2DeckId,
+      json.state,
+      json.currentPlayer,
+      json.firstPlayer,
+      json.coinTossResult ?? null,
+      json.player1HasDrawnValidHand ?? false,
+      json.player2HasDrawnValidHand ?? false,
+      json.player1ReadyToStart ?? false,
+      json.player2ReadyToStart ?? false,
+      json.startedAt ? new Date(json.startedAt) : null,
+      json.endedAt ? new Date(json.endedAt) : null,
+      json.winnerId,
+      json.result,
+      json.winCondition,
+      json.cancellationReason,
+      gameState,
+      json.player1Approved,
+      json.player2Approved,
+    );
   }
 
   /**

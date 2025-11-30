@@ -5,6 +5,7 @@ import { UsageLimit } from '../../domain/enums/usage-limit.enum';
 import { GameEventType } from '../../domain/enums/game-event-type.enum';
 import { AbilityEffectFactory } from '../../domain/value-objects/ability-effect.value-object';
 import { PokemonType } from '../../domain/enums/pokemon-type.enum';
+import { TargetType } from '../../domain/enums/target-type.enum';
 
 describe('LegacyAbilityAdapter', () => {
   describe('toAbility', () => {
@@ -14,7 +15,7 @@ describe('LegacyAbilityAdapter', () => {
         text: 'All your Fire Pokémon do 10 more damage',
         legacyType: LegacyAbilityType.POKE_BODY,
         effects: [
-          AbilityEffectFactory.boostAttack('all_yours', 10, [PokemonType.FIRE]),
+          AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [PokemonType.FIRE]),
         ],
       };
 
@@ -46,7 +47,7 @@ describe('LegacyAbilityAdapter', () => {
         name: 'Energy Burn',
         text: 'As often as you like during your turn, you may change a Fire Energy attached',
         legacyType: LegacyAbilityType.POKEMON_POWER,
-        effects: [],
+        effects: [AbilityEffectFactory.drawCards(1)], // Placeholder effect for testing
       };
 
       const ability = LegacyAbilityAdapter.toAbility(legacyData);
@@ -60,7 +61,7 @@ describe('LegacyAbilityAdapter', () => {
         name: 'Damage Swap',
         text: 'When this Pokémon is played, move damage counters',
         legacyType: LegacyAbilityType.POKEMON_POWER,
-        effects: [AbilityEffectFactory.heal('benched_yours', 10)],
+        effects: [AbilityEffectFactory.heal(TargetType.BENCHED_YOURS, 10)],
         triggerEvent: GameEventType.WHEN_PLAYED,
       };
 
@@ -126,7 +127,7 @@ describe('LegacyAbilityAdapter', () => {
       const ability = LegacyAbilityAdapter.fromLegacyText(
         'Blaze',
         'All your Fire Pokémon do 10 more damage',
-        [AbilityEffectFactory.boostAttack('all_yours', 10, [PokemonType.FIRE])],
+        [AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [PokemonType.FIRE])],
       );
 
       expect(ability.name).toBe('Blaze');
@@ -181,7 +182,7 @@ describe('LegacyAbilityAdapter', () => {
         name: 'Energy Burn',
         text: 'As often as you like during your turn (before your attack), you may turn all Energy attached to Charizard into Fire Energy for the rest of the turn',
         legacyType: LegacyAbilityType.POKEMON_POWER,
-        effects: [], // Would need energy conversion effect
+        effects: [AbilityEffectFactory.drawCards(1)], // Placeholder effect for testing
       });
 
       expect(ability.activationType).toBe(AbilityActivationType.ACTIVATED);
@@ -193,7 +194,7 @@ describe('LegacyAbilityAdapter', () => {
         name: 'Blaze',
         text: 'All Fire Energy attached to your Fire Pokémon provides Fire Energy. This power stops working while Blaziken is affected by a Special Condition',
         legacyType: LegacyAbilityType.POKE_BODY,
-        effects: [],
+        effects: [AbilityEffectFactory.boostAttack(TargetType.SELF, 10)],
       });
 
       expect(ability.activationType).toBe(AbilityActivationType.PASSIVE);
@@ -204,7 +205,7 @@ describe('LegacyAbilityAdapter', () => {
         name: 'Psy Shadow',
         text: 'Once during your turn (before your attack), you may search your discard pile for a Psychic Energy card and attach it to Gardevoir',
         legacyType: LegacyAbilityType.POKE_POWER,
-        effects: [],
+        effects: [AbilityEffectFactory.drawCards(1)],
       });
 
       expect(ability.activationType).toBe(AbilityActivationType.ACTIVATED);
@@ -216,7 +217,7 @@ describe('LegacyAbilityAdapter', () => {
         name: 'Healing Rain',
         text: 'When you play this Pokémon from your hand, heal 10 damage from each of your Pokémon',
         legacyType: LegacyAbilityType.POKEMON_POWER,
-        effects: [AbilityEffectFactory.heal('all_yours', 10)],
+        effects: [AbilityEffectFactory.heal(TargetType.ALL_YOURS, 10)],
         triggerEvent: GameEventType.WHEN_PLAYED,
       });
 

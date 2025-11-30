@@ -73,7 +73,7 @@ export class AttackEffectValidator {
       throw new Error('Discard energy target is required');
     }
 
-    if (!['self', 'defending'].includes(effect.target)) {
+    if (effect.target !== TargetType.SELF && effect.target !== TargetType.DEFENDING) {
       throw new Error('Discard energy target must be "self" or "defending"');
     }
 
@@ -155,7 +155,7 @@ export class AttackEffectValidator {
       throw new Error('Heal target is required');
     }
 
-    if (!['self', 'defending'].includes(effect.target)) {
+    if (effect.target !== TargetType.SELF && effect.target !== TargetType.DEFENDING) {
       throw new Error('Heal target must be "self" or "defending"');
     }
 
@@ -186,7 +186,7 @@ export class AttackEffectValidator {
       throw new Error('Prevent damage target is required');
     }
 
-    if (!['self', 'defending'].includes(effect.target)) {
+    if (effect.target !== TargetType.SELF && effect.target !== TargetType.DEFENDING) {
       throw new Error('Prevent damage target must be "self" or "defending"');
     }
 
@@ -256,7 +256,7 @@ export class AttackEffectValidator {
       throw new Error('Energy acceleration target is required');
     }
 
-    if (!['self', 'benched'].includes(effect.target)) {
+    if (effect.target !== TargetType.SELF && effect.target !== TargetType.BENCHED_YOURS) {
       throw new Error('Energy acceleration target must be "self" or "benched"');
     }
 

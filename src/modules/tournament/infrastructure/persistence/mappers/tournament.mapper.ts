@@ -1,4 +1,11 @@
-import { Tournament, TournamentStatus, DeckRules, RestrictedCard } from '../../../domain';
+import {
+  Tournament,
+  TournamentStatus,
+  DeckRules,
+  RestrictedCard,
+  StartGameRules,
+  StartGameRuleType,
+} from '../../../domain';
 
 /**
  * JSON structure for tournament persistence
@@ -28,6 +35,12 @@ export interface TournamentJson {
     }>;
   };
   savedDecks: string[];
+  startGameRules: {
+    rules: Array<{
+      type: StartGameRuleType;
+      minCount: number;
+    }>;
+  };
   startDate?: string;
   endDate?: string;
   maxParticipants?: number;
@@ -69,6 +82,12 @@ export class TournamentMapper {
         })),
       },
       savedDecks: tournament.savedDecks,
+      startGameRules: {
+        rules: tournament.startGameRules.rules.map((rule) => ({
+          type: rule.type,
+          minCount: rule.minCount,
+        })),
+      },
       startDate: tournament.startDate?.toISOString(),
       endDate: tournament.endDate?.toISOString(),
       maxParticipants: tournament.maxParticipants,
@@ -121,6 +140,12 @@ export class TournamentMapper {
 
     // Set saved decks
     json.savedDecks.forEach((deckId) => tournament.addSavedDeck(deckId));
+
+    // Set start game rules
+    if (json.startGameRules) {
+      const startGameRules = new StartGameRules(json.startGameRules.rules);
+      tournament.setStartGameRules(startGameRules);
+    }
 
     // Set optional metadata
     if (json.startDate) {

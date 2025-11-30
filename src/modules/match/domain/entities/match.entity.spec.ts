@@ -69,6 +69,8 @@ describe('Match Entity', () => {
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
       match.markDeckValidationComplete(true);
+      match.approveMatch(PlayerIdentifier.PLAYER1);
+      match.approveMatch(PlayerIdentifier.PLAYER2);
       match.setFirstPlayer(PlayerIdentifier.PLAYER1);
 
       expect(() => {
@@ -78,14 +80,14 @@ describe('Match Entity', () => {
   });
 
   describe('markDeckValidationComplete', () => {
-    it('should transition to PRE_GAME_SETUP when valid', () => {
+    it('should transition to MATCH_APPROVAL when valid', () => {
       const match = new Match('match-001', 'tournament-001');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
 
       match.markDeckValidationComplete(true);
 
-      expect(match.state).toBe(MatchState.PRE_GAME_SETUP);
+      expect(match.state).toBe(MatchState.MATCH_APPROVAL);
     });
 
     it('should cancel match when invalid', () => {
@@ -109,17 +111,19 @@ describe('Match Entity', () => {
   });
 
   describe('setFirstPlayer', () => {
-    it('should set first player and transition to INITIAL_SETUP', () => {
+    it('should set first player and transition to DRAWING_CARDS', () => {
       const match = new Match('match-001', 'tournament-001');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
       match.markDeckValidationComplete(true);
+      match.approveMatch(PlayerIdentifier.PLAYER1);
+      match.approveMatch(PlayerIdentifier.PLAYER2);
 
       match.setFirstPlayer(PlayerIdentifier.PLAYER1);
 
       expect(match.firstPlayer).toBe(PlayerIdentifier.PLAYER1);
       expect(match.currentPlayer).toBe(PlayerIdentifier.PLAYER1);
-      expect(match.state).toBe(MatchState.INITIAL_SETUP);
+      expect(match.state).toBe(MatchState.DRAWING_CARDS);
     });
 
     it('should throw error if not in PRE_GAME_SETUP state', () => {

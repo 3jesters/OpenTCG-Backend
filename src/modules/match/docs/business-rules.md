@@ -25,8 +25,11 @@ This document describes the business rules and constraints that govern match lif
    - `CREATED` → `WAITING_FOR_PLAYERS` (when first player assigned)
    - `WAITING_FOR_PLAYERS` → `DECK_VALIDATION` (when both players assigned)
    - `DECK_VALIDATION` → `PRE_GAME_SETUP` (decks valid) or `CANCELLED` (decks invalid)
-   - `PRE_GAME_SETUP` → `INITIAL_SETUP` (coin flip done)
-   - `INITIAL_SETUP` → `PLAYER_TURN` (setup complete)
+   - `PRE_GAME_SETUP` → `DRAWING_CARDS` (automatic, after coin toss)
+   - `DRAWING_CARDS` → `DRAWING_CARDS` (player redraws if invalid) or `SELECT_ACTIVE_POKEMON` (both players have valid decks)
+   - `SELECT_ACTIVE_POKEMON` → `SELECT_BENCH_POKEMON` (both players selected active)
+   - `SELECT_BENCH_POKEMON` → `PLAYER_TURN` (both players ready, via COMPLETE_INITIAL_SETUP)
+   - `INITIAL_SETUP` → `PLAYER_TURN` (setup complete, legacy state)
    - `PLAYER_TURN` → `BETWEEN_TURNS` (turn ended) or `MATCH_ENDED` (win condition)
    - `BETWEEN_TURNS` → `PLAYER_TURN` (next turn) or `MATCH_ENDED` (win condition)
    - Any state → `CANCELLED` (error, player leaves)
@@ -92,15 +95,31 @@ This document describes the business rules and constraints that govern match lif
 ### Initial Setup Rules
 
 1. **Setup Sequence**
-   - Both players shuffle decks
-   - Both players draw 7 cards
-   - Both players set up basic Pokemon (face down)
-   - Both players reveal and set active Pokemon
-   - Both players draw 6 prize cards
+   - After deck validation, coin toss is automatically performed to determine first player
+   - **DRAWING_CARDS State**: Each player independently draws 7 cards by clicking "Draw Cards" button
+   - **Start Game Rules Validation**: Each player's hand is validated against tournament start game rules
+   - **Reshuffle Rule**: If a player's hand doesn't satisfy all start game rules:
+     - Player's drawn cards are shown to the opponent (if opponent has already drawn)
+     - Hand cards are shuffled back into the deck
+     - Player draws 7 new cards
+     - Process repeats until hand satisfies all rules
+   - Once both players have valid decks, match transitions to SELECT_ACTIVE_POKEMON
+   - **SELECT_ACTIVE_POKEMON State**: Both players select their active Pokemon
+     - Players can only see opponent's active Pokemon after selecting their own
+   - **SELECT_BENCH_POKEMON State**: Both players optionally select bench Pokemon (can skip)
+   - Both players draw 6 prize cards (set up when transitioning to SELECT_BENCH_POKEMON)
+   - Once both players are ready, match transitions to PLAYER_TURN
    - First player draws 1 card (if going first)
 
-2. **First Player**
-   - Determined by coin flip
+2. **Start Game Rules**
+   - Configured per tournament (default: at least 1 Basic Pokemon)
+   - Rules can require multiple conditions (e.g., 2 Basic Pokemon, 1 Energy card)
+   - All rules must be satisfied for hand to be valid
+   - If no rules specified, default rule applies (at least 1 Basic Pokemon)
+
+3. **First Player**
+   - Determined by automatic coin toss after deck validation
+   - Coin toss result is deterministic (based on match ID) so both players see the same result
    - First player cannot attack on first turn
    - First player draws 1 card after setup
 
@@ -151,13 +170,19 @@ This document describes the business rules and constraints that govern match lif
    - Own bench (all Pokemon, full details)
    - Opponent's active Pokemon (full details)
    - Opponent's bench (all Pokemon, full details)
-   - Opponent's hand count (not cards)
+   - Opponent's hand count (not cards, except during INITIAL_SETUP)
+   - Opponent's revealed hand (during INITIAL_SETUP state only - cards shown during reshuffle)
    - Opponent's deck count
    - Opponent's discard pile (all cards)
    - Opponent's prize cards remaining count
 
 2. **Opponent Sees**
    - Same visibility rules (from their perspective)
+
+3. **Revealed Hand During Initial Setup**
+   - During `INITIAL_SETUP` state, opponent's hand is revealed in `opponentState.revealedHand`
+   - This shows cards that were revealed during the reshuffle process
+   - Once match progresses to `PLAYER_TURN`, hand becomes private again
 
 ## Action History
 

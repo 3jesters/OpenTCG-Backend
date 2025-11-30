@@ -1,4 +1,10 @@
-import { Match, MatchState, TurnPhase, PlayerIdentifier } from '../../domain';
+import {
+  Match,
+  MatchState,
+  TurnPhase,
+  PlayerIdentifier,
+  PlayerActionType,
+} from '../../domain';
 import {
   GameState,
   PlayerGameState,
@@ -19,8 +25,17 @@ export class MatchStateResponseDto {
   opponentState: OpponentStateDto;
   availableActions: string[];
   lastAction?: ActionSummaryDto;
+  playerDeckId: string | null;
+  opponentDeckId: string | null;
+  coinTossResult: PlayerIdentifier | null;
+  playerHasDrawnValidHand: boolean;
+  opponentHasDrawnValidHand: boolean;
 
-  static fromDomain(match: Match, playerId: string): MatchStateResponseDto {
+  static fromDomain(
+    match: Match,
+    playerId: string,
+    availableActions: PlayerActionType[] = [],
+  ): MatchStateResponseDto {
     const playerIdentifier = match.getPlayerIdentifier(playerId);
     if (!playerIdentifier) {
       throw new Error('Player is not part of this match');
@@ -34,6 +49,33 @@ export class MatchStateResponseDto {
       ? gameState.getOpponentState(playerIdentifier)
       : null;
 
+    // Determine deck IDs based on player identifier
+    const playerDeckId =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player1DeckId
+        : match.player2DeckId;
+    
+    // Hide opponent deck ID during MATCH_APPROVAL state until both players approve
+    let opponentDeckId: string | null;
+    if (match.state === MatchState.MATCH_APPROVAL && !match.hasBothApprovals()) {
+      opponentDeckId = null;
+    } else {
+      opponentDeckId =
+        playerIdentifier === PlayerIdentifier.PLAYER1
+          ? match.player2DeckId
+          : match.player1DeckId;
+    }
+
+    // Determine if players have drawn valid initial hands
+    const playerHasDrawnValidHand =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player1HasDrawnValidHand
+        : match.player2HasDrawnValidHand;
+    const opponentHasDrawnValidHand =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player2HasDrawnValidHand
+        : match.player1HasDrawnValidHand;
+
     return {
       matchId: match.id,
       state: match.state,
@@ -44,12 +86,23 @@ export class MatchStateResponseDto {
         ? PlayerStateDto.fromDomain(playerState)
         : PlayerStateDto.empty(),
       opponentState: opponentState
-        ? OpponentStateDto.fromDomain(opponentState)
+        ? OpponentStateDto.fromDomain(
+            opponentState,
+            match.state,
+            playerState,
+            playerHasDrawnValidHand,
+            opponentHasDrawnValidHand,
+          )
         : OpponentStateDto.empty(),
-      availableActions: [], // Would be populated by state machine service
+      availableActions: availableActions.map((action) => action.toString()),
       lastAction: gameState?.lastAction
         ? ActionSummaryDto.fromDomain(gameState.lastAction)
         : undefined,
+      playerDeckId,
+      opponentDeckId,
+      coinTossResult: match.coinTossResult,
+      playerHasDrawnValidHand,
+      opponentHasDrawnValidHand,
     };
   }
 }
@@ -99,7 +152,7 @@ class PlayerStateDto {
 
 /**
  * Opponent State DTO
- * Limited state visible to opponent (no hand cards)
+ * Limited state visible to opponent (no hand cards, except during INITIAL_SETUP)
  */
 class OpponentStateDto {
   handCount: number;
@@ -110,9 +163,18 @@ class OpponentStateDto {
   benchCount: number;
   prizeCardsRemaining: number;
   attachedEnergy: string[];
+  revealedHand?: string[]; // Opponent's hand revealed during INITIAL_SETUP reshuffle
+  drawnCards?: string[]; // Opponent's drawn cards during DRAWING_CARDS (if not validated)
+  isDrawing?: boolean; // Indicates opponent is in process of drawing
 
-  static fromDomain(state: PlayerGameState): OpponentStateDto {
-    return {
+  static fromDomain(
+    state: PlayerGameState,
+    matchState: MatchState,
+    playerState: PlayerGameState | null,
+    playerHasDrawnValidHand: boolean,
+    opponentHasDrawnValidHand: boolean,
+  ): OpponentStateDto {
+    const dto: OpponentStateDto = {
       handCount: state.getHandCount(),
       deckCount: state.getDeckCount(),
       discardCount: state.discardPile.length,
@@ -124,6 +186,36 @@ class OpponentStateDto {
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
       attachedEnergy: state.activePokemon?.attachedEnergy || [],
     };
+
+    // During DRAWING_CARDS state
+    if (matchState === MatchState.DRAWING_CARDS) {
+      // If opponent has drawn but not validated, show their drawn cards
+      if (state.hand.length > 0 && !opponentHasDrawnValidHand) {
+        dto.drawnCards = state.hand;
+        dto.isDrawing = true;
+      } else if (!opponentHasDrawnValidHand) {
+        // Opponent hasn't drawn yet
+        dto.isDrawing = false;
+      }
+      // If opponent has valid initial hand, don't show cards (just hand count)
+    }
+
+    // During INITIAL_SETUP, reveal opponent's hand (it was shown during reshuffle)
+    if (matchState === MatchState.INITIAL_SETUP) {
+      dto.revealedHand = state.hand;
+    }
+
+    // During SELECT_ACTIVE_POKEMON, only show opponent's active Pokemon if player has also selected
+    if (matchState === MatchState.SELECT_ACTIVE_POKEMON) {
+      // Only show opponent's active Pokemon if player has also selected their own
+      const playerHasSelected = playerState?.activePokemon !== null;
+      if (!playerHasSelected && state.activePokemon) {
+        // Player hasn't selected yet, hide opponent's selection
+        dto.activePokemon = null;
+      }
+    }
+
+    return dto;
   }
 
   static empty(): OpponentStateDto {
@@ -136,6 +228,9 @@ class OpponentStateDto {
       benchCount: 0,
       prizeCardsRemaining: 0,
       attachedEnergy: [],
+      revealedHand: undefined,
+      drawnCards: undefined,
+      isDrawing: undefined,
     };
   }
 }

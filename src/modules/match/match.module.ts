@@ -8,16 +8,26 @@ import {
   EndMatchUseCase,
   GetMatchStateUseCase,
   ListMatchesUseCase,
+  ValidateMatchDecksUseCase,
+  PerformCoinTossUseCase,
+  DrawInitialCardsUseCase,
 } from './application/use-cases';
 import { IMatchRepository } from './domain/repositories';
 import { JsonMatchRepository } from './infrastructure/persistence/json-match.repository';
-import { MatchStateMachineService } from './domain/services';
+import {
+  MatchStateMachineService,
+  StartGameRulesValidatorService,
+} from './domain/services';
+import { DeckModule } from '../deck/deck.module';
+import { CardModule } from '../card/card.module';
+import { TournamentModule } from '../tournament/tournament.module';
 
 /**
  * Match Module
  * Manages match lifecycle and gameplay state machine
  */
 @Module({
+  imports: [DeckModule, CardModule, TournamentModule],
   controllers: [MatchController],
   providers: [
     // Use Cases
@@ -28,8 +38,12 @@ import { MatchStateMachineService } from './domain/services';
     EndMatchUseCase,
     GetMatchStateUseCase,
     ListMatchesUseCase,
+    ValidateMatchDecksUseCase,
+    PerformCoinTossUseCase,
+    DrawInitialCardsUseCase,
     // Domain Services
     MatchStateMachineService,
+    StartGameRulesValidatorService,
     // Repository
     {
       provide: IMatchRepository,

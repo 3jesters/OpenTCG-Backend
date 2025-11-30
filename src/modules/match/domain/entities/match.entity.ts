@@ -3,6 +3,7 @@ import {
   MatchResult,
   PlayerIdentifier,
   WinCondition,
+  TurnPhase,
 } from '../enums';
 import { GameState } from '../value-objects';
 
@@ -28,6 +29,15 @@ export class Match {
   private _state: MatchState;
   private _currentPlayer: PlayerIdentifier | null;
   private _firstPlayer: PlayerIdentifier | null;
+  private _coinTossResult: PlayerIdentifier | null;
+
+  // Setup Progress Tracking
+  private _player1HasDrawnValidHand: boolean;
+  private _player2HasDrawnValidHand: boolean;
+  private _player1ReadyToStart: boolean;
+  private _player2ReadyToStart: boolean;
+  private _player1Approved: boolean;
+  private _player2Approved: boolean;
 
   // Match Result
   private _startedAt: Date | null;
@@ -56,6 +66,13 @@ export class Match {
     this._player2DeckId = null;
     this._currentPlayer = null;
     this._firstPlayer = null;
+    this._coinTossResult = null;
+    this._player1HasDrawnValidHand = false;
+    this._player2HasDrawnValidHand = false;
+    this._player1ReadyToStart = false;
+    this._player2ReadyToStart = false;
+    this._player1Approved = false;
+    this._player2Approved = false;
     this._startedAt = null;
     this._endedAt = null;
     this._winnerId = null;
@@ -113,6 +130,34 @@ export class Match {
 
   get firstPlayer(): PlayerIdentifier | null {
     return this._firstPlayer;
+  }
+
+  get coinTossResult(): PlayerIdentifier | null {
+    return this._coinTossResult;
+  }
+
+  get player1HasDrawnValidHand(): boolean {
+    return this._player1HasDrawnValidHand;
+  }
+
+  get player2HasDrawnValidHand(): boolean {
+    return this._player2HasDrawnValidHand;
+  }
+
+  get player1ReadyToStart(): boolean {
+    return this._player1ReadyToStart;
+  }
+
+  get player2ReadyToStart(): boolean {
+    return this._player2ReadyToStart;
+  }
+
+  get player1Approved(): boolean {
+    return this._player1Approved;
+  }
+
+  get player2Approved(): boolean {
+    return this._player2Approved;
   }
 
   get startedAt(): Date | null {
@@ -218,13 +263,78 @@ export class Match {
       return;
     }
 
-    this._state = MatchState.PRE_GAME_SETUP;
+    this._state = MatchState.MATCH_APPROVAL;
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Approve match (player confirms they want to proceed)
+   * Valid states: MATCH_APPROVAL
+   */
+  approveMatch(playerIdentifier: PlayerIdentifier): void {
+    if (this._state !== MatchState.MATCH_APPROVAL) {
+      throw new Error(
+        `Cannot approve match in state ${this._state}. Must be MATCH_APPROVAL`,
+      );
+    }
+
+    if (playerIdentifier === PlayerIdentifier.PLAYER1) {
+      if (this._player1Approved) {
+        throw new Error('Player 1 has already approved');
+      }
+      this._player1Approved = true;
+    } else {
+      if (this._player2Approved) {
+        throw new Error('Player 2 has already approved');
+      }
+      this._player2Approved = true;
+    }
+
+    // If both players have approved, transition directly to DRAWING_CARDS
+    // (coin toss will happen after both players complete initial setup)
+    if (this._player1Approved && this._player2Approved) {
+      this._state = MatchState.DRAWING_CARDS;
+    }
+
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Check if both players have approved the match
+   */
+  hasBothApprovals(): boolean {
+    return this._player1Approved && this._player2Approved;
+  }
+
+  /**
+   * Perform coin toss to determine first player
+   * Valid states: SELECT_BENCH_POKEMON
+   */
+  performCoinToss(): void {
+    if (this._state !== MatchState.SELECT_BENCH_POKEMON) {
+      throw new Error(
+        `Cannot perform coin toss in state ${this._state}. Must be SELECT_BENCH_POKEMON`,
+      );
+    }
+
+    // Use deterministic random based on match ID for consistency
+    const seed = this._id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const random = (seed * 9301 + 49297) % 233280;
+    const result = random / 233280 < 0.5 
+      ? PlayerIdentifier.PLAYER1 
+      : PlayerIdentifier.PLAYER2;
+
+    this._coinTossResult = result;
+    this._firstPlayer = result;
+    this._currentPlayer = result;
+    // State remains SELECT_BENCH_POKEMON - will transition to PLAYER_TURN in completeInitialSetup
     this._updatedAt = new Date();
   }
 
   /**
    * Set the first player (after coin flip)
    * Valid states: PRE_GAME_SETUP
+   * @deprecated Use performCoinToss() instead
    */
   setFirstPlayer(playerIdentifier: PlayerIdentifier): void {
     if (this._state !== MatchState.PRE_GAME_SETUP) {
@@ -237,9 +347,108 @@ export class Match {
       throw new Error('Invalid player identifier');
     }
 
+    this._coinTossResult = playerIdentifier;
     this._firstPlayer = playerIdentifier;
     this._currentPlayer = playerIdentifier;
-    this._state = MatchState.INITIAL_SETUP;
+    this._state = MatchState.DRAWING_CARDS;
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Mark player's initial hand as valid (after drawing valid initial cards with at least one Basic Pokemon)
+   * Valid states: DRAWING_CARDS
+   */
+  markPlayerDeckValid(playerIdentifier: PlayerIdentifier): void {
+    if (this._state !== MatchState.DRAWING_CARDS) {
+      throw new Error(
+        `Cannot mark deck valid in state ${this._state}. Must be DRAWING_CARDS`,
+      );
+    }
+
+    if (playerIdentifier === PlayerIdentifier.PLAYER1) {
+      this._player1HasDrawnValidHand = true;
+    } else {
+      this._player2HasDrawnValidHand = true;
+    }
+
+    // If both players have valid initial hands, transition to SELECT_ACTIVE_POKEMON
+    if (this._player1HasDrawnValidHand && this._player2HasDrawnValidHand) {
+      this._state = MatchState.SELECT_ACTIVE_POKEMON;
+    }
+
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Transition to SELECT_BENCH_POKEMON after both players set active Pokemon
+   * Valid states: SELECT_ACTIVE_POKEMON
+   */
+  transitionToSelectBenchPokemon(gameState: GameState): void {
+    if (this._state !== MatchState.SELECT_ACTIVE_POKEMON) {
+      throw new Error(
+        `Cannot transition to SELECT_BENCH_POKEMON in state ${this._state}. Must be SELECT_ACTIVE_POKEMON`,
+      );
+    }
+
+    if (!gameState.player1State.activePokemon || !gameState.player2State.activePokemon) {
+      throw new Error('Both players must have set active Pokemon');
+    }
+
+    this._gameState = gameState;
+    this._state = MatchState.SELECT_BENCH_POKEMON;
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Mark player as ready to start (after selecting bench Pokemon)
+   * Valid states: SELECT_BENCH_POKEMON
+   */
+  markPlayerReadyToStart(playerIdentifier: PlayerIdentifier): void {
+    if (this._state !== MatchState.SELECT_BENCH_POKEMON) {
+      throw new Error(
+        `Cannot mark ready to start in state ${this._state}. Must be SELECT_BENCH_POKEMON`,
+      );
+    }
+
+    if (playerIdentifier === PlayerIdentifier.PLAYER1) {
+      this._player1ReadyToStart = true;
+    } else {
+      this._player2ReadyToStart = true;
+    }
+
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Update game state during DRAWING_CARDS
+   * Valid states: DRAWING_CARDS
+   */
+  updateGameStateDuringDrawing(gameState: GameState): void {
+    if (this._state !== MatchState.DRAWING_CARDS) {
+      throw new Error(
+        `Cannot update game state during drawing in state ${this._state}. Must be DRAWING_CARDS`,
+      );
+    }
+
+    this._gameState = gameState;
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Update game state during setup phases (SELECT_ACTIVE_POKEMON, SELECT_BENCH_POKEMON)
+   * Valid states: SELECT_ACTIVE_POKEMON, SELECT_BENCH_POKEMON
+   */
+  updateGameStateDuringSetup(gameState: GameState): void {
+    if (
+      this._state !== MatchState.SELECT_ACTIVE_POKEMON &&
+      this._state !== MatchState.SELECT_BENCH_POKEMON
+    ) {
+      throw new Error(
+        `Cannot update game state during setup in state ${this._state}. Must be SELECT_ACTIVE_POKEMON or SELECT_BENCH_POKEMON`,
+      );
+    }
+
+    this._gameState = gameState;
     this._updatedAt = new Date();
   }
 
@@ -265,12 +474,12 @@ export class Match {
 
   /**
    * Complete initial setup and start first turn
-   * Valid states: INITIAL_SETUP
+   * Valid states: SELECT_BENCH_POKEMON
    */
   completeInitialSetup(): void {
-    if (this._state !== MatchState.INITIAL_SETUP) {
+    if (this._state !== MatchState.SELECT_BENCH_POKEMON) {
       throw new Error(
-        `Cannot complete initial setup in state ${this._state}. Must be INITIAL_SETUP`,
+        `Cannot complete initial setup in state ${this._state}. Must be SELECT_BENCH_POKEMON`,
       );
     }
 
@@ -278,6 +487,21 @@ export class Match {
       throw new Error('Game state must be initialized before completing setup');
     }
 
+    if (!this._player1ReadyToStart || !this._player2ReadyToStart) {
+      throw new Error('Both players must be ready to start');
+    }
+
+    // Perform coin toss if not already done
+    if (this._coinTossResult === null) {
+      this.performCoinToss();
+    }
+
+    // Update game state to DRAW phase for first turn
+    // Set currentPlayer in game state to first player
+    this._gameState = this._gameState
+      .withPhase(TurnPhase.DRAW)
+      .withCurrentPlayer(this._firstPlayer!);
+    this._currentPlayer = this._firstPlayer;
     this._state = MatchState.PLAYER_TURN;
     this._updatedAt = new Date();
   }
@@ -428,6 +652,122 @@ export class Match {
       return this._player1Id;
     }
     return null;
+  }
+
+  // ========================================
+  // Factory Methods
+  // ========================================
+
+  /**
+   * Private method to restore match state from persisted data
+   * Bypasses state machine validation - only for repository use
+   */
+  private restoreState(
+    updatedAt: Date,
+    player1Id: string | null,
+    player2Id: string | null,
+    player1DeckId: string | null,
+    player2DeckId: string | null,
+    state: MatchState,
+    currentPlayer: PlayerIdentifier | null,
+    firstPlayer: PlayerIdentifier | null,
+    coinTossResult: PlayerIdentifier | null,
+    player1HasDrawnValidHand: boolean,
+    player2HasDrawnValidHand: boolean,
+    player1ReadyToStart: boolean,
+    player2ReadyToStart: boolean,
+    startedAt: Date | null,
+    endedAt: Date | null,
+    winnerId: string | null,
+    result: MatchResult | null,
+    winCondition: WinCondition | null,
+    cancellationReason: string | null,
+    gameState: GameState | null,
+    player1Approved?: boolean,
+    player2Approved?: boolean,
+  ): void {
+    this._updatedAt = updatedAt;
+    this._player1Id = player1Id;
+    this._player2Id = player2Id;
+    this._player1DeckId = player1DeckId;
+    this._player2DeckId = player2DeckId;
+    this._state = state;
+    this._currentPlayer = currentPlayer;
+    this._firstPlayer = firstPlayer;
+    this._coinTossResult = coinTossResult ?? null;
+    this._player1HasDrawnValidHand = player1HasDrawnValidHand ?? false;
+    this._player2HasDrawnValidHand = player2HasDrawnValidHand ?? false;
+    this._player1ReadyToStart = player1ReadyToStart ?? false;
+    this._player2ReadyToStart = player2ReadyToStart ?? false;
+    this._player1Approved = player1Approved ?? false;
+    this._player2Approved = player2Approved ?? false;
+    this._startedAt = startedAt;
+    this._endedAt = endedAt;
+    this._winnerId = winnerId;
+    this._result = result;
+    this._winCondition = winCondition;
+    this._cancellationReason = cancellationReason;
+    this._gameState = gameState;
+  }
+
+  /**
+   * Restore a match from persisted data
+   * This method bypasses state machine validation to restore a match from storage
+   * Should only be used by repository implementations
+   */
+  static restore(
+    id: string,
+    tournamentId: string,
+    createdAt: Date,
+    updatedAt: Date,
+    player1Id: string | null,
+    player2Id: string | null,
+    player1DeckId: string | null,
+    player2DeckId: string | null,
+    state: MatchState,
+    currentPlayer: PlayerIdentifier | null,
+    firstPlayer: PlayerIdentifier | null,
+    coinTossResult: PlayerIdentifier | null,
+    player1HasDrawnValidHand: boolean,
+    player2HasDrawnValidHand: boolean,
+    player1ReadyToStart: boolean,
+    player2ReadyToStart: boolean,
+    startedAt: Date | null,
+    endedAt: Date | null,
+    winnerId: string | null,
+    result: MatchResult | null,
+    winCondition: WinCondition | null,
+    cancellationReason: string | null,
+    gameState: GameState | null,
+    player1Approved?: boolean,
+    player2Approved?: boolean,
+  ): Match {
+    const match = new Match(id, tournamentId, createdAt);
+    match.restoreState(
+      updatedAt,
+      player1Id,
+      player2Id,
+      player1DeckId,
+      player2DeckId,
+      state,
+      currentPlayer,
+      firstPlayer,
+      coinTossResult,
+      player1HasDrawnValidHand,
+      player2HasDrawnValidHand,
+      player1ReadyToStart,
+      player2ReadyToStart,
+      startedAt,
+      endedAt,
+      winnerId,
+      result,
+      winCondition,
+      cancellationReason,
+      gameState,
+      player1Approved,
+      player2Approved,
+    );
+    return match;
   }
 }
 

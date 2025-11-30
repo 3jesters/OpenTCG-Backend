@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
-describe('Card Load (e2e)', () => {
+describe('Card Available Sets (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -29,79 +29,42 @@ describe('Card Load (e2e)', () => {
     await app.close();
   });
 
-  describe('/api/v1/cards/load (POST)', () => {
-    it('should load cards from a valid file', () => {
+  describe('GET /api/v1/cards/sets/available', () => {
+    it('should return available sets from file system', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/cards/load')
-        .send({
-          sets: [
-            {
-              author: 'pokemon',
-              setName: 'base-set',
-              version: '1.0',
-            },
-          ],
-        })
+        .get('/api/v1/cards/sets/available')
         .expect(200)
         .expect((res) => {
-          expect(res.body.success).toBe(true);
-          expect(res.body.totalLoaded).toBe(1);
-          expect(res.body.results).toHaveLength(1);
-          expect(res.body.results[0].success).toBe(true);
-          expect(res.body.results[0].author).toBe('pokemon');
-          expect(res.body.results[0].setName).toBe('Base Set');
-          expect(res.body.results[0].version).toBe('1.0');
-          expect(res.body.results[0].loaded).toBe(1);
-          expect(res.body.results[0].filename).toBe('pokemon-base-set-v1.0.json');
+          expect(res.body.sets).toBeDefined();
+          expect(Array.isArray(res.body.sets)).toBe(true);
+          expect(res.body.total).toBeGreaterThan(0);
+          expect(res.body.sets.length).toBe(res.body.total);
+          
+          // Check set structure
+          if (res.body.sets.length > 0) {
+            const firstSet = res.body.sets[0];
+            expect(firstSet).toHaveProperty('author');
+            expect(firstSet).toHaveProperty('setName');
+            expect(firstSet).toHaveProperty('version');
+            expect(firstSet).toHaveProperty('totalCards');
+            expect(firstSet).toHaveProperty('filename');
+          }
         });
     });
 
-    it('should handle non-existent file', () => {
+    it('should return sets with valid metadata', () => {
       return request(app.getHttpServer())
-        .post('/api/v1/cards/load')
-        .send({
-          sets: [
-            {
-              author: 'pokemon',
-              setName: 'non-existent-set',
-              version: '1.0',
-            },
-          ],
-        })
+        .get('/api/v1/cards/sets/available')
         .expect(200)
         .expect((res) => {
-          expect(res.body.success).toBe(false);
-          expect(res.body.totalLoaded).toBe(0);
-          expect(res.body.results).toHaveLength(1);
-          expect(res.body.results[0].success).toBe(false);
-          expect(res.body.results[0].error).toBeDefined();
+          res.body.sets.forEach((set: any) => {
+            expect(set.author).toBeDefined();
+            expect(set.setName).toBeDefined();
+            expect(set.version).toBeDefined();
+            expect(typeof set.totalCards).toBe('number');
+            expect(set.filename).toBeDefined();
+          });
         });
-    });
-
-    it('should reject invalid request body', () => {
-      return request(app.getHttpServer())
-        .post('/api/v1/cards/load')
-        .send({
-          sets: 'invalid',
-        })
-        .expect(400);
-    });
-
-    it('should reject missing sets array', () => {
-      return request(app.getHttpServer())
-        .post('/api/v1/cards/load')
-        .send({})
-        .expect(400);
-    });
-
-    it('should reject empty sets array', () => {
-      return request(app.getHttpServer())
-        .post('/api/v1/cards/load')
-        .send({
-          sets: [],
-        })
-        .expect(400);
     });
   });
 });
-

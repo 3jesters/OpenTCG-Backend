@@ -202,7 +202,7 @@ Get just the list of cards (with quantities) for a specific deck. This is a ligh
 
 ### Get Deck by ID
 
-Retrieve a specific deck by its ID.
+Retrieve a specific deck by its ID with full card details. This endpoint returns complete card information including images, attacks, abilities, and all other card properties, making it perfect for match gameplay where all card data is needed.
 
 **Endpoint:** `GET /api/v1/decks/:id`
 
@@ -224,17 +224,95 @@ Retrieve a specific deck by its ID.
     {
       "cardId": "pokemon-base-set-v1.0-pikachu--60",
       "setName": "base-set",
-      "quantity": 4
+      "quantity": 4,
+      "card": {
+        "cardId": "pokemon-base-set-v1.0-pikachu--60",
+        "instanceId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "Pikachu",
+        "pokemonNumber": "025",
+        "cardNumber": "60",
+        "setName": "Base Set",
+        "cardType": "POKEMON",
+        "pokemonType": "ELECTRIC",
+        "rarity": "COMMON",
+        "hp": 60,
+        "stage": "BASIC",
+        "attacks": [
+          {
+            "name": "Thunder Shock",
+            "energyCost": ["ELECTRIC"],
+            "damage": 10,
+            "text": "Flip a coin. If tails, this Pokémon does 10 damage to itself."
+          }
+        ],
+        "weakness": {
+          "type": "FIGHTING",
+          "value": "×2"
+        },
+        "resistance": null,
+        "retreatCost": 1,
+        "artist": "Mitsuhiro Arita",
+        "description": "When several of these Pokémon gather, their electricity could build and cause lightning storms.",
+        "imageUrl": "https://example.com/cards/pikachu-60.png",
+        "regulationMark": null
+      }
     },
     {
       "cardId": "pokemon-base-set-v1.0-raichu--14",
       "setName": "base-set",
-      "quantity": 2
+      "quantity": 2,
+      "card": {
+        "cardId": "pokemon-base-set-v1.0-raichu--14",
+        "instanceId": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+        "name": "Raichu",
+        "pokemonNumber": "026",
+        "cardNumber": "14",
+        "setName": "Base Set",
+        "cardType": "POKEMON",
+        "pokemonType": "ELECTRIC",
+        "rarity": "RARE_HOLO",
+        "hp": 80,
+        "stage": "STAGE_1",
+        "evolvesFrom": "Pikachu",
+        "attacks": [
+          {
+            "name": "Agility",
+            "energyCost": ["COLORLESS", "COLORLESS"],
+            "damage": 20,
+            "text": "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to this Pokémon."
+          },
+          {
+            "name": "Thunder",
+            "energyCost": ["ELECTRIC", "ELECTRIC", "ELECTRIC"],
+            "damage": 60,
+            "text": "Flip a coin. If tails, this Pokémon does 30 damage to itself."
+          }
+        ],
+        "weakness": {
+          "type": "FIGHTING",
+          "value": "×2"
+        },
+        "resistance": null,
+        "retreatCost": 2,
+        "artist": "Ken Sugimori",
+        "description": "Its long tail serves as a ground to protect itself from its own high-voltage power.",
+        "imageUrl": "https://example.com/cards/raichu-14.png",
+        "regulationMark": null
+      }
     }
   ],
   "totalCards": 60
 }
 ```
+
+**Note:** The `card` property in each deck card entry contains the full card details including:
+- Image URL (`imageUrl`)
+- Attacks with energy costs and damage
+- Abilities (if any)
+- Weakness and resistance
+- HP, retreat cost, and all other card properties
+
+This makes it easy for clients to display cards in match gameplay without needing additional API calls to fetch card details.
 
 **Error Response:** `404 Not Found`
 
@@ -627,7 +705,7 @@ cards.forEach(card => {
 });
 ```
 
-#### Get Deck by ID
+#### Get Deck by ID (with Full Card Details)
 
 ```typescript
 async function getDeck(deckId: string): Promise<DeckResponse> {
@@ -643,7 +721,23 @@ async function getDeck(deckId: string): Promise<DeckResponse> {
 
   return await response.json();
 }
+
+// Usage - Get deck with full card details for match gameplay
+const deck = await getDeck('deck-id');
+deck.cards.forEach(deckCard => {
+  console.log(`${deckCard.quantity}x ${deckCard.card?.name || deckCard.cardId}`);
+  
+  // Full card details are available in deckCard.card
+  if (deckCard.card) {
+    console.log(`  Image: ${deckCard.card.imageUrl}`);
+    console.log(`  HP: ${deckCard.card.hp}`);
+    console.log(`  Attacks: ${deckCard.card.attacks?.length || 0}`);
+    // All card properties are available: attacks, abilities, weakness, etc.
+  }
+});
 ```
+
+**Note:** This endpoint returns full card details in the `card` property of each deck card entry. This is perfect for match gameplay where you need all card information (images, attacks, abilities) without making additional API calls.
 
 #### Update Deck
 

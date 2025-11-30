@@ -152,16 +152,14 @@ describe('CardRuleValidator', () => {
         });
 
         it('should throw error for negative cost reduction', () => {
-          const rule = new CardRule(
-            CardRuleType.ATTACK_COST_MODIFICATION,
-            'Text',
-            undefined,
-            RulePriority.NORMAL,
-            { category: 'attack', costReduction: -1 },
-          );
-
           expect(() => {
-            CardRuleValidator.validate(rule);
+            new CardRule(
+              CardRuleType.ATTACK_COST_MODIFICATION,
+              'Text',
+              undefined,
+              RulePriority.NORMAL,
+              { category: 'attack', costReduction: -1 },
+            );
           }).toThrow('Cost reduction cannot be negative');
         });
 
@@ -204,17 +202,15 @@ describe('CardRuleValidator', () => {
         });
 
         it('should throw error for negative reduction amount', () => {
-          const rule = new CardRule(
-            CardRuleType.DAMAGE_REDUCTION_RULE,
-            'Text',
-            undefined,
-            RulePriority.NORMAL,
-            { category: 'damage', reductionAmount: -10 },
-          );
-
           expect(() => {
-            CardRuleValidator.validate(rule);
-          }).toThrow('Reduction amount cannot be negative');
+            new CardRule(
+              CardRuleType.DAMAGE_REDUCTION_RULE,
+              'Text',
+              undefined,
+              RulePriority.NORMAL,
+              { category: 'damage', reductionAmount: -10 },
+            );
+          }).toThrow('Damage reduction cannot be negative');
         });
 
         it('should throw error for negative increase amount', () => {
@@ -308,17 +304,15 @@ describe('CardRuleValidator', () => {
         });
 
         it('should throw error for negative prize count', () => {
-          const rule = new CardRule(
-            CardRuleType.EXTRA_PRIZE_CARDS,
-            'Text',
-            undefined,
-            RulePriority.NORMAL,
-            { category: 'prize', prizeCount: -1 },
-          );
-
           expect(() => {
-            CardRuleValidator.validate(rule);
-          }).toThrow('Prize count cannot be negative');
+            new CardRule(
+              CardRuleType.EXTRA_PRIZE_CARDS,
+              'Text',
+              undefined,
+              RulePriority.NORMAL,
+              { category: 'prize', prizeCount: -1 },
+            );
+          }).toThrow('Prize count must be at least 1');
         });
       });
 
@@ -436,16 +430,14 @@ describe('CardRuleValidator', () => {
         });
 
         it('should throw error for invalid extra attachments', () => {
-          const rule = new CardRule(
-            CardRuleType.EXTRA_ENERGY_ATTACHMENT,
-            'Text',
-            undefined,
-            RulePriority.NORMAL,
-            { category: 'energy', extraAttachments: 0 },
-          );
-
           expect(() => {
-            CardRuleValidator.validate(rule);
+            new CardRule(
+              CardRuleType.EXTRA_ENERGY_ATTACHMENT,
+              'Text',
+              undefined,
+              RulePriority.NORMAL,
+              { category: 'energy', extraAttachments: 0 },
+            );
           }).toThrow('Extra attachments must be at least 1');
         });
       });

@@ -9,6 +9,7 @@ import {
   AbilityActivationType,
   UsageLimit,
 } from '../../domain/enums';
+import { AbilityEffectFactory } from '../../domain/value-objects/ability-effect.value-object';
 import { CardSummaryDto } from '../dto/card-summary.dto';
 import { CardDetailDto } from '../dto/card-detail.dto';
 import { Attack, Ability, Weakness, Resistance } from '../../domain/value-objects';
@@ -94,9 +95,9 @@ describe('CardMapper', () => {
         'Static',
         'When attacked, flip a coin. If heads, the attacking Pokémon is paralyzed.',
         AbilityActivationType.PASSIVE,
-        [],
+        [AbilityEffectFactory.drawCards(1)], // At least one effect required
         undefined,
-        UsageLimit.UNLIMITED,
+        undefined, // PASSIVE abilities should not have usage limits
       );
       mockCard.setAbility(ability);
 

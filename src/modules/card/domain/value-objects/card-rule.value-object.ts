@@ -130,7 +130,9 @@ export class CardRule {
     switch (this.metadata.category) {
       case 'prize':
         const prizeMetadata = this.metadata as PrizeRuleMetadata;
+        // Allow 0 for NO_PRIZE_CARDS rule type
         if (
+          this.ruleType !== CardRuleType.NO_PRIZE_CARDS &&
           prizeMetadata.prizeCount !== undefined &&
           prizeMetadata.prizeCount < 1
         ) {

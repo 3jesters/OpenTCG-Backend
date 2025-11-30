@@ -3,30 +3,29 @@
   "name": "Example Pikachu Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2025-11-23T11:08:08.780Z",
   "tournamentId": "default-tournament",
   "isValid": false,
   "cards": [
     {
-      "cardId": "pokemon-base-set-v1.0-pikachu-58",
+      "cardId": "pokemon-base-set-v1.0-pikachu--60",
       "setName": "Base Set",
       "quantity": 4
     },
     {
-      "cardId": "pokemon-base-set-v1.0-raichu-14",
+      "cardId": "pokemon-base-set-v1.0-raichu--14",
       "setName": "Base Set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-electabuzz-20",
+      "cardId": "pokemon-base-set-v1.0-electabuzz--20",
       "setName": "Base Set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-jungle-v1.0-pikachu-60",
+      "cardId": "pokemon-jungle-v1.0-pikachu--60",
       "setName": "Jungle",
       "quantity": 4
     }
   ]
 }
-

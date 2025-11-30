@@ -114,7 +114,7 @@ describe('AbilityEffectValidator', () => {
       expect(() => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.STATUS_CONDITION,
-          target: 'defending',
+          target: TargetType.DEFENDING,
           statusCondition: 'FROZEN' as any,
         });
       }).toThrow('Status condition must be');
@@ -196,7 +196,7 @@ describe('AbilityEffectValidator', () => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.SWITCH_POKEMON,
           target: TargetType.SELF,
-          with: 'benched_yours',
+          with: TargetType.BENCHED_YOURS,
           selector: 'manual' as any,
         });
       }).toThrow('Selector must be');

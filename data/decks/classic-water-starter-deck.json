@@ -3,7 +3,7 @@
   "name": "Classic Water Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-11-20T19:38:35.537Z",
+  "updatedAt": "2025-11-29T19:40:10.857Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
   "cards": [
@@ -23,7 +23,7 @@
       "quantity": 1
     },
     {
-      "cardId": "pokemon-base-set-v1.0-poliwag--59",
+      "cardId": "pokemon-base-set-v1.0-poliwag--39",
       "setName": "base-set",
       "quantity": 3
     },
@@ -48,37 +48,37 @@
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-magikarp--55",
+      "cardId": "pokemon-base-set-v1.0-magikarp--35",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-bill--91",
+      "cardId": "pokemon-base-set-v1.0-bill--92",
       "setName": "base-set",
       "quantity": 4
     },
     {
-      "cardId": "pokemon-base-set-v1.0-energy-removal--92",
+      "cardId": "pokemon-base-set-v1.0-energy-removal--93",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-gust-of-wind--93",
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--94",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-potion--94",
+      "cardId": "pokemon-base-set-v1.0-potion--90",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-switch--95",
+      "cardId": "pokemon-base-set-v1.0-switch--96",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-energy-retrieval--81",
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
       "setName": "base-set",
       "quantity": 2
     },
@@ -88,7 +88,7 @@
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-water-energy--103",
+      "cardId": "pokemon-base-set-v1.0-psychic-energy--102",
       "setName": "base-set",
       "quantity": 23
     }

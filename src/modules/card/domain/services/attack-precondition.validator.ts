@@ -50,7 +50,7 @@ export class AttackPreconditionValidator {
       throw new Error('Coin flip value is required');
     }
 
-    if (!value.numberOfCoins || typeof value.numberOfCoins !== 'number') {
+    if (typeof value.numberOfCoins !== 'number') {
       throw new Error('Number of coins is required and must be a number');
     }
 

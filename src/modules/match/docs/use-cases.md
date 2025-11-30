@@ -51,9 +51,44 @@ This document describes the application use cases for the Match module.
 - Match already has both players → BadRequestException
 - Match in invalid state → BadRequestException
 
-## Use Case 3: Start Match
+## Use Case 2.5: Approve Match
 
-**Actor**: System, Tournament Organizer
+**Actor**: Player
+
+**Preconditions**:
+- Match exists
+- Match is in `MATCH_APPROVAL` state
+- Both players assigned
+- Decks validated
+
+**Main Flow**:
+1. Player submits `APPROVE_MATCH` action
+2. System marks player as approved
+3. If both players have approved:
+   - System automatically performs coin toss
+   - System transitions match to `DRAWING_CARDS` state
+4. System returns updated match state
+
+**Postconditions**:
+- Player marked as approved
+- If both approved: Match in `DRAWING_CARDS` state (after coin toss)
+- Otherwise: Match remains in `MATCH_APPROVAL` state
+
+**Error Cases**:
+- Match not found → NotFoundException
+- Match in invalid state → BadRequestException
+- Player already approved → BadRequestException
+
+**Privacy Rules**:
+- During `MATCH_APPROVAL` state, `opponentDeckId` is hidden (returns `null`)
+- Only after both players approve, `opponentDeckId` is revealed
+- Players should cache opponent deck information after approval is complete
+
+**Note**: This use case is automatically triggered after deck validation completes successfully. Both players must approve before the coin toss occurs.
+
+## Use Case 3: Perform Coin Toss
+
+**Actor**: System
 
 **Preconditions**:
 - Match exists
@@ -62,23 +97,61 @@ This document describes the application use cases for the Match module.
 - Decks validated
 
 **Main Flow**:
-1. System receives first player identifier (from coin flip)
-2. System sets first player
-3. System creates initial game state
-4. System starts initial setup
+1. System automatically performs coin toss (deterministic based on match ID)
+2. System determines first player (PLAYER1 or PLAYER2)
+3. System sets coin toss result and first player
+4. System transitions match to `DRAWING_CARDS` state
 5. System returns updated match
 
 **Postconditions**:
-- Match in `INITIAL_SETUP` state
-- First player determined
-- Initial game state created
+- Match in `DRAWING_CARDS` state
+- Coin toss result determined (same for both players)
+- First player set
 
 **Error Cases**:
 - Match not found → NotFoundException
 - Match in invalid state → BadRequestException
-- First player not set → BadRequestException
 
-## Use Case 4: Get Match State
+**Note**: This use case is automatically triggered after both players approve the match (in `MATCH_APPROVAL` state). The coin toss happens automatically when the second player approves.
+
+## Use Case 4: Draw Initial Cards
+
+**Actor**: Player
+
+**Preconditions**:
+- Match exists
+- Match is in `DRAWING_CARDS` state
+- Player is part of match
+- Player has not yet drawn valid cards (or needs to redraw)
+
+**Main Flow**:
+1. Player clicks "Draw Cards" button
+2. System loads player's deck
+3. System shuffles deck (if first draw) or reshuffles (if redraw)
+4. System draws 7 cards
+5. System validates hand against start game rules
+6. If invalid:
+   - System returns drawn cards
+   - Match stays in `DRAWING_CARDS` state
+   - Opponent can see drawn cards (if they've already drawn)
+7. If valid:
+   - System marks player's deck as valid
+   - System updates game state with drawn cards
+   - If both players have valid decks, transition to `SELECT_ACTIVE_POKEMON`
+   - Otherwise, match stays in `DRAWING_CARDS` state
+8. System returns drawn cards, validity status, and next state
+
+**Postconditions**:
+- Player's hand updated with 7 cards
+- Player's deck validity status updated
+- Match may transition to `SELECT_ACTIVE_POKEMON` if both players ready
+
+**Error Cases**:
+- Match not found → NotFoundException
+- Match in invalid state → BadRequestException
+- Player not part of match → BadRequestException
+
+## Use Case 5: Get Match State
 
 **Actor**: Player
 
@@ -100,29 +173,38 @@ This document describes the application use cases for the Match module.
 - Match not found → NotFoundException
 - Player not part of match → NotFoundException
 
-## Use Case 5: Execute Turn Action
+## Use Case 6: Execute Turn Action
 
 **Actor**: Player
 
 **Preconditions**:
 - Match exists
-- Match is in `PLAYER_TURN` or `INITIAL_SETUP` state
-- It is the player's turn (or initial setup)
+- Match is in playable state (`PLAYER_TURN`, `DRAWING_CARDS`, `SELECT_ACTIVE_POKEMON`, `SELECT_BENCH_POKEMON`, or `INITIAL_SETUP`)
+- Action is valid for current state
 - Player has required resources
 
 **Main Flow**:
 1. Player submits action (type + data)
 2. System validates action:
    - State check
-   - Phase check
-   - Player turn check
+   - Phase check (if applicable)
+   - Player turn check (if applicable)
    - Resource check
    - Rule check
-3. System executes action
+3. System executes action:
+   - `DRAW_INITIAL_CARDS`: Draws and validates initial 7 cards
+   - `SET_ACTIVE_POKEMON`: Sets active Pokemon (in SELECT_ACTIVE_POKEMON state)
+   - `PLAY_POKEMON`: Plays Pokemon to bench (in SELECT_BENCH_POKEMON state)
+   - `COMPLETE_INITIAL_SETUP`: Marks player ready (in SELECT_BENCH_POKEMON state)
+   - Other actions: Standard gameplay actions
 4. System updates game state
-5. System checks win conditions
-6. If win condition met, end match
-7. System returns updated match state
+5. System checks state transitions:
+   - If both players have valid decks → transition to SELECT_ACTIVE_POKEMON
+   - If both players selected active → transition to SELECT_BENCH_POKEMON
+   - If both players ready → transition to PLAYER_TURN
+6. System checks win conditions
+7. If win condition met, end match
+8. System returns updated match state
 
 **Postconditions**:
 - Game state updated
@@ -137,9 +219,11 @@ This document describes the application use cases for the Match module.
 - Rule violation → BadRequestException
 
 **Action Types**:
-- `DRAW_CARD`: Draw 1 card from deck
+- `APPROVE_MATCH`: Approve match to proceed (MATCH_APPROVAL state)
+- `DRAW_INITIAL_CARDS`: Draw initial 7 cards (DRAWING_CARDS state)
+- `DRAW_CARD`: Draw 1 card from deck (PLAYER_TURN)
 - `PLAY_POKEMON`: Play Pokemon from hand to bench
-- `SET_ACTIVE_POKEMON`: Set active Pokemon (initial setup)
+- `SET_ACTIVE_POKEMON`: Set active Pokemon (SELECT_ACTIVE_POKEMON or INITIAL_SETUP)
 - `ATTACH_ENERGY`: Attach energy to Pokemon
 - `PLAY_TRAINER`: Play trainer card
 - `EVOLVE_POKEMON`: Evolve Pokemon
@@ -147,9 +231,10 @@ This document describes the application use cases for the Match module.
 - `ATTACK`: Declare and execute attack
 - `USE_ABILITY`: Use Pokemon ability
 - `END_TURN`: End current turn
+- `COMPLETE_INITIAL_SETUP`: Mark ready to start (SELECT_BENCH_POKEMON)
 - `CONCEDE`: Concede match
 
-## Use Case 6: End Match
+## Use Case 7: End Match
 
 **Actor**: System (typically called by game logic)
 
@@ -173,7 +258,7 @@ This document describes the application use cases for the Match module.
 - Match not found → NotFoundException
 - Match already ended → BadRequestException
 
-## Use Case 7: Validate Decks (Future)
+## Use Case 8: Validate Decks
 
 **Actor**: System
 
@@ -188,11 +273,14 @@ This document describes the application use cases for the Match module.
 3. System validates player 2's deck
 4. If both valid, transition to `PRE_GAME_SETUP`
 5. If invalid, cancel match
+6. After successful validation, automatically trigger coin toss
 
 **Postconditions**:
-- Match in `PRE_GAME_SETUP` or `CANCELLED` state
+- Match in `DRAWING_CARDS` state (after coin toss) or `CANCELLED` state
 
-## Use Case 8: Process Between Turns (Future)
+**Note**: This use case automatically triggers coin toss after successful validation.
+
+## Use Case 9: Process Between Turns (Future)
 
 **Actor**: System
 

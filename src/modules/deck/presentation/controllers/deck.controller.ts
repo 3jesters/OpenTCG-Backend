@@ -28,6 +28,7 @@ import {
   DeckCardResponseDto,
 } from '../dto';
 import { CreateDeckDto, UpdateDeckDto } from '../../application/dto';
+import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
 
 /**
  * Deck Controller
@@ -42,6 +43,7 @@ export class DeckController {
     private readonly updateDeckUseCase: UpdateDeckUseCase,
     private readonly deleteDeckUseCase: DeleteDeckUseCase,
     private readonly validateDeckAgainstTournamentUseCase: ValidateDeckAgainstTournamentUseCase,
+    private readonly getCardByIdUseCase: GetCardByIdUseCase,
   ) {}
 
   /**
@@ -91,13 +93,40 @@ export class DeckController {
 
   /**
    * GET /api/v1/decks/:id
-   * Get deck by ID
+   * Get deck by ID with full card details
    */
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string): Promise<DeckResponseDto> {
     const deck = await this.getDeckByIdUseCase.execute(id);
-    return DeckResponseDto.fromDomain(deck);
+    
+    // Fetch full card details for all unique cards in the deck
+    const uniqueCardIds = [...new Set(deck.cards.map((c) => c.cardId))];
+    const cardDetailsMap = new Map<string, any>();
+    
+    // Fetch all card details in parallel
+    await Promise.all(
+      uniqueCardIds.map(async (cardId) => {
+        try {
+          const cardDetail = await this.getCardByIdUseCase.execute(cardId);
+          cardDetailsMap.set(cardId, cardDetail);
+        } catch (error) {
+          // If card not found, skip it (card will be returned without details)
+          console.error(`Failed to fetch card ${cardId}:`, error.message);
+        }
+      }),
+    );
+
+    // Create deck response with card details
+    const dto = DeckResponseDto.fromDomain(deck);
+    dto.cards = deck.cards.map((deckCard) => {
+      const cardDetail = cardDetailsMap.get(deckCard.cardId);
+      return cardDetail
+        ? DeckCardResponseDto.fromDomainWithCard(deckCard, cardDetail)
+        : DeckCardResponseDto.fromDomain(deckCard);
+    });
+
+    return dto;
   }
 
   /**

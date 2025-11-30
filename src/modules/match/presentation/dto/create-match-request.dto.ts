@@ -6,6 +6,10 @@ import { IsString, IsOptional } from 'class-validator';
  */
 export class CreateMatchRequestDto {
   @IsString()
+  @IsOptional()
+  id?: string;
+
+  @IsString()
   tournamentId: string;
 
   @IsString()

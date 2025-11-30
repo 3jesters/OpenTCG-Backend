@@ -3,12 +3,12 @@
   "name": "Classic Fire Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-11-20T19:38:35.394Z",
+  "updatedAt": "2025-11-30T12:09:31.630Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
   "cards": [
     {
-      "cardId": "pokemon-base-set-v1.0-charmander--46",
+      "cardId": "pokemon-base-set-v1.0-charmander--48",
       "setName": "base-set",
       "quantity": 4
     },
@@ -23,7 +23,7 @@
       "quantity": 1
     },
     {
-      "cardId": "pokemon-base-set-v1.0-ponyta--60",
+      "cardId": "pokemon-base-set-v1.0-ponyta--62",
       "setName": "base-set",
       "quantity": 3
     },
@@ -33,7 +33,7 @@
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-vulpix--67",
+      "cardId": "pokemon-base-set-v1.0-vulpix--70",
       "setName": "base-set",
       "quantity": 2
     },
@@ -43,32 +43,32 @@
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-bill--91",
+      "cardId": "pokemon-base-set-v1.0-bill--92",
       "setName": "base-set",
       "quantity": 4
     },
     {
-      "cardId": "pokemon-base-set-v1.0-energy-removal--92",
+      "cardId": "pokemon-base-set-v1.0-energy-removal--93",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-gust-of-wind--93",
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--94",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-potion--94",
+      "cardId": "pokemon-base-set-v1.0-potion--90",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-switch--95",
+      "cardId": "pokemon-base-set-v1.0-switch--96",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-energy-retrieval--81",
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
       "setName": "base-set",
       "quantity": 2
     },

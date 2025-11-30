@@ -19,6 +19,14 @@
     "restrictedCards": []
   },
   "savedDecks": [],
+  "startGameRules": {
+    "rules": [
+      {
+        "type": "HAS_BASIC_POKEMON",
+        "minCount": 1
+      }
+    ]
+  },
   "format": "Standard",
   "regulationMarks": []
 }

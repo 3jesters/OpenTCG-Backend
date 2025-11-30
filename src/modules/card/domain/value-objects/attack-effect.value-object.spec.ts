@@ -1,5 +1,6 @@
 import { AttackEffectType } from '../enums/attack-effect-type.enum';
 import { EnergyType } from '../enums/energy-type.enum';
+import { TargetType } from '../enums/target-type.enum';
 import { AttackEffectFactory } from './attack-effect.value-object';
 import { ConditionFactory } from './condition.value-object';
 
@@ -43,7 +44,7 @@ describe('AttackEffect Value Objects', () => {
       it('should create a paralyze effect', () => {
         const effect = AttackEffectFactory.statusCondition('PARALYZED');
         expect(effect.effectType).toBe(AttackEffectType.STATUS_CONDITION);
-        expect(effect.target).toBe('defending');
+        expect(effect.target).toBe(TargetType.DEFENDING);
         expect(effect.statusCondition).toBe('PARALYZED');
       });
 
@@ -119,7 +120,7 @@ describe('AttackEffect Value Objects', () => {
       it('should create a recoil damage effect', () => {
         const effect = AttackEffectFactory.recoilDamage(20);
         expect(effect.effectType).toBe(AttackEffectType.RECOIL_DAMAGE);
-        expect(effect.target).toBe('self');
+        expect(effect.target).toBe(TargetType.SELF);
         expect(effect.amount).toBe(20);
       });
     });
@@ -159,8 +160,8 @@ describe('AttackEffect Value Objects', () => {
       it('should create a switch Pokémon effect with choice', () => {
         const effect = AttackEffectFactory.switchPokemon('choice');
         expect(effect.effectType).toBe(AttackEffectType.SWITCH_POKEMON);
-        expect(effect.target).toBe('self');
-        expect(effect.with).toBe('benched');
+        expect(effect.target).toBe(TargetType.SELF);
+        expect(effect.with).toBe(TargetType.BENCHED_YOURS);
         expect(effect.selector).toBe('choice');
       });
 

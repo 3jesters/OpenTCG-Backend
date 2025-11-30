@@ -331,7 +331,7 @@ describe('Attack Value Object', () => {
         '20',
         'text',
         undefined,
-        [AttackEffectFactory.heal('self', 10)],
+        [AttackEffectFactory.heal(TargetType.SELF, 10)],
       );
       expect(attack.hasEffects()).toBe(true);
     });
@@ -365,7 +365,7 @@ describe('Attack Value Object', () => {
         [
           AttackEffectFactory.statusCondition('PARALYZED'),
           AttackEffectFactory.damageModifier(30),
-          AttackEffectFactory.heal('self', 20),
+          AttackEffectFactory.heal(TargetType.SELF, 20),
         ],
       );
 
@@ -409,7 +409,7 @@ describe('Attack Value Object', () => {
         'Discard 2 Fire Energy from this Pokémon. This attack does 20 recoil damage.',
         undefined,
         [
-          AttackEffectFactory.discardEnergy('self', 2, EnergyType.FIRE),
+          AttackEffectFactory.discardEnergy(TargetType.SELF, 2, EnergyType.FIRE),
           AttackEffectFactory.recoilDamage(20),
         ],
       );
@@ -426,7 +426,7 @@ describe('Attack Value Object', () => {
         '',
         'Heal 30 damage from this Pokémon.',
         undefined,
-        [AttackEffectFactory.heal('self', 30)],
+        [AttackEffectFactory.heal(TargetType.SELF, 30)],
       );
 
       expect(attack.dealsDamage()).toBe(false);

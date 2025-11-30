@@ -100,6 +100,177 @@ curl -X POST http://localhost:3000/api/v1/matches \
 
 ---
 
+### [CLIENT-MATCH-FLOW.md](./CLIENT-MATCH-FLOW.md)
+**Complete guide for implementing match communication flow**
+
+**Contains:**
+- Complete API reference for match flow
+- Data structures and TypeScript interfaces
+- Communication flow patterns
+- State machine explanation
+- Polling strategies
+- How to detect state changes
+- How to handle your turn vs opponent's turn
+- State change detection algorithms
+- React and Vue implementation examples
+- Best practices and error handling
+
+**Use this when:**
+- Implementing the complete match communication flow
+- Understanding how to poll for state updates
+- Detecting opponent actions and state changes
+- Building match state management
+- Implementing turn-based gameplay logic
+- Handling state synchronization
+
+**Quick Example:**
+```typescript
+// Poll for state updates
+const state = await getMatchState(matchId, playerId);
+
+// Detect changes
+const changes = detectStateChanges(previousState, currentState);
+
+// Execute action when it's your turn
+if (state.currentPlayer === myPlayerId) {
+  await executeAction(matchId, playerId, 'ATTACH_ENERGY', {...});
+}
+```
+
+---
+
+### [CLIENT-MATCH-LIFECYCLE.md](./CLIENT-MATCH-LIFECYCLE.md)
+**Complete step-by-step guide for the match lifecycle from creation to gameplay**
+
+**Contains:**
+- All 7 stages of the match lifecycle
+- API calls for each stage
+- Expected states and responses
+- Visibility rules (opponent deck, active Pokemon, etc.)
+- Client implementation checklist
+- Complete code examples (TypeScript, React hooks)
+- Polling strategies for each stage
+- State transition detection
+
+**Use this when:**
+- Implementing the complete match flow from start to finish
+- Understanding what happens at each stage
+- Knowing what API calls to make and when
+- Understanding visibility rules (when opponent info is hidden/shown)
+- Building the initial match setup UI
+- Implementing match approval flow
+- Setting up initial card drawing and Pokemon selection
+
+**Quick Example:**
+```typescript
+// Stage 1: Create match
+const match = await createMatch(tournamentId, playerId, deckId);
+
+// Stage 3: Approve match
+await approveMatch(matchId, playerId);
+
+// Stage 4: Draw initial cards
+await drawInitialCards(matchId, playerId);
+
+// Stage 5: Select active Pokemon
+await setActivePokemon(matchId, playerId, cardId);
+```
+
+---
+
+### [MATCH-STATE-MACHINE-DIAGRAM.md](./MATCH-STATE-MACHINE-DIAGRAM.md)
+**Visual state machine diagram for match states**
+
+**Contains:**
+- Mermaid state diagram showing all states and transitions
+- State descriptions and purposes
+- State transition table
+- Turn phases within PLAYER_TURN state
+- Win conditions
+- Complete match lifecycle example
+- Text-based state flow diagram
+- Special cases and implementation notes
+
+**Use this when:**
+- Understanding the complete state machine flow
+- Visualizing state transitions
+- Debugging state-related issues
+- Planning state-based features
+- Understanding when states can transition
+- Learning the match lifecycle
+
+**Quick Reference:**
+```
+CREATED → WAITING_FOR_PLAYERS → DECK_VALIDATION → PRE_GAME_SETUP
+  → INITIAL_SETUP → PLAYER_TURN ↔ BETWEEN_TURNS → MATCH_ENDED
+```
+
+---
+
+### [CLIENT-DECK-CACHING.md](./CLIENT-DECK-CACHING.md)
+**Client-side guide for deck caching and card information management**
+
+**Contains:**
+- How to use deck IDs from match state
+- Fetching deck information and card details
+- Caching strategies and best practices
+- TypeScript implementation examples
+- React hooks with React Query
+- Error handling patterns
+- Performance optimization tips
+
+**Use this when:**
+- Implementing deck caching in the frontend
+- Fetching full card details for match display
+- Optimizing API calls during gameplay
+- Building card display components
+- Managing client-side cache
+
+**Quick Example:**
+```typescript
+// Get match state (includes deck IDs)
+const state = await getMatchState(matchId, playerId);
+
+// Fetch decks with cards
+const playerDeck = await fetch(`/api/v1/decks/${state.playerDeckId}`);
+const opponentDeck = await fetch(`/api/v1/decks/${state.opponentDeckId}`);
+```
+
+---
+
+### [FRONTEND-START-GAME-RULES.md](./FRONTEND-START-GAME-RULES.md)
+**Frontend guide for start game rules and reshuffle feature**
+
+**Contains:**
+- API changes (new `revealedHand` field)
+- TypeScript interfaces for updated match state
+- Display logic for revealed hands during INITIAL_SETUP
+- React component examples
+- UI/UX recommendations
+- Styling examples with CSS/Tailwind
+- Error handling patterns
+- Testing considerations
+
+**Use this when:**
+- Implementing the reshuffle UI feature
+- Displaying opponent's revealed hand during initial setup
+- Handling match state transitions
+- Building revealed hand components
+- Styling revealed cards differently from normal hands
+
+**Quick Example:**
+```typescript
+// Check if revealed hand should be shown
+const isInitialSetup = matchState.state === MatchState.INITIAL_SETUP;
+const revealedHand = matchState.opponentState.revealedHand;
+
+if (isInitialSetup && revealedHand) {
+  // Display revealed hand
+}
+```
+
+---
+
 ## 🎨 Frontend Documentation
 
 ### [FRONTEND-APP.md](./FRONTEND-APP.md)
@@ -187,6 +358,29 @@ curl -X POST http://localhost:3000/api/v1/matches \
 - Accessibility requirements
 
 **File Size:** ~16 KB (component guide)
+
+---
+
+### [FRONTEND-START-GAME-RULES.md](./FRONTEND-START-GAME-RULES.md)
+**Frontend guide for start game rules reshuffle**
+
+**Contains:**
+- New `revealedHand` field in match state
+- TypeScript interfaces and types
+- React component examples
+- Display logic and conditional rendering
+- UI/UX recommendations
+- Styling examples
+- Error handling
+- Testing patterns
+
+**Use this when:**
+- Implementing reshuffle UI
+- Displaying opponent's revealed hand
+- Handling INITIAL_SETUP state
+- Building match view components
+
+**File Size:** ~12 KB (feature guide)
 
 ---
 

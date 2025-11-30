@@ -115,7 +115,12 @@ export class AbilityEffectValidator {
   // ========================================
 
   private static validateHeal(effect: HealAbilityEffect): void {
-    const validTargets = ['self', 'all_yours', 'benched_yours', 'active_yours'];
+    const validTargets = [
+      TargetType.SELF,
+      TargetType.ALL_YOURS,
+      TargetType.BENCHED_YOURS,
+      TargetType.ACTIVE_YOURS,
+    ];
     if (!effect.target || !validTargets.includes(effect.target)) {
       throw new Error(
         'Heal effect target must be: self, all_yours, benched_yours, or active_yours',
@@ -131,11 +136,11 @@ export class AbilityEffectValidator {
     effect: PreventDamageAbilityEffect,
   ): void {
     const validTargets = [
-      'self',
-      'all_yours',
-      'benched_yours',
-      'active_yours',
-      'defending',
+      TargetType.SELF,
+      TargetType.ALL_YOURS,
+      TargetType.BENCHED_YOURS,
+      TargetType.ACTIVE_YOURS,
+      TargetType.DEFENDING,
     ];
     if (!effect.target || !validTargets.includes(effect.target)) {
       throw new Error(
@@ -162,7 +167,11 @@ export class AbilityEffectValidator {
   private static validateStatusCondition(
     effect: StatusConditionAbilityEffect,
   ): void {
-    const validTargets = ['defending', 'all_opponents', 'active_opponent'];
+    const validTargets = [
+      TargetType.DEFENDING,
+      TargetType.ALL_OPPONENTS,
+      TargetType.ACTIVE_OPPONENT,
+    ];
     if (!effect.target || !validTargets.includes(effect.target)) {
       throw new Error(
         'Status condition target must be: defending, all_opponents, or active_opponent',
@@ -190,10 +199,10 @@ export class AbilityEffectValidator {
     effect: EnergyAccelerationAbilityEffect,
   ): void {
     const validTargets = [
-      'self',
-      'benched_yours',
-      'all_yours',
-      'active_yours',
+      TargetType.SELF,
+      TargetType.BENCHED_YOURS,
+      TargetType.ALL_YOURS,
+      TargetType.ACTIVE_YOURS,
     ];
     if (!effect.target || !validTargets.includes(effect.target)) {
       throw new Error(
@@ -265,10 +274,10 @@ export class AbilityEffectValidator {
 
   private static validateBoostAttack(effect: BoostAttackEffect): void {
     const validTargets = [
-      'self',
-      'all_yours',
-      'benched_yours',
-      'active_yours',
+      TargetType.SELF,
+      TargetType.ALL_YOURS,
+      TargetType.BENCHED_YOURS,
+      TargetType.ACTIVE_YOURS,
     ];
     if (!effect.target || !validTargets.includes(effect.target)) {
       throw new Error(
@@ -283,10 +292,10 @@ export class AbilityEffectValidator {
 
   private static validateBoostHP(effect: BoostHPEffect): void {
     const validTargets = [
-      'self',
-      'all_yours',
-      'benched_yours',
-      'active_yours',
+      TargetType.SELF,
+      TargetType.ALL_YOURS,
+      TargetType.BENCHED_YOURS,
+      TargetType.ACTIVE_YOURS,
     ];
     if (!effect.target || !validTargets.includes(effect.target)) {
       throw new Error(
@@ -301,10 +310,10 @@ export class AbilityEffectValidator {
 
   private static validateReduceDamage(effect: ReduceDamageEffect): void {
     const validTargets = [
-      'self',
-      'all_yours',
-      'benched_yours',
-      'active_yours',
+      TargetType.SELF,
+      TargetType.ALL_YOURS,
+      TargetType.BENCHED_YOURS,
+      TargetType.ACTIVE_YOURS,
     ];
     if (!effect.target || !validTargets.includes(effect.target)) {
       throw new Error(
@@ -339,10 +348,10 @@ export class AbilityEffectValidator {
     effect: AttachFromDiscardEffect,
   ): void {
     const validTargets = [
-      'self',
-      'benched_yours',
-      'all_yours',
-      'active_yours',
+      TargetType.SELF,
+      TargetType.BENCHED_YOURS,
+      TargetType.ALL_YOURS,
+      TargetType.ACTIVE_YOURS,
     ];
     if (!effect.target || !validTargets.includes(effect.target)) {
       throw new Error(

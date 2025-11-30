@@ -16,8 +16,8 @@ export class CreateMatchUseCase {
   ) {}
 
   async execute(dto: CreateMatchDto): Promise<Match> {
-    // Generate unique ID
-    const id = uuidv4();
+    // Use provided ID or generate unique ID
+    const id = dto.id || uuidv4();
 
     // Create domain entity
     const match = new Match(id, dto.tournamentId);

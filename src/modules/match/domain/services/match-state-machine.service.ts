@@ -36,11 +36,28 @@ export class MatchStateMachineService {
         MatchState.CANCELLED,
       ],
       [MatchState.DECK_VALIDATION]: [
+        MatchState.MATCH_APPROVAL,
+        MatchState.CANCELLED,
+      ],
+      [MatchState.MATCH_APPROVAL]: [
         MatchState.PRE_GAME_SETUP,
         MatchState.CANCELLED,
       ],
       [MatchState.PRE_GAME_SETUP]: [
-        MatchState.INITIAL_SETUP,
+        MatchState.DRAWING_CARDS,
+        MatchState.CANCELLED,
+      ],
+      [MatchState.DRAWING_CARDS]: [
+        MatchState.DRAWING_CARDS,
+        MatchState.SELECT_ACTIVE_POKEMON,
+        MatchState.CANCELLED,
+      ],
+      [MatchState.SELECT_ACTIVE_POKEMON]: [
+        MatchState.SELECT_BENCH_POKEMON,
+        MatchState.CANCELLED,
+      ],
+      [MatchState.SELECT_BENCH_POKEMON]: [
+        MatchState.PLAYER_TURN,
         MatchState.CANCELLED,
       ],
       [MatchState.INITIAL_SETUP]: [
@@ -75,7 +92,16 @@ export class MatchStateMachineService {
     playerId: PlayerIdentifier,
   ): { isValid: boolean; error?: ActionValidationError } {
     // Check if match is in a playable state
-    if (state !== MatchState.PLAYER_TURN && state !== MatchState.INITIAL_SETUP) {
+    const playableStates = [
+      MatchState.PLAYER_TURN,
+      MatchState.INITIAL_SETUP,
+      MatchState.DRAWING_CARDS,
+      MatchState.SELECT_ACTIVE_POKEMON,
+      MatchState.SELECT_BENCH_POKEMON,
+      MatchState.MATCH_APPROVAL,
+    ];
+    
+    if (!playableStates.includes(state)) {
       if (actionType === PlayerActionType.CONCEDE) {
         return { isValid: true }; // Can always concede
       }
@@ -94,6 +120,55 @@ export class MatchStateMachineService {
         isValid: false,
         error: ActionValidationError.NOT_PLAYER_TURN,
       };
+    }
+
+    // Actions valid during MATCH_APPROVAL
+    if (state === MatchState.MATCH_APPROVAL) {
+      if (
+        actionType === PlayerActionType.APPROVE_MATCH ||
+        actionType === PlayerActionType.CONCEDE
+      ) {
+        return { isValid: true };
+      }
+    }
+
+    // Actions valid during DRAWING_CARDS
+    if (state === MatchState.DRAWING_CARDS) {
+      if (actionType === PlayerActionType.DRAW_INITIAL_CARDS) {
+        return { isValid: true };
+      }
+    }
+
+    // Actions valid during SELECT_ACTIVE_POKEMON
+    if (state === MatchState.SELECT_ACTIVE_POKEMON) {
+      if (
+        actionType === PlayerActionType.SET_ACTIVE_POKEMON ||
+        actionType === PlayerActionType.CONCEDE
+      ) {
+        return { isValid: true };
+      }
+    }
+
+    // Actions valid during SELECT_BENCH_POKEMON
+    if (state === MatchState.SELECT_BENCH_POKEMON) {
+      if (
+        actionType === PlayerActionType.PLAY_POKEMON ||
+        actionType === PlayerActionType.COMPLETE_INITIAL_SETUP ||
+        actionType === PlayerActionType.CONCEDE
+      ) {
+        return { isValid: true };
+      }
+    }
+
+    // Actions valid during INITIAL_SETUP regardless of phase
+    if (state === MatchState.INITIAL_SETUP) {
+      if (
+        actionType === PlayerActionType.SET_ACTIVE_POKEMON ||
+        actionType === PlayerActionType.PLAY_POKEMON ||
+        actionType === PlayerActionType.COMPLETE_INITIAL_SETUP
+      ) {
+        return { isValid: true };
+      }
     }
 
     // Validate action against phase
@@ -252,8 +327,42 @@ export class MatchStateMachineService {
     state: MatchState,
     phase: TurnPhase | null,
   ): PlayerActionType[] {
+    if (state === MatchState.MATCH_APPROVAL) {
+      return [
+        PlayerActionType.APPROVE_MATCH,
+        PlayerActionType.CONCEDE,
+      ];
+    }
+
+    if (state === MatchState.DRAWING_CARDS) {
+      return [
+        PlayerActionType.DRAW_INITIAL_CARDS,
+        PlayerActionType.CONCEDE,
+      ];
+    }
+
+    if (state === MatchState.SELECT_ACTIVE_POKEMON) {
+      return [
+        PlayerActionType.SET_ACTIVE_POKEMON,
+        PlayerActionType.CONCEDE,
+      ];
+    }
+
+    if (state === MatchState.SELECT_BENCH_POKEMON) {
+      return [
+        PlayerActionType.PLAY_POKEMON,
+        PlayerActionType.COMPLETE_INITIAL_SETUP,
+        PlayerActionType.CONCEDE,
+      ];
+    }
+
     if (state === MatchState.INITIAL_SETUP) {
-      return [PlayerActionType.SET_ACTIVE_POKEMON, PlayerActionType.CONCEDE];
+      return [
+        PlayerActionType.SET_ACTIVE_POKEMON,
+        PlayerActionType.PLAY_POKEMON,
+        PlayerActionType.COMPLETE_INITIAL_SETUP,
+        PlayerActionType.CONCEDE,
+      ];
     }
 
     if (state !== MatchState.PLAYER_TURN || phase === null) {

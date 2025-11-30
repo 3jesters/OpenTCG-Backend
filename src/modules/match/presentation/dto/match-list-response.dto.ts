@@ -9,11 +9,16 @@ export class MatchListResponseDto {
   matches: MatchResponseDto[];
   count: number;
 
+  constructor(matches: MatchResponseDto[], count: number) {
+    this.matches = matches;
+    this.count = count;
+  }
+
   static fromDomain(matches: Match[]): MatchListResponseDto {
-    return {
-      matches: matches.map((match) => MatchResponseDto.fromDomain(match)),
-      count: matches.length,
-    };
+    return new MatchListResponseDto(
+      matches.map((match) => MatchResponseDto.fromDomain(match)),
+      matches.length,
+    );
   }
 }
 

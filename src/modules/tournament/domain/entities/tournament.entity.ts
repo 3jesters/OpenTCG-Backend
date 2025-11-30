@@ -1,5 +1,5 @@
 import { TournamentStatus } from '../enums';
-import { DeckRules, RestrictedCard } from '../value-objects';
+import { DeckRules, RestrictedCard, StartGameRules } from '../value-objects';
 
 /**
  * Tournament Domain Entity
@@ -27,6 +27,9 @@ export class Tournament {
   // Deck Rules
   private _deckRules: DeckRules;
 
+  // Start Game Rules
+  private _startGameRules: StartGameRules;
+
   // Deck Configuration
   private _savedDecks: string[]; // Array of deck IDs
 
@@ -52,6 +55,7 @@ export class Tournament {
     this._description = description;
     this._author = author;
     this._deckRules = deckRules;
+    this._startGameRules = StartGameRules.createDefault();
     this._createdAt = createdAt || new Date();
     this._updatedAt = new Date();
     this._official = false;
@@ -114,6 +118,10 @@ export class Tournament {
 
   get deckRules(): DeckRules {
     return this._deckRules;
+  }
+
+  get startGameRules(): StartGameRules {
+    return this._startGameRules;
   }
 
   get savedDecks(): string[] {
@@ -342,6 +350,11 @@ export class Tournament {
     this.touch();
   }
 
+  setStartGameRules(rules: StartGameRules): void {
+    this._startGameRules = rules;
+    this.touch();
+  }
+
   restrictCard(setName: string, cardId: string, maxCopies: number): void {
     const restrictedCard = new RestrictedCard(setName, cardId, maxCopies);
     const existing = this._deckRules.restrictedCards.filter(
@@ -454,6 +467,7 @@ export class Tournament {
     );
     tournament.setOfficial(true);
     tournament.setFormat('Standard');
+    tournament.setStartGameRules(StartGameRules.createDefault());
     return tournament;
   }
 }

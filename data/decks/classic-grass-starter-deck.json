@@ -3,12 +3,12 @@
   "name": "Classic Grass Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-11-20T19:38:35.464Z",
+  "updatedAt": "2025-11-30T12:09:31.632Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
   "cards": [
     {
-      "cardId": "pokemon-base-set-v1.0-bulbasaur--44",
+      "cardId": "pokemon-base-set-v1.0-bulbasaur--46",
       "setName": "base-set",
       "quantity": 4
     },
@@ -23,7 +23,7 @@
       "quantity": 1
     },
     {
-      "cardId": "pokemon-base-set-v1.0-tangela--66",
+      "cardId": "pokemon-base-set-v1.0-tangela--68",
       "setName": "base-set",
       "quantity": 3
     },
@@ -43,32 +43,32 @@
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-bill--91",
+      "cardId": "pokemon-base-set-v1.0-bill--92",
       "setName": "base-set",
       "quantity": 4
     },
     {
-      "cardId": "pokemon-base-set-v1.0-energy-removal--92",
+      "cardId": "pokemon-base-set-v1.0-energy-removal--93",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-gust-of-wind--93",
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--94",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-potion--94",
+      "cardId": "pokemon-base-set-v1.0-potion--90",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-switch--95",
+      "cardId": "pokemon-base-set-v1.0-switch--96",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-energy-retrieval--81",
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
       "setName": "base-set",
       "quantity": 2
     },

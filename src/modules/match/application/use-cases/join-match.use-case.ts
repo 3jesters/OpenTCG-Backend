@@ -1,17 +1,20 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { Match, PlayerIdentifier } from '../../domain';
+import { Match, PlayerIdentifier, MatchState } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
 import { JoinMatchDto } from '../dto';
+import { ValidateMatchDecksUseCase } from './validate-match-decks.use-case';
 
 /**
  * Join Match Use Case
  * Allows a player to join an existing match
+ * Automatically triggers deck validation when both players are assigned
  */
 @Injectable()
 export class JoinMatchUseCase {
   constructor(
     @Inject(IMatchRepository)
     private readonly matchRepository: IMatchRepository,
+    private readonly validateMatchDecksUseCase: ValidateMatchDecksUseCase,
   ) {}
 
   async execute(dto: JoinMatchDto): Promise<Match> {
@@ -34,8 +37,19 @@ export class JoinMatchUseCase {
     // Assign player
     match.assignPlayer(dto.playerId, dto.deckId, playerIdentifier);
 
-    // Save and return
-    return await this.matchRepository.save(match);
+    // Save match first
+    const savedMatch = await this.matchRepository.save(match);
+
+    // If both players are now assigned and match is in DECK_VALIDATION state,
+    // automatically validate decks
+    if (
+      savedMatch.hasBothPlayers() &&
+      savedMatch.state === MatchState.DECK_VALIDATION
+    ) {
+      return await this.validateMatchDecksUseCase.execute(savedMatch.id);
+    }
+
+    return savedMatch;
   }
 }
 

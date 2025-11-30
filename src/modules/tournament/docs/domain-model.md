@@ -28,6 +28,9 @@ The main aggregate root that represents a tournament with all its rules and conf
 **Deck Rules:**
 - `deckRules`: Value object containing all deck construction rules
 
+**Start Game Rules:**
+- `startGameRules`: Value object containing rules that must be satisfied in the initial hand
+
 **Additional Configuration:**
 - `savedDecks`: Array of deck IDs (for future implementation)
 - `startDate`: Optional tournament start date
@@ -51,6 +54,45 @@ Encapsulates all rules for deck construction:
 
 **Factory Methods:**
 - `createStandard()`: Creates standard Pokémon TCG rules (60-card deck, max 4 copies, min 1 basic)
+
+### StartGameRules
+
+Encapsulates all rules that must be satisfied in a player's initial hand:
+
+- `rules`: Array of StartGameRule objects
+- All rules must be satisfied for the hand to be valid
+- If no rules are specified, default rule applies (at least 1 Basic Pokemon)
+
+**Rule Types:**
+- `HAS_BASIC_POKEMON`: Requires at least N Basic Pokemon cards in hand
+- `HAS_ENERGY_CARD`: Requires at least N Energy cards in hand
+- Future rule types can be added (e.g., `HAS_TRAINER_CARD`, `HAS_SPECIFIC_CARD`)
+
+**Rule Structure:**
+```typescript
+{
+  type: StartGameRuleType;
+  minCount: number; // Minimum number required
+}
+```
+
+**Factory Methods:**
+- `createDefault()`: Creates default rule (at least 1 Basic Pokemon)
+- `createEmpty()`: Creates empty rules (no requirements)
+
+**Example:**
+```typescript
+// Require at least 2 Basic Pokemon
+const rules = new StartGameRules([
+  { type: StartGameRuleType.HAS_BASIC_POKEMON, minCount: 2 }
+]);
+
+// Require 1 Basic Pokemon AND 1 Energy card
+const complexRules = new StartGameRules([
+  { type: StartGameRuleType.HAS_BASIC_POKEMON, minCount: 1 },
+  { type: StartGameRuleType.HAS_ENERGY_CARD, minCount: 1 }
+]);
+```
 
 ### RestrictedCard
 
@@ -77,6 +119,8 @@ Represents the lifecycle state of a tournament:
 Tournament (Aggregate Root)
 ├── DeckRules (Value Object)
 │   └── RestrictedCard[] (Value Objects)
+├── StartGameRules (Value Object)
+│   └── StartGameRule[] (Rule objects)
 ├── bannedSets: string[]
 ├── setBannedCards: Record<string, string[]>
 └── savedDecks: string[] (future: references to Deck entities)
@@ -108,6 +152,17 @@ When checking if a card is allowed:
 - `minBasicPokemon` must be ≥ 0
 - Restricted cards can have `maxCopies` between 0 and 4
 
+### Start Game Rules Validation
+
+- Rules are validated during match initial setup
+- If a player's initial hand doesn't satisfy all rules:
+  - Player must show hand to opponent
+  - Hand cards are shuffled back into deck
+  - Player draws 7 new cards
+  - Process repeats until all rules are satisfied
+- Default rule: At least 1 Basic Pokemon (if no rules specified)
+- All rules in the array must be satisfied (AND logic)
+
 ### Date Validation
 
 - `startDate` cannot be after `endDate`
@@ -128,5 +183,6 @@ The Tournament entity maintains these invariants:
 3. **Timestamp Invariant**: `updatedAt` is automatically updated when any property changes
 4. **Date Invariant**: If both dates are set, `startDate` must be before or equal to `endDate`
 5. **Deck Rules Invariant**: Deck rules must always be valid (checked by DeckRules value object)
-6. **No Duplicates**: No duplicate entries in `bannedSets`, `savedDecks`, or `regulationMarks`
+6. **Start Game Rules Invariant**: Start game rules must always be valid (checked by StartGameRules value object)
+7. **No Duplicates**: No duplicate entries in `bannedSets`, `savedDecks`, or `regulationMarks`
 

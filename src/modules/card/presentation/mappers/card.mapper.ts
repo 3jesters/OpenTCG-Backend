@@ -57,6 +57,7 @@ export class CardMapper {
       description: card.description || undefined,
       imageUrl: card.imageUrl,
       regulationMark: card.regulationMark,
+      energyType: card.energyType,
     };
   }
 

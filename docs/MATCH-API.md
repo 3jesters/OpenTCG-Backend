@@ -2,6 +2,8 @@
 
 This document provides comprehensive documentation for the Match API endpoints, data structures, and responses for frontend integration.
 
+> **📘 For a complete guide on implementing match communication flow, see [CLIENT-MATCH-FLOW.md](./CLIENT-MATCH-FLOW.md)**
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -273,16 +275,13 @@ Get the current match state from a player's perspective.
 **Path Parameters:**
 - `matchId` (string, required): Match ID (UUID)
 
-**Request Body:**
-
-```json
-{
-  "playerId": "player-1"
-}
-```
-
-**Request Fields:**
+**Query Parameters:**
 - `playerId` (string, required): Player identifier
+
+**Example:**
+```
+GET /api/v1/matches/550e8400-e29b-41d4-a716-446655440000/state?playerId=player-1
+```
 
 **Response:** `200 OK`
 
@@ -372,7 +371,9 @@ Get the current match state from a player's perspective.
     "actionType": "DRAW_CARD",
     "timestamp": "2024-01-01T12:00:05.000Z",
     "actionData": {}
-  }
+  },
+  "playerDeckId": "classic-fire-starter-deck",
+  "opponentDeckId": "classic-grass-starter-deck"
 }
 ```
 
@@ -590,6 +591,7 @@ enum PlayerActionType {
   ATTACK = 'ATTACK',
   USE_ABILITY = 'USE_ABILITY',
   END_TURN = 'END_TURN',
+  COMPLETE_INITIAL_SETUP = 'COMPLETE_INITIAL_SETUP',
   CONCEDE = 'CONCEDE'
 }
 
@@ -697,7 +699,9 @@ Play a Pokemon from hand to bench.
 }
 ```
 
-**Valid Phases:** SETUP, INITIAL_SETUP
+**Valid Phases:** SETUP
+
+**Valid States:** INITIAL_SETUP, PLAYER_TURN (SETUP phase)
 
 #### SET_ACTIVE_POKEMON
 
@@ -823,6 +827,24 @@ End the current turn.
 
 **Valid Phases:** DRAW, SETUP, ATTACK, END
 
+#### COMPLETE_INITIAL_SETUP
+
+Complete initial setup and start the first turn. Can only be used after setting active Pokemon.
+
+```json
+{
+  "actionType": "COMPLETE_INITIAL_SETUP",
+  "actionData": {}
+}
+```
+
+**Valid States:** INITIAL_SETUP (after setting active Pokemon)
+
+**Requirements:**
+- Player must have set their active Pokemon
+- Both players must complete initial setup before match transitions to PLAYER_TURN
+- After both players complete, match transitions to PLAYER_TURN with DRAW phase
+
 #### CONCEDE
 
 Concede the match.
@@ -938,13 +960,15 @@ const match = await joinMatch('match-id', 'player-2', 'deck-456');
 
 ```typescript
 async function getMatchState(matchId: string, playerId: string): Promise<MatchStateResponse> {
-  const response = await fetch(`http://localhost:3000/api/v1/matches/${matchId}/state`, {
+  const response = await fetch(
+    `http://localhost:3000/api/v1/matches/${matchId}/state?playerId=${playerId}`,
+    {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ playerId }),
-  });
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -959,9 +983,13 @@ const pollMatchState = async (matchId: string, playerId: string) => {
   const state = await getMatchState(matchId, playerId);
   console.log('Current state:', state.state);
   console.log('Available actions:', state.availableActions);
+  console.log('Player deck ID:', state.playerDeckId);
+  console.log('Opponent deck ID:', state.opponentDeckId);
   return state;
 };
 ```
+
+**Note:** The match state response includes `playerDeckId` and `opponentDeckId`. Use these to fetch full deck information and card details. See [CLIENT-DECK-CACHING.md](./CLIENT-DECK-CACHING.md) for a complete guide on implementing deck caching on the client side.
 
 #### Execute Action
 

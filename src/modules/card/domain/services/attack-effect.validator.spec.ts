@@ -146,7 +146,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.STATUS_CONDITION,
-          target: 'defending',
+          target: TargetType.DEFENDING,
         } as any),
       ).toThrow('Status condition is required');
     });
@@ -155,7 +155,7 @@ describe('AttackEffectValidator', () => {
       expect(() =>
         AttackEffectValidator.validate({
           effectType: AttackEffectType.STATUS_CONDITION,
-          target: 'defending',
+          target: TargetType.DEFENDING,
           statusCondition: 'INVALID' as any,
         }),
       ).toThrow('Invalid status condition: INVALID');
@@ -432,7 +432,7 @@ describe('AttackEffectValidator', () => {
         AttackEffectValidator.validate({
           effectType: AttackEffectType.SWITCH_POKEMON,
           target: TargetType.SELF,
-          with: 'benched',
+          with: TargetType.BENCHED_YOURS,
           selector: 'invalid' as any,
         }),
       ).toThrow('Switch Pokémon selector must be "choice" or "random"');

@@ -10,16 +10,26 @@ import {
   GameState,
   PlayerGameState,
 } from '../../domain/value-objects';
+import { IDeckRepository } from '../../../deck/domain/repositories';
+import { DeckCard } from '../../../deck/domain/value-objects';
+import { ITournamentRepository } from '../../../tournament/domain';
+import { StartGameRulesValidatorService } from '../../domain/services';
 
 /**
  * Start Match Use Case
  * Starts a match by performing coin flip and initial setup
+ * Automatically shuffles decks, deals cards, and sets up prize cards
  */
 @Injectable()
 export class StartMatchUseCase {
   constructor(
     @Inject(IMatchRepository)
     private readonly matchRepository: IMatchRepository,
+    @Inject(IDeckRepository)
+    private readonly deckRepository: IDeckRepository,
+    @Inject(ITournamentRepository)
+    private readonly tournamentRepository: ITournamentRepository,
+    private readonly startGameRulesValidator: StartGameRulesValidatorService,
   ) {}
 
   async execute(matchId: string, firstPlayer: PlayerIdentifier): Promise<Match> {
@@ -36,14 +46,110 @@ export class StartMatchUseCase {
       );
     }
 
-    // Set first player
-    match.setFirstPlayer(firstPlayer);
+    // Validate both players and decks are assigned
+    if (!match.player1Id || !match.player1DeckId) {
+      throw new Error('Player 1 and deck must be assigned');
+    }
+    if (!match.player2Id || !match.player2DeckId) {
+      throw new Error('Player 2 and deck must be assigned');
+    }
+
+    // Load both decks
+    const player1Deck = await this.deckRepository.findById(match.player1DeckId);
+    if (!player1Deck) {
+      throw new NotFoundException(`Deck ${match.player1DeckId} not found`);
+    }
+
+    const player2Deck = await this.deckRepository.findById(match.player2DeckId);
+    if (!player2Deck) {
+      throw new NotFoundException(`Deck ${match.player2DeckId} not found`);
+    }
+
+    // Expand deck cards into individual card IDs (handling quantities)
+    const player1DeckCards = this.expandDeckCards(player1Deck.cards);
+    const player2DeckCards = this.expandDeckCards(player2Deck.cards);
+
+    // Load tournament to get start game rules
+    const tournament = await this.tournamentRepository.findById(
+      match.tournamentId,
+    );
+    if (!tournament) {
+      throw new NotFoundException(
+        `Tournament with ID ${match.tournamentId} not found`,
+      );
+    }
+
+    const startGameRules = tournament.startGameRules;
+
+    // Shuffle both decks
+    // Use deterministic seed in test environment or when MATCH_SHUFFLE_SEED is provided
+    const envSeed = process.env.MATCH_SHUFFLE_SEED
+      ? Number(process.env.MATCH_SHUFFLE_SEED)
+      : undefined;
+    const shuffleSeed =
+      envSeed !== undefined && !Number.isNaN(envSeed)
+        ? envSeed
+        : process.env.NODE_ENV === 'test'
+          ? 12345
+          : undefined;
+    let shuffledPlayer1Deck = this.shuffleDeck(
+      [...player1DeckCards],
+      shuffleSeed,
+    );
+    let shuffledPlayer2Deck = this.shuffleDeck(
+      [...player2DeckCards],
+      shuffleSeed,
+    );
+
+    // Deal initial 7 cards to each player's hand
+    let player1Hand = shuffledPlayer1Deck.splice(0, 7);
+    let player2Hand = shuffledPlayer2Deck.splice(0, 7);
+
+    // Validate and reshuffle hands until they satisfy start game rules
+    const player1Result = await this.validateAndReshuffleHand(
+      player1Hand,
+      shuffledPlayer1Deck,
+      startGameRules,
+      shuffleSeed,
+    );
+    player1Hand = player1Result.hand;
+    shuffledPlayer1Deck = player1Result.deck;
+
+    const player2Result = await this.validateAndReshuffleHand(
+      player2Hand,
+      shuffledPlayer2Deck,
+      startGameRules,
+      shuffleSeed !== undefined ? shuffleSeed + 1000 : undefined,
+    );
+    player2Hand = player2Result.hand;
+    shuffledPlayer2Deck = player2Result.deck;
+
+    // Set up 6 prize cards for each player (from remaining deck)
+    const player1PrizeCards = shuffledPlayer1Deck.splice(0, 6);
+    const player2PrizeCards = shuffledPlayer2Deck.splice(0, 6);
+
+    // Remaining cards stay in deck
+    const player1DeckRemaining = shuffledPlayer1Deck;
+    const player2DeckRemaining = shuffledPlayer2Deck;
 
     // Create initial game state
-    // Note: In a real implementation, this would shuffle decks and draw cards
-    // For now, we create empty game states
-    const player1State = new PlayerGameState([], [], null, [], [], []);
-    const player2State = new PlayerGameState([], [], null, [], [], []);
+    const player1State = new PlayerGameState(
+      player1DeckRemaining, // deck
+      player1Hand, // hand (7 cards)
+      null, // activePokemon (will be set during INITIAL_SETUP)
+      [], // bench
+      player1PrizeCards, // prizeCards (6 cards)
+      [], // discardPile
+    );
+
+    const player2State = new PlayerGameState(
+      player2DeckRemaining, // deck
+      player2Hand, // hand (7 cards)
+      null, // activePokemon (will be set during INITIAL_SETUP)
+      [], // bench
+      player2PrizeCards, // prizeCards (6 cards)
+      [], // discardPile
+    );
 
     const gameState = new GameState(
       player1State,
@@ -55,11 +161,106 @@ export class StartMatchUseCase {
       [],
     );
 
-    // Start initial setup
-    match.startInitialSetup(gameState);
+    // Set first player (transitions to DRAWING_CARDS)
+    match.setFirstPlayer(firstPlayer);
+
+    // Update game state during drawing phase
+    match.updateGameStateDuringDrawing(gameState);
 
     // Save and return
     return await this.matchRepository.save(match);
+  }
+
+  /**
+   * Expand deck cards into individual card IDs
+   * A DeckCard with quantity 3 becomes 3 individual card IDs
+   */
+  private expandDeckCards(deckCards: DeckCard[]): string[] {
+    const cardIds: string[] = [];
+    for (const deckCard of deckCards) {
+      for (let i = 0; i < deckCard.quantity; i++) {
+        cardIds.push(deckCard.cardId);
+      }
+    }
+    return cardIds;
+  }
+
+  /**
+   * Shuffle a deck using Fisher-Yates algorithm
+   * @param deck Array of card IDs to shuffle
+   * @param seed Optional seed for deterministic shuffling (for testing)
+   * @returns Shuffled deck
+   */
+  private shuffleDeck(deck: string[], seed?: number): string[] {
+    const shuffled = [...deck];
+    
+    // Use seeded random if seed provided, otherwise use Math.random()
+    let random: () => number;
+    if (seed !== undefined) {
+      // Simple Linear Congruential Generator (LCG) for deterministic randomness
+      let currentSeed = seed;
+      random = () => {
+        // LCG parameters: a = 1664525, c = 1013904223, m = 2^32
+        currentSeed = (1664525 * currentSeed + 1013904223) >>> 0;
+        return (currentSeed >>> 0) / 0x100000000;
+      };
+    } else {
+      random = Math.random;
+    }
+    
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
+  /**
+   * Validate hand against start game rules and reshuffle if necessary
+   * Returns a valid hand that satisfies all rules and the updated deck
+   */
+  private async validateAndReshuffleHand(
+    hand: string[],
+    deck: string[],
+    rules: any,
+    baseSeed?: number,
+  ): Promise<{ hand: string[]; deck: string[] }> {
+    let currentHand = [...hand];
+    let currentDeck = [...deck];
+    const maxAttempts = 100; // Safety limit to prevent infinite loops
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      // Check if hand satisfies all rules
+      const isValid = await this.startGameRulesValidator.validateHand(
+        currentHand,
+        rules,
+      );
+
+      if (isValid) {
+        return { hand: currentHand, deck: currentDeck };
+      }
+
+      // Hand doesn't satisfy rules - reshuffle
+      // Put hand cards back into deck
+      currentDeck.push(...currentHand);
+      // Use deterministic seed (with attempt offset) when baseSeed provided
+      const reshuffleSeed =
+        baseSeed !== undefined ? baseSeed + attempts + 1 : undefined;
+      currentDeck = this.shuffleDeck(currentDeck, reshuffleSeed);
+
+      // Draw 7 new cards
+      currentHand = currentDeck.splice(0, 7);
+
+      attempts++;
+    }
+
+    // If we've exhausted attempts, return the current hand anyway
+    // (shouldn't happen in practice if deck has valid cards)
+    console.warn(
+      `Max reshuffle attempts reached. Returning hand that may not satisfy all rules.`,
+    );
+    return { hand: currentHand, deck: currentDeck };
   }
 }
 

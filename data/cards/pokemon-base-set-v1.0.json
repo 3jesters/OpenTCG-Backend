@@ -23,7 +23,11 @@
       "attacks": [
         {
           "name": "Confuse Ray",
-          "energyCost": ["PSYCHIC", "PSYCHIC", "PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC",
+            "PSYCHIC",
+            "PSYCHIC"
+          ],
           "damage": "30",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Confused."
         }
@@ -35,7 +39,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "Its brain can outperform a supercomputer. Its intelligence quotient is said to be 5,000.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/1.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/1.png"
     },
     {
       "name": "Blastoise",
@@ -49,7 +53,11 @@
       "attacks": [
         {
           "name": "Hydro Pump",
-          "energyCost": ["WATER", "WATER", "WATER"],
+          "energyCost": [
+            "WATER",
+            "WATER",
+            "WATER"
+          ],
           "damage": "40+",
           "text": "Does 40 damage plus 10 more damage for each Water Energy attached to Blastoise but not used to pay for this attack's Energy cost."
         }
@@ -61,7 +69,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "A brutal Pokémon with pressurized water jets on its shell. They are used for high speed tackles.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/2.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/2.png"
     },
     {
       "name": "Chansey",
@@ -74,13 +82,21 @@
       "attacks": [
         {
           "name": "Scrunch",
-          "energyCost": ["COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Flip a coin. If heads, prevent all damage done to Chansey during your opponent's next turn."
         },
         {
           "name": "Double-edge",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "80",
           "text": "Chansey does 80 damage to itself."
         }
@@ -96,7 +112,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "A rare and elusive Pokémon that is said to bring happiness to those who manage to get it.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/3.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/3.png"
     },
     {
       "name": "Charizard",
@@ -110,7 +126,12 @@
       "attacks": [
         {
           "name": "Fire Spin",
-          "energyCost": ["FIRE", "FIRE", "FIRE", "FIRE"],
+          "energyCost": [
+            "FIRE",
+            "FIRE",
+            "FIRE",
+            "FIRE"
+          ],
           "damage": "100",
           "text": "Discard 2 Energy cards attached to Charizard in order to use this attack."
         }
@@ -126,7 +147,7 @@
       "retreatCost": 3,
       "artist": "Mitsuhiro Arita",
       "description": "Spits fire that is hot enough to melt boulders. Known to cause forest fires unintentionally.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/4.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/4.png"
     },
     {
       "name": "Clefairy",
@@ -139,13 +160,19 @@
       "attacks": [
         {
           "name": "Sing",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Asleep."
         },
         {
           "name": "Metronome",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Choose 1 of the Defending Pokémon's attacks. Metronome copies that attack except for its Energy costs."
         }
@@ -161,7 +188,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its magical and cute appeal has many admirers. It is rare and found only in certain areas.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/5.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/5.png"
     },
     {
       "name": "Gyarados",
@@ -175,13 +202,22 @@
       "attacks": [
         {
           "name": "Dragon Rage",
-          "energyCost": ["WATER", "WATER", "WATER"],
+          "energyCost": [
+            "WATER",
+            "WATER",
+            "WATER"
+          ],
           "damage": "50",
           "text": "Dragon Rage does 50 damage to the Defending Pokémon."
         },
         {
           "name": "Bubblebeam",
-          "energyCost": ["WATER", "WATER", "WATER", "WATER"],
+          "energyCost": [
+            "WATER",
+            "WATER",
+            "WATER",
+            "WATER"
+          ],
           "damage": "40",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         }
@@ -197,7 +233,7 @@
       "retreatCost": 3,
       "artist": "Mitsuhiro Arita",
       "description": "Rarely seen in the wild. Huge and vicious, it is capable of destroying entire cities in a rage.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/6.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/6.png"
     },
     {
       "name": "Hitmonchan",
@@ -210,13 +246,19 @@
       "attacks": [
         {
           "name": "Jab",
-          "energyCost": ["FIGHTING"],
+          "energyCost": [
+            "FIGHTING"
+          ],
           "damage": "20",
           "text": "Jab does 20 damage to the Defending Pokémon."
         },
         {
           "name": "Special Punch",
-          "energyCost": ["FIGHTING", "FIGHTING", "COLORLESS"],
+          "energyCost": [
+            "FIGHTING",
+            "FIGHTING",
+            "COLORLESS"
+          ],
           "damage": "40",
           "text": "Special Punch does 40 damage to the Defending Pokémon."
         }
@@ -228,7 +270,7 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "While apparently doing nothing, it fires punches in lightning fast volleys that are impossible to see.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/7.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/7.png"
     },
     {
       "name": "Machamp",
@@ -242,7 +284,12 @@
       "attacks": [
         {
           "name": "Seismic Toss",
-          "energyCost": ["FIGHTING", "FIGHTING", "FIGHTING", "COLORLESS"],
+          "energyCost": [
+            "FIGHTING",
+            "FIGHTING",
+            "FIGHTING",
+            "COLORLESS"
+          ],
           "damage": "60",
           "text": "Seismic Toss does 60 damage to the Defending Pokémon."
         }
@@ -254,7 +301,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "Using its heavy muscles, it throws powerful punches that can send the victim clear over the horizon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/8.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/8.png"
     },
     {
       "name": "Magneton",
@@ -268,13 +315,22 @@
       "attacks": [
         {
           "name": "Thunder Wave",
-          "energyCost": ["ELECTRIC", "ELECTRIC", "COLORLESS"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC",
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         },
         {
           "name": "Selfdestruct",
-          "energyCost": ["ELECTRIC", "ELECTRIC", "ELECTRIC", "COLORLESS"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC",
+            "ELECTRIC",
+            "COLORLESS"
+          ],
           "damage": "80",
           "text": "Does 20 damage to each Pokémon on each player's Bench. (Don't apply Weakness and Resistance for Benched Pokémon.) Magneton does 80 damage to itself."
         }
@@ -286,7 +342,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Formed by several Magnemites linked together. They frequently appear when sunspots flare up.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/9.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/9.png"
     },
     {
       "name": "Mewtwo",
@@ -299,13 +355,19 @@
       "attacks": [
         {
           "name": "Psychic",
-          "energyCost": ["PSYCHIC", "COLORLESS"],
+          "energyCost": [
+            "PSYCHIC",
+            "COLORLESS"
+          ],
           "damage": "10+",
           "text": "Does 10 damage plus 10 more damage for each Energy card attached to the Defending Pokémon."
         },
         {
           "name": "Barrier",
-          "energyCost": ["PSYCHIC", "PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC",
+            "PSYCHIC"
+          ],
           "damage": "0",
           "text": "Discard 1 Psychic Energy card attached to Mewtwo in order to use this attack. During your opponent's next turn, prevent all effects of attacks, including damage, done to Mewtwo."
         }
@@ -317,7 +379,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "It was created by a scientist after years of horrific gene splicing and DNA engineering experiments.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/10.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/10.png"
     },
     {
       "name": "Nidoking",
@@ -331,13 +393,21 @@
       "attacks": [
         {
           "name": "Thrash",
-          "energyCost": ["GRASS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "GRASS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "30+",
           "text": "Flip a coin. If heads, this attack does 30 damage plus 10 more damage; if tails, this attack does 30 damage and Nidoking does 10 damage to itself."
         },
         {
           "name": "Toxic",
-          "energyCost": ["GRASS", "GRASS", "GRASS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS",
+            "GRASS"
+          ],
           "damage": "20",
           "text": "The Defending Pokémon is now Poisoned. It now takes 20 Poison damage instead of 10 after each player's turn (even if it was already Poisoned)."
         }
@@ -349,7 +419,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "It uses its powerful tail in battle to smash, constrict, then break the prey's bones.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/11.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/11.png"
     },
     {
       "name": "Ninetales",
@@ -363,13 +433,21 @@
       "attacks": [
         {
           "name": "Lure",
-          "energyCost": ["COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Switch 1 of your opponent's Benched Pokémon with the Defending Pokémon."
         },
         {
           "name": "Fire Blast",
-          "energyCost": ["FIRE", "FIRE", "FIRE", "FIRE"],
+          "energyCost": [
+            "FIRE",
+            "FIRE",
+            "FIRE",
+            "FIRE"
+          ],
           "damage": "80",
           "text": "Discard 1 Fire Energy card attached to Ninetales in order to use this attack."
         }
@@ -381,7 +459,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Very smart and very vengeful. Grabbing one of its many tails could result in a 1000-year curse.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/12.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/12.png"
     },
     {
       "name": "Poliwrath",
@@ -395,13 +473,22 @@
       "attacks": [
         {
           "name": "Water Gun",
-          "energyCost": ["WATER", "WATER", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "WATER",
+            "COLORLESS"
+          ],
           "damage": "30+",
           "text": "Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack's Energy cost."
         },
         {
           "name": "Whirlpool",
-          "energyCost": ["WATER", "WATER", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "WATER",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "40",
           "text": "If the Defending Pokémon has any Energy cards attached to it, choose 1 of them and discard it."
         }
@@ -413,7 +500,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "An adept swimmer at both the front crawl and breast stroke. Easily overtakes the best human swimmers.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/13.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/13.png"
     },
     {
       "name": "Raichu",
@@ -427,13 +514,22 @@
       "attacks": [
         {
           "name": "Agility",
-          "energyCost": ["ELECTRIC", "ELECTRIC", "COLORLESS"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC",
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "Flip a coin. If heads, during your opponent's next turn, prevent all effects of attacks, including damage, done to Raichu."
         },
         {
           "name": "Thunder",
-          "energyCost": ["ELECTRIC", "ELECTRIC", "ELECTRIC", "COLORLESS"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC",
+            "ELECTRIC",
+            "COLORLESS"
+          ],
           "damage": "60",
           "text": "Flip a coin. If tails, Raichu does 30 damage to itself."
         }
@@ -445,7 +541,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its long tail serves as a ground to protect itself from its own high voltage power.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/14.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/14.png"
     },
     {
       "name": "Venusaur",
@@ -459,7 +555,12 @@
       "attacks": [
         {
           "name": "Solarbeam",
-          "energyCost": ["GRASS", "GRASS", "GRASS", "GRASS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS",
+            "GRASS",
+            "GRASS"
+          ],
           "damage": "60",
           "text": "Solarbeam does 60 damage to the Defending Pokémon."
         }
@@ -471,7 +572,7 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "The plant blooms when it is absorbing solar energy. It stays on the move to seek sunlight.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/15.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/15.png"
     },
     {
       "name": "Zapdos",
@@ -484,13 +585,23 @@
       "attacks": [
         {
           "name": "Thunder",
-          "energyCost": ["ELECTRIC", "ELECTRIC", "ELECTRIC", "COLORLESS"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC",
+            "ELECTRIC",
+            "COLORLESS"
+          ],
           "damage": "60",
           "text": "Flip a coin. If tails, Zapdos does 30 damage to itself."
         },
         {
           "name": "Thunderbolt",
-          "energyCost": ["ELECTRIC", "ELECTRIC", "ELECTRIC", "ELECTRIC"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC",
+            "ELECTRIC",
+            "ELECTRIC"
+          ],
           "damage": "100",
           "text": "Discard all Energy cards attached to Zapdos in order to use this attack."
         }
@@ -502,7 +613,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "A legendary bird Pokémon that is said to appear from clouds while dropping enormous lightning bolts.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/16.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/16.png"
     },
     {
       "name": "Beedrill",
@@ -516,7 +627,11 @@
       "attacks": [
         {
           "name": "Twineedle",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "30×",
           "text": "Flip 2 coins. This attack does 30 damage times the number of heads."
         }
@@ -532,7 +647,7 @@
       "retreatCost": 0,
       "artist": "Ken Sugimori",
       "description": "Flies at high speed and attacks using its large venomous stingers on its forelegs and tail.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/17.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/17.png"
     },
     {
       "name": "Dragonair",
@@ -546,13 +661,22 @@
       "attacks": [
         {
           "name": "Slam",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "30×",
           "text": "Flip 2 coins. This attack does 30 damage times the number of heads."
         },
         {
           "name": "Hyper Beam",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "If the Defending Pokémon has any Energy cards attached to it, choose 1 of them and discard it."
         }
@@ -568,7 +692,7 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "A mystical Pokémon that exudes a gentle aura. Has the ability to change climate conditions.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/18.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/18.png"
     },
     {
       "name": "Dugtrio",
@@ -582,13 +706,22 @@
       "attacks": [
         {
           "name": "Slash",
-          "energyCost": ["FIGHTING", "FIGHTING", "COLORLESS"],
+          "energyCost": [
+            "FIGHTING",
+            "FIGHTING",
+            "COLORLESS"
+          ],
           "damage": "40",
           "text": "Slash does 40 damage to the Defending Pokémon."
         },
         {
           "name": "Earthquake",
-          "energyCost": ["FIGHTING", "FIGHTING", "FIGHTING", "COLORLESS"],
+          "energyCost": [
+            "FIGHTING",
+            "FIGHTING",
+            "FIGHTING",
+            "COLORLESS"
+          ],
           "damage": "70",
           "text": "Does 10 damage to each of your own Benched Pokémon. (Don't apply Weakness and Resistance for Benched Pokémon.)"
         }
@@ -604,7 +737,7 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "A team of Diglett triplets. It triggers huge earthquakes by burrowing 60 miles underground.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/19.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/19.png"
     },
     {
       "name": "Electabuzz",
@@ -617,13 +750,18 @@
       "attacks": [
         {
           "name": "Thundershock",
-          "energyCost": ["ELECTRIC"],
+          "energyCost": [
+            "ELECTRIC"
+          ],
           "damage": "10",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         },
         {
           "name": "Thunderpunch",
-          "energyCost": ["ELECTRIC", "COLORLESS"],
+          "energyCost": [
+            "ELECTRIC",
+            "COLORLESS"
+          ],
           "damage": "30+",
           "text": "Flip a coin. If heads, this attack does 30 damage plus 10 more damage; if tails, this attack does 30 damage and Electabuzz does 10 damage to itself."
         }
@@ -635,7 +773,7 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "Normally found near power plants, they can wander away and cause major blackouts in cities.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/20.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/20.png"
     },
     {
       "name": "Electrode",
@@ -649,13 +787,20 @@
       "attacks": [
         {
           "name": "Sonicboom",
-          "energyCost": ["ELECTRIC", "ELECTRIC"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC"
+          ],
           "damage": "30",
           "text": "Don't apply Weakness and Resistance for this attack. (Any other effects that would happen after applying Weakness and Resistance still happen.)"
         },
         {
           "name": "Energy Spike",
-          "energyCost": ["ELECTRIC", "ELECTRIC", "ELECTRIC"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC",
+            "ELECTRIC"
+          ],
           "damage": "0",
           "text": "Search your deck for a basic Energy card and attach it to 1 of your Pokémon. Shuffle your deck afterward."
         }
@@ -667,7 +812,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "It stores electric energy under very high pressure. It often explodes with little or no provocation.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/21.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/21.png"
     },
     {
       "name": "Pidgeotto",
@@ -681,13 +826,20 @@
       "attacks": [
         {
           "name": "Whirlwind",
-          "energyCost": ["COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "If your opponent has any Benched Pokémon, he or she chooses 1 of them and switches it with the Defending Pokémon. (Do the damage before switching the Pokémon.)"
         },
         {
           "name": "Mirror Move",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "If Pidgeotto was attacked last turn, do the final result of that attack on Pidgeotto to the Defending Pokémon."
         }
@@ -703,7 +855,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Very protective of its sprawling territorial area, this Pokémon will fiercely peck at any intruder.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/22.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/22.png"
     },
     {
       "name": "Arcanine",
@@ -717,13 +869,22 @@
       "attacks": [
         {
           "name": "Flamethrower",
-          "energyCost": ["FIRE", "FIRE", "COLORLESS"],
+          "energyCost": [
+            "FIRE",
+            "FIRE",
+            "COLORLESS"
+          ],
           "damage": "50",
           "text": "Discard 1 Fire Energy card attached to Arcanine in order to use this attack."
         },
         {
           "name": "Take Down",
-          "energyCost": ["FIRE", "FIRE", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "FIRE",
+            "FIRE",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "80",
           "text": "Arcanine does 30 damage to itself."
         }
@@ -735,7 +896,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "A Pokémon that has been admired since the past for its beauty. It runs agilely as if on wings.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/23.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/23.png"
     },
     {
       "name": "Charmeleon",
@@ -749,13 +910,21 @@
       "attacks": [
         {
           "name": "Slash",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Slash does 30 damage to the Defending Pokémon."
         },
         {
           "name": "Flamethrower",
-          "energyCost": ["FIRE", "FIRE", "COLORLESS"],
+          "energyCost": [
+            "FIRE",
+            "FIRE",
+            "COLORLESS"
+          ],
           "damage": "50",
           "text": "Discard 1 Fire Energy card attached to Charmeleon in order to use this attack."
         }
@@ -767,7 +936,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "When it swings its burning tail, it elevates the temperature to unbearably high levels.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/24.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/24.png"
     },
     {
       "name": "Dewgong",
@@ -781,13 +950,22 @@
       "attacks": [
         {
           "name": "Aurora Beam",
-          "energyCost": ["WATER", "WATER", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "WATER",
+            "COLORLESS"
+          ],
           "damage": "50",
           "text": "Aurora Beam does 50 damage to the Defending Pokémon."
         },
         {
           "name": "Ice Beam",
-          "energyCost": ["WATER", "WATER", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "WATER",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         }
@@ -799,7 +977,7 @@
       "retreatCost": 3,
       "artist": "Mitsuhiro Arita",
       "description": "Stores thermal energy in its body. Swims at a steady 8 knots even in intensely cold waters.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/25.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/25.png"
     },
     {
       "name": "Dratini",
@@ -812,7 +990,9 @@
       "attacks": [
         {
           "name": "Pound",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Pound does 10 damage to the Defending Pokémon."
         }
@@ -828,7 +1008,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Long considered a mythical Pokémon until recently when a small colony was found living underwater.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/26.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/26.png"
     },
     {
       "name": "Farfetch'd",
@@ -841,13 +1021,19 @@
       "attacks": [
         {
           "name": "Leek Slap",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Flip a coin. If tails, this attack does nothing. Either way, you can't use this attack again as long as Farfetch'd stays in play (even putting Farfetch'd on the Bench won't let you use it again)."
         },
         {
           "name": "Pot Smash",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Pot Smash does 30 damage to the Defending Pokémon."
         }
@@ -863,7 +1049,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "The sprig of green onions it holds is its weapon. It is used much like a metal sword.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/27.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/27.png"
     },
     {
       "name": "Growlithe",
@@ -876,7 +1062,10 @@
       "attacks": [
         {
           "name": "Flare",
-          "energyCost": ["FIRE", "COLORLESS"],
+          "energyCost": [
+            "FIRE",
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "Flare does 20 damage to the Defending Pokémon."
         }
@@ -888,7 +1077,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Very protective of its territory. It will bark and bite to repel intruders from its space.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/28.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/28.png"
     },
     {
       "name": "Haunter",
@@ -902,13 +1091,18 @@
       "attacks": [
         {
           "name": "Hypnosis",
-          "energyCost": ["PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC"
+          ],
           "damage": "0",
           "text": "The Defending Pokémon is now Asleep."
         },
         {
           "name": "Dream Eater",
-          "energyCost": ["PSYCHIC", "PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC",
+            "PSYCHIC"
+          ],
           "damage": "50",
           "text": "You can't use this attack unless the Defending Pokémon is Asleep."
         }
@@ -920,7 +1114,7 @@
       "retreatCost": 0,
       "artist": "Keiji Kinebuchi",
       "description": "Because of its ability to slip through block walls, it is said to be from another dimension.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/29.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/29.png"
     },
     {
       "name": "Ivysaur",
@@ -934,13 +1128,21 @@
       "attacks": [
         {
           "name": "Vine Whip",
-          "energyCost": ["GRASS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "GRASS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Vine Whip does 30 damage to the Defending Pokémon."
         },
         {
           "name": "Poisonpowder",
-          "energyCost": ["GRASS", "GRASS", "GRASS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS",
+            "GRASS"
+          ],
           "damage": "20",
           "text": "The Defending Pokémon is now Poisoned."
         }
@@ -952,7 +1154,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "When the bulb on its back grows large, it appears to lose the ability to stand on its hind legs.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/30.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/30.png"
     },
     {
       "name": "Jynx",
@@ -965,13 +1167,18 @@
       "attacks": [
         {
           "name": "Doubleslap",
-          "energyCost": ["PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC"
+          ],
           "damage": "10×",
           "text": "Flip 2 coins. This attack does 10 damage times the number of heads."
         },
         {
           "name": "Meditate",
-          "energyCost": ["PSYCHIC", "PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC",
+            "PSYCHIC"
+          ],
           "damage": "20+",
           "text": "Does 20 damage plus 10 more damage for each damage counter on the Defending Pokémon."
         }
@@ -983,7 +1190,7 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "It seductively wiggles its hips as it walks. It can cause people to dance in unison with it.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/31.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/31.png"
     },
     {
       "name": "Kadabra",
@@ -997,13 +1204,20 @@
       "attacks": [
         {
           "name": "Recover",
-          "energyCost": ["PSYCHIC", "PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC",
+            "PSYCHIC"
+          ],
           "damage": "0",
           "text": "Discard 1 Psychic Energy card attached to Kadabra in order to use this attack. Remove all damage counters from Kadabra."
         },
         {
           "name": "Super Psy",
-          "energyCost": ["PSYCHIC", "PSYCHIC", "COLORLESS"],
+          "energyCost": [
+            "PSYCHIC",
+            "PSYCHIC",
+            "COLORLESS"
+          ],
           "damage": "50",
           "text": "Super Psy does 50 damage to the Defending Pokémon."
         }
@@ -1015,7 +1229,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "It emits special alpha waves from its body that induce headaches just by being close by.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/32.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/32.png"
     },
     {
       "name": "Kakuna",
@@ -1029,13 +1243,19 @@
       "attacks": [
         {
           "name": "Stiffen",
-          "energyCost": ["COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Flip a coin. If heads, prevent all damage done to Kakuna during your opponent's next turn. (Any other effects of attacks still happen.)"
         },
         {
           "name": "Poisonpowder",
-          "energyCost": ["GRASS", "GRASS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS"
+          ],
           "damage": "20",
           "text": "The Defending Pokémon is now Poisoned."
         }
@@ -1047,7 +1267,7 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "Almost incapable of moving, this Pokémon can only harden its shell to protect itself from predators.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/33.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/33.png"
     },
     {
       "name": "Machoke",
@@ -1061,13 +1281,22 @@
       "attacks": [
         {
           "name": "Karate Chop",
-          "energyCost": ["FIGHTING", "FIGHTING", "COLORLESS"],
+          "energyCost": [
+            "FIGHTING",
+            "FIGHTING",
+            "COLORLESS"
+          ],
           "damage": "50-",
           "text": "Does 50 damage minus 10 damage for each damage counter on Machoke."
         },
         {
           "name": "Submission",
-          "energyCost": ["FIGHTING", "FIGHTING", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "FIGHTING",
+            "FIGHTING",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "60",
           "text": "Machoke does 20 damage to itself."
         }
@@ -1079,7 +1308,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "Its muscular body is so powerful, it must wear a power save belt to be able to regulate its motions.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/34.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/34.png"
     },
     {
       "name": "Magikarp",
@@ -1092,13 +1321,17 @@
       "attacks": [
         {
           "name": "Tackle",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Tackle does 10 damage to the Defending Pokémon."
         },
         {
           "name": "Flail",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10×",
           "text": "Does 10 damage times the number of damage counters on Magikarp."
         }
@@ -1110,7 +1343,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "In the distant past, it was somewhat stronger than the horribly weak descendants that exist today.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/35.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/35.png"
     },
     {
       "name": "Magmar",
@@ -1123,13 +1356,20 @@
       "attacks": [
         {
           "name": "Fire Punch",
-          "energyCost": ["FIRE", "FIRE"],
+          "energyCost": [
+            "FIRE",
+            "FIRE"
+          ],
           "damage": "30",
           "text": "Fire Punch does 30 damage to the Defending Pokémon."
         },
         {
           "name": "Flamethrower",
-          "energyCost": ["FIRE", "FIRE", "COLORLESS"],
+          "energyCost": [
+            "FIRE",
+            "FIRE",
+            "COLORLESS"
+          ],
           "damage": "50",
           "text": "Discard 1 Fire Energy card attached to Magmar in order to use this attack."
         }
@@ -1141,7 +1381,7 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "Its body always burns with an orange glow that enables it to hide perfectly among flames.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/36.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/36.png"
     },
     {
       "name": "Magnemite",
@@ -1154,13 +1394,19 @@
       "attacks": [
         {
           "name": "Thunder Wave",
-          "energyCost": ["ELECTRIC", "COLORLESS"],
+          "energyCost": [
+            "ELECTRIC",
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         },
         {
           "name": "Selfdestruct",
-          "energyCost": ["ELECTRIC", "ELECTRIC"],
+          "energyCost": [
+            "ELECTRIC",
+            "ELECTRIC"
+          ],
           "damage": "40",
           "text": "Does 10 damage to each Pokémon on each player's Bench. (Don't apply Weakness and Resistance for Benched Pokémon.) Magnemite does 40 damage to itself."
         }
@@ -1172,7 +1418,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Uses antigravity to stay suspended. Appears without warning and uses Thunder Wave and similar moves.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/37.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/53.png"
     },
     {
       "name": "Nidorino",
@@ -1186,13 +1432,21 @@
       "attacks": [
         {
           "name": "Double Kick",
-          "energyCost": ["GRASS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "GRASS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "30×",
           "text": "Flip 2 coins. This attack does 30 damage times the number of heads."
         },
         {
           "name": "Horn Drill",
-          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS",
+            "COLORLESS"
+          ],
           "damage": "50",
           "text": "Horn Drill does 50 damage to the Defending Pokémon."
         }
@@ -1204,7 +1458,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "An aggressive Pokémon that is quick to attack. The horn on its head secretes a powerful venom.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/38.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/37.png"
     },
     {
       "name": "Poliwag",
@@ -1217,7 +1471,9 @@
       "attacks": [
         {
           "name": "Water Gun",
-          "energyCost": ["WATER"],
+          "energyCost": [
+            "WATER"
+          ],
           "damage": "10+",
           "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Poliwag but not used to pay for this attack's Energy cost."
         }
@@ -1229,7 +1485,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its newly grown legs prevent it from running. It appears to prefer swimming than trying to stand.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/39.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/59.png"
     },
     {
       "name": "Poliwhirl",
@@ -1243,13 +1499,20 @@
       "attacks": [
         {
           "name": "Amnesia",
-          "energyCost": ["WATER", "WATER"],
+          "energyCost": [
+            "WATER",
+            "WATER"
+          ],
           "damage": "0",
           "text": "Choose 1 of the Defending Pokémon's attacks. That Pokémon can't use that attack during your opponent's next turn."
         },
         {
           "name": "Doubleslap",
-          "energyCost": ["WATER", "WATER", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "WATER",
+            "COLORLESS"
+          ],
           "damage": "30×",
           "text": "Flip 2 coins. This attack does 30 damage times the number of heads."
         }
@@ -1261,7 +1524,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Capable of living in or out of water. When out of water, it sweats to keep its body slimy.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/40.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/38.png"
     },
     {
       "name": "Porygon",
@@ -1274,13 +1537,18 @@
       "attacks": [
         {
           "name": "Conversion 1",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "If the Defending Pokémon has a Weakness, you may change it to a type of your choice other than Colorless."
         },
         {
           "name": "Conversion 2",
-          "energyCost": ["COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Change Porygon's Resistance to a type of your choice other than Colorless."
         }
@@ -1296,7 +1564,7 @@
       "retreatCost": 1,
       "artist": "Keiji Kinebuchi",
       "description": "A Pokémon that consists entirely of programming code. Capable of moving freely in cyberspace.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/41.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/39.png"
     },
     {
       "name": "Raticate",
@@ -1310,13 +1578,19 @@
       "attacks": [
         {
           "name": "Bite",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "Bite does 20 damage to the Defending Pokémon."
         },
         {
           "name": "Super Fang",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Does damage equal to half the Defending Pokémon's remaining HP (rounded down to the nearest 10)."
         }
@@ -1332,7 +1606,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "It uses its whiskers to maintain its balance. It apparently slows down if they are cut off.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/42.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/40.png"
     },
     {
       "name": "Seel",
@@ -1345,7 +1619,9 @@
       "attacks": [
         {
           "name": "Headbutt",
-          "energyCost": ["WATER"],
+          "energyCost": [
+            "WATER"
+          ],
           "damage": "10",
           "text": "Headbutt does 10 damage to the Defending Pokémon."
         }
@@ -1357,7 +1633,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "The protruding horn on its head is very hard. It is used for bashing through thick ice.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/43.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/41.png"
     },
     {
       "name": "Wartortle",
@@ -1371,13 +1647,20 @@
       "attacks": [
         {
           "name": "Withdraw",
-          "energyCost": ["WATER", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Flip a coin. If heads, prevent all damage done to Wartortle during your opponent's next turn. (Any other effects of attacks still happen.)"
         },
         {
           "name": "Bite",
-          "energyCost": ["WATER", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "40",
           "text": "Bite does 40 damage to the Defending Pokémon."
         }
@@ -1389,7 +1672,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Often hides in water to stalk unwary prey. For swimming fast, it moves its ears to maintain balance.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/44.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/42.png"
     },
     {
       "name": "Abra",
@@ -1402,7 +1685,9 @@
       "attacks": [
         {
           "name": "Psyshock",
-          "energyCost": ["PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC"
+          ],
           "damage": "10",
           "text": "Psyshock does 10 damage to the Defending Pokémon."
         }
@@ -1414,7 +1699,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Using its ability to read minds, it will identify impending danger and Teleport to safety.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/45.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/43.png"
     },
     {
       "name": "Bulbasaur",
@@ -1427,7 +1712,10 @@
       "attacks": [
         {
           "name": "Leech Seed",
-          "energyCost": ["GRASS", "GRASS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS"
+          ],
           "damage": "20",
           "text": "Remove 1 damage counter from Bulbasaur."
         }
@@ -1439,7 +1727,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "A strange seed was planted on its back at birth. The plant sprouts and grows with this Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/46.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/44.png"
     },
     {
       "name": "Caterpie",
@@ -1452,7 +1740,9 @@
       "attacks": [
         {
           "name": "Gnaw",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Gnaw does 10 damage to the Defending Pokémon."
         }
@@ -1464,7 +1754,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Its short feet are tipped with suction pads that enable it to tirelessly climb slopes and walls.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/47.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/45.png"
     },
     {
       "name": "Charmander",
@@ -1477,13 +1767,18 @@
       "attacks": [
         {
           "name": "Scratch",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Scratch does 10 damage to the Defending Pokémon."
         },
         {
           "name": "Ember",
-          "energyCost": ["FIRE", "COLORLESS"],
+          "energyCost": [
+            "FIRE",
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Discard 1 Fire Energy card attached to Charmander in order to use this attack."
         }
@@ -1495,7 +1790,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Obviously prefers hot places. When it rains, steam is said to spout from the tip of its tail.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/48.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/46.png"
     },
     {
       "name": "Diglett",
@@ -1508,13 +1803,18 @@
       "attacks": [
         {
           "name": "Dig",
-          "energyCost": ["FIGHTING"],
+          "energyCost": [
+            "FIGHTING"
+          ],
           "damage": "10",
           "text": "Dig does 10 damage to the Defending Pokémon."
         },
         {
           "name": "Mud Slap",
-          "energyCost": ["FIGHTING", "COLORLESS"],
+          "energyCost": [
+            "FIGHTING",
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Mud Slap does 30 damage to the Defending Pokémon."
         }
@@ -1530,7 +1830,7 @@
       "retreatCost": 0,
       "artist": "Keiji Kinebuchi",
       "description": "Lives about one yard underground where it feeds on plant roots. It sometimes appears above ground.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/49.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/47.png"
     },
     {
       "name": "Doduo",
@@ -1543,7 +1843,11 @@
       "attacks": [
         {
           "name": "Fury Attack",
-          "energyCost": ["COLORLESS", "COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "10×",
           "text": "Flip 2 coins. This attack does 10 damage times the number of heads."
         }
@@ -1559,7 +1863,7 @@
       "retreatCost": 0,
       "artist": "Mitsuhiro Arita",
       "description": "A bird that makes up for its poor flying with its fast foot speed. Leaves giant footprints.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/50.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/48.png"
     },
     {
       "name": "Drowzee",
@@ -1572,13 +1876,18 @@
       "attacks": [
         {
           "name": "Pound",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Pound does 10 damage to the Defending Pokémon."
         },
         {
           "name": "Confuse Ray",
-          "energyCost": ["PSYCHIC", "PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC",
+            "PSYCHIC"
+          ],
           "damage": "10",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Confused."
         }
@@ -1590,7 +1899,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Puts enemies to sleep then eats their dreams. Occasionally gets sick from eating bad dreams.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/51.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/49.png"
     },
     {
       "name": "Gastly",
@@ -1603,13 +1912,18 @@
       "attacks": [
         {
           "name": "Sleeping Gas",
-          "energyCost": ["PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC"
+          ],
           "damage": "0",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Asleep."
         },
         {
           "name": "Destiny Bond",
-          "energyCost": ["PSYCHIC", "PSYCHIC"],
+          "energyCost": [
+            "PSYCHIC",
+            "PSYCHIC"
+          ],
           "damage": "0",
           "text": "Discard 1 Psychic Energy card attached to Gastly in order to use this attack. If, during your opponent's next turn, an attack Knocks Out Gastly, Knock Out the attacking Pokémon."
         }
@@ -1625,7 +1939,7 @@
       "retreatCost": 0,
       "artist": "Keiji Kinebuchi",
       "description": "Almost invisible, this gaseous Pokémon cloaks the target and puts it to sleep without notice.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/52.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/50.png"
     },
     {
       "name": "Koffing",
@@ -1638,13 +1952,18 @@
       "attacks": [
         {
           "name": "Foul Gas",
-          "energyCost": ["GRASS"],
+          "energyCost": [
+            "GRASS"
+          ],
           "damage": "10",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Poisoned; if tails, it is now Confused."
         },
         {
           "name": "Smog",
-          "energyCost": ["GRASS", "GRASS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS"
+          ],
           "damage": "20",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Poisoned."
         }
@@ -1656,7 +1975,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Because it stores several kinds of toxic gases in its body, it is prone to exploding without warning.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/53.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/51.png"
     },
     {
       "name": "Machop",
@@ -1669,7 +1988,9 @@
       "attacks": [
         {
           "name": "Low Kick",
-          "energyCost": ["FIGHTING"],
+          "energyCost": [
+            "FIGHTING"
+          ],
           "damage": "20",
           "text": "Low Kick does 20 damage to the Defending Pokémon."
         }
@@ -1681,7 +2002,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Loves to build its muscles. It trains in all styles of martial arts to become even stronger.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/54.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/52.png"
     },
     {
       "name": "Magikarp",
@@ -1694,7 +2015,9 @@
       "attacks": [
         {
           "name": "Tackle",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Tackle does 10 damage to the Defending Pokémon."
         }
@@ -1706,7 +2029,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "In the distant past, it was somewhat stronger than the horribly weak descendants that exist today.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/55.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/35.png"
     },
     {
       "name": "Metapod",
@@ -1720,7 +2043,10 @@
       "attacks": [
         {
           "name": "Stun Spore",
-          "energyCost": ["GRASS", "GRASS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS"
+          ],
           "damage": "20",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         }
@@ -1732,7 +2058,7 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "This Pokémon is vulnerable to attack while its shell is soft, exposing its weak and tender body.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/56.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/54.png"
     },
     {
       "name": "Nidoran♂",
@@ -1745,7 +2071,9 @@
       "attacks": [
         {
           "name": "Horn Hazard",
-          "energyCost": ["GRASS"],
+          "energyCost": [
+            "GRASS"
+          ],
           "damage": "10",
           "text": "Flip a coin. If tails, this attack does nothing."
         }
@@ -1757,7 +2085,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Stiffens its ears to sense danger. The larger its horns, the more powerful its secreted venom.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/57.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/55.png"
     },
     {
       "name": "Onix",
@@ -1770,13 +2098,18 @@
       "attacks": [
         {
           "name": "Rock Throw",
-          "energyCost": ["FIGHTING"],
+          "energyCost": [
+            "FIGHTING"
+          ],
           "damage": "10",
           "text": "Rock Throw does 10 damage to the Defending Pokémon."
         },
         {
           "name": "Harden",
-          "energyCost": ["FIGHTING", "FIGHTING"],
+          "energyCost": [
+            "FIGHTING",
+            "FIGHTING"
+          ],
           "damage": "0",
           "text": "Flip a coin. If heads, prevent all damage done to Onix during your opponent's next turn. (Any other effects of attacks still happen.)"
         }
@@ -1788,7 +2121,7 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "As it grows, the stone portions of its body harden to become similar to a diamond, but colored black.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/58.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/56.png"
     },
     {
       "name": "Pidgey",
@@ -1801,7 +2134,10 @@
       "attacks": [
         {
           "name": "Whirlwind",
-          "energyCost": ["COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "If your opponent has any Benched Pokémon, he or she chooses 1 of them and switches it with the Defending Pokémon. (Do the damage before switching the Pokémon.)"
         }
@@ -1817,7 +2153,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "A common sight in forests and woods. It flaps its wings at ground level to kick up blinding sand.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/59.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/57.png"
     },
     {
       "name": "Pikachu",
@@ -1830,13 +2166,18 @@
       "attacks": [
         {
           "name": "Gnaw",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Gnaw does 10 damage to the Defending Pokémon."
         },
         {
           "name": "Thunder Jolt",
-          "energyCost": ["ELECTRIC", "COLORLESS"],
+          "energyCost": [
+            "ELECTRIC",
+            "COLORLESS"
+          ],
           "damage": "30",
           "text": "Flip a coin. If tails, Pikachu does 10 damage to itself."
         }
@@ -1848,7 +2189,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "When several of these Pokémon gather, their electricity could build and cause lightning storms.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/60.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/58.png"
     },
     {
       "name": "Poliwag",
@@ -1861,7 +2202,10 @@
       "attacks": [
         {
           "name": "Bubble",
-          "energyCost": ["WATER", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         }
@@ -1873,7 +2217,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its newly grown legs prevent it from running. It appears to prefer swimming than trying to stand.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/61.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/59.png"
     },
     {
       "name": "Ponyta",
@@ -1886,13 +2230,19 @@
       "attacks": [
         {
           "name": "Smash Kick",
-          "energyCost": ["COLORLESS", "COLORLESS"],
+          "energyCost": [
+            "COLORLESS",
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "Smash Kick does 20 damage to the Defending Pokémon."
         },
         {
           "name": "Flame Tail",
-          "energyCost": ["FIRE", "FIRE"],
+          "energyCost": [
+            "FIRE",
+            "FIRE"
+          ],
           "damage": "30",
           "text": "Flame Tail does 30 damage to the Defending Pokémon."
         }
@@ -1904,7 +2254,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its hooves are 10 times harder than diamonds. It can trample anything completely flat in little time.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/62.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/60.png"
     },
     {
       "name": "Rattata",
@@ -1917,7 +2267,9 @@
       "attacks": [
         {
           "name": "Bite",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "Bite does 20 damage to the Defending Pokémon."
         }
@@ -1933,7 +2285,7 @@
       "retreatCost": 0,
       "artist": "Ken Sugimori",
       "description": "Bites anything when it attacks. Small and very quick, it is a common sight in many places.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/63.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/61.png"
     },
     {
       "name": "Sandshrew",
@@ -1946,7 +2298,9 @@
       "attacks": [
         {
           "name": "Sand Attack",
-          "energyCost": ["FIGHTING"],
+          "energyCost": [
+            "FIGHTING"
+          ],
           "damage": "10",
           "text": "If the Defending Pokémon tries to attack during your opponent's next turn, your opponent flips a coin. If tails, that attack does nothing."
         }
@@ -1962,7 +2316,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Burrows deep underground in arid locations far from water. It only emerges to hunt for food.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/64.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/62.png"
     },
     {
       "name": "Squirtle",
@@ -1975,13 +2329,18 @@
       "attacks": [
         {
           "name": "Bubble",
-          "energyCost": ["WATER"],
+          "energyCost": [
+            "WATER"
+          ],
           "damage": "10",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         },
         {
           "name": "Withdraw",
-          "energyCost": ["WATER", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "COLORLESS"
+          ],
           "damage": "0",
           "text": "Flip a coin. If heads, prevent all damage done to Squirtle during your opponent's next turn. (Any other effects of attacks still happen.)"
         }
@@ -1993,7 +2352,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "After birth, its back swells and hardens into a shell. Powerfully sprays foam from its mouth.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/65.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/63.png"
     },
     {
       "name": "Starmie",
@@ -2007,13 +2366,19 @@
       "attacks": [
         {
           "name": "Recover",
-          "energyCost": ["WATER", "WATER"],
+          "energyCost": [
+            "WATER",
+            "WATER"
+          ],
           "damage": "0",
           "text": "Discard 1 Water Energy card attached to Starmie in order to use this attack. Remove all damage counters from Starmie."
         },
         {
           "name": "Star Freeze",
-          "energyCost": ["WATER", "COLORLESS"],
+          "energyCost": [
+            "WATER",
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         }
@@ -2025,7 +2390,7 @@
       "retreatCost": 0,
       "artist": "Keiji Kinebuchi",
       "description": "Its central core glows with the seven colors of the rainbow. Some people value the core as a gem.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/66.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/64.png"
     },
     {
       "name": "Staryu",
@@ -2038,7 +2403,9 @@
       "attacks": [
         {
           "name": "Slap",
-          "energyCost": ["WATER"],
+          "energyCost": [
+            "WATER"
+          ],
           "damage": "20",
           "text": "Slap does 20 damage to the Defending Pokémon."
         }
@@ -2050,7 +2417,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "An enigmatic Pokémon that can effortlessly regenerate any appendage it loses in battle.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/67.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/65.png"
     },
     {
       "name": "Tangela",
@@ -2063,13 +2430,20 @@
       "attacks": [
         {
           "name": "Bind",
-          "energyCost": ["GRASS", "COLORLESS"],
+          "energyCost": [
+            "GRASS",
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         },
         {
           "name": "Poisonpowder",
-          "energyCost": ["GRASS", "GRASS", "COLORLESS"],
+          "energyCost": [
+            "GRASS",
+            "GRASS",
+            "COLORLESS"
+          ],
           "damage": "20",
           "text": "The Defending Pokémon is now Poisoned."
         }
@@ -2081,7 +2455,7 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "The whole body is swathed with wide vines that are similar to seaweed. Its vines shake as it walks.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/68.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/66.png"
     },
     {
       "name": "Voltorb",
@@ -2094,7 +2468,9 @@
       "attacks": [
         {
           "name": "Tackle",
-          "energyCost": ["COLORLESS"],
+          "energyCost": [
+            "COLORLESS"
+          ],
           "damage": "10",
           "text": "Tackle does 10 damage to the Defending Pokémon."
         }
@@ -2106,7 +2482,7 @@
       "retreatCost": 1,
       "artist": "Keiji Kinebuchi",
       "description": "Usually found in power plants. Easily mistaken for a Poké Ball, they have zapped many people.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/69.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/67.png"
     },
     {
       "name": "Vulpix",
@@ -2119,7 +2495,10 @@
       "attacks": [
         {
           "name": "Confuse Ray",
-          "energyCost": ["FIRE", "FIRE"],
+          "energyCost": [
+            "FIRE",
+            "FIRE"
+          ],
           "damage": "10",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Confused."
         }
@@ -2131,7 +2510,7 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "At the time of birth, it has just one tail. The tail splits from its tip as it grows older.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/70.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/68.png"
     },
     {
       "name": "Weedle",
@@ -2144,7 +2523,9 @@
       "attacks": [
         {
           "name": "Poison Sting",
-          "energyCost": ["GRASS"],
+          "energyCost": [
+            "GRASS"
+          ],
           "damage": "10",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Poisoned."
         }
@@ -2156,7 +2537,7 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Often found in forests, eating leaves. It has a sharp venomous stinger on its head.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/71.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/69.png"
     },
     {
       "name": "Clefairy Doll",
@@ -2166,7 +2547,7 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Play Clefairy Doll as if it were a Basic Pokémon. While in play, Clefairy Doll counts as a Pokémon (instead of a Trainer card). Clefairy Doll has no attacks, can't retreat, and can't be Asleep, Confused, Paralyzed, or Poisoned. If Clefairy Doll is Knocked Out, it doesn't count as a Knocked Out Pokémon. At any time during your turn before your attack, you may discard Clefairy Doll.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/72.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/70.png",
       "trainerEffects": [
         {
           "effectType": "PUT_INTO_PLAY",
@@ -2183,7 +2564,7 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Discard 2 of your other cards from your hand in order to play this card. Search your deck for any card and put it into your hand. Shuffle your deck afterward.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/73.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/71.png",
       "trainerEffects": [
         {
           "effectType": "DISCARD_HAND",
@@ -2213,7 +2594,7 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Choose 1 of your own Pokémon in play and a Stage of Evolution. Discard all Evolution cards of that Stage or higher attached to that Pokémon. That Pokémon is no longer Asleep, Confused, Paralyzed, Poisoned, or anything else that might be the result of an attack (just as if you had evolved it).",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/74.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/72.png",
       "trainerEffects": [
         {
           "effectType": "DEVOLVE_POKEMON",
@@ -2235,7 +2616,7 @@
       "rarity": "RARE",
       "artist": "Ken Sugimori",
       "description": "Your opponent shuffles his or her hand into his or her deck, then draws 7 cards.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/75.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/73.png",
       "trainerEffects": [
         {
           "effectType": "OPPONENT_SHUFFLES_HAND",
@@ -2258,7 +2639,7 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Discard 2 of the other cards from your hand in order to play this card. Put a Trainer card from your discard pile into your hand.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/76.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/74.png",
       "trainerEffects": [
         {
           "effectType": "DISCARD_HAND",
@@ -2283,7 +2664,7 @@
       "rarity": "RARE",
       "artist": "Ken Sugimori",
       "description": "You and your opponent show each other your hands, then shuffle all the Trainer cards from your hands into your decks.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/77.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/75.png",
       "trainerEffects": [
         {
           "effectType": "DISCARD_HAND",
@@ -2301,7 +2682,7 @@
       "rarity": "RARE",
       "artist": "Ken Sugimori",
       "description": "Put a Stage 2 Evolution card from your hand on the matching Basic Pokémon. You can only play this card when you would be allowed to evolve that Pokémon anyway.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/78.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/76.png",
       "trainerEffects": [
         {
           "effectType": "EVOLVE_POKEMON",
@@ -2318,7 +2699,7 @@
       "rarity": "RARE",
       "artist": "Ken Sugimori",
       "description": "Trade a Pokémon card from your hand for 1 of the Basic Pokémon or Evolution cards from your deck. Show that card to your opponent, then shuffle your deck.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/79.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/77.png",
       "trainerEffects": [
         {
           "effectType": "TRADE_CARDS",
@@ -2342,7 +2723,7 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Choose 1 of your Pokémon in play and return its Basic Pokémon card to your hand. (Discard all cards attached to that card.)",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/80.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/78.png",
       "trainerEffects": [
         {
           "effectType": "RETURN_TO_HAND",
@@ -2360,7 +2741,7 @@
       "rarity": "RARE",
       "artist": "Keiji Kinebuchi",
       "description": "Discard 1 Energy card attached to 1 of your own Pokémon in order to play this card. Choose 1 of your opponent's Pokémon and up to 2 Energy cards attached to it. Discard those Energy cards.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/81.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/79.png",
       "trainerEffects": [
         {
           "effectType": "DISCARD_ENERGY",
@@ -2384,7 +2765,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Attach Defender to 1 of your Pokémon. At the end of your opponent's next turn, discard Defender. Damage done to that Pokémon by attacks is reduced by 20 (after applying Weakness and Resistance).",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/82.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/80.png",
       "trainerEffects": [
         {
           "effectType": "ATTACH_TO_POKEMON",
@@ -2407,7 +2788,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Trade 1 of the other cards in your hand for up to 2 basic Energy cards from your discard pile.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/83.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/81.png",
       "trainerEffects": [
         {
           "effectType": "DISCARD_HAND",
@@ -2432,7 +2813,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Your Active Pokémon is no longer Asleep, Confused, Paralyzed, or Poisoned.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/84.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/82.png",
       "trainerEffects": [
         {
           "effectType": "CURE_STATUS",
@@ -2449,7 +2830,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Shuffle 2 of the other cards from your hand into your deck in order to play this card. Then draw a card.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/85.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/83.png",
       "trainerEffects": [
         {
           "effectType": "DISCARD_HAND",
@@ -2473,7 +2854,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Attach PlusPower to 1 of your Pokémon. At the end of your turn, discard PlusPower. If this Pokémon's attack does damage to the Defending Pokémon (after applying Weakness and Resistance), the attack does 10 more damage to the Defending Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/86.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/84.png",
       "trainerEffects": [
         {
           "effectType": "ATTACH_TO_POKEMON",
@@ -2496,7 +2877,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Look at up to 5 cards from the top of your deck and rearrange them as you like.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/87.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/87.png",
       "trainerEffects": [
         {
           "effectType": "LOOK_AT_DECK",
@@ -2514,7 +2895,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Remove all damage counters from all of your own Pokémon with damage counters on them, then discard all Energy cards attached to those Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/88.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/85.png",
       "trainerEffects": [
         {
           "effectType": "HEAL",
@@ -2537,7 +2918,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Choose a Basic Pokémon card from your opponent's discard pile and put it onto his or her Bench. (You can't use this card if your opponent's Bench is full.)",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/89.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/86.png",
       "trainerEffects": [
         {
           "effectType": "PUT_INTO_PLAY",
@@ -2556,7 +2937,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Remove up to 2 damage counters from 1 of your Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/90.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/94.png",
       "trainerEffects": [
         {
           "effectType": "HEAL",
@@ -2574,7 +2955,7 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Discard 1 Energy card attached to 1 of your own Pokémon in order to play this card. Remove up to 4 damage counters from that Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/91.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/90.png",
       "trainerEffects": [
         {
           "effectType": "DISCARD_ENERGY",
@@ -2598,7 +2979,7 @@
       "rarity": "COMMON",
       "artist": "Ken Sugimori",
       "description": "Draw 2 cards.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/92.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/91.png",
       "trainerEffects": [
         {
           "effectType": "DRAW_CARDS",
@@ -2616,7 +2997,7 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Choose 1 Energy card attached to 1 of your opponent's Pokémon and discard it.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/93.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/92.png",
       "trainerEffects": [
         {
           "effectType": "REMOVE_ENERGY",
@@ -2634,7 +3015,7 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Choose 1 of your opponent's Benched Pokémon and switch it with his or her Active Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/94.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/93.png",
       "trainerEffects": [
         {
           "effectType": "FORCE_SWITCH",
@@ -2651,7 +3032,7 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Remove up to 2 damage counters from 1 of your Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/95.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/94.png",
       "trainerEffects": [
         {
           "effectType": "HEAL",
@@ -2669,7 +3050,7 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Switch your Active Pokémon with 1 of your Benched Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/96.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/95.png",
       "trainerEffects": [
         {
           "effectType": "SWITCH_ACTIVE",
@@ -2686,12 +3067,16 @@
       "rarity": "UNCOMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Double Colorless Energy counts as 2 Colorless Energy. Double Colorless Energy can't be used to pay for Pokémon Power costs.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/97.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/96.png",
       "energyProvision": {
-        "energyTypes": ["COLORLESS"],
+        "energyTypes": [
+          "COLORLESS"
+        ],
         "amount": 2,
         "isSpecial": true,
-        "restrictions": ["Can't be used to pay for Pokémon Power costs"]
+        "restrictions": [
+          "Can't be used to pay for Pokémon Power costs"
+        ]
       }
     },
     {
@@ -2702,9 +3087,11 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Basic Energy card. Provides Fighting Energy.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/98.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/97.png",
       "energyProvision": {
-        "energyTypes": ["FIGHTING"],
+        "energyTypes": [
+          "FIGHTING"
+        ],
         "amount": 1,
         "isSpecial": false
       }
@@ -2717,9 +3104,11 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Basic Energy card. Provides Fire Energy.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/99.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/98.png",
       "energyProvision": {
-        "energyTypes": ["FIRE"],
+        "energyTypes": [
+          "FIRE"
+        ],
         "amount": 1,
         "isSpecial": false
       }
@@ -2732,9 +3121,11 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Basic Energy card. Provides Grass Energy.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/100.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/99.png",
       "energyProvision": {
-        "energyTypes": ["GRASS"],
+        "energyTypes": [
+          "GRASS"
+        ],
         "amount": 1,
         "isSpecial": false
       }
@@ -2747,9 +3138,11 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Basic Energy card. Provides Electric Energy.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/101.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/100.png",
       "energyProvision": {
-        "energyTypes": ["ELECTRIC"],
+        "energyTypes": [
+          "ELECTRIC"
+        ],
         "amount": 1,
         "isSpecial": false
       }
@@ -2762,9 +3155,11 @@
       "rarity": "COMMON",
       "artist": "Keiji Kinebuchi",
       "description": "Basic Energy card. Provides Psychic Energy.",
-      "imageUrl": "https://www.pikawiz.com/images/baseset/102.png",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/101.png",
       "energyProvision": {
-        "energyTypes": ["PSYCHIC"],
+        "energyTypes": [
+          "PSYCHIC"
+        ],
         "amount": 1,
         "isSpecial": false
       }

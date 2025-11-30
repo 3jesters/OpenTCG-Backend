@@ -4,6 +4,7 @@ import {
   PokemonType,
   Rarity,
   EvolutionStage,
+  EnergyType,
 } from '../../domain/enums';
 import { AbilityDto } from './ability.dto';
 import { AttackDto } from './attack.dto';
@@ -162,5 +163,13 @@ export class CardDetailDto {
     example: 'F',
   })
   regulationMark?: string;
+
+  @ApiProperty({
+    description: 'Energy type (for Energy cards only)',
+    enum: EnergyType,
+    required: false,
+    example: EnergyType.FIRE,
+  })
+  energyType?: EnergyType;
 }
 

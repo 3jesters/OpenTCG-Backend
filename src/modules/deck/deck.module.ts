@@ -21,6 +21,8 @@ import { DeckController } from './presentation/controllers';
 
 // Import TournamentModule for validation use case
 import { TournamentModule } from '../tournament/tournament.module';
+// Import CardModule for card details
+import { CardModule } from '../card/card.module';
 
 /**
  * Deck Module
@@ -29,6 +31,7 @@ import { TournamentModule } from '../tournament/tournament.module';
 @Module({
   imports: [
     TournamentModule, // For tournament validation
+    CardModule, // For card details
   ],
   providers: [
     // Repository

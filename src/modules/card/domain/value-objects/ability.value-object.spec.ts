@@ -187,7 +187,7 @@ describe('Ability Value Object', () => {
         AbilityActivationType.ACTIVATED,
         [AbilityEffectFactory.drawCards(1)],
         undefined,
-        'once_per_turn',
+        UsageLimit.ONCE_PER_TURN,
       );
 
       expect(ability.isActivated()).toBe(true);
@@ -405,7 +405,7 @@ describe('Ability Value Object', () => {
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.attachFromDiscard(
-            'benched_yours',
+            TargetType.BENCHED_YOURS,
             1,
             EnergyType.METAL,
             'choice',
@@ -487,7 +487,7 @@ describe('Ability Value Object', () => {
         'Thick Fat',
         'This Pokémon has 30 more HP',
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.boostHP('self', 30)],
+        [AbilityEffectFactory.boostHP(TargetType.SELF, 30)],
       );
 
       expect(ability.getEffectsByType(AbilityEffectType.BOOST_HP)).toHaveLength(1);
