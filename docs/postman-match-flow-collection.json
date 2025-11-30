@@ -1,0 +1,1142 @@
+{
+	"info": {
+		"_postman_id": "match-flow-test-collection",
+		"name": "OpenTCG - Complete Match Flow Test",
+		"description": "Complete match lifecycle test collection - from match creation through gameplay. Based on match-approval-flow.e2e-spec.ts",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Stage 1: Match Creation",
+			"item": [
+				{
+					"name": "1.1 - Player 1 Creates Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": \"{{MATCH_ID}}\",\n  \"tournamentId\": \"{{TOURNAMENT_ID}}\",\n  \"player1Id\": \"{{PLAYER1_ID}}\",\n  \"player1DeckId\": \"{{FIRE_DECK}}\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches"]
+						}
+					}
+				},
+				{
+					"name": "1.2 - Player 1 Checks State (WAITING_FOR_PLAYERS)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER1_ID}}\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Stage 2: Player 2 Joins",
+			"item": [
+				{
+					"name": "2.1 - Player 2 Joins Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER2_ID}}\",\n  \"deckId\": \"{{WATER_DECK}}\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/join",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "join"]
+						}
+					}
+				},
+				{
+					"name": "2.1b - Player 1 Checks State (DECK_VALIDATION)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "2.1c - Player 2 Checks State (DECK_VALIDATION)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "2.2 - Wait and Check State (MATCH_APPROVAL) - Player 1",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "2.2 - Wait and Check State (MATCH_APPROVAL) - Player 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Stage 3: Match Approval",
+			"item": [
+				{
+					"name": "3.1 - Player 1 Checks State (MATCH_APPROVAL)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "3.2 - Player 1 Approves Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER1_ID}}\",\n  \"actionType\": \"APPROVE_MATCH\",\n  \"actionData\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "3.2b - Player 1 Checks State After Approval",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "3.3 - Player 1 Checks State Again",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "3.4 - Player 2 Checks State (MATCH_APPROVAL)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "3.4b - Player 2 Checks State Before Approval",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "3.5 - Player 2 Approves Match (Triggers Coin Toss)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER2_ID}}\",\n  \"actionType\": \"APPROVE_MATCH\",\n  \"actionData\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "3.5b - Player 2 Checks State After Approval (DRAWING_CARDS)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Stage 4: Drawing Initial Cards",
+			"item": [
+				{
+					"name": "4.1 - Player 2 Checks State (DRAWING_CARDS)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4.2 - Player 1 Checks State (DRAWING_CARDS)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4.2b - Player 1 Checks State Before Drawing",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4.3 - Player 1 Draws Initial Cards",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER1_ID}}\",\n  \"actionType\": \"DRAW_INITIAL_CARDS\",\n  \"actionData\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "4.3b - Player 1 Checks State After Drawing",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4.4 - Player 1 Checks State (No Change Yet)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4.4b - Player 2 Checks State Before Drawing",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4.5 - Player 2 Draws Initial Cards",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER2_ID}}\",\n  \"actionType\": \"DRAW_INITIAL_CARDS\",\n  \"actionData\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "4.5b - Player 2 Checks State After Drawing",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "4.6 - Player 1 Checks State (SELECT_ACTIVE_POKEMON)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Stage 5: Selecting Active Pokemon",
+			"item": [
+				{
+					"name": "5.1 - Player 2 Gets First Card from Hand",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5.1b - Player 2 Checks State Before Setting Active",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5.2 - Player 2 Sets Active Pokemon",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER2_ID}}\",\n  \"actionType\": \"SET_ACTIVE_POKEMON\",\n  \"actionData\": {\n    \"cardId\": \"{{PLAYER2_ACTIVE_CARD}}\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "5.2b - Player 2 Checks State After Setting Active",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5.3 - Player 1 Checks State (Opponent Active Hidden)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5.3b - Player 1 Checks State Before Setting Active",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5.4 - Player 1 Gets First Card from Hand",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5.5 - Player 1 Sets Active Pokemon",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER1_ID}}\",\n  \"actionType\": \"SET_ACTIVE_POKEMON\",\n  \"actionData\": {\n    \"cardId\": \"{{PLAYER1_ACTIVE_CARD}}\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "5.5b - Player 1 Checks State After Setting Active",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "5.5c - Player 2 Checks State After Both Selected Active",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Stage 6: Setting Bench Pokemon",
+			"item": [
+				{
+					"name": "6.1 - Player 2 Gets Second Card from Hand",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.2 - Player 2 Plays Pokemon to Bench",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER2_ID}}\",\n  \"actionType\": \"PLAY_POKEMON\",\n  \"actionData\": {\n    \"cardId\": \"{{PLAYER2_BENCH_CARD}}\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "6.2b - Player 2 Checks State After Playing Bench",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.3 - Player 2 Marks as Ready",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER2_ID}}\",\n  \"actionType\": \"COMPLETE_INITIAL_SETUP\",\n  \"actionData\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "6.3b - Player 2 Checks State After Marking Ready",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.4 - Player 2 Checks State (Still Waiting)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.4b - Player 1 Checks State Before Playing Bench",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.5 - Player 1 Gets Second Card from Hand",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.6 - Player 1 Plays Pokemon to Bench",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER1_ID}}\",\n  \"actionType\": \"PLAY_POKEMON\",\n  \"actionData\": {\n    \"cardId\": \"{{PLAYER1_BENCH_CARD}}\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "6.6b - Player 1 Checks State After Playing Bench",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.7 - Player 1 Marks as Ready (Match Starts!)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER1_ID}}\",\n  \"actionType\": \"COMPLETE_INITIAL_SETUP\",\n  \"actionData\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "6.7b - Player 1 Checks State After Completing Setup",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.8 - Player 1 Checks State (Full Game State)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.9 - Player 2 Checks State (Full Game State)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6.9b - Player 2 Checks State After Match Starts",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Stage 7: Gameplay (Optional)",
+			"item": [
+				{
+					"name": "7.1 - Player 1 Draws Card (First Turn)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER1_ID}}\",\n  \"actionType\": \"DRAW_CARD\",\n  \"actionData\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "7.1b - Player 1 Checks State After Drawing",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "7.2 - Player 1 Ends Turn",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"playerId\": \"{{PLAYER1_ID}}\",\n  \"actionType\": \"END_TURN\",\n  \"actionData\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/actions",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "actions"]
+						}
+					}
+				},
+				{
+					"name": "7.2b - Player 1 Checks State After Ending Turn",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER1_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER1_ID}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "7.3 - Player 2 Checks State (Now Their Turn)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/api/v1/matches/{{MATCH_ID}}/state?playerId={{PLAYER2_ID}}",
+							"host": ["{{BASE_URL}}"],
+							"path": ["api", "v1", "matches", "{{MATCH_ID}}", "state"],
+							"query": [
+								{
+									"key": "playerId",
+									"value": "{{PLAYER2_ID}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "MATCH_ID",
+			"value": "test-match-curl-flow",
+			"type": "string"
+		},
+		{
+			"key": "TOURNAMENT_ID",
+			"value": "classic-tournament",
+			"type": "string"
+		},
+		{
+			"key": "PLAYER1_ID",
+			"value": "test-player-1",
+			"type": "string"
+		},
+		{
+			"key": "PLAYER2_ID",
+			"value": "test-player-2",
+			"type": "string"
+		},
+		{
+			"key": "FIRE_DECK",
+			"value": "classic-fire-starter-deck",
+			"type": "string"
+		},
+		{
+			"key": "WATER_DECK",
+			"value": "classic-water-starter-deck",
+			"type": "string"
+		},
+		{
+			"key": "PLAYER1_ACTIVE_CARD",
+			"value": "pokemon-base-set-v1.0-charmander--48",
+			"type": "string",
+			"description": "First Basic Pokemon in Player 1's hand (must be a Basic Pokemon, not Energy or Trainer). Update after drawing initial cards if needed."
+		},
+		{
+			"key": "PLAYER2_ACTIVE_CARD",
+			"value": "pokemon-base-set-v1.0-poliwag--39",
+			"type": "string",
+			"description": "First Basic Pokemon in Player 2's hand (must be a Basic Pokemon, not Energy or Trainer). Update after drawing initial cards if needed."
+		},
+		{
+			"key": "PLAYER1_BENCH_CARD",
+			"value": "",
+			"type": "string",
+			"description": "Basic Pokemon card for Player 1's bench (must be a Basic Pokemon). IMPORTANT: Check playerState.hand after drawing - if only one Basic Pokemon exists, use it for active and leave bench empty (skip PLAY_POKEMON action). If multiple Basic Pokemon exist, use a different one than the active card. Update this value after drawing initial cards."
+		},
+		{
+			"key": "PLAYER2_BENCH_CARD",
+			"value": "pokemon-base-set-v1.0-starmie--66",
+			"type": "string",
+			"description": "Basic Pokemon card for Player 2's bench (must be a Basic Pokemon, different from active card). Based on example hand: poliwag is active, starmie is bench. Update after drawing initial cards if your actual hand differs."
+		}
+	]
+}
+
