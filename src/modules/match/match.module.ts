@@ -17,6 +17,9 @@ import { JsonMatchRepository } from './infrastructure/persistence/json-match.rep
 import {
   MatchStateMachineService,
   StartGameRulesValidatorService,
+  CoinFlipResolverService,
+  AttackCoinFlipParserService,
+  AttackEnergyValidatorService,
 } from './domain/services';
 import { DeckModule } from '../deck/deck.module';
 import { CardModule } from '../card/card.module';
@@ -44,6 +47,9 @@ import { TournamentModule } from '../tournament/tournament.module';
     // Domain Services
     MatchStateMachineService,
     StartGameRulesValidatorService,
+    CoinFlipResolverService,
+    AttackCoinFlipParserService,
+    AttackEnergyValidatorService,
     // Repository
     {
       provide: IMatchRepository,

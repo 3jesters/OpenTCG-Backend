@@ -23,10 +23,18 @@ import {
   PlayerGameState,
   CardInstance,
   ActionSummary,
+  CoinFlipState,
+  CoinFlipConfiguration,
 } from '../../domain/value-objects';
+import { CoinFlipStatus } from '../../domain/enums/coin-flip-status.enum';
+import { CoinFlipContext } from '../../domain/enums/coin-flip-context.enum';
+import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
+import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
+import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
 import { PokemonPosition } from '../../domain/enums';
 import { v4 as uuidv4 } from 'uuid';
 import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { Attack } from '../../../card/domain/value-objects/attack.value-object';
 
 /**
  * Execute Turn Action Use Case
@@ -41,6 +49,9 @@ export class ExecuteTurnActionUseCase {
     private readonly drawInitialCardsUseCase: DrawInitialCardsUseCase,
     private readonly performCoinTossUseCase: PerformCoinTossUseCase,
     private readonly getCardByIdUseCase: GetCardByIdUseCase,
+    private readonly coinFlipResolver: CoinFlipResolverService,
+    private readonly attackCoinFlipParser: AttackCoinFlipParserService,
+    private readonly attackEnergyValidator: AttackEnergyValidatorService,
   ) {}
 
   async execute(dto: ExecuteActionDto): Promise<Match> {
@@ -1026,11 +1037,86 @@ export class ExecuteTurnActionUseCase {
           throw new BadRequestException(`Invalid attack index: ${attackIndex}`);
         }
 
-        const attack = attackerCard.attacks[attackIndex];
+        const attackDto = attackerCard.attacks[attackIndex];
         
-        // TODO: Validate energy requirements for attack
-        // For now, skip energy requirement validation
+        // Convert AttackDto to Attack value object for validation
+        const attack = new Attack(
+          attackDto.name,
+          attackDto.energyCost,
+          attackDto.damage,
+          attackDto.text,
+          undefined, // preconditions (not in DTO yet)
+          undefined, // effects (not in DTO yet)
+        );
         
+        // Validate energy requirements for attack
+        const attachedEnergyCardIds = playerState.activePokemon.attachedEnergy || [];
+        const attachedEnergyCardDtos = await Promise.all(
+          attachedEnergyCardIds.map((cardId) =>
+            this.getCardByIdUseCase.execute(cardId),
+          ),
+        );
+        
+        // Convert DTOs to energy card data format (CardDetailDto doesn't have energyProvision yet)
+        const attachedEnergyCards = attachedEnergyCardDtos.map((dto) => ({
+          cardType: dto.cardType,
+          energyType: dto.energyType,
+          energyProvision: undefined, // TODO: Add energyProvision to CardDetailDto if needed for special energy
+        }));
+        
+        const energyValidation = this.attackEnergyValidator.validateEnergyRequirements(
+          attack,
+          attachedEnergyCards,
+        );
+        
+        if (!energyValidation.isValid) {
+          throw new BadRequestException(
+            energyValidation.error || 'Insufficient energy to use this attack',
+          );
+        }
+        
+        // Check if attack requires coin flip
+        const coinFlipConfig = this.attackCoinFlipParser.parseCoinFlipFromAttack(
+          attack.text,
+          attack.damage,
+        );
+
+        // If coin flip is required, create coin flip state and wait for flip
+        if (coinFlipConfig) {
+          // Use deterministic actionId for reproducible coin flips
+          // Based on match ID, turn number, and action history length
+          const actionId = `${match.id}-turn${gameState.turnNumber}-action${gameState.actionHistory.length}`;
+          const coinFlipState = new CoinFlipState(
+            CoinFlipStatus.READY_TO_FLIP,
+            CoinFlipContext.ATTACK,
+            coinFlipConfig,
+            [],
+            attackIndex,
+            undefined,
+            undefined,
+            actionId,
+          );
+
+          // Create action summary for attack initiation
+          const actionSummary = new ActionSummary(
+            actionId,
+            playerIdentifier,
+            PlayerActionType.ATTACK,
+            new Date(),
+            { attackIndex, coinFlipRequired: true },
+          );
+
+          // Update game state with coin flip state
+          const updatedGameState = gameState
+            .withCoinFlipState(coinFlipState)
+            .withAction(actionSummary)
+            .withPhase(TurnPhase.ATTACK);
+
+          match.updateGameState(updatedGameState);
+          return await this.matchRepository.save(match);
+        }
+
+        // No coin flip required - execute attack immediately
         let damage = parseInt(attack.damage || '0', 10);
 
         // Load defender card details for weakness/resistance
@@ -1095,6 +1181,220 @@ export class ExecuteTurnActionUseCase {
         match.updateGameState(finalGameState);
 
         return await this.matchRepository.save(match);
+      }
+
+      // Handle GENERATE_COIN_FLIP action
+      if (dto.actionType === PlayerActionType.GENERATE_COIN_FLIP) {
+        // Validate coin flip state exists
+        if (!gameState.coinFlipState) {
+          throw new BadRequestException('No coin flip in progress');
+        }
+
+        const coinFlipState = gameState.coinFlipState;
+
+        // Validate it's the correct player's turn
+        if (coinFlipState.context === CoinFlipContext.ATTACK && gameState.currentPlayer !== playerIdentifier) {
+          throw new BadRequestException('Not your turn to flip coin');
+        }
+
+        // Validate status
+        if (coinFlipState.status !== CoinFlipStatus.READY_TO_FLIP) {
+          throw new BadRequestException(`Coin flip not ready. Current status: ${coinFlipState.status}`);
+        }
+
+        const playerState = gameState.getPlayerState(playerIdentifier);
+        const opponentState = gameState.getOpponentState(playerIdentifier);
+
+        // Calculate number of coins to flip
+        const activePokemon = playerState.activePokemon;
+        const coinCount = this.coinFlipResolver.calculateCoinCount(
+          coinFlipState.configuration,
+          playerState,
+          activePokemon,
+        );
+
+        // Generate coin flips
+        const actionId = coinFlipState.actionId || uuidv4();
+        let updatedCoinFlipState = coinFlipState;
+        const results: any[] = [];
+
+        // Handle "until tails" pattern
+        if (coinFlipState.configuration.countType === 'UNTIL_TAILS') {
+          let flipIndex = 0;
+          while (flipIndex < coinCount) {
+            const result = this.coinFlipResolver.generateCoinFlip(
+              match.id,
+              gameState.turnNumber,
+              actionId,
+              flipIndex,
+            );
+            updatedCoinFlipState = updatedCoinFlipState.withResult(result);
+            results.push({ flipIndex: result.flipIndex, result: result.result });
+
+            // Stop if we got tails
+            if (result.isTails()) {
+              break;
+            }
+            flipIndex++;
+          }
+        } else {
+          // Fixed number of coins
+          for (let i = 0; i < coinCount; i++) {
+            const result = this.coinFlipResolver.generateCoinFlip(
+              match.id,
+              gameState.turnNumber,
+              actionId,
+              i,
+            );
+            updatedCoinFlipState = updatedCoinFlipState.withResult(result);
+            results.push({ flipIndex: result.flipIndex, result: result.result });
+          }
+        }
+
+        // Check if all flips are complete
+        if (updatedCoinFlipState.isComplete()) {
+          // Calculate and apply damage if this is an attack
+          if (coinFlipState.context === CoinFlipContext.ATTACK && coinFlipState.attackIndex !== undefined) {
+            // Load attacker and defender cards
+            if (!playerState.activePokemon) {
+              throw new BadRequestException('No active Pokemon to attack with');
+            }
+            if (!opponentState.activePokemon) {
+              throw new BadRequestException('No opponent active Pokemon to attack');
+            }
+
+            const attackerCard = await this.getCardByIdUseCase.execute(
+              playerState.activePokemon.cardId,
+            );
+            if (!attackerCard.attacks || attackerCard.attacks.length === 0) {
+              throw new BadRequestException('Attacker card has no attacks');
+            }
+            if (
+              coinFlipState.attackIndex < 0 ||
+              coinFlipState.attackIndex >= attackerCard.attacks.length
+            ) {
+              throw new BadRequestException(
+                `Invalid attack index: ${coinFlipState.attackIndex}`,
+              );
+            }
+            const attack = attackerCard.attacks[coinFlipState.attackIndex];
+            const baseDamage = parseInt(attack.damage || '0', 10);
+
+            // Check if attack should proceed
+            const shouldProceed = this.coinFlipResolver.shouldAttackProceed(
+              coinFlipState.configuration,
+              updatedCoinFlipState.results,
+            );
+
+            if (shouldProceed) {
+              // Calculate damage based on coin flip results
+              let damage = this.coinFlipResolver.calculateDamage(
+                coinFlipState.configuration,
+                updatedCoinFlipState.results,
+                baseDamage,
+              );
+
+              // Load defender card for weakness/resistance
+              const defenderCard = await this.getCardByIdUseCase.execute(
+                opponentState.activePokemon.cardId,
+              );
+
+              // Apply weakness if applicable
+              if (defenderCard.weakness && attackerCard.pokemonType) {
+                if (defenderCard.weakness.type === attackerCard.pokemonType.toString()) {
+                  const modifier = defenderCard.weakness.modifier;
+                  if (modifier === '×2') {
+                    damage = damage * 2;
+                  }
+                }
+              }
+
+              // Apply damage to opponent's active Pokemon
+              const newHp = Math.max(0, opponentState.activePokemon.currentHp - damage);
+              const updatedOpponentActive = opponentState.activePokemon.withHp(newHp);
+              const isKnockedOut = newHp === 0;
+
+              let updatedOpponentState = opponentState.withActivePokemon(updatedOpponentActive);
+
+              // If knocked out, move to discard pile
+              if (isKnockedOut) {
+                const discardPile = [...opponentState.discardPile, opponentState.activePokemon.cardId];
+                updatedOpponentState = updatedOpponentState
+                  .withActivePokemon(null)
+                  .withDiscardPile(discardPile);
+              }
+
+              // Update game state
+              const updatedGameState =
+                playerIdentifier === PlayerIdentifier.PLAYER1
+                  ? gameState
+                      .withPlayer1State(playerState)
+                      .withPlayer2State(updatedOpponentState)
+                  : gameState
+                      .withPlayer2State(playerState)
+                      .withPlayer1State(updatedOpponentState);
+
+              // Mark coin flip as completed and clear it
+              const completedCoinFlipState = updatedCoinFlipState.withStatus(CoinFlipStatus.COMPLETED);
+              const finalGameState = updatedGameState
+                .withCoinFlipState(null) // Clear coin flip state
+                .withPhase(TurnPhase.END);
+
+              const actionSummary = new ActionSummary(
+                uuidv4(),
+                playerIdentifier,
+                PlayerActionType.ATTACK,
+                new Date(),
+                {
+                  attackIndex: coinFlipState.attackIndex,
+                  damage,
+                  isKnockedOut,
+                  coinFlipResults: results,
+                },
+              );
+
+              match.updateGameState(finalGameState.withAction(actionSummary));
+              return await this.matchRepository.save(match);
+            } else {
+              // Attack does nothing (tails)
+              const finalGameState = gameState
+                .withCoinFlipState(null) // Clear coin flip state
+                .withPhase(TurnPhase.END);
+
+              const actionSummary = new ActionSummary(
+                uuidv4(),
+                playerIdentifier,
+                PlayerActionType.ATTACK,
+                new Date(),
+                {
+                  attackIndex: coinFlipState.attackIndex,
+                  damage: 0,
+                  isKnockedOut: false,
+                  coinFlipResults: results,
+                  attackFailed: true,
+                },
+              );
+
+              match.updateGameState(finalGameState.withAction(actionSummary));
+              return await this.matchRepository.save(match);
+            }
+          }
+        } else {
+          // More flips needed (shouldn't happen with current patterns, but handle it)
+          const updatedCoinFlipStateWithStatus = updatedCoinFlipState.withStatus(CoinFlipStatus.FLIP_RESULT);
+          const updatedGameState = gameState.withCoinFlipState(updatedCoinFlipStateWithStatus);
+
+          const actionSummary = new ActionSummary(
+            uuidv4(),
+            playerIdentifier,
+            PlayerActionType.GENERATE_COIN_FLIP,
+            new Date(),
+            { coinFlipResults: results },
+          );
+
+          match.updateGameState(updatedGameState.withAction(actionSummary));
+          return await this.matchRepository.save(match);
+        }
       }
 
       // Handle SELECT_PRIZE or DRAW_PRIZE action (when opponent Pokemon is knocked out)
