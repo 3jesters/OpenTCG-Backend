@@ -3,9 +3,10 @@
   "name": "Classic Fire Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-11-30T12:09:31.630Z",
+  "updatedAt": "2025-12-02T09:38:02.482Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
   "cards": [
     {
       "cardId": "pokemon-base-set-v1.0-charmander--48",
@@ -73,7 +74,7 @@
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-pok-mon-breeder--78",
+      "cardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
       "setName": "base-set",
       "quantity": 2
     },

@@ -30,6 +30,7 @@ export class MatchStateResponseDto {
   coinTossResult: PlayerIdentifier | null;
   playerHasDrawnValidHand: boolean;
   opponentHasDrawnValidHand: boolean;
+  canAttachEnergy: boolean;
 
   static fromDomain(
     match: Match,
@@ -76,6 +77,14 @@ export class MatchStateResponseDto {
         ? match.player2HasDrawnValidHand
         : match.player1HasDrawnValidHand;
 
+    // Calculate canAttachEnergy - only relevant during PLAYER_TURN state and MAIN_PHASE
+    const canAttachEnergy =
+      match.state === MatchState.PLAYER_TURN &&
+      gameState?.phase === TurnPhase.MAIN_PHASE &&
+      match.currentPlayer === playerIdentifier
+        ? !playerState?.hasAttachedEnergyThisTurn
+        : false;
+
     return {
       matchId: match.id,
       state: match.state,
@@ -103,6 +112,7 @@ export class MatchStateResponseDto {
       coinTossResult: match.coinTossResult,
       playerHasDrawnValidHand,
       opponentHasDrawnValidHand,
+      canAttachEnergy,
     };
   }
 }
@@ -119,6 +129,7 @@ class PlayerStateDto {
   activePokemon: PokemonInPlayDto | null;
   bench: PokemonInPlayDto[];
   prizeCardsRemaining: number;
+  prizeCards: string[]; // Prize cards for selection (visible to player)
   attachedEnergy: string[];
 
   static fromDomain(state: PlayerGameState): PlayerStateDto {
@@ -132,6 +143,7 @@ class PlayerStateDto {
         : null,
       bench: state.bench.map((card) => PokemonInPlayDto.fromDomain(card)),
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
+      prizeCards: state.prizeCards, // Include prize cards for selection
       attachedEnergy: state.activePokemon?.attachedEnergy || [],
     };
   }
@@ -145,6 +157,7 @@ class PlayerStateDto {
       activePokemon: null,
       bench: [],
       prizeCardsRemaining: 0,
+      prizeCards: [],
       attachedEnergy: [],
     };
   }

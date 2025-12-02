@@ -28,6 +28,7 @@ describe('PlayerGameState Value Object', () => {
         [],
         ['prize-1', 'prize-2'],
         ['discard-1'],
+        false,
       );
 
       expect(state.deck).toEqual(['card-1', 'card-2']);
@@ -44,7 +45,7 @@ describe('PlayerGameState Value Object', () => {
       );
 
       expect(() => {
-        new PlayerGameState([], [], null, bench, [], []);
+        new PlayerGameState([], [], null, bench, [], [], false);
       }).toThrow('Bench cannot have more than 5 Pokemon');
     });
 
@@ -52,7 +53,7 @@ describe('PlayerGameState Value Object', () => {
       const prizeCards = Array.from({ length: 7 }, (_, i) => `prize-${i}`);
 
       expect(() => {
-        new PlayerGameState([], [], null, [], prizeCards, []);
+        new PlayerGameState([], [], null, [], prizeCards, [], false);
       }).toThrow('Cannot have more than 6 prize cards');
     });
   });
@@ -66,6 +67,7 @@ describe('PlayerGameState Value Object', () => {
         [],
         [],
         [],
+        false,
       );
 
       expect(state.getDeckCount()).toBe(3);
@@ -81,6 +83,7 @@ describe('PlayerGameState Value Object', () => {
         [],
         [],
         [],
+        false,
       );
 
       expect(state.getHandCount()).toBe(2);
@@ -96,6 +99,7 @@ describe('PlayerGameState Value Object', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3'],
         [],
+        false,
       );
 
       expect(state.getPrizeCardsRemaining()).toBe(3);
@@ -104,7 +108,7 @@ describe('PlayerGameState Value Object', () => {
 
   describe('getPokemonInPlayCount', () => {
     it('should return 0 when no Pokemon in play', () => {
-      const state = new PlayerGameState([], [], null, [], [], []);
+      const state = new PlayerGameState([], [], null, [], [], [], false);
 
       expect(state.getPokemonInPlayCount()).toBe(0);
     });
@@ -122,7 +126,7 @@ describe('PlayerGameState Value Object', () => {
         createCardInstance('instance-2', PokemonPosition.BENCH_0),
         createCardInstance('instance-3', PokemonPosition.BENCH_1),
       ];
-      const state = new PlayerGameState([], [], active, bench, [], []);
+      const state = new PlayerGameState([], [], active, bench, [], [], false);
 
       expect(state.getPokemonInPlayCount()).toBe(3);
     });
@@ -130,7 +134,7 @@ describe('PlayerGameState Value Object', () => {
 
   describe('hasPokemonInPlay', () => {
     it('should return false when no Pokemon', () => {
-      const state = new PlayerGameState([], [], null, [], [], []);
+      const state = new PlayerGameState([], [], null, [], [], [], false);
 
       expect(state.hasPokemonInPlay()).toBe(false);
     });
@@ -145,7 +149,7 @@ describe('PlayerGameState Value Object', () => {
 
   describe('immutability', () => {
     it('should create new instance when updating deck', () => {
-      const state = new PlayerGameState(['card-1'], [], null, [], [], []);
+      const state = new PlayerGameState(['card-1'], [], null, [], [], [], false);
       const updated = state.withDeck(['card-2']);
 
       expect(updated.deck).toEqual(['card-2']);
@@ -153,7 +157,7 @@ describe('PlayerGameState Value Object', () => {
     });
 
     it('should create new instance when updating hand', () => {
-      const state = new PlayerGameState([], ['card-1'], null, [], [], []);
+      const state = new PlayerGameState([], ['card-1'], null, [], [], [], false);
       const updated = state.withHand(['card-2']);
 
       expect(updated.hand).toEqual(['card-2']);

@@ -7,7 +7,7 @@
     "dateReleased": "1999-01-09",
     "description": "Pokemon Trading Card Game Base Set - Complete Set with Structured Effects",
     "series": "pokemon",
-    "totalCards": 102,
+    "totalCards": 103,
     "logoUrl": "https://www.pikawiz.com/images/logos/base1-logo.png"
   },
   "cards": [
@@ -32,6 +32,12 @@
           "text": "Flip a coin. If heads, the Defending Pokémon is now Confused."
         }
       ],
+      "ability": {
+        "name": "Damage Swap",
+        "text": "As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pokémon to another as long as you don't Knock Out that Pokémon. This power can't be used if Alakazam is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "UNLIMITED"
+      },
       "weakness": {
         "type": "PSYCHIC",
         "modifier": "×2"
@@ -62,6 +68,12 @@
           "text": "Does 40 damage plus 10 more damage for each Water Energy attached to Blastoise but not used to pay for this attack's Energy cost."
         }
       ],
+      "ability": {
+        "name": "Rain Dance",
+        "text": "As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon. (This doesn't use up your 1 energy card attachment for the turn.) This power can't be used if Blastoise is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "UNLIMITED"
+      },
       "weakness": {
         "type": "ELECTRIC",
         "modifier": "×2"
@@ -136,6 +148,12 @@
           "text": "Discard 2 Energy cards attached to Charizard in order to use this attack."
         }
       ],
+      "ability": {
+        "name": "Energy Burn",
+        "text": "As often as you like during your turn (before your attack), you may turn all Energy attached to Charizard into Fire Energy for the rest of the turn. This power can't be used if Charizard is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "UNLIMITED"
+      },
       "weakness": {
         "type": "WATER",
         "modifier": "×2"
@@ -294,6 +312,11 @@
           "text": "Seismic Toss does 60 damage to the Defending Pokémon."
         }
       ],
+      "ability": {
+        "name": "Strikes Back",
+        "text": "Whenever your opponent's attack damages Machamp (even if Machamp is Knocked Out), place 1 damage counter on the Attacking Pokémon. This power can't be used if Machamp is Asleep, Confused, or Paralyzed.",
+        "activationType": "PASSIVE"
+      },
       "weakness": {
         "type": "PSYCHIC",
         "modifier": "×2"
@@ -565,6 +588,12 @@
           "text": "Solarbeam does 60 damage to the Defending Pokémon."
         }
       ],
+      "ability": {
+        "name": "Energy Trans",
+        "text": "As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can't be used if Venusaur is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "UNLIMITED"
+      },
       "weakness": {
         "type": "FIRE",
         "modifier": "×2"
@@ -805,6 +834,12 @@
           "text": "Search your deck for a basic Energy card and attach it to 1 of your Pokémon. Shuffle your deck afterward."
         }
       ],
+      "ability": {
+        "name": "Buzzap",
+        "text": "At any time during your turn (before your attack), you may Knock Out Electrode and attach it to 1 of your other Pokémon. If you do, choose a type of Energy. Electrode is now an Energy card of that type (instead of a Pokémon) that provides 2 Energy. This power can't be used if Electrode is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "UNLIMITED"
+      },
       "weakness": {
         "type": "FIGHTING",
         "modifier": "×2"
@@ -3159,6 +3194,23 @@
       "energyProvision": {
         "energyTypes": [
           "PSYCHIC"
+        ],
+        "amount": 1,
+        "isSpecial": false
+      }
+    },
+    {
+      "name": "Water Energy",
+      "cardNumber": "103",
+      "cardType": "ENERGY",
+      "energyType": "WATER",
+      "rarity": "COMMON",
+      "artist": "Keiji Kinebuchi",
+      "description": "Basic Energy card. Provides Water Energy.",
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/102.png",
+      "energyProvision": {
+        "energyTypes": [
+          "WATER"
         ],
         "amount": 1,
         "isSpecial": false

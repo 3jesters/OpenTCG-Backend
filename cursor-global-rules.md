@@ -326,6 +326,79 @@ try {
 - Update documentation when business logic changes
 - Include diagrams where helpful (use mermaid in markdown)
 
+## Spec Coverage Report Maintenance
+
+### Overview
+The Spec Coverage Report (`docs/SPEC-COVERAGE-REPORT.md`) tracks test coverage of all business logic in the codebase. It must be kept up-to-date to ensure accurate visibility into test coverage gaps.
+
+### When to Update the Report
+
+**MUST update when:**
+1. **Adding new business logic**:
+   - New domain entity methods
+   - New domain service methods
+   - New use cases
+   - New value objects with business logic
+   - Add to "Business Logic Inventory" section
+
+2. **Adding new specs/tests**:
+   - New unit test files (`.spec.ts`)
+   - New E2E test files (`.e2e-spec.ts`)
+   - Add to "Spec Inventory" section
+
+3. **Removing business logic**:
+   - Removing methods from entities/services
+   - Removing use cases
+   - Remove from "Business Logic Inventory" section
+   - Update coverage matrix
+
+4. **Completing test coverage**:
+   - When a previously missing test is added
+   - Update "Coverage Matrix" to mark as covered
+   - Update "Coverage Gaps" to remove from missing list
+
+### Update Process
+
+1. **Identify what changed**:
+   - New business logic? → Add to inventory
+   - New test? → Add to spec inventory
+   - Coverage added? → Update matrix
+
+2. **Update relevant sections**:
+   - Business Logic Inventory: Add/remove components
+   - Spec Inventory: Add/remove test files
+   - Coverage Matrix: Update coverage status (✅/❌)
+   - Coverage Gaps: Add new gaps or remove resolved ones
+
+3. **Update metadata**:
+   - Update "Last Updated" date at top of document
+   - Update coverage statistics if significant changes
+
+4. **Review recommendations**:
+   - Update recommendations if priorities change
+   - Add new recommendations for critical gaps
+
+### Coverage Status Indicators
+
+- ✅ = Covered (has unit test or E2E test)
+- ❌ = Not covered (missing tests)
+- **Missing** = Critical gap that needs attention
+- Partial = Some coverage but not complete
+
+### Example Update
+
+**Scenario**: Adding unit tests for `MatchEntity.endMatch()`
+
+1. Add test file to "Spec Inventory" if new file created
+2. Update "Coverage Matrix" for `endMatch()`:
+   - Change from ❌ to ✅ in "Unit Test" column
+   - Update "Coverage Status" from "Missing" to "Covered"
+3. Update "Coverage Gaps" section:
+   - Remove `endMatch()` from "Critical Missing Coverage" list
+4. Update "Last Updated" date
+
+**CRITICAL**: The report must accurately reflect the current state of the codebase. Outdated reports are worse than no report - they provide false confidence.
+
 ## Security Best Practices
 
 - Validate and sanitize all inputs

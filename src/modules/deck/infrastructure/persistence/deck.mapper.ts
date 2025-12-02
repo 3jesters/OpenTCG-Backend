@@ -11,6 +11,7 @@ export interface DeckJson {
   updatedAt: string;
   tournamentId?: string;
   isValid: boolean;
+  cardBackImageUrl?: string;
   cards: Array<{
     cardId: string;
     setName: string;
@@ -35,6 +36,7 @@ export class DeckMapper {
       updatedAt: deck.updatedAt.toISOString(),
       tournamentId: deck.tournamentId,
       isValid: deck.isValid,
+      cardBackImageUrl: deck.cardBackImageUrl,
       cards: deck.cards.map((card) => ({
         cardId: card.cardId,
         setName: card.setName,
@@ -60,6 +62,7 @@ export class DeckMapper {
       cards,
       new Date(json.createdAt),
       json.tournamentId,
+      json.cardBackImageUrl,
     );
 
     // Set validation status

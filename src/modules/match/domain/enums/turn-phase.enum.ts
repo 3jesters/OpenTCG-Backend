@@ -4,7 +4,7 @@
  */
 export enum TurnPhase {
   DRAW = 'DRAW',
-  SETUP = 'SETUP',
+  MAIN_PHASE = 'MAIN_PHASE',
   ATTACK = 'ATTACK',
   END = 'END',
 }

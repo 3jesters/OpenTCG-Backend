@@ -20,6 +20,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const player2State = new PlayerGameState(
@@ -29,6 +30,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const gameState = new GameState(
@@ -41,7 +43,8 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
       );
 
-      match.setFirstPlayer(PlayerIdentifier.PLAYER1);
+      // After both players approve, match automatically transitions to DRAWING_CARDS
+      // So we don't need to call setFirstPlayer (it's deprecated anyway)
       match.updateGameStateDuringDrawing(gameState);
       // Manually transition to INITIAL_SETUP for testing legacy state
       (match as any)._state = MatchState.INITIAL_SETUP;
@@ -75,6 +78,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const player2State = new PlayerGameState(
@@ -84,6 +88,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const gameState = new GameState(
@@ -96,7 +101,8 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
       );
 
-      match.setFirstPlayer(PlayerIdentifier.PLAYER1);
+      // After both players approve, match automatically transitions to DRAWING_CARDS
+      // So we don't need to call setFirstPlayer (it's deprecated anyway)
       match.updateGameStateDuringDrawing(gameState);
       // Manually transition to INITIAL_SETUP for testing legacy state
       (match as any)._state = MatchState.INITIAL_SETUP;
@@ -127,6 +133,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const player2State = new PlayerGameState(
@@ -136,6 +143,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const gameState = new GameState(
@@ -148,7 +156,8 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
       );
 
-      match.setFirstPlayer(PlayerIdentifier.PLAYER1);
+      // After both players approve, match automatically transitions to DRAWING_CARDS
+      // So we don't need to call setFirstPlayer (it's deprecated anyway)
       match.updateGameStateDuringDrawing(gameState);
       // Manually transition to INITIAL_SETUP for testing legacy state
       (match as any)._state = MatchState.INITIAL_SETUP;
@@ -180,6 +189,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const player2State = new PlayerGameState(
@@ -189,6 +199,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const gameState = new GameState(
@@ -201,7 +212,8 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
       );
 
-      match.setFirstPlayer(PlayerIdentifier.PLAYER1);
+      // After both players approve, match automatically transitions to DRAWING_CARDS
+      // So we don't need to call setFirstPlayer (it's deprecated anyway)
       match.updateGameStateDuringDrawing(gameState);
       // Manually transition to INITIAL_SETUP for testing legacy state
       (match as any)._state = MatchState.INITIAL_SETUP;
@@ -245,7 +257,8 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
       );
 
-      match.setFirstPlayer(PlayerIdentifier.PLAYER1);
+      // After both players approve, match automatically transitions to DRAWING_CARDS
+      // So we don't need to call setFirstPlayer (it's deprecated anyway)
       match.updateGameStateDuringDrawing(gameState);
       // Manually transition to INITIAL_SETUP for testing legacy state
       (match as any)._state = MatchState.INITIAL_SETUP;
@@ -273,6 +286,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const player2State = new PlayerGameState(
@@ -282,6 +296,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
         ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
         [],
+        false,
       );
 
       const gameState = new GameState(
@@ -294,7 +309,8 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
         [],
       );
 
-      match.setFirstPlayer(PlayerIdentifier.PLAYER1);
+      // After both players approve, match automatically transitions to DRAWING_CARDS
+      // So we don't need to call setFirstPlayer (it's deprecated anyway)
       match.updateGameStateDuringDrawing(gameState);
       // Manually transition to INITIAL_SETUP for testing legacy state
       (match as any)._state = MatchState.INITIAL_SETUP;

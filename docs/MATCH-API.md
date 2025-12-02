@@ -291,7 +291,7 @@ GET /api/v1/matches/550e8400-e29b-41d4-a716-446655440000/state?playerId=player-1
   "state": "PLAYER_TURN",
   "currentPlayer": "PLAYER1",
   "turnNumber": 3,
-  "phase": "SETUP",
+  "phase": "MAIN_PHASE",
   "playerState": {
     "hand": [
       "pokemon-base-set-v1.0-pikachu--60",
@@ -570,7 +570,7 @@ enum MatchState {
 
 enum TurnPhase {
   DRAW = 'DRAW',
-  SETUP = 'SETUP',
+  MAIN_PHASE = 'MAIN_PHASE',
   ATTACK = 'ATTACK',
   END = 'END'
 }
@@ -699,9 +699,9 @@ Play a Pokemon from hand to bench.
 }
 ```
 
-**Valid Phases:** SETUP
+**Valid Phases:** MAIN_PHASE
 
-**Valid States:** INITIAL_SETUP, PLAYER_TURN (SETUP phase)
+**Valid States:** INITIAL_SETUP, PLAYER_TURN (MAIN_PHASE)
 
 #### SET_ACTIVE_POKEMON
 
@@ -732,7 +732,7 @@ Attach energy to a Pokemon.
 }
 ```
 
-**Valid Phases:** SETUP
+**Valid Phases:** MAIN_PHASE
 
 **Target Values:** `ACTIVE`, `BENCH_0`, `BENCH_1`, `BENCH_2`, `BENCH_3`, `BENCH_4`
 
@@ -750,7 +750,7 @@ Play a trainer card.
 }
 ```
 
-**Valid Phases:** SETUP
+**Valid Phases:** MAIN_PHASE
 
 #### EVOLVE_POKEMON
 
@@ -766,7 +766,7 @@ Evolve a Pokemon.
 }
 ```
 
-**Valid Phases:** SETUP
+**Valid Phases:** MAIN_PHASE
 
 #### RETREAT
 
@@ -781,7 +781,7 @@ Retreat active Pokemon (switch with bench).
 }
 ```
 
-**Valid Phases:** SETUP
+**Valid Phases:** MAIN_PHASE
 
 #### ATTACK
 
@@ -812,7 +812,7 @@ Use a Pokemon ability.
 }
 ```
 
-**Valid Phases:** SETUP
+**Valid Phases:** MAIN_PHASE
 
 #### END_TURN
 
@@ -825,7 +825,7 @@ End the current turn.
 }
 ```
 
-**Valid Phases:** DRAW, SETUP, ATTACK, END
+**Valid Phases:** DRAW, MAIN_PHASE, ATTACK, END
 
 #### COMPLETE_INITIAL_SETUP
 

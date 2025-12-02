@@ -4,6 +4,7 @@ import {
   MatchState,
   PlayerIdentifier,
   PlayerActionType,
+  TurnPhase,
 } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
 import { MatchStateMachineService } from '../../domain/services';
@@ -40,6 +41,39 @@ export class GetMatchStateUseCase {
     const availableActions = this.stateMachineService.getAvailableActions(
       match.state,
       match.gameState?.phase || null,
+      match.gameState
+        ? {
+            lastAction: match.gameState.lastAction
+              ? {
+                  actionType: match.gameState.lastAction.actionType,
+                  playerId: match.gameState.lastAction.playerId,
+                  actionData: match.gameState.lastAction.actionData,
+                  actionId: match.gameState.lastAction.actionId,
+                }
+              : null,
+            actionHistory: [
+              ...match.gameState.actionHistory.map((action) => ({
+                actionType: action.actionType,
+                playerId: action.playerId,
+                actionId: action.actionId,
+              })),
+              // Include lastAction in history if it exists and isn't already the last item
+              ...(match.gameState.lastAction &&
+              (match.gameState.actionHistory.length === 0 ||
+                match.gameState.actionHistory[match.gameState.actionHistory.length - 1].actionId !==
+                  match.gameState.lastAction.actionId)
+                ? [
+                    {
+                      actionType: match.gameState.lastAction.actionType,
+                      playerId: match.gameState.lastAction.playerId,
+                      actionId: match.gameState.lastAction.actionId,
+                    },
+                  ]
+                : []),
+            ],
+          }
+        : undefined,
+      match.currentPlayer || undefined,
     );
 
     // Filter actions based on player context
@@ -63,9 +97,63 @@ export class GetMatchStateUseCase {
     // PLAYER_TURN: only show actions if it's the player's turn
     if (match.state === MatchState.PLAYER_TURN) {
       if (match.currentPlayer !== playerIdentifier) {
-        // Not player's turn - only show CONCEDE
+        // Not player's turn - check if opponent needs to select active Pokemon after knockout
+        const opponentState = match.gameState?.getPlayerState(playerIdentifier);
+        const gameState = match.gameState;
+        
+        if (opponentState?.activePokemon === null && gameState) {
+          // Check if knockout occurred and prize was selected
+          // We need to find the ATTACK action in history (lastAction might be SELECT_PRIZE now)
+          // Find the most recent ATTACK action that caused a knockout
+          const knockoutAttack = gameState.actionHistory
+            .slice()
+            .reverse()
+            .find(
+              (action) =>
+                action.actionType === PlayerActionType.ATTACK &&
+                action.actionData?.isKnockedOut === true &&
+                action.playerId !== playerIdentifier, // Attack was by opponent (not this player)
+            );
+          
+          if (knockoutAttack) {
+            // Find the index of this attack in history
+            const attackIndex = gameState.actionHistory.findIndex(
+              (action) => action.actionId === knockoutAttack.actionId,
+            );
+            
+            // Check if there's a SELECT_PRIZE after this attack
+            const prizeSelected = attackIndex >= 0
+              ? gameState.actionHistory.some(
+                  (action, index) =>
+                    index > attackIndex &&
+                    (action.actionType === PlayerActionType.SELECT_PRIZE ||
+                      action.actionType === PlayerActionType.DRAW_PRIZE) &&
+                    action.playerId === knockoutAttack.playerId,
+                )
+              : false;
+            
+            if (prizeSelected) {
+              // Prize was selected, opponent can select active Pokemon
+              return [PlayerActionType.SET_ACTIVE_POKEMON, PlayerActionType.CONCEDE];
+            }
+          }
+        }
+        
+        // Not player's turn and no active selection needed - only show CONCEDE
         return [PlayerActionType.CONCEDE];
       }
+      
+      // Filter out ATTACH_ENERGY if energy was already attached this turn
+      const playerState = match.gameState?.getPlayerState(playerIdentifier);
+      if (
+        playerState?.hasAttachedEnergyThisTurn &&
+        match.gameState?.phase === TurnPhase.MAIN_PHASE
+      ) {
+        return actions.filter(
+          (action) => action !== PlayerActionType.ATTACH_ENERGY,
+        );
+      }
+      
       return actions; // Already filtered by state machine
     }
 

@@ -3,9 +3,10 @@
   "name": "Classic Water Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-11-29T19:40:10.857Z",
+  "updatedAt": "2025-12-02T09:38:02.483Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
   "cards": [
     {
       "cardId": "pokemon-base-set-v1.0-squirtle--65",
@@ -83,12 +84,12 @@
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-pok-mon-breeder--78",
+      "cardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-psychic-energy--102",
+      "cardId": "pokemon-base-set-v1.0-water-energy--103",
       "setName": "base-set",
       "quantity": 23
     }

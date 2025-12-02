@@ -189,17 +189,59 @@ export class PreviewCardUseCase {
         card.setResistance(resistance);
       }
 
-      if (dto.ability) {
+      // Set ability
+      // NOTE: Abilities require at least one effect. If the card data doesn't have
+      // structured effects yet, we skip setting the ability for now.
+      // This is a temporary workaround until all abilities have structured effects.
+      if (dto.ability && dto.ability.effects && dto.ability.effects.length > 0) {
+        // Convert AbilityEffectImportDto to AbilityEffect
+        // The DTO already has the correct structure, just need to map conditions
+        const effects = dto.ability.effects.map(e => {
+          // Convert conditions from DTO to domain objects
+          // ConditionImportDto has value as string, but Condition needs ConditionValue object
+          const requiredConditions = e.conditions?.map(c => {
+            const condition: any = {
+              type: c.type,
+            };
+            
+            // Only add value if it's properly structured (for now, skip string values)
+            // TODO: Add proper conversion from string to ConditionValue when needed
+            if (c.numericValue !== undefined) {
+              condition.value = { minimumAmount: c.numericValue };
+            } else if (c.value && c.value !== '') {
+              // For now, skip string values that can't be converted
+              // This will be handled when card data is updated with proper structures
+            }
+            
+            // Condition interface doesn't have operator, so we skip it
+            // If needed in the future, it can be added to the Condition interface
+            
+            return condition;
+          }) || [];
+          
+          return {
+            effectType: e.effectType,
+            target: e.targetType ? (e.targetType as any) : undefined,
+            requiredConditions,
+            // Include effect-specific properties
+            ...(e.value !== undefined && { value: e.value }),
+            ...(e.damageModifier && { damageModifier: e.damageModifier }),
+            ...(e.permanent !== undefined && { permanent: e.permanent }),
+          } as any; // Type assertion needed due to complex union types
+        });
+        
         const ability = new Ability(
           dto.ability.name,
           dto.ability.text,
           dto.ability.activationType,
-          [],
+          effects as any,
           dto.ability.triggerEvent,
           dto.ability.usageLimit,
         );
         card.setAbility(ability);
       }
+      // If ability has no effects, skip it (abilities without structured effects
+      // will be supported once card data is updated with effect structures)
 
       if (dto.attacks && dto.attacks.length > 0) {
         for (const attackDto of dto.attacks) {
@@ -275,6 +317,10 @@ export class PreviewCardUseCase {
   private toKebabCase(str: string): string {
     return str
       .toLowerCase()
+      .normalize('NFD') // Decompose characters (é becomes e + ́)
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents)
+      .replace(/♂/g, '') // Remove male symbol
+      .replace(/♀/g, '') // Remove female symbol
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
   }

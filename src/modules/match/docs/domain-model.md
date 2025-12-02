@@ -109,7 +109,7 @@ Represents the current state of a match in the state machine:
 
 Represents the current phase within a player's turn:
 - `DRAW`: Draw phase
-- `SETUP`: Setup phase (play cards, attach energy)
+- `MAIN_PHASE`: Main phase (play cards, attach energy, evolve, retreat, attack)
 - `ATTACK`: Attack phase
 - `END`: End phase
 

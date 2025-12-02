@@ -1189,7 +1189,7 @@ curl -X POST http://localhost:3000/api/v1/matches/test-match-curl-flow/actions \
 
 **Expected Response:**
 - `state` is `"PLAYER_TURN"`
-- `phase` is `"SETUP"` (moved from DRAW to SETUP)
+- `phase` is `"MAIN_PHASE"` (moved from DRAW to MAIN_PHASE)
 - `playerState.handCount` increased by 1
 
 ### Step 7.2: Player 1 Ends Turn

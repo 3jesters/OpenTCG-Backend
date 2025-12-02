@@ -724,7 +724,7 @@ During `PLAYER_TURN`, the game progresses through phases:
 - [ ] Implement polling for opponent's turn (1-2s interval)
 - [ ] Detect state changes by comparing snapshots
 - [ ] Display `lastAction` to show opponent's actions
-- [ ] Handle turn phases (DRAW, SETUP, ATTACK, END)
+- [ ] Handle turn phases (DRAW, MAIN_PHASE, ATTACK, END)
 - [ ] Handle state transitions (PLAYER_TURN ↔ BETWEEN_TURNS)
 
 ---

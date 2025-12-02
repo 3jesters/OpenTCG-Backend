@@ -50,7 +50,7 @@ This document describes the business rules and constraints that govern match lif
 
 1. **Turn Phases**
    - `DRAW`: Draw 1 card (except first turn of first player)
-   - `SETUP`: Play cards, attach energy, evolve, retreat
+   - `MAIN_PHASE`: Play cards, attach energy, evolve, retreat, attack
    - `ATTACK`: Declare and execute attack
    - `END`: End turn actions
 
@@ -63,7 +63,7 @@ This document describes the business rules and constraints that govern match lif
 
 1. **Valid Actions by Phase**
    - `DRAW`: `DRAW_CARD`, `END_TURN`
-   - `SETUP`: `PLAY_POKEMON`, `ATTACH_ENERGY`, `PLAY_TRAINER`, `EVOLVE_POKEMON`, `RETREAT`, `USE_ABILITY`, `END_TURN`
+   - `MAIN_PHASE`: `PLAY_POKEMON`, `ATTACH_ENERGY`, `PLAY_TRAINER`, `EVOLVE_POKEMON`, `RETREAT`, `USE_ABILITY`, `ATTACK`, `END_TURN`
    - `ATTACK`: `ATTACK`, `END_TURN`
    - `END`: `END_TURN`
 

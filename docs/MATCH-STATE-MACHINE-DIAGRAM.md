@@ -52,7 +52,7 @@ stateDiagram-v2
     note right of PLAYER_TURN
         Player can take multiple
         actions in their turn
-        (DRAW → SETUP → ATTACK → END)
+        (DRAW → MAIN_PHASE → ATTACK → END)
     end note
     
     note right of BETWEEN_TURNS
@@ -126,7 +126,7 @@ stateDiagram-v2
 
 - **PLAYER_TURN**: Active player's turn
   - Current player can take actions
-  - Progresses through phases: DRAW → SETUP → ATTACK → END
+  - Progresses through phases: DRAW → MAIN_PHASE → ATTACK → END
   - Transitions to `BETWEEN_TURNS` when turn ends
   - Can transition to `MATCH_ENDED` if win condition is met
 
@@ -169,19 +169,19 @@ stateDiagram-v2
 During `PLAYER_TURN`, the game progresses through phases:
 
 ```
-DRAW → SETUP → ATTACK → END
+DRAW → MAIN_PHASE → ATTACK → END
 ```
 
 ### Phase Descriptions
 
 - **DRAW**: Draw 1 card (except first turn of first player)
   - Valid actions: `DRAW_CARD`, `END_TURN`
-  - After `DRAW_CARD`: moves to `SETUP` phase
+  - After `DRAW_CARD`: moves to `MAIN_PHASE`
 
-- **SETUP**: Play cards, attach energy, evolve, retreat
+- **MAIN_PHASE**: Play cards, attach energy, evolve, retreat, attack
   - Valid actions: `PLAY_POKEMON`, `ATTACH_ENERGY`, `PLAY_TRAINER`, `EVOLVE_POKEMON`, `RETREAT`, `USE_ABILITY`, `END_TURN`
   - Can perform multiple actions in this phase
-  - Stays in `SETUP` phase until `END_TURN` or moving to `ATTACK` phase
+  - Stays in `MAIN_PHASE` until `END_TURN` or moving to `ATTACK` phase
 
 - **ATTACK**: Declare and execute attack
   - Valid actions: `ATTACK`, `END_TURN`
@@ -228,7 +228,7 @@ The match can end in `MATCH_ENDED` state when any of these conditions are met:
    ↓ (both players ready)
 8. PLAYER_TURN (PLAYER1, DRAW phase)
    ↓ (draw card)
-   PLAYER_TURN (PLAYER1, SETUP phase)
+   PLAYER_TURN (PLAYER1, MAIN_PHASE)
    ↓ (play cards, attach energy)
    PLAYER_TURN (PLAYER1, ATTACK phase)
    ↓ (attack)

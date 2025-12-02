@@ -106,33 +106,76 @@ export class DrawInitialCardsUseCase {
     // Determine if this is first draw or redraw
     const isFirstDraw = !playerState || playerState.hand.length === 0;
 
-    let deckCards: string[];
-    let currentDeck: string[];
-    let currentHand: string[];
+    let originalDeck: string[]; // Store original deck for deterministic reshuffle
+    let currentDeck: string[] = []; // Initialize to empty array
+    let currentHand: string[] = []; // Initialize to empty array
 
+    // Initialize deck for first draw
     if (isFirstDraw) {
-      // First draw: expand deck cards and shuffle
-      deckCards = this.expandDeckCards(deck.cards);
-      const shuffleSeed = this.getShuffleSeed(match.id, playerIdentifier);
-      currentDeck = this.shuffleDeck([...deckCards], shuffleSeed);
-      currentHand = currentDeck.splice(0, 7);
+      // First draw: expand deck cards
+      const deckCards = this.expandDeckCards(deck.cards);
+      originalDeck = [...deckCards]; // Store original for reshuffle
     } else {
-      // Redraw: get current deck and hand, reshuffle
-      currentDeck = [...playerState.deck];
-      currentHand = [...playerState.hand];
+      // Redraw: get current deck and hand
+      const existingDeck = [...playerState.deck];
+      const existingHand = [...playerState.hand];
       
-      // Put hand back into deck and reshuffle
-      currentDeck.push(...currentHand);
-      const reshuffleSeed = this.getShuffleSeed(match.id, playerIdentifier, true);
-      currentDeck = this.shuffleDeck(currentDeck, reshuffleSeed);
-      currentHand = currentDeck.splice(0, 7);
+      // Put hand back into deck to get original deck state
+      originalDeck = [...existingDeck, ...existingHand];
     }
 
-    // Validate hand against start game rules
-    const isValid = await this.startGameRulesValidator.validateHand(
-      currentHand,
-      startGameRules,
-    );
+    // Draw and validate hand, reshuffling until valid
+    // This implements the automatic reshuffle rule from business rules
+    // IMPORTANT: Reshuffle must be deterministic - same seed always produces same result
+    let isValid = false;
+    let attempts = 0;
+    const maxAttempts = 100; // Safety limit to prevent infinite loops
+
+    // Get base seed for deterministic shuffling
+    // For first draw: use match ID + player identifier
+    // For redraw: use match ID + player identifier + redraw flag
+    const baseSeed = isFirstDraw
+      ? this.getShuffleSeed(match.id, playerIdentifier)
+      : this.getShuffleSeed(match.id, playerIdentifier, true);
+
+    while (!isValid && attempts < maxAttempts) {
+      // CRITICAL: For deterministic reshuffle, always start from original deck state
+      // Reset to original deck before each shuffle attempt
+      // This ensures same match/player/attempt always produces same shuffle
+      currentDeck = [...originalDeck];
+      
+      // Use deterministic seed: baseSeed + attempt number
+      // IMPORTANT: Each attempt uses a different seed (baseSeed + 0, baseSeed + 1, etc.)
+      // This ensures same match/player will always get the same sequence of shuffles
+      const attemptSeed = baseSeed !== undefined
+        ? baseSeed + attempts
+        : undefined;
+      
+      // Shuffle deck with deterministic seed
+      currentDeck = this.shuffleDeck(currentDeck, attemptSeed);
+      currentHand = currentDeck.splice(0, 7);
+
+      // Validate hand against start game rules
+      isValid = await this.startGameRulesValidator.validateHand(
+        currentHand,
+        startGameRules,
+      );
+
+      if (!isValid) {
+        // Hand is invalid, will try again with next attempt number
+        attempts++;
+      }
+    }
+
+    if (!isValid) {
+      // Max attempts reached, return invalid hand anyway
+      // (shouldn't happen in practice if deck has valid cards)
+      console.warn(
+        `Max reshuffle attempts (${maxAttempts}) reached for ${playerIdentifier}. ` +
+        `Returning hand that may not satisfy all rules.`,
+      );
+    }
+
 
     // Update game state
     if (!gameState) {
@@ -144,10 +187,11 @@ export class DrawInitialCardsUseCase {
         [], // bench
         [], // prizeCards (will be set later)
         [], // discardPile
+        false, // hasAttachedEnergyThisTurn
       );
 
       // Create empty opponent state
-      const opponentState = new PlayerGameState([], [], null, [], [], []);
+      const opponentState = new PlayerGameState([], [], null, [], [], [], false);
 
       // Create game state with proper player order
       // Use DRAW phase as placeholder during card drawing
@@ -181,6 +225,7 @@ export class DrawInitialCardsUseCase {
         playerState?.bench || [],
         playerState?.prizeCards || [],
         playerState?.discardPile || [],
+        playerState?.hasAttachedEnergyThisTurn || false,
       );
 
       if (playerIdentifier === PlayerIdentifier.PLAYER1) {
@@ -209,13 +254,62 @@ export class DrawInitialCardsUseCase {
     // Update match with game state
     match.updateGameStateDuringDrawing(gameState);
 
-    // If valid, mark player's deck as valid
+    // If valid, mark player's deck as valid BEFORE saving
+    // This ensures the flag is set in the match entity before persistence
     if (isValid) {
+      // Set the flag
       match.markPlayerDeckValid(playerIdentifier);
+      
+      // CRITICAL: Verify flag is set immediately after marking
+      // This ensures the match entity has the flag set before any save operation
+      const flagAfterMarking = playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player1HasDrawnValidHand
+        : match.player2HasDrawnValidHand;
+      
+      if (!flagAfterMarking) {
+        throw new Error(
+          `playerHasDrawnValidHand flag was not set correctly after markPlayerDeckValid. ` +
+          `Expected true for ${playerIdentifier}, but got ${flagAfterMarking}. ` +
+          `Match state: ${match.state}, Player1 flag: ${match.player1HasDrawnValidHand}, Player2 flag: ${match.player2HasDrawnValidHand}`,
+        );
+      }
     }
 
-    // Save match
+    // CRITICAL: Verify the flag is still set immediately before save
+    // This ensures no other operation has reset the flag
+    if (isValid) {
+      const flagBeforeSave = playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player1HasDrawnValidHand
+        : match.player2HasDrawnValidHand;
+      
+      if (!flagBeforeSave) {
+        throw new Error(
+          `playerHasDrawnValidHand flag was lost before save. ` +
+          `Expected true for ${playerIdentifier}, but got ${flagBeforeSave}. ` +
+          `This indicates the flag was reset between marking and saving.`,
+        );
+      }
+    }
+
+    // Save match - the repository should preserve the flag
     const savedMatch = await this.matchRepository.save(match);
+
+    // CRITICAL: Verify flag is still set after save
+    // The repository returns the same instance, so the flag should be preserved
+    if (isValid) {
+      const flagAfterSave = playerIdentifier === PlayerIdentifier.PLAYER1
+        ? savedMatch.player1HasDrawnValidHand
+        : savedMatch.player2HasDrawnValidHand;
+      
+      if (!flagAfterSave) {
+        throw new Error(
+          `playerHasDrawnValidHand flag was lost after save. ` +
+          `Expected true for ${playerIdentifier}, but got ${flagAfterSave}. ` +
+          `This indicates the repository save operation is not preserving the flag. ` +
+          `Match state: ${savedMatch.state}, Player1 flag: ${savedMatch.player1HasDrawnValidHand}, Player2 flag: ${savedMatch.player2HasDrawnValidHand}`,
+        );
+      }
+    }
 
     return {
       match: savedMatch,

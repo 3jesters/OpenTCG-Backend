@@ -6,6 +6,10 @@ import { DeckCard, ValidationResult } from '../value-objects';
  * Framework-agnostic with business logic
  */
 export class Deck {
+  // Default card back image URL
+  private static readonly DEFAULT_CARD_BACK_IMAGE_URL =
+    'https://www.pikawiz.com/images/pokemonback.png';
+
   // Identity
   private readonly _id: string;
   private _name: string;
@@ -17,6 +21,7 @@ export class Deck {
   private readonly _createdBy: string;
   private readonly _createdAt: Date;
   private _updatedAt: Date;
+  private _cardBackImageUrl: string;
 
   // Association
   private _tournamentId?: string;
@@ -31,6 +36,7 @@ export class Deck {
     cards: DeckCard[] = [],
     createdAt?: Date,
     tournamentId?: string,
+    cardBackImageUrl?: string,
   ) {
     this._id = id;
     this._name = name;
@@ -39,6 +45,8 @@ export class Deck {
     this._createdAt = createdAt || new Date();
     this._updatedAt = new Date();
     this._tournamentId = tournamentId;
+    this._cardBackImageUrl =
+      cardBackImageUrl || Deck.DEFAULT_CARD_BACK_IMAGE_URL;
     this._isValid = false;
 
     this.validate();
@@ -80,6 +88,10 @@ export class Deck {
     return this._isValid;
   }
 
+  get cardBackImageUrl(): string {
+    return this._cardBackImageUrl;
+  }
+
   // ========================================
   // Setters
   // ========================================
@@ -99,6 +111,14 @@ export class Deck {
 
   setValid(isValid: boolean): void {
     this._isValid = isValid;
+    this._updatedAt = new Date();
+  }
+
+  setCardBackImageUrl(cardBackImageUrl: string): void {
+    if (!cardBackImageUrl || cardBackImageUrl.trim().length === 0) {
+      throw new Error('Card back image URL is required');
+    }
+    this._cardBackImageUrl = cardBackImageUrl;
     this._updatedAt = new Date();
   }
 

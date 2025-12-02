@@ -68,6 +68,7 @@ export interface PlayerGameStateJson {
   bench: CardInstanceJson[];
   prizeCards: string[];
   discardPile: string[];
+  hasAttachedEnergyThisTurn?: boolean; // Optional for backward compatibility
 }
 
 /**
@@ -222,6 +223,7 @@ export class MatchMapper {
       bench: state.bench.map((card) => this.cardInstanceToJson(card)),
       prizeCards: state.prizeCards,
       discardPile: state.discardPile,
+      hasAttachedEnergyThisTurn: state.hasAttachedEnergyThisTurn,
     };
   }
 
@@ -240,6 +242,7 @@ export class MatchMapper {
       json.bench.map((card) => this.cardInstanceFromJson(card)),
       json.prizeCards,
       json.discardPile,
+      json.hasAttachedEnergyThisTurn ?? false, // Default to false for backward compatibility
     );
   }
 

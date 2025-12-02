@@ -70,8 +70,9 @@ describe('Match Entity', () => {
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
       match.markDeckValidationComplete(true);
       match.approveMatch(PlayerIdentifier.PLAYER1);
+      // After both players approve, match automatically transitions to DRAWING_CARDS
+      // So we can't call setFirstPlayer anymore (it's deprecated anyway)
       match.approveMatch(PlayerIdentifier.PLAYER2);
-      match.setFirstPlayer(PlayerIdentifier.PLAYER1);
 
       expect(() => {
         match.assignPlayer('player-3', 'deck-3', PlayerIdentifier.PLAYER1);
@@ -116,8 +117,12 @@ describe('Match Entity', () => {
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
       match.markDeckValidationComplete(true);
+      // Don't approve both players yet - setFirstPlayer requires PRE_GAME_SETUP state
+      // (Note: setFirstPlayer is deprecated, but this test verifies it still works)
       match.approveMatch(PlayerIdentifier.PLAYER1);
-      match.approveMatch(PlayerIdentifier.PLAYER2);
+      // Only approve one player so state stays in MATCH_APPROVAL
+      // Manually set state back to PRE_GAME_SETUP for this deprecated method test
+      (match as any)._state = MatchState.PRE_GAME_SETUP;
 
       match.setFirstPlayer(PlayerIdentifier.PLAYER1);
 

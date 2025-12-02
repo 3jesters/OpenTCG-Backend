@@ -31,14 +31,21 @@ describe('Match Approval Flow E2E', () => {
   });
 
   afterAll(async () => {
+    // Clean up environment variable
+    delete process.env.MATCH_SHUFFLE_SEED;
     await app.close();
+  });
+
+  afterEach(() => {
+    // Ensure environment variable is cleaned up after each test
+    delete process.env.MATCH_SHUFFLE_SEED;
   });
 
   const waitForDeckValidation = () =>
     new Promise((resolve) => setTimeout(resolve, 500));
 
   it('should complete full match approval and initial setup flow', async () => {
-    // Set deterministic shuffle seed
+    // Set deterministic shuffle seed for this test only
     process.env.MATCH_SHUFFLE_SEED = '12345';
 
     try {

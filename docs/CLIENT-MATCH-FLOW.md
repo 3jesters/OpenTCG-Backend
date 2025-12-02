@@ -46,7 +46,7 @@ Both players receive the same state information:
 - `state`: Current match state (e.g., `PLAYER_TURN`, `INITIAL_SETUP`)
 - `currentPlayer`: Whose turn it is (`PLAYER1` or `PLAYER2`)
 - `turnNumber`: Current turn number
-- `phase`: Current phase of the turn (`DRAW`, `SETUP`, `ATTACK`, `END`)
+- `phase`: Current phase of the turn (`DRAW`, `MAIN_PHASE`, `ATTACK`, `END`)
 
 **Example:**
 ```json
@@ -54,7 +54,7 @@ Both players receive the same state information:
   "state": "PLAYER_TURN",
   "currentPlayer": "PLAYER1",
   "turnNumber": 3,
-  "phase": "SETUP"
+  "phase": "MAIN_PHASE"
 }
 ```
 
@@ -116,7 +116,7 @@ Get the current match state from your perspective.
   "state": "PLAYER_TURN",
   "currentPlayer": "PLAYER1",
   "turnNumber": 3,
-  "phase": "SETUP",
+  "phase": "MAIN_PHASE",
   "playerState": { /* Your full state */ },
   "opponentState": { /* Opponent's limited state */ },
   "availableActions": ["PLAY_POKEMON", "ATTACH_ENERGY", ...],
@@ -264,7 +264,7 @@ enum MatchState {
 
 enum TurnPhase {
   DRAW = 'DRAW',
-  SETUP = 'SETUP',
+  MAIN_PHASE = 'MAIN_PHASE',
   ATTACK = 'ATTACK',
   END = 'END'
 }
@@ -366,7 +366,7 @@ MATCH_ENDED
 During `PLAYER_TURN`, the game progresses through phases:
 
 1. **DRAW**: Draw 1 card (except first turn of first player)
-2. **SETUP**: Play cards, attach energy, evolve, retreat
+2. **MAIN_PHASE**: Play cards, attach energy, evolve, retreat, attack
 3. **ATTACK**: Declare and execute attack
 4. **END**: End turn actions
 
@@ -453,8 +453,8 @@ const newState = await executeAction(
 
 Actions can change the phase:
 
-- `DRAW_CARD` in `DRAW` phase → moves to `SETUP` phase
-- Actions in `SETUP` phase → stay in `SETUP` phase (can do multiple)
+- `DRAW_CARD` in `DRAW` phase → moves to `MAIN_PHASE`
+- Actions in `MAIN_PHASE` → stay in `MAIN_PHASE` (can do multiple, including ATTACK)
 - `ATTACK` in `ATTACK` phase → moves to `END` phase
 - `END_TURN` → ends turn, moves to `BETWEEN_TURNS` state
 

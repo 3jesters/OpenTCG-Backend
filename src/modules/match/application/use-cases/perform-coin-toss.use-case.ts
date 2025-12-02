@@ -22,9 +22,9 @@ export class PerformCoinTossUseCase {
     }
 
     // Validate state
-    if (match.state !== MatchState.SELECT_BENCH_POKEMON) {
+    if (match.state !== MatchState.DRAWING_CARDS && match.state !== MatchState.SELECT_BENCH_POKEMON) {
       throw new Error(
-        `Cannot perform coin toss in state ${match.state}. Must be SELECT_BENCH_POKEMON`,
+        `Cannot perform coin toss in state ${match.state}. Must be DRAWING_CARDS or SELECT_BENCH_POKEMON`,
       );
     }
 

@@ -291,9 +291,13 @@ export class Match {
     }
 
     // If both players have approved, transition directly to DRAWING_CARDS
-    // (coin toss will happen after both players complete initial setup)
+    // and perform coin toss automatically
     if (this._player1Approved && this._player2Approved) {
       this._state = MatchState.DRAWING_CARDS;
+      // Perform coin toss automatically when both players approve
+      if (this._coinTossResult === null) {
+        this.performCoinToss();
+      }
     }
 
     this._updatedAt = new Date();
@@ -308,12 +312,12 @@ export class Match {
 
   /**
    * Perform coin toss to determine first player
-   * Valid states: SELECT_BENCH_POKEMON
+   * Valid states: DRAWING_CARDS, SELECT_BENCH_POKEMON
    */
   performCoinToss(): void {
-    if (this._state !== MatchState.SELECT_BENCH_POKEMON) {
+    if (this._state !== MatchState.DRAWING_CARDS && this._state !== MatchState.SELECT_BENCH_POKEMON) {
       throw new Error(
-        `Cannot perform coin toss in state ${this._state}. Must be SELECT_BENCH_POKEMON`,
+        `Cannot perform coin toss in state ${this._state}. Must be DRAWING_CARDS or SELECT_BENCH_POKEMON`,
       );
     }
 
@@ -327,7 +331,7 @@ export class Match {
     this._coinTossResult = result;
     this._firstPlayer = result;
     this._currentPlayer = result;
-    // State remains SELECT_BENCH_POKEMON - will transition to PLAYER_TURN in completeInitialSetup
+    // State remains unchanged - will transition to PLAYER_TURN in completeInitialSetup
     this._updatedAt = new Date();
   }
 

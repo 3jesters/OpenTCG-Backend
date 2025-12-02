@@ -32,6 +32,7 @@ import {
   PlayerIdentifier,
   MatchState,
   PlayerActionType,
+  TurnPhase,
 } from '../../domain';
 import { MatchStateMachineService } from '../../domain/services';
 
@@ -170,6 +171,39 @@ export class MatchController {
     const availableActions = this.stateMachineService.getAvailableActions(
       match.state,
       match.gameState?.phase || null,
+      match.gameState
+        ? {
+            lastAction: match.gameState.lastAction
+              ? {
+                  actionType: match.gameState.lastAction.actionType,
+                  playerId: match.gameState.lastAction.playerId,
+                  actionData: match.gameState.lastAction.actionData,
+                  actionId: match.gameState.lastAction.actionId,
+                }
+              : null,
+            actionHistory: [
+              ...match.gameState.actionHistory.map((action) => ({
+                actionType: action.actionType,
+                playerId: action.playerId,
+                actionId: action.actionId,
+              })),
+              // Include lastAction in history if it exists and isn't already the last item
+              ...(match.gameState.lastAction &&
+              (match.gameState.actionHistory.length === 0 ||
+                match.gameState.actionHistory[match.gameState.actionHistory.length - 1].actionId !==
+                  match.gameState.lastAction.actionId)
+                ? [
+                    {
+                      actionType: match.gameState.lastAction.actionType,
+                      playerId: match.gameState.lastAction.playerId,
+                      actionId: match.gameState.lastAction.actionId,
+                    },
+                  ]
+                : []),
+            ],
+          }
+        : undefined,
+      match.currentPlayer || undefined,
     );
 
     // Filter actions based on player context
@@ -201,6 +235,18 @@ export class MatchController {
         // Not player's turn - only show CONCEDE
         return [PlayerActionType.CONCEDE];
       }
+      
+      // Filter out ATTACH_ENERGY if energy was already attached this turn
+      const playerState = match.gameState?.getPlayerState(playerIdentifier);
+      if (
+        playerState?.hasAttachedEnergyThisTurn &&
+        match.gameState?.phase === TurnPhase.MAIN_PHASE
+      ) {
+        return actions.filter(
+          (action) => action !== PlayerActionType.ATTACH_ENERGY,
+        );
+      }
+      
       return actions; // Already filtered by state machine
     }
 

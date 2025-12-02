@@ -116,6 +116,10 @@ export class MatchStateMachineService {
       if (actionType === PlayerActionType.CONCEDE) {
         return { isValid: true }; // Can always concede
       }
+      // Allow SET_ACTIVE_POKEMON for opponent when their active Pokemon is null (after knockout)
+      if (actionType === PlayerActionType.SET_ACTIVE_POKEMON) {
+        return { isValid: true }; // Will be validated in use case that opponent's active is null
+      }
       return {
         isValid: false,
         error: ActionValidationError.NOT_PLAYER_TURN,
@@ -191,7 +195,7 @@ export class MatchStateMachineService {
   ): { isValid: boolean; error?: ActionValidationError } {
     const phaseActions: Record<TurnPhase, PlayerActionType[]> = {
       [TurnPhase.DRAW]: [PlayerActionType.DRAW_CARD, PlayerActionType.END_TURN],
-      [TurnPhase.SETUP]: [
+      [TurnPhase.MAIN_PHASE]: [
         PlayerActionType.PLAY_POKEMON,
         PlayerActionType.SET_ACTIVE_POKEMON,
         PlayerActionType.ATTACH_ENERGY,
@@ -199,6 +203,7 @@ export class MatchStateMachineService {
         PlayerActionType.EVOLVE_POKEMON,
         PlayerActionType.RETREAT,
         PlayerActionType.USE_ABILITY,
+        PlayerActionType.ATTACK, // Allow attack from MAIN_PHASE
         PlayerActionType.END_TURN,
         PlayerActionType.CONCEDE,
       ],
@@ -207,7 +212,13 @@ export class MatchStateMachineService {
         PlayerActionType.END_TURN,
         PlayerActionType.CONCEDE,
       ],
-      [TurnPhase.END]: [PlayerActionType.END_TURN, PlayerActionType.CONCEDE],
+      [TurnPhase.END]: [
+        PlayerActionType.SELECT_PRIZE,
+        PlayerActionType.DRAW_PRIZE, // Alias for SELECT_PRIZE (client compatibility)
+        PlayerActionType.SET_ACTIVE_POKEMON, // Allow selecting active Pokemon after knockout
+        PlayerActionType.END_TURN,
+        PlayerActionType.CONCEDE,
+      ],
     };
 
     const allowedActions = phaseActions[phase] || [];
@@ -236,13 +247,13 @@ export class MatchStateMachineService {
     // Phase progression
     if (currentPhase === TurnPhase.DRAW) {
       if (actionType === PlayerActionType.DRAW_CARD) {
-        return TurnPhase.SETUP;
+        return TurnPhase.MAIN_PHASE;
       }
     }
 
-    if (currentPhase === TurnPhase.SETUP) {
-      // Setup phase can continue until END_TURN
-      return TurnPhase.SETUP;
+    if (currentPhase === TurnPhase.MAIN_PHASE) {
+      // Main phase can continue until END_TURN
+      return TurnPhase.MAIN_PHASE;
     }
 
     if (currentPhase === TurnPhase.ATTACK) {
@@ -321,11 +332,71 @@ export class MatchStateMachineService {
   }
 
   /**
+   * Check if prize selection is pending after a knockout
+   */
+  /**
+   * Check if prize selection is pending after a knockout
+   * @deprecated This method is kept for reference but the logic is now inlined in getAvailableActions for better reliability
+   */
+  private hasPendingPrizeSelection(
+    gameState: { lastAction: { actionType: PlayerActionType; playerId: PlayerIdentifier; actionData?: any; actionId?: string } | null; actionHistory: Array<{ actionType: PlayerActionType; playerId: PlayerIdentifier; actionId?: string }> },
+    currentPlayer: PlayerIdentifier,
+  ): boolean {
+    if (!gameState?.lastAction) return false;
+    
+    const lastAction = gameState.lastAction;
+    
+    // Must be an ATTACK that caused a knockout by the current player
+    if (
+      lastAction.actionType !== PlayerActionType.ATTACK ||
+      !lastAction.actionData?.isKnockedOut ||
+      lastAction.playerId !== currentPlayer
+    ) {
+      return false;
+    }
+    
+    // Find the lastAction in actionHistory by actionId (if available)
+    let lastActionIndex = -1;
+    
+    if (lastAction.actionId) {
+      lastActionIndex = gameState.actionHistory.findIndex(
+        (action) => action.actionId === lastAction.actionId
+      );
+    }
+    
+    // Fallback: if not found by actionId, check if last item matches
+    if (lastActionIndex < 0 && gameState.actionHistory.length > 0) {
+      const lastHistoryItem = gameState.actionHistory[gameState.actionHistory.length - 1];
+      if (
+        lastHistoryItem.actionType === lastAction.actionType &&
+        lastHistoryItem.playerId === lastAction.playerId
+      ) {
+        lastActionIndex = gameState.actionHistory.length - 1;
+      }
+    }
+    
+    // If not found, assume prize not selected
+    if (lastActionIndex < 0) return true;
+    
+    // Check if there's a SELECT_PRIZE after this attack by the same player
+    const prizeSelected = gameState.actionHistory.some(
+      (action, index) =>
+        index > lastActionIndex &&
+        action.actionType === PlayerActionType.SELECT_PRIZE &&
+        action.playerId === currentPlayer
+    );
+    
+    return !prizeSelected;
+  }
+
+  /**
    * Get available actions for current state and phase
    */
   getAvailableActions(
     state: MatchState,
     phase: TurnPhase | null,
+    gameState?: { lastAction: { actionType: PlayerActionType; playerId: PlayerIdentifier; actionData?: any; actionId?: string } | null; actionHistory: Array<{ actionType: PlayerActionType; playerId: PlayerIdentifier; actionId?: string }> },
+    currentPlayer?: PlayerIdentifier,
   ): PlayerActionType[] {
     if (state === MatchState.MATCH_APPROVAL) {
       return [
@@ -365,19 +436,25 @@ export class MatchStateMachineService {
       ];
     }
 
+    // Terminal states should not allow CONCEDE
+    if (state === MatchState.CANCELLED || state === MatchState.MATCH_ENDED) {
+      return [];
+    }
+
     if (state !== MatchState.PLAYER_TURN || phase === null) {
       return [PlayerActionType.CONCEDE];
     }
 
     const phaseActions: Record<TurnPhase, PlayerActionType[]> = {
       [TurnPhase.DRAW]: [PlayerActionType.DRAW_CARD, PlayerActionType.END_TURN],
-      [TurnPhase.SETUP]: [
+      [TurnPhase.MAIN_PHASE]: [
         PlayerActionType.PLAY_POKEMON,
         PlayerActionType.ATTACH_ENERGY,
         PlayerActionType.PLAY_TRAINER,
         PlayerActionType.EVOLVE_POKEMON,
         PlayerActionType.RETREAT,
         PlayerActionType.USE_ABILITY,
+        PlayerActionType.ATTACK,
         PlayerActionType.END_TURN,
       ],
       [TurnPhase.ATTACK]: [
@@ -387,7 +464,51 @@ export class MatchStateMachineService {
       [TurnPhase.END]: [PlayerActionType.END_TURN],
     };
 
-    const actions = phaseActions[phase] || [];
+    let actions = phaseActions[phase] || [];
+    
+    // If in END phase and knockout occurred, require SELECT_PRIZE before END_TURN
+    if (
+      phase === TurnPhase.END &&
+      gameState &&
+      currentPlayer &&
+      gameState.lastAction &&
+      gameState.lastAction.actionType === PlayerActionType.ATTACK &&
+      gameState.lastAction.actionData?.isKnockedOut === true &&
+      gameState.lastAction.playerId === currentPlayer
+    ) {
+      // Check if prize was already selected by looking for SELECT_PRIZE after the last ATTACK
+      const lastActionId = gameState.lastAction.actionId;
+      const lastActionIndex = lastActionId
+        ? gameState.actionHistory.findIndex((action) => action.actionId === lastActionId)
+        : -1;
+      
+      // If not found by actionId, check if last item matches
+      const effectiveIndex = lastActionIndex >= 0
+        ? lastActionIndex
+        : (gameState.actionHistory.length > 0 &&
+           gameState.actionHistory[gameState.actionHistory.length - 1].actionType === PlayerActionType.ATTACK &&
+           gameState.actionHistory[gameState.actionHistory.length - 1].playerId === currentPlayer)
+          ? gameState.actionHistory.length - 1
+          : -1;
+      
+      // Check if there's a SELECT_PRIZE or DRAW_PRIZE after this attack
+      const prizeSelected = effectiveIndex >= 0
+        ? gameState.actionHistory.some(
+            (action, index) =>
+              index > effectiveIndex &&
+              (action.actionType === PlayerActionType.SELECT_PRIZE ||
+                action.actionType === PlayerActionType.DRAW_PRIZE) &&
+              action.playerId === currentPlayer
+          )
+        : false;
+      
+      if (!prizeSelected) {
+        // Remove END_TURN and add SELECT_PRIZE
+        actions = actions.filter((action) => action !== PlayerActionType.END_TURN);
+        actions.push(PlayerActionType.SELECT_PRIZE);
+      }
+    }
+    
     // Always allow concede
     if (!actions.includes(PlayerActionType.CONCEDE)) {
       actions.push(PlayerActionType.CONCEDE);

@@ -140,6 +140,7 @@ export class StartMatchUseCase {
       [], // bench
       player1PrizeCards, // prizeCards (6 cards)
       [], // discardPile
+      false, // hasAttachedEnergyThisTurn
     );
 
     const player2State = new PlayerGameState(
@@ -149,6 +150,7 @@ export class StartMatchUseCase {
       [], // bench
       player2PrizeCards, // prizeCards (6 cards)
       [], // discardPile
+      false, // hasAttachedEnergyThisTurn
     );
 
     const gameState = new GameState(

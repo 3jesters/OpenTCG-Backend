@@ -13,6 +13,7 @@ export class DeckResponseDto {
   updatedAt: string;
   tournamentId?: string;
   isValid: boolean;
+  cardBackImageUrl: string;
   cards: DeckCardResponseDto[];
   totalCards: number;
 
@@ -25,6 +26,7 @@ export class DeckResponseDto {
     dto.updatedAt = deck.updatedAt.toISOString();
     dto.tournamentId = deck.tournamentId;
     dto.isValid = deck.isValid;
+    dto.cardBackImageUrl = deck.cardBackImageUrl;
     dto.cards = deck.cards.map((c) => DeckCardResponseDto.fromDomain(c));
     dto.totalCards = deck.getTotalCardCount();
     return dto;

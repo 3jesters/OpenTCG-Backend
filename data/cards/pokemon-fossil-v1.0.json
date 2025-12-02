@@ -81,6 +81,11 @@
       "pokemonType": "COLORLESS",
       "rarity": "RARE_HOLO",
       "attacks": [],
+      "ability": {
+        "name": "Transform",
+        "text": "If Ditto is your Active Pokémon, treat it as if it were the same card as the Defending Pokémon, including type, Hit Points, and attacks, but Ditto keeps its own name and Weakness. (If the Defending Pokémon is Asleep, Confused, or Paralyzed, Ditto is now Asleep, Confused, or Paralyzed.) This power can't be used if Ditto is Asleep, Confused, or Paralyzed. If Ditto is Knocked Out, the Defending Pokémon is not Knocked Out.",
+        "activationType": "PASSIVE"
+      },
       "weakness": {
         "type": "FIGHTING",
         "modifier": "×2"
@@ -141,18 +146,18 @@
       "rarity": "RARE_HOLO",
       "attacks": [
         {
-          "name": "Curse",
-          "energyCost": ["PSYCHIC"],
-          "damage": "0",
-          "text": "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pokémon to another (even if it would Knock Out the other Pokémon). This power can't be used if Gengar is Asleep, Confused, or Paralyzed."
-        },
-        {
           "name": "Dark Mind",
           "energyCost": ["PSYCHIC", "PSYCHIC", "PSYCHIC"],
           "damage": "30",
           "text": "If your opponent has any Benched Pokémon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Pokémon.)"
         }
       ],
+      "ability": {
+        "name": "Curse",
+        "text": "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pokémon to another (even if it would Knock Out the other Pokémon). This power can't be used if Gengar is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "ONCE_PER_TURN"
+      },
       "weakness": {
         "type": "PSYCHIC",
         "modifier": "×2"
@@ -240,18 +245,18 @@
       "rarity": "RARE_HOLO",
       "attacks": [
         {
-          "name": "Prophecy",
-          "energyCost": ["PSYCHIC"],
-          "damage": "0",
-          "text": "Look at up to 3 cards from the top of either player's deck and rearrange them as you like."
-        },
-        {
           "name": "Dark Mind",
           "energyCost": ["PSYCHIC", "PSYCHIC", "PSYCHIC"],
           "damage": "30",
           "text": "If your opponent has any Benched Pokémon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Pokémon.)"
         }
       ],
+      "ability": {
+        "name": "Prophecy",
+        "text": "Once during your turn (before your attack), you may look at up to 3 cards from the top of either player's deck and rearrange them as you like. This power can't be used if Hypno is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "ONCE_PER_TURN"
+      },
       "weakness": {
         "type": "PSYCHIC",
         "modifier": "×2"
@@ -540,6 +545,11 @@
       "pokemonType": "COLORLESS",
       "rarity": "RARE",
       "attacks": [],
+      "ability": {
+        "name": "Transform",
+        "text": "If Ditto is your Active Pokémon, treat it as if it were the same card as the Defending Pokémon, including type, Hit Points, and attacks, but Ditto keeps its own name and Weakness. (If the Defending Pokémon is Asleep, Confused, or Paralyzed, Ditto is now Asleep, Confused, or Paralyzed.) This power can't be used if Ditto is Asleep, Confused, or Paralyzed. If Ditto is Knocked Out, the Defending Pokémon is not Knocked Out.",
+        "activationType": "PASSIVE"
+      },
       "weakness": {
         "type": "FIGHTING",
         "modifier": "×2"
@@ -600,18 +610,18 @@
       "rarity": "RARE",
       "attacks": [
         {
-          "name": "Curse",
-          "energyCost": ["PSYCHIC"],
-          "damage": "0",
-          "text": "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pokémon to another (even if it would Knock Out the other Pokémon). This power can't be used if Gengar is Asleep, Confused, or Paralyzed."
-        },
-        {
           "name": "Dark Mind",
           "energyCost": ["PSYCHIC", "PSYCHIC", "PSYCHIC"],
           "damage": "30",
           "text": "If your opponent has any Benched Pokémon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Pokémon.)"
         }
       ],
+      "ability": {
+        "name": "Curse",
+        "text": "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pokémon to another (even if it would Knock Out the other Pokémon). This power can't be used if Gengar is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "ONCE_PER_TURN"
+      },
       "weakness": {
         "type": "PSYCHIC",
         "modifier": "×2"
@@ -699,18 +709,18 @@
       "rarity": "RARE",
       "attacks": [
         {
-          "name": "Prophecy",
-          "energyCost": ["PSYCHIC"],
-          "damage": "0",
-          "text": "Look at up to 3 cards from the top of either player's deck and rearrange them as you like."
-        },
-        {
           "name": "Dark Mind",
           "energyCost": ["PSYCHIC", "PSYCHIC", "PSYCHIC"],
           "damage": "30",
           "text": "If your opponent has any Benched Pokémon, choose 1 of them and this attack does 10 damage to it. (Don't apply Weakness and Resistance for Benched Pokémon.)"
         }
       ],
+      "ability": {
+        "name": "Prophecy",
+        "text": "Once during your turn (before your attack), you may look at up to 3 cards from the top of either player's deck and rearrange them as you like. This power can't be used if Hypno is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "ONCE_PER_TURN"
+      },
       "weakness": {
         "type": "PSYCHIC",
         "modifier": "×2"
@@ -1296,18 +1306,18 @@
       "rarity": "UNCOMMON",
       "attacks": [
         {
-          "name": "Strange Behavior",
-          "energyCost": ["PSYCHIC"],
-          "damage": "0",
-          "text": "Once during your turn (before your attack), you may move 1 damage counter from Slowbro to 1 of your other Pokémon. This power can't be used if Slowbro is Asleep, Confused, or Paralyzed."
-        },
-        {
           "name": "Psyshock",
           "energyCost": ["PSYCHIC", "PSYCHIC", "COLORLESS"],
           "damage": "30",
           "text": "Flip a coin. If heads, the Defending Pokémon is now Paralyzed."
         }
       ],
+      "ability": {
+        "name": "Strange Behavior",
+        "text": "Once during your turn (before your attack), you may move 1 damage counter from Slowbro to 1 of your other Pokémon. This power can't be used if Slowbro is Asleep, Confused, or Paralyzed.",
+        "activationType": "ACTIVATED",
+        "usageLimit": "ONCE_PER_TURN"
+      },
       "weakness": {
         "type": "PSYCHIC",
         "modifier": "×2"

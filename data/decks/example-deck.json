@@ -6,6 +6,7 @@
   "updatedAt": "2025-11-23T11:08:08.780Z",
   "tournamentId": "default-tournament",
   "isValid": false,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
   "cards": [
     {
       "cardId": "pokemon-base-set-v1.0-pikachu--60",

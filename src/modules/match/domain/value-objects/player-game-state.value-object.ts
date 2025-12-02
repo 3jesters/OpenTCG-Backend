@@ -14,6 +14,7 @@ export class PlayerGameState {
     public readonly bench: CardInstance[], // Benched Pokemon (max 5)
     public readonly prizeCards: string[], // Array of prize card IDs (6 initially)
     public readonly discardPile: string[], // Array of discarded card IDs
+    public readonly hasAttachedEnergyThisTurn: boolean = false, // Tracks if player has attached energy this turn
   ) {
     this.validate();
   }
@@ -86,6 +87,7 @@ export class PlayerGameState {
       this.bench,
       this.prizeCards,
       this.discardPile,
+      this.hasAttachedEnergyThisTurn,
     );
   }
 
@@ -100,6 +102,7 @@ export class PlayerGameState {
       this.bench,
       this.prizeCards,
       this.discardPile,
+      this.hasAttachedEnergyThisTurn,
     );
   }
 
@@ -114,6 +117,7 @@ export class PlayerGameState {
       this.bench,
       this.prizeCards,
       this.discardPile,
+      this.hasAttachedEnergyThisTurn,
     );
   }
 
@@ -128,6 +132,7 @@ export class PlayerGameState {
       bench,
       this.prizeCards,
       this.discardPile,
+      this.hasAttachedEnergyThisTurn,
     );
   }
 
@@ -142,6 +147,7 @@ export class PlayerGameState {
       this.bench,
       prizeCards,
       this.discardPile,
+      this.hasAttachedEnergyThisTurn,
     );
   }
 
@@ -156,6 +162,22 @@ export class PlayerGameState {
       this.bench,
       this.prizeCards,
       discardPile,
+      this.hasAttachedEnergyThisTurn,
+    );
+  }
+
+  /**
+   * Create a new PlayerGameState with updated energy attachment flag
+   */
+  withHasAttachedEnergyThisTurn(hasAttached: boolean): PlayerGameState {
+    return new PlayerGameState(
+      this.deck,
+      this.hand,
+      this.activePokemon,
+      this.bench,
+      this.prizeCards,
+      this.discardPile,
+      hasAttached,
     );
   }
 }

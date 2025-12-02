@@ -80,21 +80,21 @@
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-pok-mon-breeder--78"
+        "pokemon-base-set-v1.0-pokemon-breeder--78"
       ],
       "activePokemon": {
         "instanceId": "78dadb92-eb0b-4dbd-b51e-db9be356b27f",
         "cardId": "pokemon-base-set-v1.0-ponyta--62",
         "position": "ACTIVE",
-        "currentHp": 100,
-        "maxHp": 100,
+        "currentHp": 40,
+        "maxHp": 40,
         "attachedEnergy": [],
         "statusEffect": "NONE",
         "damageCounters": 0
       },
       "bench": [],
       "prizeCards": [
-        "pokemon-base-set-v1.0-pok-mon-breeder--78",
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
@@ -126,7 +126,7 @@
         "pokemon-base-set-v1.0-ivysaur--30",
         "pokemon-base-set-v1.0-weedle--71",
         "pokemon-base-set-v1.0-energy-removal--93",
-        "pokemon-base-set-v1.0-pok-mon-breeder--78",
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
@@ -151,7 +151,7 @@
         "pokemon-base-set-v1.0-bulbasaur--46",
         "pokemon-base-set-v1.0-gust-of-wind--94",
         "pokemon-base-set-v1.0-potion--90",
-        "pokemon-base-set-v1.0-pok-mon-breeder--78"
+        "pokemon-base-set-v1.0-pokemon-breeder--78"
       ],
       "hand": [
         "pokemon-base-set-v1.0-grass-energy--100",
@@ -161,8 +161,8 @@
         "instanceId": "1002f14e-8881-414a-8fca-85a1bb095b0e",
         "cardId": "pokemon-base-set-v1.0-tangela--68",
         "position": "ACTIVE",
-        "currentHp": 100,
-        "maxHp": 100,
+        "currentHp": 50,
+        "maxHp": 50,
         "attachedEnergy": [],
         "statusEffect": "NONE",
         "damageCounters": 0
@@ -172,8 +172,8 @@
           "instanceId": "faf5c1d8-4e2a-4c51-b8ad-a22f4a3d63ef",
           "cardId": "pokemon-base-set-v1.0-bulbasaur--46",
           "position": "BENCH_0",
-          "currentHp": 100,
-          "maxHp": 100,
+          "currentHp": 40,
+          "maxHp": 40,
           "attachedEnergy": [],
           "statusEffect": "NONE",
           "damageCounters": 0
@@ -182,8 +182,8 @@
           "instanceId": "dcfe7a0d-bf2b-4810-b26a-1f0c5a520dce",
           "cardId": "pokemon-base-set-v1.0-weedle--71",
           "position": "BENCH_1",
-          "currentHp": 100,
-          "maxHp": 100,
+          "currentHp": 40,
+          "maxHp": 40,
           "attachedEnergy": [],
           "statusEffect": "NONE",
           "damageCounters": 0
@@ -192,8 +192,8 @@
           "instanceId": "57e6e56b-2f74-4f14-aafc-7cac32b22b04",
           "cardId": "pokemon-base-set-v1.0-caterpie--47",
           "position": "BENCH_2",
-          "currentHp": 100,
-          "maxHp": 100,
+          "currentHp": 40,
+          "maxHp": 40,
           "attachedEnergy": [],
           "statusEffect": "NONE",
           "damageCounters": 0

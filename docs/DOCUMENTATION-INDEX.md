@@ -178,6 +178,50 @@ await setActivePokemon(matchId, playerId, cardId);
 
 ---
 
+### [CLIENT-GAMEPLAY-ACTIONS.md](./CLIENT-GAMEPLAY-ACTIONS.md)
+**Complete guide for gameplay actions during a match**
+
+**Contains:**
+- DRAW_CARD action (draw from deck, transition to MAIN_PHASE)
+- ATTACH_ENERGY action (attach energy to Pokemon)
+- EVOLVE_POKEMON action (evolve Pokemon on bench/active)
+- END_TURN action (end turn, switch to next player)
+- Complete gameplay flow examples
+- State polling during opponent's turn
+- Response structures and error handling
+- Best practices and implementation tips
+
+**Use this when:**
+- Implementing gameplay actions during PLAYER_TURN
+- Understanding how to draw cards, attach energy, evolve Pokemon
+- Building turn-based gameplay UI
+- Handling state transitions between phases
+- Polling for opponent actions
+- Implementing action validation and error handling
+
+**Quick Example:**
+```typescript
+// Draw a card
+await executeAction(matchId, playerId, 'DRAW_CARD', {});
+
+// Attach energy
+await executeAction(matchId, playerId, 'ATTACH_ENERGY', {
+  energyCardId: 'pokemon-base-set-v1.0-fire-energy--99',
+  target: 'ACTIVE'
+});
+
+// Evolve Pokemon
+await executeAction(matchId, playerId, 'EVOLVE_POKEMON', {
+  evolutionCardId: 'pokemon-base-set-v1.0-ivysaur--30',
+  target: 'BENCH_0'
+});
+
+// End turn
+await executeAction(matchId, playerId, 'END_TURN', {});
+```
+
+---
+
 ### [MATCH-STATE-MACHINE-DIAGRAM.md](./MATCH-STATE-MACHINE-DIAGRAM.md)
 **Visual state machine diagram for match states**
 
@@ -455,8 +499,16 @@ if (isInitialSetup && revealedHand) {
 2. POST   /api/v1/matches                       - Create match
 3. POST   /api/v1/matches/:id/join               - Join match
 4. POST   /api/v1/matches/:id/start             - Start match
-5. GET    /api/v1/matches/:id/state              - Get match state
+5. POST   /api/v1/matches/:id/state              - Get match state
 6. POST   /api/v1/matches/:id/actions            - Execute player action
+```
+
+### Gameplay Actions (in CLIENT-GAMEPLAY-ACTIONS.md)
+```
+1. DRAW_CARD      - Draw one card from deck (DRAW phase → MAIN_PHASE)
+2. ATTACH_ENERGY  - Attach energy card to Pokemon (MAIN_PHASE)
+3. EVOLVE_POKEMON - Evolve Pokemon on bench/active (MAIN_PHASE)
+4. END_TURN       - End current turn, switch to next player (any phase)
 ```
 
 ### Core Entities (in all frontend docs)
