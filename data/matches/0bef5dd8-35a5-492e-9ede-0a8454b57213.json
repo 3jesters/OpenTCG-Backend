@@ -16,7 +16,7 @@
   "player1Approved": true,
   "player2Approved": true,
   "createdAt": "2025-12-02T09:49:35.211Z",
-  "updatedAt": "2025-12-07T13:02:52.323Z",
+  "updatedAt": "2025-12-08T11:44:18.880Z",
   "startedAt": null,
   "endedAt": null,
   "winnerId": null,
@@ -91,7 +91,6 @@
         "currentHp": 40,
         "maxHp": 40,
         "attachedEnergy": [
-          "pokemon-base-set-v1.0-fire-energy--99",
           "pokemon-base-set-v1.0-fire-energy--99"
         ],
         "statusEffect": "NONE",
@@ -163,9 +162,7 @@
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
       "hand": [
-        "pokemon-base-set-v1.0-potion--90",
         "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-energy-removal--93",
         "pokemon-base-set-v1.0-energy-retrieval--83",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
@@ -178,13 +175,13 @@
         "instanceId": "c93b97fb-1dc3-46eb-bdb9-246e2b181146",
         "cardId": "pokemon-base-set-v1.0-nidoran--57",
         "position": "ACTIVE",
-        "currentHp": 10,
+        "currentHp": 30,
         "maxHp": 40,
         "attachedEnergy": [
           "pokemon-base-set-v1.0-grass-energy--100"
         ],
         "statusEffect": "NONE",
-        "damageCounters": 0
+        "damageCounters": 10
       },
       "bench": [
         {
@@ -216,7 +213,9 @@
       "discardPile": [
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100"
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-potion--90",
+        "pokemon-base-set-v1.0-energy-removal--93"
       ],
       "hasAttachedEnergyThisTurn": true
     },
@@ -224,13 +223,16 @@
     "phase": "MAIN_PHASE",
     "currentPlayer": "PLAYER2",
     "lastAction": {
-      "actionId": "c6ebf293-02fc-40b3-8197-669d50a1567b",
+      "actionId": "8703331a-6088-4303-86a6-d38d238eb4d4",
       "playerId": "PLAYER2",
-      "actionType": "ATTACH_ENERGY",
-      "timestamp": "2025-12-07T13:02:52.323Z",
+      "actionType": "PLAY_TRAINER",
+      "timestamp": "2025-12-08T11:44:18.880Z",
       "actionData": {
-        "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
-        "target": "ACTIVE"
+        "cardId": "pokemon-base-set-v1.0-energy-removal--93",
+        "targetPlayer": "PLAYER1",
+        "pokemonInstanceId": "3b2bad73-df73-4ff6-a739-00e3c561f3bb",
+        "target": "ACTIVE",
+        "energyCardId": "pokemon-base-set-v1.0-fire-energy--99"
       }
     },
     "actionHistory": [
@@ -383,6 +385,31 @@
         "actionData": {
           "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
           "target": "ACTIVE"
+        }
+      },
+      {
+        "actionId": "493b5560-a0d9-4b2a-b77b-9b5716ef87e2",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-08T11:43:26.855Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-potion--90",
+          "targetPlayer": "PLAYER2",
+          "pokemonInstanceId": "c93b97fb-1dc3-46eb-bdb9-246e2b181146",
+          "target": "ACTIVE"
+        }
+      },
+      {
+        "actionId": "8703331a-6088-4303-86a6-d38d238eb4d4",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-08T11:44:18.880Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-energy-removal--93",
+          "targetPlayer": "PLAYER1",
+          "pokemonInstanceId": "3b2bad73-df73-4ff6-a739-00e3c561f3bb",
+          "target": "ACTIVE",
+          "energyCardId": "pokemon-base-set-v1.0-fire-energy--99"
         }
       }
     ],

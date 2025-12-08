@@ -331,5 +331,253 @@ describe('Trainer Card Validation E2E', () => {
     // Verify discard pile contains exactly 2 cards (Energy Retrieval + fire energy)
     expect(discardPile.length).toBe(initialDiscardPile.length + 2);
   });
+
+  it('should heal Pokemon using Potion card (metadata-driven)', async () => {
+    const potionCardId = 'pokemon-base-set-v1.0-potion--90';
+
+    // Create a match with Potion in hand and Pokemon with damage
+    const potionTestMatchId = 'spec-potion-test';
+    const potionMatchFilePath = join(matchesDirectory, `${potionTestMatchId}.json`);
+
+    const potionMatchState = {
+      id: potionTestMatchId,
+      tournamentId: 'classic-tournament',
+      player1Id: PLAYER1_ID,
+      player2Id: PLAYER2_ID,
+      player1DeckId: 'classic-fire-starter-deck',
+      player2DeckId: 'classic-grass-starter-deck',
+      state: 'PLAYER_TURN',
+      currentPlayer: 'PLAYER1',
+      firstPlayer: 'PLAYER1',
+      coinTossResult: 'PLAYER1',
+      player1HasDrawnValidHand: true,
+      player2HasDrawnValidHand: true,
+      player1ReadyToStart: true,
+      player2ReadyToStart: true,
+      player1Approved: true,
+      player2Approved: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      endedAt: null,
+      winnerId: null,
+      result: null,
+      winCondition: null,
+      cancellationReason: null,
+      gameState: {
+        player1State: {
+          deck: Array(40).fill('pokemon-base-set-v1.0-fire-energy--99'),
+          hand: [potionCardId, 'pokemon-base-set-v1.0-fire-energy--99'],
+          activePokemon: {
+            instanceId: 'test-instance-1',
+            cardId: 'pokemon-base-set-v1.0-charmander--48',
+            position: 'ACTIVE',
+            currentHp: 30, // 30 HP (20 damage)
+            maxHp: 50,
+            attachedEnergy: [],
+            statusEffect: 'NONE',
+            damageCounters: 20, // 20 damage
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-fire-energy--99'),
+          discardPile: [],
+        },
+        player2State: {
+          deck: Array(40).fill('pokemon-base-set-v1.0-grass-energy--100'),
+          hand: Array(7).fill('pokemon-base-set-v1.0-grass-energy--100'),
+          activePokemon: {
+            instanceId: 'test-instance-2',
+            cardId: 'pokemon-base-set-v1.0-bulbasaur--44',
+            position: 'ACTIVE',
+            currentHp: 40,
+            maxHp: 40,
+            attachedEnergy: [],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-grass-energy--100'),
+          discardPile: [],
+        },
+        turnNumber: 1,
+        phase: 'MAIN_PHASE',
+        currentPlayer: 'PLAYER1',
+        lastAction: null,
+        actionHistory: [],
+        coinFlipState: null,
+      },
+    };
+
+    await writeFile(potionMatchFilePath, JSON.stringify(potionMatchState, null, 2));
+
+    // Get initial state
+    const initialStateResponse = await request(server())
+      .post(`/api/v1/matches/${potionTestMatchId}/state`)
+      .send({ playerId: PLAYER1_ID })
+      .expect(200);
+
+    const initialHand = initialStateResponse.body.playerState.hand;
+    const initialActiveHp = initialStateResponse.body.playerState.activePokemon?.currentHp;
+    const initialDamage = initialStateResponse.body.playerState.activePokemon?.damageCounters || 0;
+
+    // Verify Potion is in hand
+    expect(initialHand.includes(potionCardId)).toBe(true);
+
+    // Verify Pokemon has some damage
+    expect(initialDamage).toBeGreaterThan(0);
+    expect(initialActiveHp).toBeLessThan(initialStateResponse.body.playerState.activePokemon?.maxHp);
+
+    // Play Potion to heal active Pokemon
+    const response = await request(server())
+      .post(`/api/v1/matches/${potionTestMatchId}/actions`)
+      .send({
+        playerId: PLAYER1_ID,
+        actionType: 'PLAY_TRAINER',
+        actionData: {
+          cardId: potionCardId,
+          target: 'ACTIVE',
+        },
+      })
+      .expect(200);
+
+    // Verify Potion is in discard pile
+    const discardPile = response.body.playerState.discardPile;
+    expect(discardPile.includes(potionCardId)).toBe(true);
+
+    // Verify Pokemon was healed (damage decreased by 20 HP / 2 damage counters)
+    const updatedHp = response.body.playerState.activePokemon?.currentHp;
+    const updatedDamage = response.body.playerState.activePokemon?.damageCounters || 0;
+    const maxHp = response.body.playerState.activePokemon?.maxHp || 50;
+
+    expect(updatedHp).toBeGreaterThan(initialActiveHp);
+    expect(updatedHp).toBe(50); // Should be healed to max HP
+    expect(updatedDamage).toBeLessThan(initialDamage);
+    expect(updatedDamage).toBe(0); // Should be fully healed (20 - 20 = 0)
+  });
+
+  it('should heal correctly when damageCounters is out of sync with currentHp (bug fix validation)', async () => {
+    const potionCardId = 'pokemon-base-set-v1.0-potion--90';
+    const syncTestMatchId = 'spec-potion-sync-test';
+    const syncMatchFilePath = join(matchesDirectory, `${syncTestMatchId}.json`);
+
+    // Create match with Pokemon where damageCounters is out of sync with currentHp
+    // This simulates the bug scenario: currentHp: 10, maxHp: 40, damageCounters: 0
+    const syncMatchState = {
+      id: syncTestMatchId,
+      tournamentId: 'classic-tournament',
+      player1Id: PLAYER1_ID,
+      player2Id: PLAYER2_ID,
+      player1DeckId: 'classic-fire-starter-deck',
+      player2DeckId: 'classic-grass-starter-deck',
+      state: 'PLAYER_TURN',
+      currentPlayer: 'PLAYER2',
+      firstPlayer: 'PLAYER1',
+      coinTossResult: 'PLAYER1',
+      player1HasDrawnValidHand: true,
+      player2HasDrawnValidHand: true,
+      player1ReadyToStart: true,
+      player2ReadyToStart: true,
+      player1Approved: true,
+      player2Approved: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      endedAt: null,
+      winnerId: null,
+      result: null,
+      winCondition: null,
+      cancellationReason: null,
+      gameState: {
+        player1State: {
+          deck: Array(40).fill('pokemon-base-set-v1.0-fire-energy--99'),
+          hand: Array(7).fill('pokemon-base-set-v1.0-fire-energy--99'),
+          activePokemon: {
+            instanceId: 'test-instance-1',
+            cardId: 'pokemon-base-set-v1.0-charmander--39',
+            position: 'ACTIVE',
+            currentHp: 50,
+            maxHp: 50,
+            attachedEnergy: [],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-fire-energy--99'),
+          discardPile: [],
+        },
+        player2State: {
+          deck: Array(40).fill('pokemon-base-set-v1.0-grass-energy--100'),
+          hand: [potionCardId, 'pokemon-base-set-v1.0-grass-energy--100'],
+          activePokemon: {
+            instanceId: 'c93b97fb-1dc3-46eb-bdb9-246e2b181146',
+            cardId: 'pokemon-base-set-v1.0-nidoran--57',
+            position: 'ACTIVE',
+            currentHp: 10, // 10 HP remaining (30 damage)
+            maxHp: 40, // 40 max HP
+            attachedEnergy: ['pokemon-base-set-v1.0-grass-energy--100'],
+            statusEffect: 'NONE',
+            damageCounters: 0, // OUT OF SYNC! Should be 30 but is 0
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-grass-energy--100'),
+          discardPile: [],
+        },
+        turnNumber: 5,
+        phase: 'MAIN_PHASE',
+        currentPlayer: 'PLAYER2',
+        lastAction: null,
+        actionHistory: [],
+        coinFlipState: null,
+      },
+    };
+
+    await writeFile(syncMatchFilePath, JSON.stringify(syncMatchState, null, 2));
+
+    // Get initial state
+    const initialStateResponse = await request(server())
+      .post(`/api/v1/matches/${syncTestMatchId}/state`)
+      .send({ playerId: PLAYER2_ID })
+      .expect(200);
+
+    const initialHp = initialStateResponse.body.playerState.activePokemon?.currentHp;
+    const initialMaxHp = initialStateResponse.body.playerState.activePokemon?.maxHp;
+    const initialDamageCounters = initialStateResponse.body.playerState.activePokemon?.damageCounters || 0;
+    const actualDamage = initialMaxHp - initialHp; // 40 - 10 = 30
+
+    // Verify the bug scenario: damageCounters is out of sync
+    expect(initialDamageCounters).toBe(0);
+    expect(actualDamage).toBe(30); // Actual damage is 30 HP
+
+    // Play Potion to heal 20 HP
+    const response = await request(server())
+      .post(`/api/v1/matches/${syncTestMatchId}/actions`)
+      .send({
+        playerId: PLAYER2_ID,
+        actionType: 'PLAY_TRAINER',
+        actionData: {
+          cardId: potionCardId,
+          target: 'ACTIVE',
+        },
+      })
+      .expect(200);
+
+    const updatedHp = response.body.playerState.activePokemon?.currentHp;
+    const updatedDamageCounters = response.body.playerState.activePokemon?.damageCounters || 0;
+    const updatedMaxHp = response.body.playerState.activePokemon?.maxHp;
+
+    // Should heal 20 HP: 10 HP -> 30 HP (NOT 40 HP!)
+    expect(updatedHp).toBe(30);
+    expect(updatedHp).toBe(initialHp + 20); // Healed by exactly 20 HP
+
+    // damageCounters should be updated to match actual damage: 40 - 30 = 10
+    expect(updatedDamageCounters).toBe(10);
+
+    // Verify damageCounters and HP are now in sync
+    const calculatedDamage = updatedMaxHp - updatedHp;
+    expect(updatedDamageCounters).toBe(calculatedDamage);
+
+    // Verify Potion is in discard pile
+    expect(response.body.playerState.discardPile.includes(potionCardId)).toBe(true);
+  });
 });
 

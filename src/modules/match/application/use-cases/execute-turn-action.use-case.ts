@@ -31,6 +31,9 @@ import { CoinFlipContext } from '../../domain/enums/coin-flip-context.enum';
 import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
 import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
 import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
+import { TrainerEffectExecutorService } from '../../domain/services/trainer-effect-executor.service';
+import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
+import { TrainerActionData } from '../../domain/types/trainer-action-data.types';
 import { PokemonPosition } from '../../domain/enums';
 import { v4 as uuidv4 } from 'uuid';
 import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
@@ -52,6 +55,8 @@ export class ExecuteTurnActionUseCase {
     private readonly coinFlipResolver: CoinFlipResolverService,
     private readonly attackCoinFlipParser: AttackCoinFlipParserService,
     private readonly attackEnergyValidator: AttackEnergyValidatorService,
+    private readonly trainerEffectExecutor: TrainerEffectExecutorService,
+    private readonly trainerEffectValidator: TrainerEffectValidatorService,
   ) {}
 
   async execute(dto: ExecuteActionDto): Promise<Match> {
@@ -914,12 +919,8 @@ export class ExecuteTurnActionUseCase {
           );
         }
 
-        const cardId = (dto.actionData as any)?.cardId;
-        const target = (dto.actionData as any)?.target;
-        const energyCardId = (dto.actionData as any)?.energyCardId; // For Energy Removal
-        const handCardId = (dto.actionData as any)?.handCardId; // For cards that require discarding from hand
-        const handCardIndex = (dto.actionData as any)?.handCardIndex; // Optional: index of card to discard (for disambiguation)
-        const selectedCardIds = (dto.actionData as any)?.selectedCardIds as string[] | undefined; // For Energy Retrieval: cards to retrieve from discard
+        const actionData = dto.actionData as unknown as TrainerActionData;
+        const cardId = actionData.cardId;
 
         if (!cardId) {
           throw new BadRequestException('cardId is required');
@@ -944,16 +945,19 @@ export class ExecuteTurnActionUseCase {
           throw new BadRequestException('Card must be a trainer card');
         }
 
+        if (!cardDetail.trainerEffects || cardDetail.trainerEffects.length === 0) {
+          throw new BadRequestException('Trainer card must have trainerEffects');
+        }
+
         // Validate that if trainer requires discarding from hand, 
         // the selected card is not the same trainer card that was just played
-        if (cardDetail.trainerEffects) {
           const hasDiscardHandEffect = cardDetail.trainerEffects.some(
             (effect) => effect.effectType === 'DISCARD_HAND',
           );
 
-          if (hasDiscardHandEffect && handCardId) {
+        if (hasDiscardHandEffect && 'handCardId' in actionData && actionData.handCardId) {
             // Validate that the selected card is in hand
-            if (!playerState.hand.includes(handCardId)) {
+          if (!playerState.hand.includes(actionData.handCardId)) {
               throw new BadRequestException('Selected card must be in hand');
             }
 
@@ -961,21 +965,21 @@ export class ExecuteTurnActionUseCase {
             // If handCardIndex is provided, use it to check the exact position
             // Otherwise, if the selected cardId matches the played cardId, 
             // check if it's the first occurrence (the one being played)
-            if (handCardId === cardId) {
+          if (actionData.handCardId === cardId) {
               let selectedIndex: number;
               
-              if (handCardIndex !== undefined) {
+            if (actionData.handCardIndex !== undefined) {
                 // Use provided index if available
-                selectedIndex = handCardIndex;
+              selectedIndex = actionData.handCardIndex;
                 if (selectedIndex < 0 || selectedIndex >= playerState.hand.length) {
                   throw new BadRequestException('Invalid handCardIndex');
                 }
-                if (playerState.hand[selectedIndex] !== handCardId) {
+              if (playerState.hand[selectedIndex] !== actionData.handCardId) {
                   throw new BadRequestException('handCardId does not match card at handCardIndex');
                 }
               } else {
                 // Fallback: find first occurrence (may not be accurate if multiple copies exist)
-                selectedIndex = playerState.hand.indexOf(handCardId);
+              selectedIndex = playerState.hand.indexOf(actionData.handCardId);
               }
 
               // Prevent selecting the card at the same index as the played card
@@ -985,150 +989,37 @@ export class ExecuteTurnActionUseCase {
                 throw new BadRequestException(
                   'Cannot select the same trainer card that was just played',
                 );
-              }
             }
           }
         }
 
-        // Initialize updated opponent state (will be modified by trainer effects)
-        let updatedOpponentState = opponentState;
-        let updatedPlayerState = playerState;
+        // Validate actionData based on trainer effects
+        const validation = this.trainerEffectValidator.validateActionData(
+          cardDetail.trainerEffects,
+          actionData,
+          gameState,
+          playerIdentifier,
+        );
 
-        // Handle Energy Removal trainer card
-        if (cardId === 'pokemon-base-set-v1.0-energy-removal--93') {
-          if (!target) {
-            throw new BadRequestException('target is required for Energy Removal');
-          }
-          if (!energyCardId) {
-            throw new BadRequestException('energyCardId is required for Energy Removal');
-          }
-
-          // Find target Pokemon (opponent's active or bench)
-          let targetPokemon: CardInstance | null = null;
-          let benchIndex: number | null = null;
-
-          if (target === 'ACTIVE') {
-            if (!opponentState.activePokemon) {
-              throw new BadRequestException('Opponent has no active Pokemon');
-            }
-            targetPokemon = opponentState.activePokemon;
-          } else {
-            // BENCH_0, BENCH_1, etc.
-            benchIndex = parseInt(target.replace('BENCH_', ''));
-            if (benchIndex < 0 || benchIndex >= opponentState.bench.length) {
-              throw new BadRequestException(`Invalid bench position: ${target}`);
-            }
-            targetPokemon = opponentState.bench[benchIndex];
-          }
-
-          // Check if energy card is attached and find first occurrence
-          const energyIndex = targetPokemon.attachedEnergy.indexOf(energyCardId);
-          if (energyIndex === -1) {
-            throw new BadRequestException('Energy card is not attached to target Pokemon');
-          }
-
-          // Remove energy card from attached energy (only the first occurrence)
-          const updatedAttachedEnergy = targetPokemon.attachedEnergy.filter(
-            (_, index) => index !== energyIndex,
+        if (!validation.isValid) {
+          throw new BadRequestException(
+            `Invalid actionData: ${validation.errors.join(', ')}`,
           );
-          const updatedPokemon = targetPokemon.withAttachedEnergy(updatedAttachedEnergy);
-
-          // Update opponent's state
-          if (target === 'ACTIVE') {
-            updatedOpponentState = opponentState.withActivePokemon(updatedPokemon);
-          } else {
-            if (benchIndex === null) {
-              throw new BadRequestException('Bench index is required for bench Pokemon');
-            }
-            const updatedBench = [...opponentState.bench];
-            updatedBench[benchIndex] = updatedPokemon;
-            updatedOpponentState = opponentState.withBench(updatedBench);
-          }
-        } else if (cardId === 'pokemon-base-set-v1.0-energy-retrieval--83') {
-          // Handle Energy Retrieval trainer card
-          // Requires discarding 1 card from hand (handCardId)
-          // Retrieves up to 2 basic Energy cards from discard pile (selectedCardIds)
-          if (!handCardId) {
-            throw new BadRequestException('handCardId is required for Energy Retrieval');
-          }
-
-          if (!selectedCardIds || !Array.isArray(selectedCardIds)) {
-            throw new BadRequestException('selectedCardIds is required for Energy Retrieval (array of energy card IDs to retrieve, can be empty)');
-          }
-
-          if (selectedCardIds.length > 2) {
-            throw new BadRequestException('Energy Retrieval can retrieve at most 2 energy cards');
-          }
-
-          // Remove selected card from hand and add to discard pile
-          const handCardIndexToRemove = handCardIndex !== undefined 
-            ? handCardIndex 
-            : playerState.hand.indexOf(handCardId);
-          
-          if (handCardIndexToRemove === -1 || handCardIndexToRemove >= playerState.hand.length) {
-            throw new BadRequestException('Selected card is not in hand');
-          }
-
-          if (playerState.hand[handCardIndexToRemove] !== handCardId) {
-            throw new BadRequestException('handCardId does not match card at handCardIndex');
-          }
-
-          // Remove selected card from hand (the card being discarded for Energy Retrieval)
-          const updatedHandAfterDiscard = playerState.hand.filter(
-            (_, index) => index !== handCardIndexToRemove,
-          );
-
-          // Remove Energy Retrieval card from hand (it will be added to discard pile later)
-          const handWithoutEnergyRetrieval = updatedHandAfterDiscard.filter(
-            (id) => id !== cardId,
-          );
-
-          // Handle energy retrieval if cards are selected
-          let updatedDiscardPileAfterDiscard = [...playerState.discardPile];
-          let updatedHandWithRetrieved = [...handWithoutEnergyRetrieval];
-
-          if (selectedCardIds.length > 0) {
-            // Validate that all selected cards are in discard pile
-            for (const selectedCardId of selectedCardIds) {
-              if (!playerState.discardPile.includes(selectedCardId)) {
-                throw new BadRequestException(`Selected card ${selectedCardId} is not in discard pile`);
-              }
-            }
-
-            // Remove selected energy cards from discard pile
-            // Remove each card in selectedCardIds (one occurrence per entry in the array)
-            // This handles cases where the same card ID appears multiple times in selectedCardIds
-            for (const selectedCardId of selectedCardIds) {
-              const indexToRemove = updatedDiscardPileAfterDiscard.indexOf(selectedCardId);
-              if (indexToRemove === -1) {
-                throw new BadRequestException(`Selected card ${selectedCardId} is not in discard pile`);
-              }
-              // Remove one occurrence at a time (the first match)
-              updatedDiscardPileAfterDiscard = updatedDiscardPileAfterDiscard.filter(
-                (_, index) => index !== indexToRemove,
-              );
-            }
-
-            // Add retrieved energy cards to hand
-            updatedHandWithRetrieved = [...handWithoutEnergyRetrieval, ...selectedCardIds];
-          }
-
-          // Add discarded hand card to discard pile
-          updatedDiscardPileAfterDiscard = [...updatedDiscardPileAfterDiscard, handCardId];
-
-          // Note: Energy Retrieval card will be added to discard pile by the generic trainer removal code below
-          updatedPlayerState = playerState
-            .withHand(updatedHandWithRetrieved)
-            .withDiscardPile(updatedDiscardPileAfterDiscard);
-        } else {
-          throw new BadRequestException(`Trainer card ${cardId} is not yet implemented`);
         }
+
+        // Execute trainer effects using metadata-driven executor
+        const result = await this.trainerEffectExecutor.executeEffects(
+          cardDetail.trainerEffects,
+          actionData,
+          gameState,
+          playerIdentifier,
+        );
 
         // Remove trainer card from hand and add to discard pile
-        // Note: For Energy Retrieval, hand may have already been updated
-        const finalHand = updatedPlayerState.hand.filter((id) => id !== cardId);
-        const finalDiscardPile = [...updatedPlayerState.discardPile, cardId];
-        const finalPlayerState = updatedPlayerState
+        // Note: For cards with DISCARD_HAND/RETRIEVE_ENERGY, hand may have already been updated
+        const finalHand = result.playerState.hand.filter((id) => id !== cardId);
+        const finalDiscardPile = [...result.playerState.discardPile, cardId];
+        const finalPlayerState = result.playerState
           .withHand(finalHand)
           .withDiscardPile(finalDiscardPile);
 
@@ -1137,17 +1028,17 @@ export class ExecuteTurnActionUseCase {
           playerIdentifier === PlayerIdentifier.PLAYER1
             ? gameState
                 .withPlayer1State(finalPlayerState)
-                .withPlayer2State(updatedOpponentState)
+                .withPlayer2State(result.opponentState)
             : gameState
                 .withPlayer2State(finalPlayerState)
-                .withPlayer1State(updatedOpponentState);
+                .withPlayer1State(result.opponentState);
 
         const actionSummary = new ActionSummary(
           uuidv4(),
           playerIdentifier,
           PlayerActionType.PLAY_TRAINER,
           new Date(),
-          { cardId, target, energyCardId },
+          actionData as unknown as Record<string, unknown>,
         );
 
         const finalGameState = updatedGameState.withAction(actionSummary);

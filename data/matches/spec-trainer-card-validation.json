@@ -15,8 +15,8 @@
   "player2ReadyToStart": true,
   "player1Approved": true,
   "player2Approved": true,
-  "createdAt": "2025-12-08T10:53:36.462Z",
-  "updatedAt": "2025-12-08T10:53:37.935Z",
+  "createdAt": "2025-12-08T11:42:10.755Z",
+  "updatedAt": "2025-12-08T11:42:10.755Z",
   "startedAt": null,
   "endedAt": null,
   "winnerId": null,
@@ -78,6 +78,9 @@
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
       "hand": [
+        "pokemon-base-set-v1.0-energy-retrieval--83",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-energy-retrieval--83",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99"
@@ -101,11 +104,7 @@
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
-      "discardPile": [
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-energy-retrieval--83"
-      ],
-      "hasAttachedEnergyThisTurn": false
+      "discardPile": []
     },
     "player2State": {
       "deck": [
@@ -188,32 +187,12 @@
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
-      "discardPile": [],
-      "hasAttachedEnergyThisTurn": false
+      "discardPile": []
     },
     "turnNumber": 1,
     "phase": "MAIN_PHASE",
     "currentPlayer": "PLAYER1",
-    "lastAction": {
-      "actionId": "d2b9b6ba-b2f3-46ad-9f2d-7ecb3b27281d",
-      "playerId": "PLAYER1",
-      "actionType": "PLAY_TRAINER",
-      "timestamp": "2025-12-08T10:53:37.935Z",
-      "actionData": {
-        "cardId": "pokemon-base-set-v1.0-energy-retrieval--83"
-      }
-    },
-    "actionHistory": [
-      {
-        "actionId": "d2b9b6ba-b2f3-46ad-9f2d-7ecb3b27281d",
-        "playerId": "PLAYER1",
-        "actionType": "PLAY_TRAINER",
-        "timestamp": "2025-12-08T10:53:37.935Z",
-        "actionData": {
-          "cardId": "pokemon-base-set-v1.0-energy-retrieval--83"
-        }
-      }
-    ],
-    "coinFlipState": null
+    "lastAction": null,
+    "actionHistory": []
   }
 }
