@@ -322,6 +322,44 @@ const opponentDeck = await fetch(`/api/v1/decks/${state.opponentDeckId}`);
 
 ---
 
+### [TRAINER-EFFECTS-CLIENT-GUIDE.md](./TRAINER-EFFECTS-CLIENT-GUIDE.md)
+**Complete guide for trainer card effects and client UI requirements**
+
+**Contains:**
+- All 19+ supported trainer effects
+- Required actionData for each effect
+- Client UI/UX requirements for each effect
+- Target type reference (player vs opponent)
+- Multiple effects handling
+- Summary table of all effects
+- Implementation tips and best practices
+
+**Use this when:**
+- Implementing trainer card UI
+- Building selection modals for trainer effects
+- Understanding what UI to show for each effect type
+- Handling multiple effects on single cards
+- Determining which Pokémon/cards to show based on target type
+
+**Quick Example:**
+```typescript
+// Check trainer effects from card metadata
+const card = await getCardById(cardId);
+const effects = card.trainerEffects;
+
+// For HEAL effect with ALL_YOURS target
+if (effects.some(e => e.effectType === 'HEAL' && e.target === 'ALL_YOURS')) {
+  // Show player's active and bench Pokémon selection modal
+  const target = await showPokemonSelectionModal('player');
+  await executeAction(matchId, playerId, 'PLAY_TRAINER', {
+    cardId,
+    target: target.position // 'ACTIVE' or 'BENCH_X'
+  });
+}
+```
+
+---
+
 ### [FRONTEND-START-GAME-RULES.md](./FRONTEND-START-GAME-RULES.md)
 **Frontend guide for start game rules and reshuffle feature**
 

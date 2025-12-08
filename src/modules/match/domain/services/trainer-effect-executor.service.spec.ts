@@ -16,6 +16,7 @@ import {
   RemoveEnergyActionData,
   RetrieveEnergyActionData,
   DiscardHandActionData,
+  PutIntoPlayActionData,
 } from '../types/trainer-action-data.types';
 
 describe('TrainerEffectExecutorService', () => {
@@ -712,6 +713,266 @@ describe('TrainerEffectExecutorService', () => {
       // Energy should be retrieved
       expect(result.playerState.hand).toContain('fire-energy-1');
       expect(result.playerState.discardPile).not.toContain('fire-energy-1');
+    });
+  });
+
+  describe('PUT_INTO_PLAY effect', () => {
+    it('should put Pokémon from player discard pile to player bench', async () => {
+      const player1State = new PlayerGameState(
+        [],
+        [],
+        null,
+        [], // Empty bench
+        [],
+        ['pokemon-card-1'], // Card in discard pile
+        [],
+      );
+      const player2State = new PlayerGameState([], [], null, [], [], [], []);
+      const gameState = new GameState(
+        player1State,
+        player2State,
+        1,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+
+      const effect: TrainerEffectDto = {
+        effectType: TrainerEffectType.PUT_INTO_PLAY,
+        target: TargetType.BENCHED_YOURS,
+        source: 'DISCARD', // Player's discard pile
+      };
+      const actionData: PutIntoPlayActionData = {
+        cardId: 'trainer-card',
+        target: 'BENCH_0',
+        pokemonCardId: 'pokemon-card-1',
+      };
+
+      const result = await service.executeEffects(
+        [effect],
+        actionData,
+        gameState,
+        PlayerIdentifier.PLAYER1,
+      );
+
+      // Card should be removed from discard pile
+      expect(result.playerState.discardPile).not.toContain('pokemon-card-1');
+      // Card should be on bench
+      expect(result.playerState.bench).toHaveLength(1);
+      expect(result.playerState.bench[0].cardId).toBe('pokemon-card-1');
+      expect(result.playerState.bench[0].position).toBe('BENCH_0');
+      // Should have default HP (50)
+      expect(result.playerState.bench[0].maxHp).toBe(50);
+      expect(result.playerState.bench[0].currentHp).toBe(50);
+    });
+
+    it('should put Pokémon from opponent discard pile to opponent bench (Pokémon Flute)', async () => {
+      const player1State = new PlayerGameState([], [], null, [], [], [], []);
+      const player2State = new PlayerGameState(
+        [],
+        [],
+        null,
+        [], // Empty bench
+        [],
+        ['opponent-pokemon-1'], // Card in opponent's discard pile
+        [],
+      );
+      const gameState = new GameState(
+        player1State,
+        player2State,
+        1,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+
+      const effect: TrainerEffectDto = {
+        effectType: TrainerEffectType.PUT_INTO_PLAY,
+        target: TargetType.BENCHED_OPPONENTS,
+        source: 'OPPONENT_DISCARD', // Opponent's discard pile
+      };
+      const actionData: PutIntoPlayActionData = {
+        cardId: 'pokemon-flute',
+        target: 'BENCH_0',
+        pokemonCardId: 'opponent-pokemon-1',
+      };
+
+      const result = await service.executeEffects(
+        [effect],
+        actionData,
+        gameState,
+        PlayerIdentifier.PLAYER1,
+      );
+
+      // Card should be removed from opponent's discard pile
+      expect(result.opponentState.discardPile).not.toContain('opponent-pokemon-1');
+      // Card should be on opponent's bench
+      expect(result.opponentState.bench).toHaveLength(1);
+      expect(result.opponentState.bench[0].cardId).toBe('opponent-pokemon-1');
+      expect(result.opponentState.bench[0].position).toBe('BENCH_0');
+      // Should have default HP (50)
+      expect(result.opponentState.bench[0].maxHp).toBe(50);
+      expect(result.opponentState.bench[0].currentHp).toBe(50);
+      // Player state should be unchanged
+      expect(result.playerState.discardPile).toEqual([]);
+      expect(result.playerState.bench).toEqual([]);
+    });
+
+    it('should default to player discard pile when source is not specified', async () => {
+      const player1State = new PlayerGameState(
+        [],
+        [],
+        null,
+        [],
+        [],
+        ['pokemon-card-1'],
+        [],
+      );
+      const player2State = new PlayerGameState([], [], null, [], [], [], []);
+      const gameState = new GameState(
+        player1State,
+        player2State,
+        1,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+
+      const effect: TrainerEffectDto = {
+        effectType: TrainerEffectType.PUT_INTO_PLAY,
+        target: TargetType.BENCHED_YOURS,
+        // source not specified - should default to DISCARD
+      };
+      const actionData: PutIntoPlayActionData = {
+        cardId: 'trainer-card',
+        target: 'BENCH_0',
+        pokemonCardId: 'pokemon-card-1',
+      };
+
+      const result = await service.executeEffects(
+        [effect],
+        actionData,
+        gameState,
+        PlayerIdentifier.PLAYER1,
+      );
+
+      // Should work with default source (player's discard)
+      expect(result.playerState.discardPile).not.toContain('pokemon-card-1');
+      expect(result.playerState.bench).toHaveLength(1);
+      // Should have default HP (50)
+      expect(result.playerState.bench[0].maxHp).toBe(50);
+      expect(result.playerState.bench[0].currentHp).toBe(50);
+    });
+
+    it('should throw error if Pokémon is not in specified discard pile', async () => {
+      const player1State = new PlayerGameState([], [], null, [], [], [], []);
+      const player2State = new PlayerGameState([], [], null, [], [], [], []);
+      const gameState = new GameState(
+        player1State,
+        player2State,
+        1,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+
+      const effect: TrainerEffectDto = {
+        effectType: TrainerEffectType.PUT_INTO_PLAY,
+        target: TargetType.BENCHED_YOURS,
+        source: 'DISCARD',
+      };
+      const actionData: PutIntoPlayActionData = {
+        cardId: 'trainer-card',
+        target: 'BENCH_0',
+        pokemonCardId: 'non-existent-card',
+      };
+
+      await expect(
+        service.executeEffects([effect], actionData, gameState, PlayerIdentifier.PLAYER1),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw error if opponent discard pile is checked but card is not there', async () => {
+      const player1State = new PlayerGameState([], [], null, [], [], [], []);
+      const player2State = new PlayerGameState([], [], null, [], [], [], []);
+      const gameState = new GameState(
+        player1State,
+        player2State,
+        1,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+
+      const effect: TrainerEffectDto = {
+        effectType: TrainerEffectType.PUT_INTO_PLAY,
+        target: TargetType.BENCHED_OPPONENTS,
+        source: 'OPPONENT_DISCARD',
+      };
+      const actionData: PutIntoPlayActionData = {
+        cardId: 'pokemon-flute',
+        target: 'BENCH_0',
+        pokemonCardId: 'non-existent-card',
+      };
+
+      await expect(
+        service.executeEffects([effect], actionData, gameState, PlayerIdentifier.PLAYER1),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw error if bench is full', async () => {
+      const fullBench = Array.from({ length: 5 }, (_, i) =>
+        new CardInstance(
+          `bench-${i}`,
+          `pokemon-${i}`,
+          `BENCH_${i}` as PokemonPosition,
+          60,
+          60,
+          [],
+          StatusEffect.NONE,
+          0,
+        ),
+      );
+
+      const player1State = new PlayerGameState(
+        [],
+        [],
+        null,
+        fullBench,
+        [],
+        ['pokemon-card-1'],
+        [],
+      );
+      const player2State = new PlayerGameState([], [], null, [], [], [], []);
+      const gameState = new GameState(
+        player1State,
+        player2State,
+        1,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+
+      const effect: TrainerEffectDto = {
+        effectType: TrainerEffectType.PUT_INTO_PLAY,
+        target: TargetType.BENCHED_YOURS,
+        source: 'DISCARD',
+      };
+      const actionData: PutIntoPlayActionData = {
+        cardId: 'trainer-card',
+        target: 'BENCH_5',
+        pokemonCardId: 'pokemon-card-1',
+      };
+
+      await expect(
+        service.executeEffects([effect], actionData, gameState, PlayerIdentifier.PLAYER1),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

@@ -15,9 +15,9 @@
   "player2ReadyToStart": true,
   "player1Approved": true,
   "player2Approved": true,
-  "createdAt": "2025-12-08T11:42:10.858Z",
-  "updatedAt": "2025-12-08T11:42:11.024Z",
-  "startedAt": "2025-12-08T11:42:10.858Z",
+  "createdAt": "2025-12-08T12:51:55.826Z",
+  "updatedAt": "2025-12-08T12:51:56.048Z",
+  "startedAt": "2025-12-08T12:51:55.826Z",
   "endedAt": null,
   "winnerId": null,
   "result": null,
@@ -174,10 +174,10 @@
     "phase": "MAIN_PHASE",
     "currentPlayer": "PLAYER2",
     "lastAction": {
-      "actionId": "6ada69ab-a063-437a-9c28-79b95aa8cab1",
+      "actionId": "f0b521e0-834f-4185-a910-567567b6de44",
       "playerId": "PLAYER2",
       "actionType": "PLAY_TRAINER",
-      "timestamp": "2025-12-08T11:42:11.024Z",
+      "timestamp": "2025-12-08T12:51:56.048Z",
       "actionData": {
         "cardId": "pokemon-base-set-v1.0-potion--90",
         "target": "ACTIVE"
@@ -185,10 +185,10 @@
     },
     "actionHistory": [
       {
-        "actionId": "6ada69ab-a063-437a-9c28-79b95aa8cab1",
+        "actionId": "f0b521e0-834f-4185-a910-567567b6de44",
         "playerId": "PLAYER2",
         "actionType": "PLAY_TRAINER",
-        "timestamp": "2025-12-08T11:42:11.024Z",
+        "timestamp": "2025-12-08T12:51:56.048Z",
         "actionData": {
           "cardId": "pokemon-base-set-v1.0-potion--90",
           "target": "ACTIVE"

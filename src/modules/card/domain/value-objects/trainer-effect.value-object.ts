@@ -13,6 +13,7 @@ export class TrainerEffect {
     public readonly cardType?: string, // Type of card to search/retrieve (e.g., "Energy", "Pokemon")
     public readonly condition?: string, // Any conditions or restrictions
     public readonly description?: string, // Human-readable description
+    public readonly source?: string, // Source location for effects that retrieve/move cards (e.g., "DISCARD", "OPPONENT_DISCARD", "HAND", "DECK")
   ) {
     this.validate();
   }
@@ -125,7 +126,8 @@ export class TrainerEffect {
       this.effectType === other.effectType &&
       this.target === other.target &&
       this.value === other.value &&
-      this.cardType === other.cardType
+      this.cardType === other.cardType &&
+      this.source === other.source
     );
   }
 }

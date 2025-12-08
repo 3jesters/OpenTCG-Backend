@@ -1,5 +1,5 @@
 {
-  "id": "spec-end-game-no-pokemon",
+  "id": "spec-knockout-discard-behavior",
   "tournamentId": "classic-tournament",
   "player1Id": "test-player-1",
   "player2Id": "test-player-2",
@@ -15,10 +15,10 @@
   "player2ReadyToStart": true,
   "player1Approved": true,
   "player2Approved": true,
-  "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-08T12:51:55.093Z",
-  "startedAt": "2025-01-01T00:00:00.000Z",
-  "endedAt": "2025-12-08T12:51:55.093Z",
+  "createdAt": "2025-12-08T12:51:49.005Z",
+  "updatedAt": "2025-12-08T12:51:51.831Z",
+  "startedAt": "2025-12-08T12:51:49.006Z",
+  "endedAt": "2025-12-08T12:51:51.831Z",
   "winnerId": "test-player-1",
   "result": "PLAYER1_WIN",
   "winCondition": "NO_POKEMON",
@@ -28,9 +28,7 @@
       "deck": [
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
-      "hand": [
-        "pokemon-base-set-v1.0-fire-energy--99"
-      ],
+      "hand": [],
       "activePokemon": {
         "instanceId": "ponyta-instance-1",
         "cardId": "pokemon-base-set-v1.0-ponyta--62",
@@ -60,9 +58,7 @@
       "deck": [
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
-      "hand": [
-        "pokemon-base-set-v1.0-grass-energy--100"
-      ],
+      "hand": [],
       "activePokemon": null,
       "bench": [],
       "prizeCards": [
@@ -74,7 +70,9 @@
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
       "discardPile": [
-        "pokemon-base-set-v1.0-bulbasaur--46"
+        "pokemon-base-set-v1.0-bulbasaur--46",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100"
       ],
       "hasAttachedEnergyThisTurn": false
     },
@@ -82,10 +80,10 @@
     "phase": "END",
     "currentPlayer": "PLAYER1",
     "lastAction": {
-      "actionId": "70f47f75-92df-4a80-9b38-52a3ba76af59",
+      "actionId": "ff388233-c5fe-47bc-9e88-c5ca63218558",
       "playerId": "PLAYER1",
       "actionType": "ATTACK",
-      "timestamp": "2025-12-08T12:51:55.093Z",
+      "timestamp": "2025-12-08T12:51:51.831Z",
       "actionData": {
         "attackIndex": 1,
         "damage": 60,
@@ -94,10 +92,10 @@
     },
     "actionHistory": [
       {
-        "actionId": "70f47f75-92df-4a80-9b38-52a3ba76af59",
+        "actionId": "ff388233-c5fe-47bc-9e88-c5ca63218558",
         "playerId": "PLAYER1",
         "actionType": "ATTACK",
-        "timestamp": "2025-12-08T12:51:55.093Z",
+        "timestamp": "2025-12-08T12:51:51.831Z",
         "actionData": {
           "attackIndex": 1,
           "damage": 60,

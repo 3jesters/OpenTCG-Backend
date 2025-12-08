@@ -1,12 +1,12 @@
 {
-  "id": "spec-potion-test",
+  "id": "spec-energy-retrieval-multiple-identical",
   "tournamentId": "classic-tournament",
   "player1Id": "test-player-1",
   "player2Id": "test-player-2",
   "player1DeckId": "classic-fire-starter-deck",
   "player2DeckId": "classic-grass-starter-deck",
   "state": "PLAYER_TURN",
-  "currentPlayer": "PLAYER1",
+  "currentPlayer": "PLAYER2",
   "firstPlayer": "PLAYER1",
   "coinTossResult": "PLAYER1",
   "player1HasDrawnValidHand": true,
@@ -15,9 +15,9 @@
   "player2ReadyToStart": true,
   "player1Approved": true,
   "player2Approved": true,
-  "createdAt": "2025-12-08T12:51:55.436Z",
-  "updatedAt": "2025-12-08T12:51:55.715Z",
-  "startedAt": "2025-12-08T12:51:55.436Z",
+  "createdAt": "2025-12-08T12:51:50.979Z",
+  "updatedAt": "2025-12-08T12:51:51.665Z",
+  "startedAt": "2025-12-08T12:51:50.979Z",
   "endedAt": null,
   "winnerId": null,
   "result": null,
@@ -55,23 +55,19 @@
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
       "hand": [
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
       "activePokemon": {
-        "instanceId": "test-instance-1",
+        "instanceId": "charmander-instance-1",
         "cardId": "pokemon-base-set-v1.0-charmander--48",
         "position": "ACTIVE",
         "currentHp": 50,
@@ -89,9 +85,7 @@
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
-      "discardPile": [
-        "pokemon-base-set-v1.0-potion--90"
-      ],
+      "discardPile": [],
       "hasAttachedEnergyThisTurn": false
     },
     "player2State": {
@@ -125,16 +119,6 @@
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
       "hand": [
@@ -147,8 +131,8 @@
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
       "activePokemon": {
-        "instanceId": "test-instance-2",
-        "cardId": "pokemon-base-set-v1.0-bulbasaur--44",
+        "instanceId": "bulbasaur-instance-1",
+        "cardId": "pokemon-base-set-v1.0-bulbasaur--46",
         "position": "ACTIVE",
         "currentHp": 40,
         "maxHp": 40,
@@ -165,31 +149,43 @@
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
-      "discardPile": [],
+      "discardPile": [
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
+        "pokemon-base-set-v1.0-energy-retrieval--83"
+      ],
       "hasAttachedEnergyThisTurn": false
     },
     "turnNumber": 1,
     "phase": "MAIN_PHASE",
-    "currentPlayer": "PLAYER1",
+    "currentPlayer": "PLAYER2",
     "lastAction": {
-      "actionId": "16f995a7-a41e-4671-b0d1-c0f84012c72f",
-      "playerId": "PLAYER1",
+      "actionId": "89fb703b-5310-4bc9-a815-0f70eecf7212",
+      "playerId": "PLAYER2",
       "actionType": "PLAY_TRAINER",
-      "timestamp": "2025-12-08T12:51:55.715Z",
+      "timestamp": "2025-12-08T12:51:51.665Z",
       "actionData": {
-        "cardId": "pokemon-base-set-v1.0-potion--90",
-        "target": "ACTIVE"
+        "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
+        "handCardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
+        "selectedCardIds": [
+          "pokemon-base-set-v1.0-grass-energy--100",
+          "pokemon-base-set-v1.0-grass-energy--100"
+        ]
       }
     },
     "actionHistory": [
       {
-        "actionId": "16f995a7-a41e-4671-b0d1-c0f84012c72f",
-        "playerId": "PLAYER1",
+        "actionId": "89fb703b-5310-4bc9-a815-0f70eecf7212",
+        "playerId": "PLAYER2",
         "actionType": "PLAY_TRAINER",
-        "timestamp": "2025-12-08T12:51:55.715Z",
+        "timestamp": "2025-12-08T12:51:51.665Z",
         "actionData": {
-          "cardId": "pokemon-base-set-v1.0-potion--90",
-          "target": "ACTIVE"
+          "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
+          "handCardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
+          "selectedCardIds": [
+            "pokemon-base-set-v1.0-grass-energy--100",
+            "pokemon-base-set-v1.0-grass-energy--100"
+          ]
         }
       }
     ],

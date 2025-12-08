@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import { writeFile, readFile, unlink } from 'fs/promises';
+import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 
 describe('Coin Flip Attack E2E', () => {
@@ -35,25 +35,75 @@ describe('Coin Flip Attack E2E', () => {
     await app.close();
   });
 
+  /**
+   * Helper function to calculate coin flip result for a given match ID
+   * This uses the same logic as CoinFlipResolverService to predict results
+   */
+  function calculateCoinFlipResult(
+    matchId: string,
+    turnNumber: number,
+    actionId: string,
+    flipIndex: number,
+  ): 'heads' | 'tails' {
+    // Same seed generation logic as CoinFlipResolverService
+    const seedString = `${matchId}-${turnNumber}-${actionId}-${flipIndex}`;
+    let hash = 0;
+    for (let i = 0; i < seedString.length; i++) {
+      const char = seedString.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    const seed = Math.abs(hash);
+
+    // Same LCG as CoinFlipResolverService
+    const a = 1664525;
+    const c = 1013904223;
+    const m = Math.pow(2, 32);
+    let state = seed % m;
+    state = (a * state + c) % m;
+    const random = state / m;
+
+    return random >= 0.5 ? 'heads' : 'tails';
+  }
+
+  /**
+   * Find a match ID that produces a specific coin flip result
+   * Uses predefined match IDs that are known to produce specific results
+   */
+  function findMatchIdForResult(
+    desiredResult: 'heads' | 'tails',
+    turnNumber: number = 1,
+    actionHistoryLength: number = 0,
+  ): string {
+    // Predefined match IDs that produce known results
+    // These are calculated using the same logic as CoinFlipResolverService
+    if (desiredResult === 'heads') {
+      // coin-flip-heads-0000 produces heads for turn 1, action 0, flip 0
+      return 'coin-flip-heads-0000';
+    } else {
+      // coin-flip-tails-0001 produces tails for turn 1, action 0, flip 0
+      return 'coin-flip-tails-0001';
+    }
+  }
+
   describe('Coin Flip Attack - Heads Scenario (30 damage)', () => {
-    const TEST_MATCH_ID = 'coin-flip-test-heads-aaaa'; // Specific ID that should produce heads
+    const TEST_MATCH_ID = findMatchIdForResult('heads', 1, 0);
 
     beforeEach(async () => {
-      // Create a test match with modified ID
-      // The seed is based on match ID + turn number + action ID + flip index
-      // We'll use a specific match ID pattern to try to get heads
-      // Get the first action from history to use as lastAction
-      const firstAction = baseMatchState.gameState.actionHistory[0];
+      // Create a test match with proper state setup
       const testMatchState = {
         ...baseMatchState,
         id: TEST_MATCH_ID,
+        currentPlayer: 'PLAYER2', // Match-level currentPlayer must match gameState.currentPlayer
+        state: 'PLAYER_TURN', // Match must be in PLAYER_TURN state
         gameState: {
           ...baseMatchState.gameState,
-          phase: 'ATTACK',
+          phase: 'MAIN_PHASE', // Must be MAIN_PHASE to execute attack
           currentPlayer: 'PLAYER2',
+          turnNumber: 1,
           coinFlipState: null,
-          lastAction: firstAction, // Set lastAction to match actionHistory
-          actionHistory: [firstAction], // Keep only DRAW_CARD
+          lastAction: null,
+          actionHistory: [], // Empty history so action ID will be based on length 0
           player2State: {
             ...baseMatchState.gameState.player2State,
             activePokemon: {
@@ -66,9 +116,13 @@ describe('Coin Flip Attack E2E', () => {
 
       const matchFilePath = join(matchesDirectory, `${TEST_MATCH_ID}.json`);
       await writeFile(matchFilePath, JSON.stringify(testMatchState, null, 2));
-    });
 
-    // Files are kept after test run - cleaned up by jest-global-setup before next run
+      // Sync match to ensure it's loaded
+      await request(server())
+        .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
+        .send({ playerId: PLAYER2_ID })
+        .expect(200);
+    });
 
     it('should execute attack with coin flip - verify heads scenario (30 damage)', async () => {
       const initialOpponentHp = 40;
@@ -86,7 +140,7 @@ describe('Coin Flip Attack E2E', () => {
         .expect(200);
 
       const afterAttackState = attackResponse.body;
-      
+
       // Verify coin flip state was created
       expect(afterAttackState.coinFlipState).toBeDefined();
       expect(afterAttackState.coinFlipState.status).toBe('READY_TO_FLIP');
@@ -118,49 +172,40 @@ describe('Coin Flip Attack E2E', () => {
       expect(attackAction.actionData.coinFlipResults.length).toBe(1);
 
       const coinFlipResult = attackAction.actionData.coinFlipResults[0];
-      const isHeads = coinFlipResult.result === 'heads';
+      
+      // Verify we got heads (deterministic based on match ID)
+      expect(coinFlipResult.result).toBe('heads');
+      expect(attackAction.actionData.damage).toBe(30);
+      expect(attackAction.actionData.attackFailed).toBeUndefined();
 
-      // This test is specifically for heads scenario
-      // If we get heads, verify 30 damage
-      // If we get tails, skip this test's assertions (will be tested in tails test)
-      if (isHeads) {
-        expect(attackAction.actionData.damage).toBe(30);
-        expect(attackAction.actionData.attackFailed).toBeUndefined();
-        
-        // Check if Pokemon was knocked out (30 damage on 30 HP = knockout)
-        if (attackAction.actionData.isKnockedOut) {
-          expect(finalState.opponentState.activePokemon).toBeNull();
-        } else {
-          const opponentHp = finalState.opponentState.activePokemon.currentHp;
-          expect(opponentHp).toBe(initialOpponentHp - 30);
-        }
+      // Check if Pokemon was knocked out (30 damage on 40 HP = not knocked out)
+      if (attackAction.actionData.isKnockedOut) {
+        expect(finalState.opponentState.activePokemon).toBeNull();
       } else {
-        // Got tails instead - this test will verify tails behavior
-        // We'll verify it in the tails test, but log for debugging
-        console.log(`Note: Got tails in heads test (match ID: ${TEST_MATCH_ID})`);
-        // Still verify the logic is correct
-        expect(attackAction.actionData.damage).toBe(0);
-        expect(attackAction.actionData.attackFailed).toBe(true);
+        const opponentHp = finalState.opponentState.activePokemon.currentHp;
+        expect(opponentHp).toBe(initialOpponentHp - 30);
       }
     });
   });
 
   describe('Coin Flip Attack - Tails Scenario (0 damage)', () => {
-    const TEST_MATCH_ID = 'coin-flip-test-tails-zzzz'; // Different ID pattern to try to get tails
+    const TEST_MATCH_ID = findMatchIdForResult('tails', 1, 0);
 
     beforeEach(async () => {
-      // Get the first action from history to use as lastAction
-      const firstAction = baseMatchState.gameState.actionHistory[0];
+      // Create a test match with proper state setup
       const testMatchState = {
         ...baseMatchState,
         id: TEST_MATCH_ID,
+        currentPlayer: 'PLAYER2', // Match-level currentPlayer must match gameState.currentPlayer
+        state: 'PLAYER_TURN', // Match must be in PLAYER_TURN state
         gameState: {
           ...baseMatchState.gameState,
-          phase: 'ATTACK',
+          phase: 'MAIN_PHASE', // Must be MAIN_PHASE to execute attack
           currentPlayer: 'PLAYER2',
+          turnNumber: 1,
           coinFlipState: null,
-          lastAction: firstAction, // Set lastAction to match actionHistory
-          actionHistory: [firstAction],
+          lastAction: null,
+          actionHistory: [], // Empty history so action ID will be based on length 0
           player2State: {
             ...baseMatchState.gameState.player2State,
             activePokemon: {
@@ -173,9 +218,13 @@ describe('Coin Flip Attack E2E', () => {
 
       const matchFilePath = join(matchesDirectory, `${TEST_MATCH_ID}.json`);
       await writeFile(matchFilePath, JSON.stringify(testMatchState, null, 2));
-    });
 
-    // Files are kept after test run - cleaned up by jest-global-setup before next run
+      // Sync match to ensure it's loaded
+      await request(server())
+        .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
+        .send({ playerId: PLAYER2_ID })
+        .expect(200);
+    });
 
     it('should execute attack with coin flip - verify tails scenario (0 damage)', async () => {
       const initialOpponentHp = 40;
@@ -205,24 +254,13 @@ describe('Coin Flip Attack E2E', () => {
       const finalState = coinFlipResponse.body;
       const attackAction = finalState.lastAction;
       const coinFlipResult = attackAction.actionData.coinFlipResults[0];
-      const isTails = coinFlipResult.result === 'tails';
 
-      // This test is specifically for tails scenario
-      // If we get tails, verify 0 damage
-      // If we get heads, skip this test's assertions (will be tested in heads test)
-      if (isTails) {
-        expect(attackAction.actionData.damage).toBe(0);
-        expect(attackAction.actionData.attackFailed).toBe(true);
-        const opponentHp = finalState.opponentState.activePokemon.currentHp;
-        expect(opponentHp).toBe(initialOpponentHp); // Still 40 HP, no damage
-      } else {
-        // Got heads instead - this test will verify heads behavior
-        // We'll verify it in the heads test, but log for debugging
-        console.log(`Note: Got heads in tails test (match ID: ${TEST_MATCH_ID})`);
-        // Still verify the logic is correct
-        expect(attackAction.actionData.damage).toBe(30);
-        expect(attackAction.actionData.attackFailed).toBeUndefined();
-      }
+      // Verify we got tails (deterministic based on match ID)
+      expect(coinFlipResult.result).toBe('tails');
+      expect(attackAction.actionData.damage).toBe(0);
+      expect(attackAction.actionData.attackFailed).toBe(true);
+      const opponentHp = finalState.opponentState.activePokemon.currentHp;
+      expect(opponentHp).toBe(initialOpponentHp); // Still 40 HP, no damage
     });
   });
 
@@ -230,18 +268,20 @@ describe('Coin Flip Attack E2E', () => {
     const TEST_MATCH_ID = 'coin-flip-test-transitions';
 
     beforeEach(async () => {
-      // Get the first action from history to use as lastAction
-      const firstAction = baseMatchState.gameState.actionHistory[0];
+      // Create a test match with proper state setup
       const testMatchState = {
         ...baseMatchState,
         id: TEST_MATCH_ID,
+        currentPlayer: 'PLAYER2', // Match-level currentPlayer must match gameState.currentPlayer
+        state: 'PLAYER_TURN', // Match must be in PLAYER_TURN state
         gameState: {
           ...baseMatchState.gameState,
-          phase: 'ATTACK',
+          phase: 'MAIN_PHASE', // Must be MAIN_PHASE to execute attack
           currentPlayer: 'PLAYER2',
+          turnNumber: 1,
           coinFlipState: null,
-          lastAction: firstAction, // Set lastAction to match actionHistory
-          actionHistory: [firstAction],
+          lastAction: null,
+          actionHistory: [], // Empty history so action ID will be based on length 0
           player2State: {
             ...baseMatchState.gameState.player2State,
             activePokemon: {
@@ -254,9 +294,13 @@ describe('Coin Flip Attack E2E', () => {
 
       const matchFilePath = join(matchesDirectory, `${TEST_MATCH_ID}.json`);
       await writeFile(matchFilePath, JSON.stringify(testMatchState, null, 2));
-    });
 
-    // Files are kept after test run - cleaned up by jest-global-setup before next run
+      // Sync match to ensure it's loaded
+      await request(server())
+        .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
+        .send({ playerId: PLAYER2_ID })
+        .expect(200);
+    });
 
     it('should transition coin flip state correctly: READY_TO_FLIP -> COMPLETED', async () => {
       // Execute ATTACK
@@ -289,7 +333,7 @@ describe('Coin Flip Attack E2E', () => {
       // Verify COMPLETED state (coinFlipState should be null after completion)
       state = coinFlipResponse.body;
       expect(state.coinFlipState).toBeNull();
-      
+
       // Verify results are in action data
       const attackAction = state.lastAction;
       expect(attackAction.actionData.coinFlipResults).toBeDefined();
@@ -298,4 +342,3 @@ describe('Coin Flip Attack E2E', () => {
     });
   });
 });
-

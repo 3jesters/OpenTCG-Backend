@@ -27,5 +27,9 @@ export class TrainerEffectImportDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  source?: string;
 }
 

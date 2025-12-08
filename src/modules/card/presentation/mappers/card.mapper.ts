@@ -122,6 +122,7 @@ export class CardMapper {
       cardType: effect.cardType,
       condition: effect.condition,
       description: effect.description,
+      source: effect.source,
     };
   }
 }

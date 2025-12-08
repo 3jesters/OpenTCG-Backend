@@ -48,5 +48,12 @@ export class TrainerEffectDto {
     example: 'Draw 2 cards',
   })
   description?: string;
+
+  @ApiProperty({
+    description: 'Source location for effects that retrieve/move cards (e.g., "DISCARD", "OPPONENT_DISCARD", "HAND", "DECK")',
+    required: false,
+    example: 'DISCARD',
+  })
+  source?: string;
 }
 

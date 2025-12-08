@@ -2960,6 +2960,7 @@
           "target": "BENCHED_OPPONENTS",
           "value": 1,
           "cardType": "Basic Pokemon",
+          "source": "OPPONENT_DISCARD",
           "description": "Put Basic Pokémon from opponent's discard onto their Bench"
         }
       ]

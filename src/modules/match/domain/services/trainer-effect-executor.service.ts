@@ -1251,7 +1251,8 @@ export class TrainerEffectExecutorService {
   }
 
   /**
-   * Handle PUT_INTO_PLAY effect - Put Pokémon from discard to bench
+   * Handle PUT_INTO_PLAY effect - Put Pokémon from source location to bench
+   * Supports putting from player's or opponent's discard pile to player's or opponent's bench
    */
   private handlePutIntoPlay(
     effect: TrainerEffectDto,
@@ -1267,40 +1268,88 @@ export class TrainerEffectExecutorService {
       throw new BadRequestException('pokemonCardId is required for PUT_INTO_PLAY effect');
     }
 
-    // Validate Pokémon is in discard pile
-    if (!playerState.discardPile.includes(actionData.pokemonCardId)) {
-      throw new BadRequestException('Pokemon card is not in discard pile');
+    // Determine source location (default to player's discard for backward compatibility)
+    const source = effect.source || 'DISCARD';
+    const isFromOpponentDiscard = source === 'OPPONENT_DISCARD';
+
+    // Determine target bench based on effect.target
+    const isTargetOpponentBench =
+      effect.target === TargetType.BENCHED_OPPONENTS ||
+      effect.target === TargetType.ALL_OPPONENTS;
+
+    // Get the correct discard pile based on source
+    const sourceDiscardPile = isFromOpponentDiscard
+      ? opponentState.discardPile
+      : playerState.discardPile;
+
+    // Validate Pokémon is in the correct discard pile
+    if (!sourceDiscardPile.includes(actionData.pokemonCardId)) {
+      const sourceName = isFromOpponentDiscard ? "opponent's discard pile" : "player's discard pile";
+      throw new BadRequestException(`Pokemon card is not in ${sourceName}`);
     }
+
+    // Get the target bench
+    const targetBench = isTargetOpponentBench ? opponentState.bench : playerState.bench;
 
     // Check bench space
-    if (playerState.bench.length >= 5) {
-      throw new BadRequestException('Bench is full (max 5 Pokemon)');
+    if (targetBench.length >= 5) {
+      const benchOwner = isTargetOpponentBench ? "opponent's" : "player's";
+      throw new BadRequestException(`${benchOwner} bench is full (max 5 Pokemon)`);
     }
 
-    // Remove from discard pile
-    const updatedDiscardPile = playerState.discardPile.filter(
+    // Remove from source discard pile
+    const updatedSourceDiscardPile = sourceDiscardPile.filter(
       (id) => id !== actionData.pokemonCardId,
     );
 
     // Create new Pokémon instance
-    const benchIndex = playerState.bench.length;
+    // Note: In production, maxHp should be fetched from card data
+    // Using default HP of 50 for now (typical Basic Pokémon HP)
+    const defaultHp = 50;
+    const benchIndex = targetBench.length;
     const newPokemon = new CardInstance(
       `instance-${Date.now()}-${Math.random()}`, // Generate unique instance ID
       actionData.pokemonCardId,
       `BENCH_${benchIndex}` as PokemonPosition,
-      0, // Will need to get maxHp from card data
-      0, // Will need to get maxHp from card data
+      defaultHp,
+      defaultHp,
       [],
       StatusEffect.NONE,
       0,
     );
 
-    const updatedBench = [...playerState.bench, newPokemon];
+    const updatedTargetBench = [...targetBench, newPokemon];
 
-    return {
-      playerState: playerState.withBench(updatedBench).withDiscardPile(updatedDiscardPile),
-      opponentState,
-    };
+    // Update states based on source and target
+    if (isFromOpponentDiscard && isTargetOpponentBench) {
+      // From opponent's discard to opponent's bench
+      return {
+        playerState,
+        opponentState: opponentState
+          .withBench(updatedTargetBench)
+          .withDiscardPile(updatedSourceDiscardPile),
+      };
+    } else if (isFromOpponentDiscard && !isTargetOpponentBench) {
+      // From opponent's discard to player's bench
+      return {
+        playerState: playerState.withBench(updatedTargetBench),
+        opponentState: opponentState.withDiscardPile(updatedSourceDiscardPile),
+      };
+    } else if (!isFromOpponentDiscard && isTargetOpponentBench) {
+      // From player's discard to opponent's bench
+      return {
+        playerState: playerState.withDiscardPile(updatedSourceDiscardPile),
+        opponentState: opponentState.withBench(updatedTargetBench),
+      };
+    } else {
+      // From player's discard to player's bench (default case)
+      return {
+        playerState: playerState
+          .withBench(updatedTargetBench)
+          .withDiscardPile(updatedSourceDiscardPile),
+        opponentState,
+      };
+    }
   }
 
   /**

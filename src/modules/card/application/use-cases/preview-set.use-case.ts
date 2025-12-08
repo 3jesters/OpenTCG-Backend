@@ -284,6 +284,7 @@ export class PreviewSetUseCase {
             effectDto.cardType,
             effectDto.condition,
             effectDto.description,
+            effectDto.source,
           );
           card.addTrainerEffect(effect);
         }

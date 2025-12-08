@@ -579,5 +579,125 @@ describe('Trainer Card Validation E2E', () => {
     // Verify Potion is in discard pile
     expect(response.body.playerState.discardPile.includes(potionCardId)).toBe(true);
   });
+
+  it('should play Pokémon Flute to put Basic Pokémon from opponent discard pile onto opponent bench', async () => {
+    // Create a match state where player1 has Pokémon Flute in hand
+    // and player2 has a Basic Pokémon in discard pile
+    const pokemonFluteMatchId = 'spec-pokemon-flute-test';
+    const pokemonFluteMatchFilePath = join(matchesDirectory, `${pokemonFluteMatchId}.json`);
+    const pokemonFluteCardId = 'pokemon-base-set-v1.0-pokemon-flute--89';
+    const opponentPokemonCardId = 'pokemon-base-set-v1.0-charmander--46'; // Basic Pokémon
+
+    const initialMatchState = {
+      id: pokemonFluteMatchId,
+      tournamentId: 'classic-tournament',
+      player1Id: PLAYER1_ID,
+      player2Id: PLAYER2_ID,
+      player1DeckId: 'classic-fire-starter-deck',
+      player2DeckId: 'classic-grass-starter-deck',
+      state: 'PLAYER_TURN',
+      currentPlayer: 'PLAYER1',
+      firstPlayer: 'PLAYER1',
+      coinTossResult: 'PLAYER1',
+      player1HasDrawnValidHand: true,
+      player2HasDrawnValidHand: true,
+      player1ReadyToStart: true,
+      player2ReadyToStart: true,
+      player1Approved: true,
+      player2Approved: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      endedAt: null,
+      winnerId: null,
+      result: null,
+      winCondition: null,
+      cancellationReason: null,
+      gameState: {
+        player1State: {
+          deck: [],
+          hand: [pokemonFluteCardId],
+          activePokemon: {
+            instanceId: 'player1-active',
+            cardId: 'pokemon-base-set-v1.0-charmander--46',
+            position: 'ACTIVE',
+            currentHp: 50,
+            maxHp: 50,
+            attachedEnergy: [],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+          },
+          bench: [],
+          prizeCards: [],
+          discardPile: [],
+          hasAttachedEnergyThisTurn: false,
+        },
+        player2State: {
+          deck: [],
+          hand: [],
+          activePokemon: {
+            instanceId: 'player2-active',
+            cardId: 'pokemon-base-set-v1.0-bulbasaur--44',
+            position: 'ACTIVE',
+            currentHp: 40,
+            maxHp: 40,
+            attachedEnergy: [],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+          },
+          bench: [],
+          prizeCards: [],
+          discardPile: [opponentPokemonCardId], // Basic Pokémon in opponent's discard pile
+          hasAttachedEnergyThisTurn: false,
+        },
+        turnNumber: 1,
+        phase: 'MAIN_PHASE',
+        currentPlayer: 'PLAYER1',
+        lastAction: null,
+        actionHistory: [],
+      },
+    };
+
+    await writeFile(pokemonFluteMatchFilePath, JSON.stringify(initialMatchState, null, 2));
+
+    // Get initial state (POST to /state endpoint loads the match)
+    const initialStateResponse = await request(server())
+      .post(`/api/v1/matches/${pokemonFluteMatchId}/state`)
+      .send({ playerId: PLAYER1_ID })
+      .expect(200);
+
+    expect(initialStateResponse.body.playerState.hand).toContain(pokemonFluteCardId);
+    expect(initialStateResponse.body.opponentState.discardPile).toContain(opponentPokemonCardId);
+    expect(initialStateResponse.body.opponentState.bench).toHaveLength(0);
+
+    // Verify Pokémon Flute is in hand
+    expect(initialStateResponse.body.playerState.hand).toContain(pokemonFluteCardId);
+
+    // Play Pokémon Flute to put opponent's Pokémon from discard onto their bench
+    const response = await request(server())
+      .post(`/api/v1/matches/${pokemonFluteMatchId}/actions`)
+      .send({
+        playerId: PLAYER1_ID,
+        actionType: 'PLAY_TRAINER',
+        actionData: {
+          cardId: pokemonFluteCardId,
+          target: 'BENCH_0',
+          pokemonCardId: opponentPokemonCardId,
+        },
+      })
+      .expect(200);
+
+    // Verify Pokémon Flute is in discard pile
+    expect(response.body.playerState.discardPile).toContain(pokemonFluteCardId);
+    expect(response.body.playerState.hand).not.toContain(pokemonFluteCardId);
+
+    // Verify opponent's Pokémon is removed from discard pile
+    expect(response.body.opponentState.discardPile).not.toContain(opponentPokemonCardId);
+
+    // Verify opponent's Pokémon is now on their bench
+    expect(response.body.opponentState.bench).toHaveLength(1);
+    expect(response.body.opponentState.bench[0].cardId).toBe(opponentPokemonCardId);
+    expect(response.body.opponentState.bench[0].position).toBe('BENCH_0');
+  });
 });
 
