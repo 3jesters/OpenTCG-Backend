@@ -149,9 +149,20 @@ export class GetMatchStateUseCase {
         playerState?.hasAttachedEnergyThisTurn &&
         match.gameState?.phase === TurnPhase.MAIN_PHASE
       ) {
-        return actions.filter(
+        actions = actions.filter(
           (action) => action !== PlayerActionType.ATTACH_ENERGY,
         );
+      }
+      
+      // Add GENERATE_COIN_FLIP if coin flip is ready
+      if (
+        match.gameState?.coinFlipState &&
+        match.gameState.coinFlipState.status === 'READY_TO_FLIP' &&
+        match.gameState.currentPlayer === playerIdentifier
+      ) {
+        if (!actions.includes(PlayerActionType.GENERATE_COIN_FLIP)) {
+          actions.push(PlayerActionType.GENERATE_COIN_FLIP);
+        }
       }
       
       return actions; // Already filtered by state machine

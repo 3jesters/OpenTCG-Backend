@@ -1,0 +1,102 @@
+{
+  "id": "spec-knockout-discard-behavior-bench",
+  "tournamentId": "classic-tournament",
+  "player1Id": "test-player-1",
+  "player2Id": "test-player-2",
+  "player1DeckId": "classic-fire-starter-deck",
+  "player2DeckId": "classic-grass-starter-deck",
+  "state": "MATCH_ENDED",
+  "currentPlayer": "PLAYER1",
+  "firstPlayer": "PLAYER1",
+  "coinTossResult": "PLAYER1",
+  "player1HasDrawnValidHand": true,
+  "player2HasDrawnValidHand": true,
+  "player1ReadyToStart": true,
+  "player2ReadyToStart": true,
+  "player1Approved": true,
+  "player2Approved": true,
+  "createdAt": "2025-12-08T10:53:37.079Z",
+  "updatedAt": "2025-12-08T10:53:41.764Z",
+  "startedAt": "2025-12-08T10:53:37.079Z",
+  "endedAt": "2025-12-08T10:53:41.764Z",
+  "winnerId": "test-player-1",
+  "result": "PLAYER1_WIN",
+  "winCondition": "NO_POKEMON",
+  "cancellationReason": null,
+  "gameState": {
+    "player1State": {
+      "deck": [
+        "pokemon-base-set-v1.0-fire-energy--99"
+      ],
+      "hand": [],
+      "activePokemon": null,
+      "bench": [],
+      "prizeCards": [
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99"
+      ],
+      "discardPile": [
+        "pokemon-base-set-v1.0-magnemite--37",
+        "pokemon-base-set-v1.0-lightning-energy--101",
+        "pokemon-base-set-v1.0-lightning-energy--101",
+        "pokemon-base-set-v1.0-lightning-energy--101",
+        "pokemon-base-set-v1.0-fire-energy--99"
+      ],
+      "hasAttachedEnergyThisTurn": true
+    },
+    "player2State": {
+      "deck": [
+        "pokemon-base-set-v1.0-grass-energy--100"
+      ],
+      "hand": [],
+      "activePokemon": null,
+      "bench": [],
+      "prizeCards": [
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100"
+      ],
+      "discardPile": [
+        "pokemon-base-set-v1.0-ivysaur--30",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-bulbasaur--46"
+      ],
+      "hasAttachedEnergyThisTurn": false
+    },
+    "turnNumber": 1,
+    "phase": "END",
+    "currentPlayer": "PLAYER1",
+    "lastAction": {
+      "actionId": "534dad02-1a54-434e-9d92-647da4948c0c",
+      "playerId": "PLAYER1",
+      "actionType": "ATTACK",
+      "timestamp": "2025-12-08T10:53:41.764Z",
+      "actionData": {
+        "attackIndex": 1,
+        "damage": 40,
+        "isKnockedOut": true
+      }
+    },
+    "actionHistory": [
+      {
+        "actionId": "534dad02-1a54-434e-9d92-647da4948c0c",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-08T10:53:41.764Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 40,
+          "isKnockedOut": true
+        }
+      }
+    ],
+    "coinFlipState": null
+  }
+}

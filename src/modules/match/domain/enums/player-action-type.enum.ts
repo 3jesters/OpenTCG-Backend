@@ -13,6 +13,7 @@ export enum PlayerActionType {
   RETREAT = 'RETREAT',
   ATTACK = 'ATTACK',
   USE_ABILITY = 'USE_ABILITY',
+  GENERATE_COIN_FLIP = 'GENERATE_COIN_FLIP',
   SELECT_PRIZE = 'SELECT_PRIZE',
   DRAW_PRIZE = 'DRAW_PRIZE', // Alias for SELECT_PRIZE (client compatibility)
   END_TURN = 'END_TURN',

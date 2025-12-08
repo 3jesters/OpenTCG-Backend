@@ -12,9 +12,15 @@ export default async function globalSetup() {
     // Read all files in the matches directory
     const files = await readdir(matchesDirectory);
     
-    // Filter files that match test match patterns (spec-match-*.json or mock-test-*.json)
+    // Filter files that match test match patterns
+    // Patterns: spec-* (except spec-end-game-*), coin-flip-test-*, mock-test-*
+    // Note: spec-end-game-* files are kept for inspection and not deleted
     const testMatchFiles = files.filter((file) => 
-      (file.startsWith('spec-match-') || file.startsWith('mock-test-')) && file.endsWith('.json')
+      file.endsWith('.json') && (
+        (file.startsWith('spec-') && !file.startsWith('spec-end-game-')) || 
+        file.startsWith('coin-flip-test-') || 
+        file.startsWith('mock-test-')
+      )
     );
 
     // Delete each test match file BEFORE running tests

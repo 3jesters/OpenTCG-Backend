@@ -2109,7 +2109,7 @@
           "energyCost": [
             "GRASS"
           ],
-          "damage": "10",
+          "damage": "30",
           "text": "Flip a coin. If tails, this attack does nothing."
         }
       ],

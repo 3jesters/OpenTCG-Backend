@@ -8,11 +8,14 @@ import {
   EnergyType,
   AbilityActivationType,
   UsageLimit,
+  TrainerType,
+  TrainerEffectType,
+  TargetType,
 } from '../../domain/enums';
 import { AbilityEffectFactory } from '../../domain/value-objects/ability-effect.value-object';
 import { CardSummaryDto } from '../dto/card-summary.dto';
 import { CardDetailDto } from '../dto/card-detail.dto';
-import { Attack, Ability, Weakness, Resistance } from '../../domain/value-objects';
+import { Attack, Ability, Weakness, Resistance, TrainerEffect } from '../../domain/value-objects';
 
 describe('CardMapper', () => {
   let mockCard: Card;
@@ -202,6 +205,139 @@ describe('CardMapper', () => {
       // Assert
       expect(result.evolvesFrom).toBe('Pikachu');
       expect(result.stage).toBe(EvolutionStage.STAGE_1);
+    });
+
+    it('should map trainer card with trainerEffects', () => {
+      // Arrange
+      const trainerCard = Card.createTrainerCard(
+        'uuid-999',
+        'pokemon-base-set-v1.0-bill-92',
+        '000',
+        'Bill',
+        'Base Set',
+        '92',
+        Rarity.COMMON,
+        'Draw 2 cards.',
+        'Ken Sugimori',
+        'https://example.com/bill.png',
+      );
+      trainerCard.setTrainerType(TrainerType.SUPPORTER);
+
+      const drawEffect = new TrainerEffect(
+        TrainerEffectType.DRAW_CARDS,
+        TargetType.SELF,
+        2,
+        undefined,
+        undefined,
+        'Draw 2 cards',
+      );
+      trainerCard.addTrainerEffect(drawEffect);
+
+      // Act
+      const result: CardDetailDto = CardMapper.toCardDetailDto(trainerCard);
+
+      // Assert
+      expect(result.cardId).toBe('pokemon-base-set-v1.0-bill-92');
+      expect(result.cardType).toBe(CardType.TRAINER);
+      expect(result.trainerType).toBe(TrainerType.SUPPORTER);
+      expect(result.trainerEffects).toBeDefined();
+      expect(result.trainerEffects!.length).toBe(1);
+      expect(result.trainerEffects![0].effectType).toBe(TrainerEffectType.DRAW_CARDS);
+      expect(result.trainerEffects![0].target).toBe(TargetType.SELF);
+      expect(result.trainerEffects![0].value).toBe(2);
+      expect(result.trainerEffects![0].description).toBe('Draw 2 cards');
+    });
+
+    it('should map trainer card with multiple trainerEffects', () => {
+      // Arrange
+      const trainerCard = Card.createTrainerCard(
+        'uuid-888',
+        'pokemon-base-set-v1.0-computer-search-73',
+        '000',
+        'Computer Search',
+        'Base Set',
+        '73',
+        Rarity.RARE,
+        'Discard 2 cards, search deck for any card',
+        'Keiji Kinebuchi',
+        'https://example.com/computer-search.png',
+      );
+      trainerCard.setTrainerType(TrainerType.ITEM);
+
+      const discardEffect = new TrainerEffect(
+        TrainerEffectType.DISCARD_HAND,
+        TargetType.SELF,
+        2,
+        undefined,
+        undefined,
+        'Discard 2 cards from your hand',
+      );
+      trainerCard.addTrainerEffect(discardEffect);
+
+      const searchEffect = new TrainerEffect(
+        TrainerEffectType.SEARCH_DECK,
+        TargetType.SELF,
+        1,
+        'Any',
+        undefined,
+        'Search your deck for any card',
+      );
+      trainerCard.addTrainerEffect(searchEffect);
+
+      const shuffleEffect = new TrainerEffect(
+        TrainerEffectType.SHUFFLE_DECK,
+        TargetType.SELF,
+        undefined,
+        undefined,
+        undefined,
+        'Shuffle your deck',
+      );
+      trainerCard.addTrainerEffect(shuffleEffect);
+
+      // Act
+      const result: CardDetailDto = CardMapper.toCardDetailDto(trainerCard);
+
+      // Assert
+      expect(result.trainerType).toBe(TrainerType.ITEM);
+      expect(result.trainerEffects).toBeDefined();
+      expect(result.trainerEffects!.length).toBe(3);
+      expect(result.trainerEffects![0].effectType).toBe(TrainerEffectType.DISCARD_HAND);
+      expect(result.trainerEffects![1].effectType).toBe(TrainerEffectType.SEARCH_DECK);
+      expect(result.trainerEffects![1].cardType).toBe('Any');
+      expect(result.trainerEffects![2].effectType).toBe(TrainerEffectType.SHUFFLE_DECK);
+    });
+
+    it('should return undefined for trainerEffects when card has no effects', () => {
+      // Arrange
+      const trainerCard = Card.createTrainerCard(
+        'uuid-777',
+        'pokemon-base-set-v1.0-empty-trainer-00',
+        '000',
+        'Empty Trainer',
+        'Base Set',
+        '00',
+        Rarity.COMMON,
+        'No effects',
+        'Artist',
+        'https://example.com/empty.png',
+      );
+      trainerCard.setTrainerType(TrainerType.ITEM);
+
+      // Act
+      const result: CardDetailDto = CardMapper.toCardDetailDto(trainerCard);
+
+      // Assert
+      expect(result.trainerType).toBe(TrainerType.ITEM);
+      expect(result.trainerEffects).toBeUndefined();
+    });
+
+    it('should return undefined for trainerType and trainerEffects for Pokémon cards', () => {
+      // Act
+      const result: CardDetailDto = CardMapper.toCardDetailDto(mockCard);
+
+      // Assert
+      expect(result.trainerType).toBeUndefined();
+      expect(result.trainerEffects).toBeUndefined();
     });
   });
 });

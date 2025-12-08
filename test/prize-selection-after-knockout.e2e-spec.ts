@@ -30,13 +30,7 @@ describe('Prize Selection After Knockout E2E', () => {
   });
 
   beforeEach(async () => {
-    // Clean up any existing match file
-    const matchFilePath = join(matchesDirectory, `${MATCH_ID}.json`);
-    try {
-      await unlink(matchFilePath);
-    } catch (error) {
-      // File might not exist, ignore
-    }
+    // Files are cleaned up by jest-global-setup before test run
     
     // Ensure matches directory exists
     const fs = require('fs');
@@ -88,7 +82,7 @@ describe('Prize Selection After Knockout E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99'],
+            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'], // 2 FIRE energy for Flame Tail attack
             statusEffect: 'NONE',
             damageCounters: 0,
           },
@@ -314,7 +308,7 @@ describe('Prize Selection After Knockout E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99'],
+            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'], // 2 FIRE energy for Flame Tail attack
             statusEffect: 'NONE',
             damageCounters: 0,
           },
@@ -601,7 +595,7 @@ describe('Prize Selection After Knockout E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99'],
+            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'], // 2 FIRE energy for Flame Tail attack
             statusEffect: 'NONE',
             damageCounters: 0,
           },

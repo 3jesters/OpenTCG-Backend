@@ -426,6 +426,25 @@ export class ExecuteTurnActionUseCase {
 
         // Check if deck has cards
         if (playerState.deck.length === 0) {
+          // Check win conditions before throwing error (deck out = opponent wins)
+          const winCheck = this.stateMachineService.checkWinConditions(
+            gameState.player1State,
+            gameState.player2State,
+          );
+          if (winCheck.hasWinner && winCheck.winner) {
+            const winnerId =
+              winCheck.winner === PlayerIdentifier.PLAYER1
+                ? match.player1Id!
+                : match.player2Id!;
+            match.endMatch(
+              winnerId,
+              winCheck.winner === PlayerIdentifier.PLAYER1
+                ? MatchResult.PLAYER1_WIN
+                : MatchResult.PLAYER2_WIN,
+              winCheck.winCondition as WinCondition,
+            );
+            return await this.matchRepository.save(match);
+          }
           throw new BadRequestException('Cannot draw card: deck is empty');
         }
 
@@ -898,6 +917,9 @@ export class ExecuteTurnActionUseCase {
         const cardId = (dto.actionData as any)?.cardId;
         const target = (dto.actionData as any)?.target;
         const energyCardId = (dto.actionData as any)?.energyCardId; // For Energy Removal
+        const handCardId = (dto.actionData as any)?.handCardId; // For cards that require discarding from hand
+        const handCardIndex = (dto.actionData as any)?.handCardIndex; // Optional: index of card to discard (for disambiguation)
+        const selectedCardIds = (dto.actionData as any)?.selectedCardIds as string[] | undefined; // For Energy Retrieval: cards to retrieve from discard
 
         if (!cardId) {
           throw new BadRequestException('cardId is required');
@@ -911,6 +933,10 @@ export class ExecuteTurnActionUseCase {
           throw new BadRequestException('Trainer card must be in hand');
         }
 
+        // Find the index of the played card in hand (first occurrence)
+        // This is needed to prevent selecting the same card when discarding
+        const playedCardIndex = playerState.hand.indexOf(cardId);
+
         // Load card details to determine trainer effect
         const cardDetail = await this.getCardByIdUseCase.execute(cardId);
 
@@ -918,8 +944,55 @@ export class ExecuteTurnActionUseCase {
           throw new BadRequestException('Card must be a trainer card');
         }
 
+        // Validate that if trainer requires discarding from hand, 
+        // the selected card is not the same trainer card that was just played
+        if (cardDetail.trainerEffects) {
+          const hasDiscardHandEffect = cardDetail.trainerEffects.some(
+            (effect) => effect.effectType === 'DISCARD_HAND',
+          );
+
+          if (hasDiscardHandEffect && handCardId) {
+            // Validate that the selected card is in hand
+            if (!playerState.hand.includes(handCardId)) {
+              throw new BadRequestException('Selected card must be in hand');
+            }
+
+            // Prevent selecting the same trainer card that was just played
+            // If handCardIndex is provided, use it to check the exact position
+            // Otherwise, if the selected cardId matches the played cardId, 
+            // check if it's the first occurrence (the one being played)
+            if (handCardId === cardId) {
+              let selectedIndex: number;
+              
+              if (handCardIndex !== undefined) {
+                // Use provided index if available
+                selectedIndex = handCardIndex;
+                if (selectedIndex < 0 || selectedIndex >= playerState.hand.length) {
+                  throw new BadRequestException('Invalid handCardIndex');
+                }
+                if (playerState.hand[selectedIndex] !== handCardId) {
+                  throw new BadRequestException('handCardId does not match card at handCardIndex');
+                }
+              } else {
+                // Fallback: find first occurrence (may not be accurate if multiple copies exist)
+                selectedIndex = playerState.hand.indexOf(handCardId);
+              }
+
+              // Prevent selecting the card at the same index as the played card
+              // This prevents selecting the first occurrence (the one being played)
+              // but allows selecting other copies if they exist at different positions
+              if (selectedIndex === playedCardIndex) {
+                throw new BadRequestException(
+                  'Cannot select the same trainer card that was just played',
+                );
+              }
+            }
+          }
+        }
+
         // Initialize updated opponent state (will be modified by trainer effects)
         let updatedOpponentState = opponentState;
+        let updatedPlayerState = playerState;
 
         // Handle Energy Removal trainer card
         if (cardId === 'pokemon-base-set-v1.0-energy-removal--93') {
@@ -948,14 +1021,15 @@ export class ExecuteTurnActionUseCase {
             targetPokemon = opponentState.bench[benchIndex];
           }
 
-          // Check if energy card is attached
-          if (!targetPokemon.attachedEnergy.includes(energyCardId)) {
+          // Check if energy card is attached and find first occurrence
+          const energyIndex = targetPokemon.attachedEnergy.indexOf(energyCardId);
+          if (energyIndex === -1) {
             throw new BadRequestException('Energy card is not attached to target Pokemon');
           }
 
-          // Remove energy card from attached energy
+          // Remove energy card from attached energy (only the first occurrence)
           const updatedAttachedEnergy = targetPokemon.attachedEnergy.filter(
-            (id) => id !== energyCardId,
+            (_, index) => index !== energyIndex,
           );
           const updatedPokemon = targetPokemon.withAttachedEnergy(updatedAttachedEnergy);
 
@@ -970,25 +1044,102 @@ export class ExecuteTurnActionUseCase {
             updatedBench[benchIndex] = updatedPokemon;
             updatedOpponentState = opponentState.withBench(updatedBench);
           }
+        } else if (cardId === 'pokemon-base-set-v1.0-energy-retrieval--83') {
+          // Handle Energy Retrieval trainer card
+          // Requires discarding 1 card from hand (handCardId)
+          // Retrieves up to 2 basic Energy cards from discard pile (selectedCardIds)
+          if (!handCardId) {
+            throw new BadRequestException('handCardId is required for Energy Retrieval');
+          }
+
+          if (!selectedCardIds || !Array.isArray(selectedCardIds)) {
+            throw new BadRequestException('selectedCardIds is required for Energy Retrieval (array of energy card IDs to retrieve, can be empty)');
+          }
+
+          if (selectedCardIds.length > 2) {
+            throw new BadRequestException('Energy Retrieval can retrieve at most 2 energy cards');
+          }
+
+          // Remove selected card from hand and add to discard pile
+          const handCardIndexToRemove = handCardIndex !== undefined 
+            ? handCardIndex 
+            : playerState.hand.indexOf(handCardId);
+          
+          if (handCardIndexToRemove === -1 || handCardIndexToRemove >= playerState.hand.length) {
+            throw new BadRequestException('Selected card is not in hand');
+          }
+
+          if (playerState.hand[handCardIndexToRemove] !== handCardId) {
+            throw new BadRequestException('handCardId does not match card at handCardIndex');
+          }
+
+          // Remove selected card from hand (the card being discarded for Energy Retrieval)
+          const updatedHandAfterDiscard = playerState.hand.filter(
+            (_, index) => index !== handCardIndexToRemove,
+          );
+
+          // Remove Energy Retrieval card from hand (it will be added to discard pile later)
+          const handWithoutEnergyRetrieval = updatedHandAfterDiscard.filter(
+            (id) => id !== cardId,
+          );
+
+          // Handle energy retrieval if cards are selected
+          let updatedDiscardPileAfterDiscard = [...playerState.discardPile];
+          let updatedHandWithRetrieved = [...handWithoutEnergyRetrieval];
+
+          if (selectedCardIds.length > 0) {
+            // Validate that all selected cards are in discard pile
+            for (const selectedCardId of selectedCardIds) {
+              if (!playerState.discardPile.includes(selectedCardId)) {
+                throw new BadRequestException(`Selected card ${selectedCardId} is not in discard pile`);
+              }
+            }
+
+            // Remove selected energy cards from discard pile
+            // Remove each card in selectedCardIds (one occurrence per entry in the array)
+            // This handles cases where the same card ID appears multiple times in selectedCardIds
+            for (const selectedCardId of selectedCardIds) {
+              const indexToRemove = updatedDiscardPileAfterDiscard.indexOf(selectedCardId);
+              if (indexToRemove === -1) {
+                throw new BadRequestException(`Selected card ${selectedCardId} is not in discard pile`);
+              }
+              // Remove one occurrence at a time (the first match)
+              updatedDiscardPileAfterDiscard = updatedDiscardPileAfterDiscard.filter(
+                (_, index) => index !== indexToRemove,
+              );
+            }
+
+            // Add retrieved energy cards to hand
+            updatedHandWithRetrieved = [...handWithoutEnergyRetrieval, ...selectedCardIds];
+          }
+
+          // Add discarded hand card to discard pile
+          updatedDiscardPileAfterDiscard = [...updatedDiscardPileAfterDiscard, handCardId];
+
+          // Note: Energy Retrieval card will be added to discard pile by the generic trainer removal code below
+          updatedPlayerState = playerState
+            .withHand(updatedHandWithRetrieved)
+            .withDiscardPile(updatedDiscardPileAfterDiscard);
         } else {
           throw new BadRequestException(`Trainer card ${cardId} is not yet implemented`);
         }
 
         // Remove trainer card from hand and add to discard pile
-        const updatedHand = playerState.hand.filter((id) => id !== cardId);
-        const updatedDiscardPile = [...playerState.discardPile, cardId];
-        const updatedPlayerState = playerState
-          .withHand(updatedHand)
-          .withDiscardPile(updatedDiscardPile);
+        // Note: For Energy Retrieval, hand may have already been updated
+        const finalHand = updatedPlayerState.hand.filter((id) => id !== cardId);
+        const finalDiscardPile = [...updatedPlayerState.discardPile, cardId];
+        const finalPlayerState = updatedPlayerState
+          .withHand(finalHand)
+          .withDiscardPile(finalDiscardPile);
 
         // Update game state
         const updatedGameState =
           playerIdentifier === PlayerIdentifier.PLAYER1
             ? gameState
-                .withPlayer1State(updatedPlayerState)
+                .withPlayer1State(finalPlayerState)
                 .withPlayer2State(updatedOpponentState)
             : gameState
-                .withPlayer2State(updatedPlayerState)
+                .withPlayer2State(finalPlayerState)
                 .withPlayer1State(updatedOpponentState);
 
         const actionSummary = new ActionSummary(
@@ -1135,6 +1286,11 @@ export class ExecuteTurnActionUseCase {
           }
         }
 
+        // Parse attack text for self-damage and bench damage
+        const attackText = attack.text || '';
+        const selfDamage = this.parseSelfDamage(attackText, attackerCard.name);
+        const benchDamage = this.parseBenchDamage(attackText);
+
         // Apply damage to opponent's active Pokemon
         const newHp = Math.max(0, opponentState.activePokemon.currentHp - damage);
         const updatedOpponentActive = opponentState.activePokemon.withHp(newHp);
@@ -1145,9 +1301,119 @@ export class ExecuteTurnActionUseCase {
         let updatedOpponentState = opponentState.withActivePokemon(updatedOpponentActive);
         let updatedPlayerState = playerState;
 
-        // If knocked out, move to discard pile
+        // Apply bench damage to opponent's bench Pokemon
+        if (benchDamage > 0) {
+          const updatedOpponentBench = opponentState.bench.map((benchPokemon) => {
+            const benchHp = Math.max(0, benchPokemon.currentHp - benchDamage);
+            return benchPokemon.withHp(benchHp);
+          });
+          
+          // Move knocked out bench Pokemon to discard pile
+          const knockedOutBench = updatedOpponentBench.filter((p) => p.currentHp === 0);
+          let remainingBench = updatedOpponentBench.filter((p) => p.currentHp > 0);
+          
+          // Re-index bench positions after removing knocked out Pokemon
+          remainingBench = remainingBench.map((pokemon, index) => {
+            const newPosition = `BENCH_${index}` as PokemonPosition;
+            return new CardInstance(
+              pokemon.instanceId,
+              pokemon.cardId,
+              newPosition,
+              pokemon.currentHp,
+              pokemon.maxHp,
+              pokemon.attachedEnergy,
+              pokemon.statusEffect,
+              pokemon.damageCounters,
+            );
+          });
+          
+          // Collect all cards to discard: Pokemon card + attached energy
+          const cardsToDiscard = knockedOutBench.flatMap((p) => [
+            p.cardId,
+            ...p.attachedEnergy,
+          ]);
+          
+          const discardPile = [
+            ...opponentState.discardPile,
+            ...cardsToDiscard,
+          ];
+          
+          updatedOpponentState = updatedOpponentState
+            .withBench(remainingBench)
+            .withDiscardPile(discardPile);
+        }
+
+        // Apply bench damage to player's own bench Pokemon (if attack affects both players' benches)
+        if (benchDamage > 0 && attackText.toLowerCase().includes('each player')) {
+          const updatedPlayerBench = playerState.bench.map((benchPokemon) => {
+            const benchHp = Math.max(0, benchPokemon.currentHp - benchDamage);
+            return benchPokemon.withHp(benchHp);
+          });
+          
+          // Move knocked out bench Pokemon to discard pile
+          const knockedOutPlayerBench = updatedPlayerBench.filter((p) => p.currentHp === 0);
+          let remainingPlayerBench = updatedPlayerBench.filter((p) => p.currentHp > 0);
+          
+          // Re-index bench positions after removing knocked out Pokemon
+          remainingPlayerBench = remainingPlayerBench.map((pokemon, index) => {
+            const newPosition = `BENCH_${index}` as PokemonPosition;
+            return new CardInstance(
+              pokemon.instanceId,
+              pokemon.cardId,
+              newPosition,
+              pokemon.currentHp,
+              pokemon.maxHp,
+              pokemon.attachedEnergy,
+              pokemon.statusEffect,
+              pokemon.damageCounters,
+            );
+          });
+          
+          // Collect all cards to discard: Pokemon card + attached energy
+          const playerCardsToDiscard = knockedOutPlayerBench.flatMap((p) => [
+            p.cardId,
+            ...p.attachedEnergy,
+          ]);
+          
+          const playerDiscardPile = [
+            ...playerState.discardPile,
+            ...playerCardsToDiscard,
+          ];
+          
+          updatedPlayerState = updatedPlayerState
+            .withBench(remainingPlayerBench)
+            .withDiscardPile(playerDiscardPile);
+        }
+
+        // Apply self-damage to attacker
+        if (selfDamage > 0 && playerState.activePokemon) {
+          const attackerNewHp = Math.max(0, playerState.activePokemon.currentHp - selfDamage);
+          const updatedAttacker = playerState.activePokemon.withHp(attackerNewHp);
+          
+          // Check if attacker is knocked out by self-damage
+          if (attackerNewHp === 0) {
+            // Collect all cards to discard: Pokemon card + attached energy
+            const attackerCardsToDiscard = [
+              playerState.activePokemon.cardId,
+              ...playerState.activePokemon.attachedEnergy,
+            ];
+            const attackerDiscardPile = [...updatedPlayerState.discardPile, ...attackerCardsToDiscard];
+            updatedPlayerState = updatedPlayerState
+              .withActivePokemon(null)
+              .withDiscardPile(attackerDiscardPile);
+          } else {
+            updatedPlayerState = updatedPlayerState.withActivePokemon(updatedAttacker);
+          }
+        }
+
+        // If opponent's active Pokemon is knocked out, move to discard pile
         if (isKnockedOut) {
-          const discardPile = [...opponentState.discardPile, opponentState.activePokemon.cardId];
+          // Collect all cards to discard: Pokemon card + attached energy
+          const activeCardsToDiscard = [
+            opponentState.activePokemon.cardId,
+            ...opponentState.activePokemon.attachedEnergy,
+          ];
+          const discardPile = [...updatedOpponentState.discardPile, ...activeCardsToDiscard];
           updatedOpponentState = updatedOpponentState
             .withActivePokemon(null)
             .withDiscardPile(discardPile);
@@ -1179,6 +1445,25 @@ export class ExecuteTurnActionUseCase {
 
         const finalGameState = nextPhaseGameState.withAction(actionSummary);
         match.updateGameState(finalGameState);
+
+        // Check win conditions after attack (e.g., opponent has no Pokemon left)
+        const winCheck = this.stateMachineService.checkWinConditions(
+          finalGameState.player1State,
+          finalGameState.player2State,
+        );
+        if (winCheck.hasWinner && winCheck.winner) {
+          const winnerId =
+            winCheck.winner === PlayerIdentifier.PLAYER1
+              ? match.player1Id!
+              : match.player2Id!;
+          match.endMatch(
+            winnerId,
+            winCheck.winner === PlayerIdentifier.PLAYER1
+              ? MatchResult.PLAYER1_WIN
+              : MatchResult.PLAYER2_WIN,
+            winCheck.winCondition as WinCondition,
+          );
+        }
 
         return await this.matchRepository.save(match);
       }
@@ -1452,6 +1737,25 @@ export class ExecuteTurnActionUseCase {
         const finalGameState = updatedGameState.withAction(actionSummary);
         match.updateGameState(finalGameState);
 
+        // Check win conditions after prize selection (e.g., player collected last prize)
+        const winCheck = this.stateMachineService.checkWinConditions(
+          finalGameState.player1State,
+          finalGameState.player2State,
+        );
+        if (winCheck.hasWinner && winCheck.winner) {
+          const winnerId =
+            winCheck.winner === PlayerIdentifier.PLAYER1
+              ? match.player1Id!
+              : match.player2Id!;
+          match.endMatch(
+            winnerId,
+            winCheck.winner === PlayerIdentifier.PLAYER1
+              ? MatchResult.PLAYER1_WIN
+              : MatchResult.PLAYER2_WIN,
+            winCheck.winCondition as WinCondition,
+          );
+        }
+
         return await this.matchRepository.save(match);
       }
 
@@ -1543,6 +1847,57 @@ export class ExecuteTurnActionUseCase {
     }
 
     return null;
+  }
+
+  /**
+   * Parse self-damage from attack text
+   * Example: "Magnemite does 40 damage to itself"
+   */
+  private parseSelfDamage(attackText: string, pokemonName: string): number {
+    const text = attackText.toLowerCase();
+    const nameLower = pokemonName.toLowerCase();
+    
+    // Pattern: "[Pokemon] does X damage to itself"
+    const selfDamageMatch = text.match(new RegExp(`${nameLower}\\s+does\\s+(\\d+)\\s+damage\\s+to\\s+itself`, 'i'));
+    if (selfDamageMatch) {
+      return parseInt(selfDamageMatch[1], 10);
+    }
+    
+    // Alternative pattern: "does X damage to itself" (without Pokemon name)
+    const genericMatch = text.match(/does\s+(\d+)\s+damage\s+to\s+itself/i);
+    if (genericMatch) {
+      return parseInt(genericMatch[1], 10);
+    }
+    
+    return 0;
+  }
+
+  /**
+   * Parse bench damage from attack text
+   * Example: "Does 10 damage to each Pokémon on each player's Bench"
+   */
+  private parseBenchDamage(attackText: string): number {
+    const text = attackText.toLowerCase();
+    
+    // Pattern: "Does X damage to each Pokémon on each player's Bench"
+    const eachPlayerMatch = text.match(/does\s+(\d+)\s+damage\s+to\s+each\s+pokémon\s+on\s+each\s+player'?s?\s+bench/i);
+    if (eachPlayerMatch) {
+      return parseInt(eachPlayerMatch[1], 10);
+    }
+    
+    // Pattern: "Does X damage to each of your opponent's Benched Pokémon"
+    const opponentBenchMatch = text.match(/does\s+(\d+)\s+damage\s+to\s+each\s+of\s+your\s+opponent'?s?\s+benched\s+pokémon/i);
+    if (opponentBenchMatch) {
+      return parseInt(opponentBenchMatch[1], 10);
+    }
+    
+    // Pattern: "Does X damage to each Pokémon on [player]'s Bench"
+    const benchMatch = text.match(/does\s+(\d+)\s+damage\s+to\s+each\s+pokémon\s+on\s+.*bench/i);
+    if (benchMatch) {
+      return parseInt(benchMatch[1], 10);
+    }
+    
+    return 0;
   }
 }
 

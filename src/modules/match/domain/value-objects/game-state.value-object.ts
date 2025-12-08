@@ -1,6 +1,7 @@
 import { TurnPhase, PlayerIdentifier } from '../enums';
 import { PlayerGameState } from './player-game-state.value-object';
 import { ActionSummary } from './action-summary.value-object';
+import { CoinFlipState } from './coin-flip-state.value-object';
 
 /**
  * Game State Value Object
@@ -16,6 +17,7 @@ export class GameState {
     public readonly currentPlayer: PlayerIdentifier, // Whose turn it is
     public readonly lastAction: ActionSummary | null, // Last action taken
     public readonly actionHistory: ActionSummary[], // Complete history of actions
+    public readonly coinFlipState: CoinFlipState | null = null, // Current coin flip state
   ) {
     this.validate();
   }
@@ -41,6 +43,7 @@ export class GameState {
       this.currentPlayer,
       this.lastAction,
       this.actionHistory,
+      this.coinFlipState,
     );
   }
 
@@ -56,6 +59,7 @@ export class GameState {
       this.currentPlayer,
       this.lastAction,
       this.actionHistory,
+      this.coinFlipState,
     );
   }
 
@@ -71,6 +75,7 @@ export class GameState {
       this.currentPlayer,
       this.lastAction,
       this.actionHistory,
+      this.coinFlipState,
     );
   }
 
@@ -86,6 +91,7 @@ export class GameState {
       this.currentPlayer,
       this.lastAction,
       this.actionHistory,
+      this.coinFlipState,
     );
   }
 
@@ -101,6 +107,7 @@ export class GameState {
       currentPlayer,
       this.lastAction,
       this.actionHistory,
+      this.coinFlipState,
     );
   }
 
@@ -116,6 +123,23 @@ export class GameState {
       this.currentPlayer,
       action,
       [...this.actionHistory, action],
+      this.coinFlipState,
+    );
+  }
+
+  /**
+   * Create a new GameState with updated coin flip state
+   */
+  withCoinFlipState(coinFlipState: CoinFlipState | null): GameState {
+    return new GameState(
+      this.player1State,
+      this.player2State,
+      this.turnNumber,
+      this.phase,
+      this.currentPlayer,
+      this.lastAction,
+      this.actionHistory,
+      coinFlipState,
     );
   }
 

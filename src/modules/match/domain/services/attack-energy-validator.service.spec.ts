@@ -338,3 +338,13 @@ describe('AttackEnergyValidatorService', () => {
   });
 });
 
+
+
+
+
+
+
+
+
+
+

@@ -5,11 +5,13 @@ import {
   Rarity,
   EvolutionStage,
   EnergyType,
+  TrainerType,
 } from '../../domain/enums';
 import { AbilityDto } from './ability.dto';
 import { AttackDto } from './attack.dto';
 import { WeaknessDto } from './weakness.dto';
 import { ResistanceDto } from './resistance.dto';
+import { TrainerEffectDto } from './trainer-effect.dto';
 
 /**
  * Card Detail DTO
@@ -171,5 +173,20 @@ export class CardDetailDto {
     example: EnergyType.FIRE,
   })
   energyType?: EnergyType;
+
+  @ApiProperty({
+    description: 'Trainer type (for Trainer cards only)',
+    enum: TrainerType,
+    required: false,
+    example: TrainerType.ITEM,
+  })
+  trainerType?: TrainerType;
+
+  @ApiProperty({
+    description: 'Trainer effects (for Trainer cards only)',
+    type: [TrainerEffectDto],
+    required: false,
+  })
+  trainerEffects?: TrainerEffectDto[];
 }
 

@@ -209,6 +209,7 @@ export class MatchStateMachineService {
       ],
       [TurnPhase.ATTACK]: [
         PlayerActionType.ATTACK,
+        PlayerActionType.GENERATE_COIN_FLIP,
         PlayerActionType.END_TURN,
         PlayerActionType.CONCEDE,
       ],
@@ -459,6 +460,7 @@ export class MatchStateMachineService {
       ],
       [TurnPhase.ATTACK]: [
         PlayerActionType.ATTACK,
+        PlayerActionType.GENERATE_COIN_FLIP,
         PlayerActionType.END_TURN,
       ],
       [TurnPhase.END]: [PlayerActionType.END_TURN],

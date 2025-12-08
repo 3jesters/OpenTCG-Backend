@@ -11,8 +11,15 @@ import {
   PlayerGameState,
   CardInstance,
   ActionSummary,
+  CoinFlipState,
+  CoinFlipResult,
+  CoinFlipConfiguration,
 } from '../../domain/value-objects';
 import { StatusEffect, PokemonPosition } from '../../domain/enums';
+import { CoinFlipStatus } from '../../domain/enums/coin-flip-status.enum';
+import { CoinFlipContext } from '../../domain/enums/coin-flip-context.enum';
+import { CoinFlipCountType, DamageCalculationType, VariableCoinCountSource } from '../../domain/value-objects/coin-flip-configuration.value-object';
+import { EnergyType } from '../../../card/domain/enums';
 
 /**
  * JSON structure for match persistence
@@ -56,6 +63,7 @@ export interface GameStateJson {
   currentPlayer: PlayerIdentifier;
   lastAction: ActionSummaryJson | null;
   actionHistory: ActionSummaryJson[];
+  coinFlipState?: CoinFlipStateJson | null;
 }
 
 /**
@@ -94,6 +102,44 @@ export interface ActionSummaryJson {
   actionType: string;
   timestamp: string;
   actionData: Record<string, unknown>;
+}
+
+/**
+ * JSON structure for coin flip state
+ */
+export interface CoinFlipStateJson {
+  status: CoinFlipStatus;
+  context: CoinFlipContext;
+  configuration: CoinFlipConfigurationJson;
+  results: CoinFlipResultJson[];
+  attackIndex?: number;
+  pokemonInstanceId?: string;
+  statusEffect?: string;
+  actionId?: string;
+}
+
+/**
+ * JSON structure for coin flip result
+ */
+export interface CoinFlipResultJson {
+  flipIndex: number;
+  result: 'heads' | 'tails';
+  seed: number;
+}
+
+/**
+ * JSON structure for coin flip configuration
+ */
+export interface CoinFlipConfigurationJson {
+  countType: CoinFlipCountType;
+  fixedCount?: number;
+  variableSource?: VariableCoinCountSource;
+  energyType?: EnergyType;
+  damageCalculationType: DamageCalculationType;
+  baseDamage: number;
+  damagePerHead?: number;
+  conditionalBonus?: number;
+  selfDamageOnTails?: number;
 }
 
 /**
@@ -188,6 +234,9 @@ export class MatchMapper {
       actionHistory: gameState.actionHistory.map((action) =>
         this.actionSummaryToJson(action),
       ),
+      coinFlipState: gameState.coinFlipState
+        ? this.coinFlipStateToJson(gameState.coinFlipState)
+        : null,
     };
   }
 
@@ -205,6 +254,7 @@ export class MatchMapper {
         ? this.actionSummaryFromJson(json.lastAction)
         : null,
       json.actionHistory.map((action) => this.actionSummaryFromJson(action)),
+      json.coinFlipState ? this.coinFlipStateFromJson(json.coinFlipState) : null,
     );
   }
 
@@ -301,6 +351,94 @@ export class MatchMapper {
       json.actionType as any, // Will be properly typed
       new Date(json.timestamp),
       json.actionData,
+    );
+  }
+
+  /**
+   * Convert CoinFlipState to JSON
+   */
+  private static coinFlipStateToJson(state: CoinFlipState): CoinFlipStateJson {
+    return {
+      status: state.status,
+      context: state.context,
+      configuration: this.coinFlipConfigurationToJson(state.configuration),
+      results: state.results.map((r) => this.coinFlipResultToJson(r)),
+      attackIndex: state.attackIndex,
+      pokemonInstanceId: state.pokemonInstanceId,
+      statusEffect: state.statusEffect,
+      actionId: state.actionId,
+    };
+  }
+
+  /**
+   * Convert JSON to CoinFlipState
+   */
+  private static coinFlipStateFromJson(json: CoinFlipStateJson): CoinFlipState {
+    return new CoinFlipState(
+      json.status,
+      json.context,
+      this.coinFlipConfigurationFromJson(json.configuration),
+      json.results.map((r) => this.coinFlipResultFromJson(r)),
+      json.attackIndex,
+      json.pokemonInstanceId,
+      json.statusEffect,
+      json.actionId,
+    );
+  }
+
+  /**
+   * Convert CoinFlipResult to JSON
+   */
+  private static coinFlipResultToJson(result: CoinFlipResult): CoinFlipResultJson {
+    return {
+      flipIndex: result.flipIndex,
+      result: result.result,
+      seed: result.seed,
+    };
+  }
+
+  /**
+   * Convert JSON to CoinFlipResult
+   */
+  private static coinFlipResultFromJson(json: CoinFlipResultJson): CoinFlipResult {
+    return new CoinFlipResult(json.flipIndex, json.result, json.seed);
+  }
+
+  /**
+   * Convert CoinFlipConfiguration to JSON
+   */
+  private static coinFlipConfigurationToJson(
+    config: CoinFlipConfiguration,
+  ): CoinFlipConfigurationJson {
+    return {
+      countType: config.countType,
+      fixedCount: config.fixedCount,
+      variableSource: config.variableSource,
+      energyType: config.energyType,
+      damageCalculationType: config.damageCalculationType,
+      baseDamage: config.baseDamage,
+      damagePerHead: config.damagePerHead,
+      conditionalBonus: config.conditionalBonus,
+      selfDamageOnTails: config.selfDamageOnTails,
+    };
+  }
+
+  /**
+   * Convert JSON to CoinFlipConfiguration
+   */
+  private static coinFlipConfigurationFromJson(
+    json: CoinFlipConfigurationJson,
+  ): CoinFlipConfiguration {
+    return new CoinFlipConfiguration(
+      json.countType,
+      json.fixedCount,
+      json.variableSource,
+      json.energyType,
+      json.damageCalculationType,
+      json.baseDamage,
+      json.damagePerHead,
+      json.conditionalBonus,
+      json.selfDamageOnTails,
     );
   }
 }

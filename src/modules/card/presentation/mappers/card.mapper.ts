@@ -5,7 +5,8 @@ import { AbilityDto } from '../dto/ability.dto';
 import { AttackDto } from '../dto/attack.dto';
 import { WeaknessDto } from '../dto/weakness.dto';
 import { ResistanceDto } from '../dto/resistance.dto';
-import { Ability, Attack, Weakness, Resistance } from '../../domain/value-objects';
+import { TrainerEffectDto } from '../dto/trainer-effect.dto';
+import { Ability, Attack, Weakness, Resistance, TrainerEffect } from '../../domain/value-objects';
 
 /**
  * Card Mapper
@@ -58,6 +59,10 @@ export class CardMapper {
       imageUrl: card.imageUrl,
       regulationMark: card.regulationMark,
       energyType: card.energyType,
+      trainerType: card.trainerType,
+      trainerEffects: card.trainerEffects.length > 0
+        ? card.trainerEffects.map((effect) => this.mapTrainerEffect(effect))
+        : undefined,
     };
   }
 
@@ -103,6 +108,20 @@ export class CardMapper {
     return {
       type: resistance.type,
       modifier: resistance.modifier,
+    };
+  }
+
+  /**
+   * Map TrainerEffect value object to TrainerEffectDto
+   */
+  private static mapTrainerEffect(effect: TrainerEffect): TrainerEffectDto {
+    return {
+      effectType: effect.effectType,
+      target: effect.target,
+      value: effect.value,
+      cardType: effect.cardType,
+      condition: effect.condition,
+      description: effect.description,
     };
   }
 }

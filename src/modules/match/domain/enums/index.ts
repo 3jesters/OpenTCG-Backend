@@ -7,4 +7,6 @@ export * from './pokemon-position.enum';
 export * from './win-condition.enum';
 export * from './status-effect.enum';
 export * from './action-validation-error.enum';
+export * from './coin-flip-status.enum';
+export * from './coin-flip-context.enum';
 

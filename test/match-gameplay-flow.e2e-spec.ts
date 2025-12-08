@@ -13,6 +13,7 @@ describe('Match Gameplay Flow E2E', () => {
   const MATCH_ID = 'spec-match-gameplay-flow';
   const PLAYER1_ID = 'test-player-1';
   const PLAYER2_ID = 'test-player-2';
+  const matchFilePath = join(matchesDirectory, `${MATCH_ID}.json`);
 
   const initialMatchState = {
     id: 'spec-match-gameplay-flow',
@@ -104,7 +105,7 @@ describe('Match Gameplay Flow E2E', () => {
           position: 'ACTIVE',
           currentHp: 40,
           maxHp: 40,
-          attachedEnergy: [],
+          attachedEnergy: [], // Start with no energy, test will attach energy
           statusEffect: 'NONE',
           damageCounters: 0,
         },
@@ -255,13 +256,7 @@ describe('Match Gameplay Flow E2E', () => {
   });
 
   beforeEach(async () => {
-    // Clean up: delete the test match file if it exists from previous runs
-    const matchFilePath = join(matchesDirectory, `${MATCH_ID}.json`);
-    try {
-      await unlink(matchFilePath);
-    } catch (error) {
-      // File might not exist, ignore
-    }
+    // Files are cleaned up by jest-global-setup before test run
 
     // Set deterministic shuffle seed to prevent random shuffling
     process.env.MATCH_SHUFFLE_SEED = '99999';
@@ -509,8 +504,22 @@ describe('Match Gameplay Flow E2E', () => {
       ),
     ).toBe(false);
 
-    // Step 12: Player 1 attacks with Flame Tail (30 damage, but 60 due to weakness)
-    // Note: Ponyta needs 2 FIRE energy for Flame Tail, but we'll skip energy validation for now
+    // Step 12a: Player 1 attaches a second FIRE energy (Flame Tail requires 2 FIRE energy)
+    const player1Energy2Response = await request(server())
+      .post(`/api/v1/matches/${MATCH_ID}/actions`)
+      .send({
+        playerId: PLAYER1_ID,
+        actionType: 'ATTACH_ENERGY',
+        actionData: {
+          energyCardId: 'pokemon-base-set-v1.0-fire-energy--99',
+          target: 'ACTIVE',
+        },
+      })
+      .expect(200);
+
+    expect(player1Energy2Response.body.playerState.activePokemon.attachedEnergy.length).toBe(2);
+
+    // Step 12b: Player 1 attacks with Flame Tail (30 damage, but 60 due to weakness)
     const player1AttackResponse = await request(server())
       .post(`/api/v1/matches/${MATCH_ID}/actions`)
       .send({

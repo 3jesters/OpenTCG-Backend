@@ -222,6 +222,46 @@ await executeAction(matchId, playerId, 'END_TURN', {});
 
 ---
 
+### [CLIENT-COIN-FLIP-SYSTEM.md](./CLIENT-COIN-FLIP-SYSTEM.md)
+**Complete guide for coin flip system and client interaction**
+
+**Contains:**
+- How to detect when coin flip is needed
+- Coin flip states (READY_TO_FLIP, FLIP_RESULT, COMPLETED)
+- Client-server communication flow
+- GENERATE_COIN_FLIP action execution
+- Handling coin flip results
+- Different coin flip contexts (ATTACK, STATUS_CHECK, etc.)
+- Damage calculation types
+- Complete TypeScript examples
+- Error handling patterns
+- Best practices for UI implementation
+
+**Use this when:**
+- Implementing coin flip UI components
+- Handling attacks that require coin flips
+- Managing status effect coin flips (e.g., sleep checks)
+- Displaying coin flip results to players
+- Understanding coin flip state transitions
+- Building interactive coin flip dialogs
+
+**Quick Example:**
+```typescript
+// Check if coin flip needed
+if (matchState.coinFlipState?.status === 'READY_TO_FLIP') {
+  // Show coin flip UI
+  showCoinFlipDialog();
+  
+  // Execute coin flip
+  const result = await executeAction(matchId, playerId, 'GENERATE_COIN_FLIP', {});
+  
+  // Display results
+  displayCoinFlipResults(result.lastAction.actionData.coinFlipResults);
+}
+```
+
+---
+
 ### [MATCH-STATE-MACHINE-DIAGRAM.md](./MATCH-STATE-MACHINE-DIAGRAM.md)
 **Visual state machine diagram for match states**
 
@@ -438,6 +478,7 @@ if (isInitialSetup && revealedHand) {
 | **FRONTEND-APP.md** | Complete frontend guide | Large | Architecture, planning |
 | **FRONTEND-QUICK-REFERENCE.md** | Developer cheat sheet | Small | Quick lookups, active dev |
 | **FRONTEND-COMPONENT-GUIDE.md** | UI component guide | Medium | Building components, design |
+| **CLIENT-COIN-FLIP-SYSTEM.md** | Coin flip system guide | Medium | Coin flip UI, attack mechanics |
 
 ---
 
@@ -505,10 +546,11 @@ if (isInitialSetup && revealedHand) {
 
 ### Gameplay Actions (in CLIENT-GAMEPLAY-ACTIONS.md)
 ```
-1. DRAW_CARD      - Draw one card from deck (DRAW phase → MAIN_PHASE)
-2. ATTACH_ENERGY  - Attach energy card to Pokemon (MAIN_PHASE)
-3. EVOLVE_POKEMON - Evolve Pokemon on bench/active (MAIN_PHASE)
-4. END_TURN       - End current turn, switch to next player (any phase)
+1. DRAW_CARD         - Draw one card from deck (DRAW phase → MAIN_PHASE)
+2. ATTACH_ENERGY     - Attach energy card to Pokemon (MAIN_PHASE)
+3. EVOLVE_POKEMON    - Evolve Pokemon on bench/active (MAIN_PHASE)
+4. GENERATE_COIN_FLIP - Generate coin flip result (ATTACK phase, when coin flip required)
+5. END_TURN          - End current turn, switch to next player (any phase)
 ```
 
 ### Core Entities (in all frontend docs)

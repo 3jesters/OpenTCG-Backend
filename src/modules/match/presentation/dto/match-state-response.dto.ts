@@ -9,7 +9,9 @@ import {
   GameState,
   PlayerGameState,
   CardInstance,
+  CoinFlipState,
 } from '../../domain/value-objects';
+import { CardId } from '../../../../shared/types/card.types';
 
 /**
  * Match State Response DTO
@@ -31,6 +33,11 @@ export class MatchStateResponseDto {
   playerHasDrawnValidHand: boolean;
   opponentHasDrawnValidHand: boolean;
   canAttachEnergy: boolean;
+  coinFlipState?: CoinFlipStateDto | null;
+  winnerId?: string | null;
+  result?: string | null;
+  winCondition?: string | null;
+  endedAt?: string | null;
 
   static fromDomain(
     match: Match,
@@ -113,6 +120,13 @@ export class MatchStateResponseDto {
       playerHasDrawnValidHand,
       opponentHasDrawnValidHand,
       canAttachEnergy,
+      coinFlipState: gameState?.coinFlipState
+        ? CoinFlipStateDto.fromDomain(gameState.coinFlipState)
+        : null,
+      winnerId: match.winnerId,
+      result: match.result,
+      winCondition: match.winCondition,
+      endedAt: match.endedAt?.toISOString() || null,
     };
   }
 }
@@ -122,15 +136,16 @@ export class MatchStateResponseDto {
  * Full state visible to the player
  */
 class PlayerStateDto {
-  hand: string[];
+  hand: CardId[];
   handCount: number;
   deckCount: number;
   discardCount: number;
+  discardPile: CardId[]; // Public discard pile contents
   activePokemon: PokemonInPlayDto | null;
   bench: PokemonInPlayDto[];
   prizeCardsRemaining: number;
-  prizeCards: string[]; // Prize cards for selection (visible to player)
-  attachedEnergy: string[];
+  prizeCards: CardId[]; // Prize cards for selection (visible to player)
+  attachedEnergy: CardId[];
 
   static fromDomain(state: PlayerGameState): PlayerStateDto {
     return {
@@ -138,6 +153,7 @@ class PlayerStateDto {
       handCount: state.getHandCount(),
       deckCount: state.getDeckCount(),
       discardCount: state.discardPile.length,
+      discardPile: state.discardPile, // Include discard pile contents
       activePokemon: state.activePokemon
         ? PokemonInPlayDto.fromDomain(state.activePokemon)
         : null,
@@ -154,6 +170,7 @@ class PlayerStateDto {
       handCount: 0,
       deckCount: 0,
       discardCount: 0,
+      discardPile: [],
       activePokemon: null,
       bench: [],
       prizeCardsRemaining: 0,
@@ -171,13 +188,14 @@ class OpponentStateDto {
   handCount: number;
   deckCount: number;
   discardCount: number;
+  discardPile: CardId[]; // Public discard pile contents
   activePokemon: PokemonInPlayDto | null;
   bench: PokemonInPlayDto[];
   benchCount: number;
   prizeCardsRemaining: number;
-  attachedEnergy: string[];
-  revealedHand?: string[]; // Opponent's hand revealed during INITIAL_SETUP reshuffle
-  drawnCards?: string[]; // Opponent's drawn cards during DRAWING_CARDS (if not validated)
+  attachedEnergy: CardId[];
+  revealedHand?: CardId[]; // Opponent's hand revealed during INITIAL_SETUP reshuffle
+  drawnCards?: CardId[]; // Opponent's drawn cards during DRAWING_CARDS (if not validated)
   isDrawing?: boolean; // Indicates opponent is in process of drawing
 
   static fromDomain(
@@ -191,6 +209,7 @@ class OpponentStateDto {
       handCount: state.getHandCount(),
       deckCount: state.getDeckCount(),
       discardCount: state.discardPile.length,
+      discardPile: state.discardPile, // Include discard pile contents
       activePokemon: state.activePokemon
         ? PokemonInPlayDto.fromDomain(state.activePokemon)
         : null,
@@ -236,6 +255,7 @@ class OpponentStateDto {
       handCount: 0,
       deckCount: 0,
       discardCount: 0,
+      discardPile: [],
       activePokemon: null,
       bench: [],
       benchCount: 0,
@@ -253,11 +273,11 @@ class OpponentStateDto {
  */
 class PokemonInPlayDto {
   instanceId: string;
-  cardId: string;
+  cardId: CardId;
   position: string;
   currentHp: number;
   maxHp: number;
-  attachedEnergy: string[];
+  attachedEnergy: CardId[];
   statusEffect: string;
   damageCounters: number;
 
@@ -292,6 +312,43 @@ class ActionSummaryDto {
       actionType: action.actionType,
       timestamp: action.timestamp.toISOString(),
       actionData: action.actionData,
+    };
+  }
+}
+
+/**
+ * Coin Flip State DTO
+ */
+class CoinFlipStateDto {
+  status: string;
+  context: string;
+  configuration: any;
+  results: Array<{ flipIndex: number; result: 'heads' | 'tails'; seed: number }>;
+  attackIndex?: number;
+  pokemonInstanceId?: string;
+  statusEffect?: string;
+  actionId?: string;
+
+  static fromDomain(state: CoinFlipState): CoinFlipStateDto {
+    return {
+      status: state.status,
+      context: state.context,
+      configuration: {
+        countType: state.configuration.countType,
+        fixedCount: state.configuration.fixedCount,
+        damageCalculationType: state.configuration.damageCalculationType,
+        baseDamage: state.configuration.baseDamage,
+        damagePerHead: state.configuration.damagePerHead,
+      },
+      results: state.results.map((r) => ({
+        flipIndex: r.flipIndex,
+        result: r.result,
+        seed: r.seed,
+      })),
+      attackIndex: state.attackIndex,
+      pokemonInstanceId: state.pokemonInstanceId,
+      statusEffect: state.statusEffect,
+      actionId: state.actionId,
     };
   }
 }
