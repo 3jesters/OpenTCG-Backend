@@ -29,7 +29,7 @@ export class MatchStateResponseDto {
   lastAction?: ActionSummaryDto;
   playerDeckId: string | null;
   opponentDeckId: string | null;
-  coinTossResult: PlayerIdentifier | null;
+  firstPlayer: PlayerIdentifier | null;
   playerHasDrawnValidHand: boolean;
   opponentHasDrawnValidHand: boolean;
   playerHasApproved: boolean;
@@ -140,7 +140,7 @@ export class MatchStateResponseDto {
         : undefined,
       playerDeckId,
       opponentDeckId,
-      coinTossResult: match.coinTossResult,
+      firstPlayer: match.firstPlayer,
       playerHasDrawnValidHand,
       opponentHasDrawnValidHand,
       playerHasApproved,

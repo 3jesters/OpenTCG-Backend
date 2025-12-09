@@ -130,7 +130,7 @@ describe('Match Approval Flow E2E', () => {
 
       expect(player2State2.body.state).toBe('DRAWING_CARDS');
       expect(player2State2.body.opponentDeckId).toBe(FIRE_DECK);
-      expect(player2State2.body.coinTossResult).toBeNull(); // Coin toss hasn't happened yet
+      expect(player2State2.body.firstPlayer).toBeNull(); // Coin toss hasn't happened yet
       expect(player2State2.body.currentPlayer).toBeNull(); // currentPlayer is unknown before coin toss
       expect(player2State2.body.availableActions).toContain('DRAW_INITIAL_CARDS');
 
@@ -142,7 +142,7 @@ describe('Match Approval Flow E2E', () => {
 
       expect(player1State3.body.state).toBe('DRAWING_CARDS');
       expect(player1State3.body.opponentDeckId).toBe(WATER_DECK);
-      expect(player1State3.body.coinTossResult).toBeNull(); // Coin toss hasn't happened yet
+      expect(player1State3.body.firstPlayer).toBeNull(); // Coin toss hasn't happened yet
       expect(player1State3.body.currentPlayer).toBeNull(); // currentPlayer is unknown before coin toss
 
       // 10. Player 1 clicks draw cards button
@@ -322,10 +322,10 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       expect(player1State9.body.state).toBe('FIRST_PLAYER_SELECTION');
-      expect(player1State9.body.coinTossResult).toBeTruthy(); // Coin toss should have happened
-      expect(['PLAYER1', 'PLAYER2']).toContain(player1State9.body.coinTossResult);
+      expect(player1State9.body.firstPlayer).toBeTruthy(); // Coin toss should have happened
+      expect(['PLAYER1', 'PLAYER2']).toContain(player1State9.body.firstPlayer);
       expect(player1State9.body.currentPlayer).toBeTruthy(); // currentPlayer should be set after coin toss
-      expect(player1State9.body.currentPlayer).toBe(player1State9.body.coinTossResult); // currentPlayer should match coin toss result
+      expect(player1State9.body.currentPlayer).toBe(player1State9.body.firstPlayer); // currentPlayer should match first player
       expect(player1State9.body.playerHasConfirmedFirstPlayer).toBe(true);
       expect(player1State9.body.opponentHasConfirmedFirstPlayer).toBe(false);
 
@@ -346,10 +346,10 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       expect(player2State4.body.state).toBe('PLAYER_TURN');
-      expect(player2State4.body.coinTossResult).toBeTruthy();
-      expect(player2State4.body.coinTossResult).toBe(player1State9.body.coinTossResult); // Same result for both players
+      expect(player2State4.body.firstPlayer).toBeTruthy();
+      expect(player2State4.body.firstPlayer).toBe(player1State9.body.firstPlayer); // Same result for both players
       expect(player2State4.body.currentPlayer).toBeTruthy();
-      expect(player2State4.body.currentPlayer).toBe(player2State4.body.coinTossResult);
+      expect(player2State4.body.currentPlayer).toBe(player2State4.body.firstPlayer);
       expect(player2State4.body.opponentState.activePokemon).toBeTruthy();
       expect(player2State4.body.opponentState.bench.length).toBe(1);
       expect(player2State4.body.opponentState.handCount).toBeGreaterThan(0);
@@ -363,10 +363,10 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       expect(['PLAYER_TURN', 'BETWEEN_TURNS']).toContain(player1State10.body.state);
-      expect(player1State10.body.coinTossResult).toBeTruthy();
-      expect(player1State10.body.coinTossResult).toBe(player2State4.body.coinTossResult); // Same result for both players
+      expect(player1State10.body.firstPlayer).toBeTruthy();
+      expect(player1State10.body.firstPlayer).toBe(player2State4.body.firstPlayer); // Same result for both players
       expect(player1State10.body.currentPlayer).toBeTruthy();
-      expect(player1State10.body.currentPlayer).toBe(player1State10.body.coinTossResult);
+      expect(player1State10.body.currentPlayer).toBe(player1State10.body.firstPlayer);
       expect(player1State10.body.opponentState.activePokemon).toBeTruthy();
       expect(player1State10.body.opponentState.bench.length).toBe(1);
       expect(player1State10.body.opponentState.handCount).toBeGreaterThan(0);
@@ -430,7 +430,7 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       expect(stateAfterApproval.body.state).toBe('DRAWING_CARDS');
-      expect(stateAfterApproval.body.coinTossResult).toBeNull(); // Coin toss should NOT have happened
+      expect(stateAfterApproval.body.firstPlayer).toBeNull(); // Coin toss should NOT have happened
       expect(stateAfterApproval.body.currentPlayer).toBeNull(); // currentPlayer should be unknown
 
       // 4. Both players draw cards
@@ -519,7 +519,7 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       expect(stateAfterPlayer1Ready.body.state).toBe('SELECT_BENCH_POKEMON');
-      expect(stateAfterPlayer1Ready.body.coinTossResult).toBeNull(); // Coin toss should NOT have happened
+      expect(stateAfterPlayer1Ready.body.firstPlayer).toBeNull(); // Coin toss should NOT have happened
       expect(stateAfterPlayer1Ready.body.currentPlayer).toBeNull(); // currentPlayer should still be unknown
 
       // 9. Player 2 completes initial setup (second player - transitions to FIRST_PLAYER_SELECTION)
@@ -539,7 +539,7 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       expect(stateAfterPlayer2Ready.body.state).toBe('FIRST_PLAYER_SELECTION');
-      expect(stateAfterPlayer2Ready.body.coinTossResult).toBeNull(); // Coin toss hasn't happened yet
+      expect(stateAfterPlayer2Ready.body.firstPlayer).toBeNull(); // Coin toss hasn't happened yet
       expect(stateAfterPlayer2Ready.body.currentPlayer).toBeNull(); // currentPlayer is still unknown
       expect(stateAfterPlayer2Ready.body.availableActions).toContain('CONFIRM_FIRST_PLAYER');
 
@@ -560,10 +560,10 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       expect(stateAfterPlayer1Confirm.body.state).toBe('FIRST_PLAYER_SELECTION');
-      expect(stateAfterPlayer1Confirm.body.coinTossResult).toBeTruthy(); // Coin toss should have happened
-      expect(['PLAYER1', 'PLAYER2']).toContain(stateAfterPlayer1Confirm.body.coinTossResult);
+      expect(stateAfterPlayer1Confirm.body.firstPlayer).toBeTruthy(); // Coin toss should have happened
+      expect(['PLAYER1', 'PLAYER2']).toContain(stateAfterPlayer1Confirm.body.firstPlayer);
       expect(stateAfterPlayer1Confirm.body.currentPlayer).toBeTruthy(); // currentPlayer should be set after coin toss
-      expect(stateAfterPlayer1Confirm.body.currentPlayer).toBe(stateAfterPlayer1Confirm.body.coinTossResult); // currentPlayer should match coin toss result
+      expect(stateAfterPlayer1Confirm.body.currentPlayer).toBe(stateAfterPlayer1Confirm.body.firstPlayer); // currentPlayer should match first player
       expect(stateAfterPlayer1Confirm.body.playerHasConfirmedFirstPlayer).toBe(true);
       expect(stateAfterPlayer1Confirm.body.opponentHasConfirmedFirstPlayer).toBe(false);
 
@@ -584,10 +584,10 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       expect(player1FinalState.body.state).toBe('PLAYER_TURN');
-      expect(player1FinalState.body.coinTossResult).toBeTruthy(); // Coin toss result should now be set
-      expect(['PLAYER1', 'PLAYER2']).toContain(player1FinalState.body.coinTossResult);
+      expect(player1FinalState.body.firstPlayer).toBeTruthy(); // Coin toss result should now be set
+      expect(['PLAYER1', 'PLAYER2']).toContain(player1FinalState.body.firstPlayer);
       expect(player1FinalState.body.currentPlayer).toBeTruthy(); // currentPlayer should be set after coin toss
-      expect(player1FinalState.body.currentPlayer).toBe(player1FinalState.body.coinTossResult); // currentPlayer should match coin toss result
+      expect(player1FinalState.body.currentPlayer).toBe(player1FinalState.body.firstPlayer); // currentPlayer should match first player
     } finally {
       delete process.env.MATCH_SHUFFLE_SEED;
     }

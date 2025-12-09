@@ -34,7 +34,7 @@ export interface MatchJson {
   state: MatchState;
   currentPlayer: PlayerIdentifier | null;
   firstPlayer: PlayerIdentifier | null;
-  coinTossResult: PlayerIdentifier | null;
+  coinTossResult?: PlayerIdentifier | null; // Deprecated: kept for backward compatibility, use firstPlayer instead
   player1HasDrawnValidHand: boolean;
   player2HasDrawnValidHand: boolean;
   player1HasSetPrizeCards?: boolean;
@@ -165,7 +165,6 @@ export class MatchMapper {
       state: match.state,
       currentPlayer: match.currentPlayer,
       firstPlayer: match.firstPlayer,
-      coinTossResult: match.coinTossResult,
       player1HasDrawnValidHand: match.player1HasDrawnValidHand,
       player2HasDrawnValidHand: match.player2HasDrawnValidHand,
       player1HasSetPrizeCards: match.player1HasSetPrizeCards,
@@ -208,8 +207,8 @@ export class MatchMapper {
       json.player2DeckId,
       json.state,
       json.currentPlayer,
-      json.firstPlayer,
-      json.coinTossResult ?? null,
+      // Handle backward compatibility: use coinTossResult if firstPlayer is null (old data)
+      json.firstPlayer ?? json.coinTossResult ?? null,
       json.player1HasDrawnValidHand ?? false,
       json.player2HasDrawnValidHand ?? false,
       json.player1HasSetPrizeCards ?? false,

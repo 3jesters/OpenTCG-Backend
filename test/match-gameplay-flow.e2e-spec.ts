@@ -25,7 +25,7 @@ describe('Match Gameplay Flow E2E', () => {
     state: 'PLAYER_TURN',
     currentPlayer: 'PLAYER1',
     firstPlayer: 'PLAYER1',
-    coinTossResult: 'PLAYER1',
+    firstPlayer: 'PLAYER1',
     player1HasDrawnValidHand: true,
     player2HasDrawnValidHand: true,
     player1HasSetPrizeCards: true,

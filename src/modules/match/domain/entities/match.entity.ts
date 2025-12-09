@@ -29,7 +29,6 @@ export class Match {
   private _state: MatchState;
   private _currentPlayer: PlayerIdentifier | null;
   private _firstPlayer: PlayerIdentifier | null;
-  private _coinTossResult: PlayerIdentifier | null;
 
   // Setup Progress Tracking
   private _player1HasDrawnValidHand: boolean;
@@ -70,7 +69,6 @@ export class Match {
     this._player2DeckId = null;
     this._currentPlayer = null;
     this._firstPlayer = null;
-    this._coinTossResult = null;
     this._player1HasDrawnValidHand = false;
     this._player2HasDrawnValidHand = false;
     this._player1HasSetPrizeCards = false;
@@ -138,10 +136,6 @@ export class Match {
 
   get firstPlayer(): PlayerIdentifier | null {
     return this._firstPlayer;
-  }
-
-  get coinTossResult(): PlayerIdentifier | null {
-    return this._coinTossResult;
   }
 
   get player1HasDrawnValidHand(): boolean {
@@ -359,7 +353,6 @@ export class Match {
       ? PlayerIdentifier.PLAYER1 
       : PlayerIdentifier.PLAYER2;
 
-    this._coinTossResult = result;
     this._firstPlayer = result;
     this._currentPlayer = result; // Set currentPlayer after coin toss determines first player
     // State remains unchanged - will transition to PLAYER_TURN after both players confirm
@@ -392,7 +385,7 @@ export class Match {
     }
 
     // Perform coin toss on first confirmation (so first player can see the result)
-    if (this._coinTossResult === null) {
+    if (this._firstPlayer === null) {
       // Ensure currentPlayer is null before coin toss
       if (this._currentPlayer !== null) {
         throw new Error('currentPlayer must be null before coin toss');
@@ -428,7 +421,6 @@ export class Match {
       throw new Error('Invalid player identifier');
     }
 
-    this._coinTossResult = playerIdentifier;
     this._firstPlayer = playerIdentifier;
     this._currentPlayer = playerIdentifier;
     this._state = MatchState.DRAWING_CARDS;
@@ -641,7 +633,7 @@ export class Match {
     }
 
     // Coin toss should have already been performed
-    if (this._coinTossResult === null) {
+    if (this._firstPlayer === null) {
       throw new Error('Coin toss must be performed before completing initial setup');
     }
 
@@ -848,7 +840,6 @@ export class Match {
     state: MatchState,
     currentPlayer: PlayerIdentifier | null,
     firstPlayer: PlayerIdentifier | null,
-    coinTossResult: PlayerIdentifier | null,
     player1HasDrawnValidHand: boolean,
     player2HasDrawnValidHand: boolean,
     player1HasSetPrizeCards: boolean,
@@ -875,7 +866,6 @@ export class Match {
     this._state = state;
     this._currentPlayer = currentPlayer;
     this._firstPlayer = firstPlayer;
-    this._coinTossResult = coinTossResult ?? null;
     this._player1HasDrawnValidHand = player1HasDrawnValidHand ?? false;
     this._player2HasDrawnValidHand = player2HasDrawnValidHand ?? false;
     this._player1HasSetPrizeCards = player1HasSetPrizeCards ?? false;
@@ -912,7 +902,6 @@ export class Match {
     state: MatchState,
     currentPlayer: PlayerIdentifier | null,
     firstPlayer: PlayerIdentifier | null,
-    coinTossResult: PlayerIdentifier | null,
     player1HasDrawnValidHand: boolean,
     player2HasDrawnValidHand: boolean,
     player1HasSetPrizeCards: boolean,
@@ -941,7 +930,6 @@ export class Match {
       state,
       currentPlayer,
       firstPlayer,
-      coinTossResult,
       player1HasDrawnValidHand,
       player2HasDrawnValidHand,
       player1HasSetPrizeCards ?? false,
@@ -965,7 +953,7 @@ export class Match {
     // This can happen with matches created before the coin toss logic change
     if (
       state === MatchState.FIRST_PLAYER_SELECTION &&
-      coinTossResult === null &&
+      firstPlayer === null &&
       (player1HasConfirmedFirstPlayer || player2HasConfirmedFirstPlayer)
     ) {
       // Perform coin toss if at least one player has confirmed but coin toss hasn't happened

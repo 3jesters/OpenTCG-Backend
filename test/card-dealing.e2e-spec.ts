@@ -343,7 +343,7 @@ describe('Card Dealing E2E (real data)', () => {
 
       // Verify coin toss happened and match is in PLAYER_TURN
       expect(stateAfterSetup.body.state).toBe('PLAYER_TURN');
-      expect(stateAfterSetup.body.coinTossResult).toBeTruthy();
+      expect(stateAfterSetup.body.firstPlayer).toBeTruthy();
       expect(stateAfterSetup.body.currentPlayer).toBeTruthy();
 
       // First player draws a card at start of turn (if in DRAW phase)
