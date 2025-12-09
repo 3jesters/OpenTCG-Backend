@@ -32,6 +32,10 @@ export class MatchStateResponseDto {
   coinTossResult: PlayerIdentifier | null;
   playerHasDrawnValidHand: boolean;
   opponentHasDrawnValidHand: boolean;
+  playerHasApproved: boolean;
+  opponentHasApproved: boolean;
+  playerHasConfirmedFirstPlayer: boolean;
+  opponentHasConfirmedFirstPlayer: boolean;
   canAttachEnergy: boolean;
   coinFlipState?: CoinFlipStateDto | null;
   winnerId?: string | null;
@@ -84,6 +88,26 @@ export class MatchStateResponseDto {
         ? match.player2HasDrawnValidHand
         : match.player1HasDrawnValidHand;
 
+    // Determine if players have approved the match
+    const playerHasApproved =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player1HasApprovedMatch
+        : match.player2HasApprovedMatch;
+    const opponentHasApproved =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player2HasApprovedMatch
+        : match.player1HasApprovedMatch;
+
+    // Determine if players have confirmed first player selection
+    const playerHasConfirmedFirstPlayer =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player1HasConfirmedFirstPlayer
+        : match.player2HasConfirmedFirstPlayer;
+    const opponentHasConfirmedFirstPlayer =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? match.player2HasConfirmedFirstPlayer
+        : match.player1HasConfirmedFirstPlayer;
+
     // Calculate canAttachEnergy - only relevant during PLAYER_TURN state and MAIN_PHASE
     const canAttachEnergy =
       match.state === MatchState.PLAYER_TURN &&
@@ -99,7 +123,7 @@ export class MatchStateResponseDto {
       turnNumber: gameState?.turnNumber || 0,
       phase: gameState?.phase || null,
       playerState: playerState
-        ? PlayerStateDto.fromDomain(playerState)
+        ? PlayerStateDto.fromDomain(playerState, match.state)
         : PlayerStateDto.empty(),
       opponentState: opponentState
         ? OpponentStateDto.fromDomain(
@@ -119,6 +143,10 @@ export class MatchStateResponseDto {
       coinTossResult: match.coinTossResult,
       playerHasDrawnValidHand,
       opponentHasDrawnValidHand,
+      playerHasApproved,
+      opponentHasApproved,
+      playerHasConfirmedFirstPlayer,
+      opponentHasConfirmedFirstPlayer,
       canAttachEnergy,
       coinFlipState: gameState?.coinFlipState
         ? CoinFlipStateDto.fromDomain(gameState.coinFlipState)
@@ -147,7 +175,11 @@ class PlayerStateDto {
   prizeCards: CardId[]; // Prize cards for selection (visible to player)
   attachedEnergy: CardId[];
 
-  static fromDomain(state: PlayerGameState): PlayerStateDto {
+  static fromDomain(state: PlayerGameState, matchState: MatchState): PlayerStateDto {
+    // Hide prize card IDs during SET_PRIZE_CARDS phase (only show count)
+    const prizeCards =
+      matchState === MatchState.SET_PRIZE_CARDS ? [] : state.prizeCards;
+
     return {
       hand: state.hand,
       handCount: state.getHandCount(),
@@ -159,7 +191,7 @@ class PlayerStateDto {
         : null,
       bench: state.bench.map((card) => PokemonInPlayDto.fromDomain(card)),
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
-      prizeCards: state.prizeCards, // Include prize cards for selection
+      prizeCards, // Hide prize card IDs during SET_PRIZE_CARDS phase
       attachedEnergy: state.activePokemon?.attachedEnergy || [],
     };
   }

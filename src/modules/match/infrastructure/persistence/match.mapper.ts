@@ -37,10 +37,14 @@ export interface MatchJson {
   coinTossResult: PlayerIdentifier | null;
   player1HasDrawnValidHand: boolean;
   player2HasDrawnValidHand: boolean;
+  player1HasSetPrizeCards?: boolean;
+  player2HasSetPrizeCards?: boolean;
   player1ReadyToStart: boolean;
   player2ReadyToStart: boolean;
-  player1Approved?: boolean;
-  player2Approved?: boolean;
+  player1HasConfirmedFirstPlayer?: boolean;
+  player2HasConfirmedFirstPlayer?: boolean;
+  player1HasApprovedMatch?: boolean;
+  player2HasApprovedMatch?: boolean;
   createdAt: string;
   updatedAt: string;
   startedAt: string | null;
@@ -164,10 +168,14 @@ export class MatchMapper {
       coinTossResult: match.coinTossResult,
       player1HasDrawnValidHand: match.player1HasDrawnValidHand,
       player2HasDrawnValidHand: match.player2HasDrawnValidHand,
+      player1HasSetPrizeCards: match.player1HasSetPrizeCards,
+      player2HasSetPrizeCards: match.player2HasSetPrizeCards,
       player1ReadyToStart: match.player1ReadyToStart,
       player2ReadyToStart: match.player2ReadyToStart,
-      player1Approved: match.player1Approved,
-      player2Approved: match.player2Approved,
+      player1HasConfirmedFirstPlayer: match.player1HasConfirmedFirstPlayer,
+      player2HasConfirmedFirstPlayer: match.player2HasConfirmedFirstPlayer,
+      player1HasApprovedMatch: match.player1HasApprovedMatch,
+      player2HasApprovedMatch: match.player2HasApprovedMatch,
       createdAt: match.createdAt.toISOString(),
       updatedAt: match.updatedAt.toISOString(),
       startedAt: match.startedAt?.toISOString() || null,
@@ -204,8 +212,12 @@ export class MatchMapper {
       json.coinTossResult ?? null,
       json.player1HasDrawnValidHand ?? false,
       json.player2HasDrawnValidHand ?? false,
+      json.player1HasSetPrizeCards ?? false,
+      json.player2HasSetPrizeCards ?? false,
       json.player1ReadyToStart ?? false,
       json.player2ReadyToStart ?? false,
+      json.player1HasConfirmedFirstPlayer ?? false,
+      json.player2HasConfirmedFirstPlayer ?? false,
       json.startedAt ? new Date(json.startedAt) : null,
       json.endedAt ? new Date(json.endedAt) : null,
       json.winnerId,
@@ -213,8 +225,8 @@ export class MatchMapper {
       json.winCondition,
       json.cancellationReason,
       gameState,
-      json.player1Approved,
-      json.player2Approved,
+      json.player1HasApprovedMatch,
+      json.player2HasApprovedMatch,
     );
   }
 

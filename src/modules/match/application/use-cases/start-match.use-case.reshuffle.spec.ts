@@ -72,7 +72,7 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       // Don't approve player 2 yet - StartMatchUseCase.execute() needs match in PRE_GAME_SETUP state
       // Manually set state back to PRE_GAME_SETUP for the use case to work
       (match as any)._state = MatchState.PRE_GAME_SETUP;
-      (match as any)._player2Approved = false;
+      (match as any)._player2HasApprovedMatch = false;
 
       const deckRules = DeckRules.createStandard();
       const tournament = new Tournament(
@@ -143,7 +143,7 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       // Don't approve player 2 yet - StartMatchUseCase.execute() needs match in PRE_GAME_SETUP state
       // Manually set state back to PRE_GAME_SETUP for the use case to work
       (match as any)._state = MatchState.PRE_GAME_SETUP;
-      (match as any)._player2Approved = false;
+      (match as any)._player2HasApprovedMatch = false;
 
       const deckRules = DeckRules.createStandard();
       const tournament = new Tournament(
@@ -212,7 +212,7 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       // Don't approve player 2 yet - StartMatchUseCase.execute() needs match in PRE_GAME_SETUP state
       // Manually set state back to PRE_GAME_SETUP for the use case to work
       (match as any)._state = MatchState.PRE_GAME_SETUP;
-      (match as any)._player2Approved = false;
+      (match as any)._player2HasApprovedMatch = false;
 
       const deckRules = DeckRules.createStandard();
       const tournament = new Tournament(
@@ -267,7 +267,7 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       // Don't approve player 2 yet - StartMatchUseCase.execute() needs match in PRE_GAME_SETUP state
       // Manually set state back to PRE_GAME_SETUP for the use case to work
       (match as any)._state = MatchState.PRE_GAME_SETUP;
-      (match as any)._player2Approved = false;
+      (match as any)._player2HasApprovedMatch = false;
 
       const deckRules = DeckRules.createStandard();
       const tournament = new Tournament(
@@ -331,7 +331,7 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       // Don't approve player 2 yet - StartMatchUseCase.execute() needs match in PRE_GAME_SETUP state
       // Manually set state back to PRE_GAME_SETUP for the use case to work
       (match as any)._state = MatchState.PRE_GAME_SETUP;
-      (match as any)._player2Approved = false;
+      (match as any)._player2HasApprovedMatch = false;
 
       const deckRules = DeckRules.createStandard();
       const tournament = new Tournament(
@@ -388,7 +388,7 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       // Don't approve player 2 yet - StartMatchUseCase.execute() needs match in PRE_GAME_SETUP state
       // Manually set state back to PRE_GAME_SETUP for the use case to work
       (match as any)._state = MatchState.PRE_GAME_SETUP;
-      (match as any)._player2Approved = false;
+      (match as any)._player2HasApprovedMatch = false;
 
       const deckRules = DeckRules.createStandard();
       const tournament = new Tournament(
@@ -455,7 +455,7 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       // Don't approve player 2 yet - StartMatchUseCase.execute() needs match in PRE_GAME_SETUP state
       // Manually set state back to PRE_GAME_SETUP for the use case to work
       (match as any)._state = MatchState.PRE_GAME_SETUP;
-      (match as any)._player2Approved = false;
+      (match as any)._player2HasApprovedMatch = false;
 
       const deckRules = DeckRules.createStandard();
       const tournament = new Tournament(
@@ -509,7 +509,7 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       // Don't approve player 2 yet - StartMatchUseCase.execute() needs match in PRE_GAME_SETUP state
       // Manually set state back to PRE_GAME_SETUP for the use case to work
       (match as any)._state = MatchState.PRE_GAME_SETUP;
-      (match as any)._player2Approved = false;
+      (match as any)._player2HasApprovedMatch = false;
 
       const deckRules = DeckRules.createStandard();
       const tournament = new Tournament(

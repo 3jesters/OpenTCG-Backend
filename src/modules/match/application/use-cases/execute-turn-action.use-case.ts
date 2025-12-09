@@ -17,6 +17,7 @@ import { IMatchRepository } from '../../domain/repositories';
 import { MatchStateMachineService } from '../../domain/services';
 import { ExecuteActionDto } from '../dto';
 import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
+import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
 import {
   GameState,
@@ -50,6 +51,7 @@ export class ExecuteTurnActionUseCase {
     private readonly matchRepository: IMatchRepository,
     private readonly stateMachineService: MatchStateMachineService,
     private readonly drawInitialCardsUseCase: DrawInitialCardsUseCase,
+    private readonly setPrizeCardsUseCase: SetPrizeCardsUseCase,
     private readonly performCoinTossUseCase: PerformCoinTossUseCase,
     private readonly getCardByIdUseCase: GetCardByIdUseCase,
     private readonly coinFlipResolver: CoinFlipResolverService,
@@ -104,7 +106,20 @@ export class ExecuteTurnActionUseCase {
 
     // Handle approve match
     if (dto.actionType === PlayerActionType.APPROVE_MATCH) {
+      try {
       match.approveMatch(playerIdentifier);
+      } catch (error) {
+        // Check if player has already approved
+        if (
+          error instanceof Error &&
+          (error.message.includes('has already approved') ||
+            error.message.includes('already approved'))
+        ) {
+          throw new BadRequestException(error.message);
+        }
+        // Re-throw other errors
+        throw error;
+      }
       // After both approve, match transitions directly to DRAWING_CARDS
       // Coin toss will happen after both players complete initial setup
       return await this.matchRepository.save(match);
@@ -117,6 +132,14 @@ export class ExecuteTurnActionUseCase {
         dto.playerId,
       );
       return result.match;
+    }
+
+    // Handle set prize cards
+    if (dto.actionType === PlayerActionType.SET_PRIZE_CARDS) {
+      return await this.setPrizeCardsUseCase.execute(
+        dto.matchId,
+        dto.playerId,
+      );
     }
 
     // Handle set active Pokemon in SELECT_ACTIVE_POKEMON state or after knockout
@@ -240,43 +263,8 @@ export class ExecuteTurnActionUseCase {
 
       if (player1State.activePokemon && player2State.activePokemon) {
         // Both players have set active Pokemon, transition to SELECT_BENCH_POKEMON
-        // Set up prize cards (6 for each player)
-        const player1DeckCopy = [...player1State.deck];
-        const player2DeckCopy = [...player2State.deck];
-        const player1PrizeCards = player1DeckCopy.splice(0, 6);
-        const player2PrizeCards = player2DeckCopy.splice(0, 6);
-
-        const finalPlayer1State = new PlayerGameState(
-          player1DeckCopy,
-          player1State.hand,
-          player1State.activePokemon,
-          player1State.bench,
-          player1PrizeCards,
-          player1State.discardPile,
-          player1State.hasAttachedEnergyThisTurn,
-        );
-
-        const finalPlayer2State = new PlayerGameState(
-          player2DeckCopy,
-          player2State.hand,
-          player2State.activePokemon,
-          player2State.bench,
-          player2PrizeCards,
-          player2State.discardPile,
-          player2State.hasAttachedEnergyThisTurn,
-        );
-
-        const finalGameState = new GameState(
-          finalPlayer1State,
-          finalPlayer2State,
-          1,
-          TurnPhase.DRAW,
-          match.firstPlayer!,
-          null,
-          [],
-        );
-
-        match.transitionToSelectBenchPokemon(finalGameState);
+        // Prize cards should already be set during SET_PRIZE_CARDS phase
+        match.transitionToSelectBenchPokemon(updatedGameState);
       }
 
       return await this.matchRepository.save(match);
@@ -373,13 +361,27 @@ export class ExecuteTurnActionUseCase {
       }
 
       // Mark player as ready to start
+      // This will automatically transition to FIRST_PLAYER_SELECTION when both are ready
       match.markPlayerReadyToStart(playerIdentifier);
 
-      // Check if both players are ready
-      if (match.player1ReadyToStart && match.player2ReadyToStart) {
-        match.completeInitialSetup();
-      }
+      // Don't call completeInitialSetup() here - it will be called automatically
+      // by confirmFirstPlayer() after both players confirm the first player selection
+      return await this.matchRepository.save(match);
+    }
 
+    // Handle confirm first player in FIRST_PLAYER_SELECTION state
+    if (
+      dto.actionType === PlayerActionType.CONFIRM_FIRST_PLAYER &&
+      match.state === MatchState.FIRST_PLAYER_SELECTION
+    ) {
+      try {
+        match.confirmFirstPlayer(playerIdentifier);
+      } catch (error) {
+        if (error.message.includes('already confirmed')) {
+          throw new BadRequestException(error.message);
+        }
+        throw error;
+      }
       return await this.matchRepository.save(match);
     }
 

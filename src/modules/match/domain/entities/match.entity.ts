@@ -34,10 +34,14 @@ export class Match {
   // Setup Progress Tracking
   private _player1HasDrawnValidHand: boolean;
   private _player2HasDrawnValidHand: boolean;
+  private _player1HasSetPrizeCards: boolean;
+  private _player2HasSetPrizeCards: boolean;
   private _player1ReadyToStart: boolean;
   private _player2ReadyToStart: boolean;
-  private _player1Approved: boolean;
-  private _player2Approved: boolean;
+  private _player1HasConfirmedFirstPlayer: boolean;
+  private _player2HasConfirmedFirstPlayer: boolean;
+  private _player1HasApprovedMatch: boolean;
+  private _player2HasApprovedMatch: boolean;
 
   // Match Result
   private _startedAt: Date | null;
@@ -69,10 +73,14 @@ export class Match {
     this._coinTossResult = null;
     this._player1HasDrawnValidHand = false;
     this._player2HasDrawnValidHand = false;
+    this._player1HasSetPrizeCards = false;
+    this._player2HasSetPrizeCards = false;
     this._player1ReadyToStart = false;
     this._player2ReadyToStart = false;
-    this._player1Approved = false;
-    this._player2Approved = false;
+    this._player1HasConfirmedFirstPlayer = false;
+    this._player2HasConfirmedFirstPlayer = false;
+    this._player1HasApprovedMatch = false;
+    this._player2HasApprovedMatch = false;
     this._startedAt = null;
     this._endedAt = null;
     this._winnerId = null;
@@ -144,6 +152,14 @@ export class Match {
     return this._player2HasDrawnValidHand;
   }
 
+  get player1HasSetPrizeCards(): boolean {
+    return this._player1HasSetPrizeCards;
+  }
+
+  get player2HasSetPrizeCards(): boolean {
+    return this._player2HasSetPrizeCards;
+  }
+
   get player1ReadyToStart(): boolean {
     return this._player1ReadyToStart;
   }
@@ -152,12 +168,20 @@ export class Match {
     return this._player2ReadyToStart;
   }
 
-  get player1Approved(): boolean {
-    return this._player1Approved;
+  get player1HasConfirmedFirstPlayer(): boolean {
+    return this._player1HasConfirmedFirstPlayer;
   }
 
-  get player2Approved(): boolean {
-    return this._player2Approved;
+  get player2HasConfirmedFirstPlayer(): boolean {
+    return this._player2HasConfirmedFirstPlayer;
+  }
+
+  get player1HasApprovedMatch(): boolean {
+    return this._player1HasApprovedMatch;
+  }
+
+  get player2HasApprovedMatch(): boolean {
+    return this._player2HasApprovedMatch;
   }
 
   get startedAt(): Date | null {
@@ -259,7 +283,7 @@ export class Match {
     }
 
     if (!isValid) {
-      this.cancelMatch('Deck validation failed');
+      this.cancelMatchSystem('Deck validation failed');
       return;
     }
 
@@ -279,25 +303,22 @@ export class Match {
     }
 
     if (playerIdentifier === PlayerIdentifier.PLAYER1) {
-      if (this._player1Approved) {
+      if (this._player1HasApprovedMatch) {
         throw new Error('Player 1 has already approved');
       }
-      this._player1Approved = true;
+      this._player1HasApprovedMatch = true;
     } else {
-      if (this._player2Approved) {
+      if (this._player2HasApprovedMatch) {
         throw new Error('Player 2 has already approved');
       }
-      this._player2Approved = true;
+      this._player2HasApprovedMatch = true;
     }
 
     // If both players have approved, transition directly to DRAWING_CARDS
-    // and perform coin toss automatically
-    if (this._player1Approved && this._player2Approved) {
+    // Note: Coin toss will happen later in completeInitialSetup after both players
+    // have set active and bench Pokemon
+    if (this._player1HasApprovedMatch && this._player2HasApprovedMatch) {
       this._state = MatchState.DRAWING_CARDS;
-      // Perform coin toss automatically when both players approve
-      if (this._coinTossResult === null) {
-        this.performCoinToss();
-      }
     }
 
     this._updatedAt = new Date();
@@ -307,18 +328,28 @@ export class Match {
    * Check if both players have approved the match
    */
   hasBothApprovals(): boolean {
-    return this._player1Approved && this._player2Approved;
+    return this._player1HasApprovedMatch && this._player2HasApprovedMatch;
   }
 
   /**
    * Perform coin toss to determine first player
-   * Valid states: DRAWING_CARDS, SELECT_BENCH_POKEMON
+   * Valid states: SELECT_BENCH_POKEMON, FIRST_PLAYER_SELECTION
+   * Coin toss happens after both players have set active and bench Pokemon
+   * currentPlayer must be null before coin toss
    */
   performCoinToss(): void {
-    if (this._state !== MatchState.DRAWING_CARDS && this._state !== MatchState.SELECT_BENCH_POKEMON) {
+    if (
+      this._state !== MatchState.SELECT_BENCH_POKEMON &&
+      this._state !== MatchState.FIRST_PLAYER_SELECTION
+    ) {
       throw new Error(
-        `Cannot perform coin toss in state ${this._state}. Must be DRAWING_CARDS or SELECT_BENCH_POKEMON`,
+        `Cannot perform coin toss in state ${this._state}. Must be SELECT_BENCH_POKEMON or FIRST_PLAYER_SELECTION`,
       );
+    }
+
+    // Ensure currentPlayer is unknown (null) before coin toss
+    if (this._currentPlayer !== null) {
+      throw new Error('currentPlayer must be null before coin toss');
     }
 
     // Use deterministic random based on match ID for consistency
@@ -330,8 +361,54 @@ export class Match {
 
     this._coinTossResult = result;
     this._firstPlayer = result;
-    this._currentPlayer = result;
-    // State remains unchanged - will transition to PLAYER_TURN in completeInitialSetup
+    this._currentPlayer = result; // Set currentPlayer after coin toss determines first player
+    // State remains unchanged - will transition to PLAYER_TURN after both players confirm
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Confirm first player selection (after coin toss)
+   * Valid states: FIRST_PLAYER_SELECTION
+   * When both players confirm, transitions to PLAYER_TURN
+   */
+  confirmFirstPlayer(playerIdentifier: PlayerIdentifier): void {
+    if (this._state !== MatchState.FIRST_PLAYER_SELECTION) {
+      throw new Error(
+        `Cannot confirm first player in state ${this._state}. Must be FIRST_PLAYER_SELECTION`,
+      );
+    }
+
+    // Mark player as having confirmed
+    if (playerIdentifier === PlayerIdentifier.PLAYER1) {
+      if (this._player1HasConfirmedFirstPlayer) {
+        throw new Error('Player 1 has already confirmed first player');
+      }
+      this._player1HasConfirmedFirstPlayer = true;
+    } else {
+      if (this._player2HasConfirmedFirstPlayer) {
+        throw new Error('Player 2 has already confirmed first player');
+      }
+      this._player2HasConfirmedFirstPlayer = true;
+    }
+
+    // Perform coin toss on first confirmation (so first player can see the result)
+    if (this._coinTossResult === null) {
+      // Ensure currentPlayer is null before coin toss
+      if (this._currentPlayer !== null) {
+        throw new Error('currentPlayer must be null before coin toss');
+      }
+      this.performCoinToss();
+    }
+
+    // Only transition to PLAYER_TURN when BOTH players have confirmed
+    if (
+      this._player1HasConfirmedFirstPlayer &&
+      this._player2HasConfirmedFirstPlayer
+    ) {
+      // Transition to PLAYER_TURN
+      this.completeInitialSetup();
+    }
+
     this._updatedAt = new Date();
   }
 
@@ -375,11 +452,54 @@ export class Match {
       this._player2HasDrawnValidHand = true;
     }
 
-    // If both players have valid initial hands, transition to SELECT_ACTIVE_POKEMON
+    // If both players have valid initial hands, transition to SET_PRIZE_CARDS
     if (this._player1HasDrawnValidHand && this._player2HasDrawnValidHand) {
-      this._state = MatchState.SELECT_ACTIVE_POKEMON;
+      this._state = MatchState.SET_PRIZE_CARDS;
     }
 
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Mark player's prize cards as set
+   * Valid states: SET_PRIZE_CARDS
+   */
+  markPlayerPrizeCardsSet(playerIdentifier: PlayerIdentifier): void {
+    if (this._state !== MatchState.SET_PRIZE_CARDS) {
+      throw new Error(
+        `Cannot mark prize cards set in state ${this._state}. Must be SET_PRIZE_CARDS`,
+      );
+    }
+
+    if (playerIdentifier === PlayerIdentifier.PLAYER1) {
+      this._player1HasSetPrizeCards = true;
+    } else {
+      this._player2HasSetPrizeCards = true;
+    }
+
+    // Note: State transition is handled by transitionToSelectActivePokemon()
+    // This method only marks the player as having set prize cards
+
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Transition to SELECT_ACTIVE_POKEMON after both players set prize cards
+   * Valid states: SET_PRIZE_CARDS
+   */
+  transitionToSelectActivePokemon(gameState: GameState): void {
+    if (this._state !== MatchState.SET_PRIZE_CARDS) {
+      throw new Error(
+        `Cannot transition to SELECT_ACTIVE_POKEMON in state ${this._state}. Must be SET_PRIZE_CARDS`,
+      );
+    }
+
+    if (!this._player1HasSetPrizeCards || !this._player2HasSetPrizeCards) {
+      throw new Error('Both players must have set prize cards');
+    }
+
+    this._gameState = gameState;
+    this._state = MatchState.SELECT_ACTIVE_POKEMON;
     this._updatedAt = new Date();
   }
 
@@ -406,6 +526,7 @@ export class Match {
   /**
    * Mark player as ready to start (after selecting bench Pokemon)
    * Valid states: SELECT_BENCH_POKEMON
+   * When both players are ready, coin toss is automatically performed
    */
   markPlayerReadyToStart(playerIdentifier: PlayerIdentifier): void {
     if (this._state !== MatchState.SELECT_BENCH_POKEMON) {
@@ -414,10 +535,20 @@ export class Match {
       );
     }
 
+    // Set the player's ready flag
     if (playerIdentifier === PlayerIdentifier.PLAYER1) {
       this._player1ReadyToStart = true;
     } else {
       this._player2ReadyToStart = true;
+    }
+
+    // When BOTH players are ready, transition to FIRST_PLAYER_SELECTION state
+    // Coin toss will happen when first player confirms in that state
+    const bothReady = this._player1ReadyToStart && this._player2ReadyToStart;
+    
+    if (bothReady) {
+      // Transition to FIRST_PLAYER_SELECTION state
+      this._state = MatchState.FIRST_PLAYER_SELECTION;
     }
 
     this._updatedAt = new Date();
@@ -439,16 +570,17 @@ export class Match {
   }
 
   /**
-   * Update game state during setup phases (SELECT_ACTIVE_POKEMON, SELECT_BENCH_POKEMON)
-   * Valid states: SELECT_ACTIVE_POKEMON, SELECT_BENCH_POKEMON
+   * Update game state during setup phases (SET_PRIZE_CARDS, SELECT_ACTIVE_POKEMON, SELECT_BENCH_POKEMON)
+   * Valid states: SET_PRIZE_CARDS, SELECT_ACTIVE_POKEMON, SELECT_BENCH_POKEMON
    */
   updateGameStateDuringSetup(gameState: GameState): void {
     if (
+      this._state !== MatchState.SET_PRIZE_CARDS &&
       this._state !== MatchState.SELECT_ACTIVE_POKEMON &&
       this._state !== MatchState.SELECT_BENCH_POKEMON
     ) {
       throw new Error(
-        `Cannot update game state during setup in state ${this._state}. Must be SELECT_ACTIVE_POKEMON or SELECT_BENCH_POKEMON`,
+        `Cannot update game state during setup in state ${this._state}. Must be SET_PRIZE_CARDS, SELECT_ACTIVE_POKEMON, or SELECT_BENCH_POKEMON`,
       );
     }
 
@@ -478,12 +610,15 @@ export class Match {
 
   /**
    * Complete initial setup and start first turn
-   * Valid states: SELECT_BENCH_POKEMON
+   * Valid states: SELECT_BENCH_POKEMON, FIRST_PLAYER_SELECTION
    */
   completeInitialSetup(): void {
-    if (this._state !== MatchState.SELECT_BENCH_POKEMON) {
+    if (
+      this._state !== MatchState.SELECT_BENCH_POKEMON &&
+      this._state !== MatchState.FIRST_PLAYER_SELECTION
+    ) {
       throw new Error(
-        `Cannot complete initial setup in state ${this._state}. Must be SELECT_BENCH_POKEMON`,
+        `Cannot complete initial setup in state ${this._state}. Must be SELECT_BENCH_POKEMON or FIRST_PLAYER_SELECTION`,
       );
     }
 
@@ -495,17 +630,30 @@ export class Match {
       throw new Error('Both players must be ready to start');
     }
 
-    // Perform coin toss if not already done
+    // If in FIRST_PLAYER_SELECTION state, both players must have confirmed
+    if (this._state === MatchState.FIRST_PLAYER_SELECTION) {
+      if (
+        !this._player1HasConfirmedFirstPlayer ||
+        !this._player2HasConfirmedFirstPlayer
+      ) {
+        throw new Error('Both players must confirm first player before completing setup');
+      }
+    }
+
+    // Coin toss should have already been performed
     if (this._coinTossResult === null) {
-      this.performCoinToss();
+      throw new Error('Coin toss must be performed before completing initial setup');
+    }
+
+    if (this._firstPlayer === null || this._currentPlayer === null) {
+      throw new Error('First player and current player must be set by coin toss');
     }
 
     // Update game state to DRAW phase for first turn
-    // Set currentPlayer in game state to first player
+    // currentPlayer was already set by performCoinToss()
     this._gameState = this._gameState
       .withPhase(TurnPhase.DRAW)
-      .withCurrentPlayer(this._firstPlayer!);
-    this._currentPlayer = this._firstPlayer;
+      .withCurrentPlayer(this._firstPlayer);
     this._state = MatchState.PLAYER_TURN;
     this._updatedAt = new Date();
   }
@@ -584,10 +732,35 @@ export class Match {
   }
 
   /**
-   * Cancel the match
-   * Valid states: Any (except MATCH_ENDED)
+   * Cancel the match (player-initiated)
+   * Valid states: WAITING_FOR_PLAYERS only
+   * This method is for player-initiated cancellations and requires WAITING_FOR_PLAYERS state
    */
   cancelMatch(reason: string): void {
+    if (this._state === MatchState.MATCH_ENDED) {
+      throw new Error('Cannot cancel a match that has already ended');
+    }
+
+    if (this._state !== MatchState.WAITING_FOR_PLAYERS) {
+      throw new Error(
+        `Match can only be cancelled when in WAITING_FOR_PLAYERS state. Current state: ${this._state}`,
+      );
+    }
+
+    this._cancellationReason = reason;
+    this._result = MatchResult.CANCELLED;
+    this._endedAt = new Date();
+    this._state = MatchState.CANCELLED;
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Cancel the match (system-initiated)
+   * Valid states: Any (except MATCH_ENDED)
+   * This method is for system-initiated cancellations (e.g., deck validation failure)
+   * Does not require WAITING_FOR_PLAYERS state
+   */
+  cancelMatchSystem(reason: string): void {
     if (this._state === MatchState.MATCH_ENDED) {
       throw new Error('Cannot cancel a match that has already ended');
     }
@@ -678,8 +851,12 @@ export class Match {
     coinTossResult: PlayerIdentifier | null,
     player1HasDrawnValidHand: boolean,
     player2HasDrawnValidHand: boolean,
+    player1HasSetPrizeCards: boolean,
+    player2HasSetPrizeCards: boolean,
     player1ReadyToStart: boolean,
     player2ReadyToStart: boolean,
+    player1HasConfirmedFirstPlayer: boolean,
+    player2HasConfirmedFirstPlayer: boolean,
     startedAt: Date | null,
     endedAt: Date | null,
     winnerId: string | null,
@@ -687,8 +864,8 @@ export class Match {
     winCondition: WinCondition | null,
     cancellationReason: string | null,
     gameState: GameState | null,
-    player1Approved?: boolean,
-    player2Approved?: boolean,
+    player1HasApprovedMatch?: boolean,
+    player2HasApprovedMatch?: boolean,
   ): void {
     this._updatedAt = updatedAt;
     this._player1Id = player1Id;
@@ -701,10 +878,14 @@ export class Match {
     this._coinTossResult = coinTossResult ?? null;
     this._player1HasDrawnValidHand = player1HasDrawnValidHand ?? false;
     this._player2HasDrawnValidHand = player2HasDrawnValidHand ?? false;
+    this._player1HasSetPrizeCards = player1HasSetPrizeCards ?? false;
+    this._player2HasSetPrizeCards = player2HasSetPrizeCards ?? false;
     this._player1ReadyToStart = player1ReadyToStart ?? false;
     this._player2ReadyToStart = player2ReadyToStart ?? false;
-    this._player1Approved = player1Approved ?? false;
-    this._player2Approved = player2Approved ?? false;
+    this._player1HasConfirmedFirstPlayer = player1HasConfirmedFirstPlayer ?? false;
+    this._player2HasConfirmedFirstPlayer = player2HasConfirmedFirstPlayer ?? false;
+    this._player1HasApprovedMatch = player1HasApprovedMatch ?? false;
+    this._player2HasApprovedMatch = player2HasApprovedMatch ?? false;
     this._startedAt = startedAt;
     this._endedAt = endedAt;
     this._winnerId = winnerId;
@@ -734,8 +915,12 @@ export class Match {
     coinTossResult: PlayerIdentifier | null,
     player1HasDrawnValidHand: boolean,
     player2HasDrawnValidHand: boolean,
+    player1HasSetPrizeCards: boolean,
+    player2HasSetPrizeCards: boolean,
     player1ReadyToStart: boolean,
     player2ReadyToStart: boolean,
+    player1HasConfirmedFirstPlayer: boolean,
+    player2HasConfirmedFirstPlayer: boolean,
     startedAt: Date | null,
     endedAt: Date | null,
     winnerId: string | null,
@@ -743,8 +928,8 @@ export class Match {
     winCondition: WinCondition | null,
     cancellationReason: string | null,
     gameState: GameState | null,
-    player1Approved?: boolean,
-    player2Approved?: boolean,
+    player1HasApprovedMatch?: boolean,
+    player2HasApprovedMatch?: boolean,
   ): Match {
     const match = new Match(id, tournamentId, createdAt);
     match.restoreState(
@@ -759,8 +944,12 @@ export class Match {
       coinTossResult,
       player1HasDrawnValidHand,
       player2HasDrawnValidHand,
+      player1HasSetPrizeCards ?? false,
+      player2HasSetPrizeCards ?? false,
       player1ReadyToStart,
       player2ReadyToStart,
+      player1HasConfirmedFirstPlayer ?? false,
+      player2HasConfirmedFirstPlayer ?? false,
       startedAt,
       endedAt,
       winnerId,
@@ -768,9 +957,21 @@ export class Match {
       winCondition,
       cancellationReason,
       gameState,
-      player1Approved,
-      player2Approved,
+      player1HasApprovedMatch,
+      player2HasApprovedMatch,
     );
+
+    // Migration: Fix inconsistent state where a player has confirmed but coin toss hasn't happened
+    // This can happen with matches created before the coin toss logic change
+    if (
+      state === MatchState.FIRST_PLAYER_SELECTION &&
+      coinTossResult === null &&
+      (player1HasConfirmedFirstPlayer || player2HasConfirmedFirstPlayer)
+    ) {
+      // Perform coin toss if at least one player has confirmed but coin toss hasn't happened
+      match.performCoinToss();
+    }
+
     return match;
   }
 }
