@@ -17,12 +17,12 @@
   "player2ReadyToStart": true,
   "player1HasConfirmedFirstPlayer": true,
   "player2HasConfirmedFirstPlayer": true,
-  "player1Approved": true,
-  "player2Approved": true,
+  "player1HasApprovedMatch": true,
+  "player2HasApprovedMatch": true,
   "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-09T10:38:31.300Z",
+  "updatedAt": "2025-12-09T12:53:18.344Z",
   "startedAt": "2025-01-01T00:00:00.000Z",
-  "endedAt": "2025-12-09T10:38:31.300Z",
+  "endedAt": "2025-12-09T12:53:18.344Z",
   "winnerId": "test-player-1",
   "result": "PLAYER1_WIN",
   "winCondition": "PRIZE_CARDS",
@@ -91,10 +91,10 @@
     "phase": "END",
     "currentPlayer": "PLAYER1",
     "lastAction": {
-      "actionId": "d9f5961b-6066-4e32-946e-8926b77871ee",
+      "actionId": "f9b03405-b9db-469e-b60f-1d102fb1ef63",
       "playerId": "PLAYER1",
       "actionType": "SELECT_PRIZE",
-      "timestamp": "2025-12-09T10:38:31.300Z",
+      "timestamp": "2025-12-09T12:53:18.344Z",
       "actionData": {
         "prizeCard": "pokemon-base-set-v1.0-fire-energy--99",
         "prizeIndex": 0
@@ -102,10 +102,10 @@
     },
     "actionHistory": [
       {
-        "actionId": "dbe9205b-a55a-4aaa-9658-00731255bd0d",
+        "actionId": "7e1c5b04-8fed-4ebe-8bf9-dda9c60098df",
         "playerId": "PLAYER1",
         "actionType": "ATTACK",
-        "timestamp": "2025-12-09T10:38:31.265Z",
+        "timestamp": "2025-12-09T12:53:18.240Z",
         "actionData": {
           "attackIndex": 1,
           "damage": 60,
@@ -113,10 +113,10 @@
         }
       },
       {
-        "actionId": "d9f5961b-6066-4e32-946e-8926b77871ee",
+        "actionId": "f9b03405-b9db-469e-b60f-1d102fb1ef63",
         "playerId": "PLAYER1",
         "actionType": "SELECT_PRIZE",
-        "timestamp": "2025-12-09T10:38:31.300Z",
+        "timestamp": "2025-12-09T12:53:18.344Z",
         "actionData": {
           "prizeCard": "pokemon-base-set-v1.0-fire-energy--99",
           "prizeIndex": 0

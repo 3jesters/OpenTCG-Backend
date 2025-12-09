@@ -279,6 +279,33 @@ describe('Match Gameplay Flow E2E', () => {
   });
 
   it('should complete gameplay flow: draw, attach energy, evolve, end turn', async () => {
+    // Step 0: Verify DRAW_CARD is available in DRAW phase for current player (PLAYER1)
+    const player1StateBeforeDraw = await request(server())
+      .post(`/api/v1/matches/${MATCH_ID}/state`)
+      .send({ playerId: PLAYER1_ID })
+      .expect(200);
+
+    expect(player1StateBeforeDraw.body.state).toBe('PLAYER_TURN');
+    expect(player1StateBeforeDraw.body.currentPlayer).toBe('PLAYER1');
+    expect(player1StateBeforeDraw.body.phase).toBe('DRAW');
+    // Current player should see DRAW_CARD, END_TURN, and CONCEDE
+    expect(player1StateBeforeDraw.body.availableActions).toContain('DRAW_CARD');
+    expect(player1StateBeforeDraw.body.availableActions).toContain('END_TURN');
+    expect(player1StateBeforeDraw.body.availableActions).toContain('CONCEDE');
+    expect(player1StateBeforeDraw.body.availableActions.length).toBe(3);
+
+    // Step 0.5: Verify non-current player (PLAYER2) only sees CONCEDE
+    const player2StateBeforeDraw = await request(server())
+      .post(`/api/v1/matches/${MATCH_ID}/state`)
+      .send({ playerId: PLAYER2_ID })
+      .expect(200);
+
+    expect(player2StateBeforeDraw.body.state).toBe('PLAYER_TURN');
+    expect(player2StateBeforeDraw.body.currentPlayer).toBe('PLAYER1'); // Still PLAYER1's turn
+    expect(player2StateBeforeDraw.body.phase).toBe('DRAW');
+    // Non-current player should only see CONCEDE
+    expect(player2StateBeforeDraw.body.availableActions).toEqual(['CONCEDE']);
+
     // Step 1: Player 1 draws a card
     const player1DrawResponse = await request(server())
       .post(`/api/v1/matches/${MATCH_ID}/actions`)

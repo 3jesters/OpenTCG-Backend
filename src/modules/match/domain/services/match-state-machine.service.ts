@@ -486,7 +486,12 @@ export class MatchStateMachineService {
       return [];
     }
 
-    if (state !== MatchState.PLAYER_TURN || phase === null) {
+    if (state !== MatchState.PLAYER_TURN) {
+      return [PlayerActionType.CONCEDE];
+    }
+
+    // If phase is null, return CONCEDE only
+    if (phase === null) {
       return [PlayerActionType.CONCEDE];
     }
 
@@ -510,7 +515,13 @@ export class MatchStateMachineService {
       [TurnPhase.END]: [PlayerActionType.END_TURN],
     };
 
-    let actions = phaseActions[phase] || [];
+    // Explicitly handle DRAW phase to ensure DRAW_CARD is always included
+    let actions: PlayerActionType[];
+    if (phase === TurnPhase.DRAW) {
+      actions = [PlayerActionType.DRAW_CARD, PlayerActionType.END_TURN];
+    } else {
+      actions = phaseActions[phase] || [];
+    }
     
     // If in END phase and knockout occurred, require SELECT_PRIZE before END_TURN
     if (

@@ -15,6 +15,7 @@ import {
   JoinMatchUseCase,
   StartMatchUseCase,
   ExecuteTurnActionUseCase,
+  GetMatchByIdUseCase,
   GetMatchStateUseCase,
   ListMatchesUseCase,
   CancelMatchUseCase,
@@ -50,6 +51,7 @@ export class MatchController {
     private readonly joinMatchUseCase: JoinMatchUseCase,
     private readonly startMatchUseCase: StartMatchUseCase,
     private readonly executeTurnActionUseCase: ExecuteTurnActionUseCase,
+    private readonly getMatchByIdUseCase: GetMatchByIdUseCase,
     private readonly getMatchStateUseCase: GetMatchStateUseCase,
     private readonly listMatchesUseCase: ListMatchesUseCase,
     private readonly cancelMatchUseCase: CancelMatchUseCase,
@@ -74,6 +76,17 @@ export class MatchController {
       matchState,
     );
     return MatchListResponseDto.fromDomain(matches);
+  }
+
+  /**
+   * GET /api/v1/matches/:matchId
+   * Get a specific match by ID
+   */
+  @Get(':matchId')
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('matchId') matchId: string): Promise<MatchResponseDto> {
+    const match = await this.getMatchByIdUseCase.execute(matchId);
+    return MatchResponseDto.fromDomain(match);
   }
 
   /**

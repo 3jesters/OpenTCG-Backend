@@ -17,10 +17,10 @@
   "player2ReadyToStart": true,
   "player1HasConfirmedFirstPlayer": true,
   "player2HasConfirmedFirstPlayer": true,
-  "player1Approved": true,
-  "player2Approved": true,
+  "player1HasApprovedMatch": true,
+  "player2HasApprovedMatch": true,
   "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-09T10:38:33.176Z",
+  "updatedAt": "2025-12-09T12:53:19.780Z",
   "startedAt": "2025-01-01T00:00:00.000Z",
   "endedAt": null,
   "winnerId": null,
@@ -96,20 +96,20 @@
     "phase": "END",
     "currentPlayer": "PLAYER1",
     "lastAction": {
-      "actionId": "9b451d0a-b153-45ea-b965-ce719aad7224",
+      "actionId": "05c4e0d8-30e6-409f-b0ed-f22388233513",
       "playerId": "PLAYER1",
       "actionType": "SET_ACTIVE_POKEMON",
-      "timestamp": "2025-12-09T10:38:33.176Z",
+      "timestamp": "2025-12-09T12:53:19.780Z",
       "actionData": {
         "cardId": "pokemon-base-set-v1.0-ponyta--62"
       }
     },
     "actionHistory": [
       {
-        "actionId": "8dff7c11-1274-43c8-a119-d0639c8d3198",
+        "actionId": "c92376f3-80dc-4eed-a922-a354df977d04",
         "playerId": "PLAYER1",
         "actionType": "ATTACK",
-        "timestamp": "2025-12-09T10:38:33.127Z",
+        "timestamp": "2025-12-09T12:53:19.762Z",
         "actionData": {
           "attackIndex": 1,
           "damage": 40,
@@ -117,29 +117,29 @@
         }
       },
       {
-        "actionId": "e43247b3-a825-4e33-9cd4-16f3f395369d",
+        "actionId": "cf45e9c7-90f8-4ac7-8520-08c32fd4d8dd",
         "playerId": "PLAYER1",
         "actionType": "SELECT_PRIZE",
-        "timestamp": "2025-12-09T10:38:33.162Z",
+        "timestamp": "2025-12-09T12:53:19.769Z",
         "actionData": {
           "prizeCard": "pokemon-base-set-v1.0-fire-energy--99",
           "prizeIndex": 0
         }
       },
       {
-        "actionId": "d37196bd-f82b-4b24-97db-b29afe475779",
+        "actionId": "f5621f3a-cb70-415d-afcd-900546d30ecb",
         "playerId": "PLAYER2",
         "actionType": "SET_ACTIVE_POKEMON",
-        "timestamp": "2025-12-09T10:38:33.169Z",
+        "timestamp": "2025-12-09T12:53:19.775Z",
         "actionData": {
           "cardId": "pokemon-base-set-v1.0-caterpie--47"
         }
       },
       {
-        "actionId": "9b451d0a-b153-45ea-b965-ce719aad7224",
+        "actionId": "05c4e0d8-30e6-409f-b0ed-f22388233513",
         "playerId": "PLAYER1",
         "actionType": "SET_ACTIVE_POKEMON",
-        "timestamp": "2025-12-09T10:38:33.176Z",
+        "timestamp": "2025-12-09T12:53:19.780Z",
         "actionData": {
           "cardId": "pokemon-base-set-v1.0-ponyta--62"
         }
