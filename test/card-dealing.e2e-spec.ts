@@ -183,6 +183,25 @@ describe('Card Dealing E2E (real data)', () => {
         .send({ playerId: PLAYER2_ID })
         .expect(200);
 
+      // Set prize cards for both players
+      await request(server())
+        .post(`/api/v1/matches/${matchId}/actions`)
+        .send({
+          playerId: PLAYER1_ID,
+          actionType: 'SET_PRIZE_CARDS',
+          actionData: {},
+        })
+        .expect(200);
+
+      await request(server())
+        .post(`/api/v1/matches/${matchId}/actions`)
+        .send({
+          playerId: PLAYER2_ID,
+          actionType: 'SET_PRIZE_CARDS',
+          actionData: {},
+        })
+        .expect(200);
+
       // Helper function to find Basic Pokemon by trying to get card details
       const findBasicPokemon = async (hand: string[]): Promise<string | null> => {
         // Filter out energy and trainer cards
@@ -289,11 +308,43 @@ describe('Card Dealing E2E (real data)', () => {
         })
         .expect(200);
 
+      // Verify state transitioned to FIRST_PLAYER_SELECTION
+      const stateAfterReady = await request(server())
+        .post(`/api/v1/matches/${matchId}/state`)
+        .send({ playerId: PLAYER1_ID })
+        .expect(200);
+
+      expect(stateAfterReady.body.state).toBe('FIRST_PLAYER_SELECTION');
+
+      // Both players confirm first player selection (coin toss happens automatically)
+      await request(server())
+        .post(`/api/v1/matches/${matchId}/actions`)
+        .send({
+          playerId: PLAYER1_ID,
+          actionType: 'CONFIRM_FIRST_PLAYER',
+          actionData: {},
+        })
+        .expect(200);
+
+      await request(server())
+        .post(`/api/v1/matches/${matchId}/actions`)
+        .send({
+          playerId: PLAYER2_ID,
+          actionType: 'CONFIRM_FIRST_PLAYER',
+          actionData: {},
+        })
+        .expect(200);
+
       // Get state to determine first player
       const stateAfterSetup = await request(server())
         .post(`/api/v1/matches/${matchId}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
+
+      // Verify coin toss happened and match is in PLAYER_TURN
+      expect(stateAfterSetup.body.state).toBe('PLAYER_TURN');
+      expect(stateAfterSetup.body.coinTossResult).toBeTruthy();
+      expect(stateAfterSetup.body.currentPlayer).toBeTruthy();
 
       // First player draws a card at start of turn (if in DRAW phase)
       if (stateAfterSetup.body.phase === 'DRAW') {

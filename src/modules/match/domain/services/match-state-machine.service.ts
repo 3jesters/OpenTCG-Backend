@@ -49,6 +49,10 @@ export class MatchStateMachineService {
       ],
       [MatchState.DRAWING_CARDS]: [
         MatchState.DRAWING_CARDS,
+        MatchState.SET_PRIZE_CARDS,
+        MatchState.CANCELLED,
+      ],
+      [MatchState.SET_PRIZE_CARDS]: [
         MatchState.SELECT_ACTIVE_POKEMON,
         MatchState.CANCELLED,
       ],
@@ -57,6 +61,10 @@ export class MatchStateMachineService {
         MatchState.CANCELLED,
       ],
       [MatchState.SELECT_BENCH_POKEMON]: [
+        MatchState.FIRST_PLAYER_SELECTION,
+        MatchState.CANCELLED,
+      ],
+      [MatchState.FIRST_PLAYER_SELECTION]: [
         MatchState.PLAYER_TURN,
         MatchState.CANCELLED,
       ],
@@ -96,8 +104,10 @@ export class MatchStateMachineService {
       MatchState.PLAYER_TURN,
       MatchState.INITIAL_SETUP,
       MatchState.DRAWING_CARDS,
+      MatchState.SET_PRIZE_CARDS,
       MatchState.SELECT_ACTIVE_POKEMON,
       MatchState.SELECT_BENCH_POKEMON,
+      MatchState.FIRST_PLAYER_SELECTION,
       MatchState.MATCH_APPROVAL,
     ];
     
@@ -143,6 +153,16 @@ export class MatchStateMachineService {
       }
     }
 
+    // Actions valid during SET_PRIZE_CARDS
+    if (state === MatchState.SET_PRIZE_CARDS) {
+      if (
+        actionType === PlayerActionType.SET_PRIZE_CARDS ||
+        actionType === PlayerActionType.CONCEDE
+      ) {
+        return { isValid: true };
+      }
+    }
+
     // Actions valid during SELECT_ACTIVE_POKEMON
     if (state === MatchState.SELECT_ACTIVE_POKEMON) {
       if (
@@ -158,6 +178,16 @@ export class MatchStateMachineService {
       if (
         actionType === PlayerActionType.PLAY_POKEMON ||
         actionType === PlayerActionType.COMPLETE_INITIAL_SETUP ||
+        actionType === PlayerActionType.CONCEDE
+      ) {
+        return { isValid: true };
+      }
+    }
+
+    // Actions valid during FIRST_PLAYER_SELECTION
+    if (state === MatchState.FIRST_PLAYER_SELECTION) {
+      if (
+        actionType === PlayerActionType.CONFIRM_FIRST_PLAYER ||
         actionType === PlayerActionType.CONCEDE
       ) {
         return { isValid: true };
@@ -413,6 +443,13 @@ export class MatchStateMachineService {
       ];
     }
 
+    if (state === MatchState.SET_PRIZE_CARDS) {
+      return [
+        PlayerActionType.SET_PRIZE_CARDS,
+        PlayerActionType.CONCEDE,
+      ];
+    }
+
     if (state === MatchState.SELECT_ACTIVE_POKEMON) {
       return [
         PlayerActionType.SET_ACTIVE_POKEMON,
@@ -424,6 +461,13 @@ export class MatchStateMachineService {
       return [
         PlayerActionType.PLAY_POKEMON,
         PlayerActionType.COMPLETE_INITIAL_SETUP,
+        PlayerActionType.CONCEDE,
+      ];
+    }
+
+    if (state === MatchState.FIRST_PLAYER_SELECTION) {
+      return [
+        PlayerActionType.CONFIRM_FIRST_PLAYER,
         PlayerActionType.CONCEDE,
       ];
     }

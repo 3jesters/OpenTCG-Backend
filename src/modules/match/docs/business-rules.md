@@ -25,14 +25,17 @@ This document describes the business rules and constraints that govern match lif
    - `CREATED` → `WAITING_FOR_PLAYERS` (when first player assigned)
    - `WAITING_FOR_PLAYERS` → `DECK_VALIDATION` (when both players assigned)
    - `DECK_VALIDATION` → `PRE_GAME_SETUP` (decks valid) or `CANCELLED` (decks invalid)
-   - `PRE_GAME_SETUP` → `DRAWING_CARDS` (automatic, after coin toss)
-   - `DRAWING_CARDS` → `DRAWING_CARDS` (player redraws if invalid) or `SELECT_ACTIVE_POKEMON` (both players have valid decks)
+   - `PRE_GAME_SETUP` → `DRAWING_CARDS` (automatic transition)
+   - `DRAWING_CARDS` → `DRAWING_CARDS` (player redraws if invalid) or `SET_PRIZE_CARDS` (both players have valid decks)
+   - `SET_PRIZE_CARDS` → `SELECT_ACTIVE_POKEMON` (both players set prize cards)
    - `SELECT_ACTIVE_POKEMON` → `SELECT_BENCH_POKEMON` (both players selected active)
-   - `SELECT_BENCH_POKEMON` → `PLAYER_TURN` (both players ready, via COMPLETE_INITIAL_SETUP)
+   - `SELECT_BENCH_POKEMON` → `FIRST_PLAYER_SELECTION` (both players ready, via COMPLETE_INITIAL_SETUP)
+   - `FIRST_PLAYER_SELECTION` → `PLAYER_TURN` (both players confirm coin toss result, via CONFIRM_FIRST_PLAYER)
    - `INITIAL_SETUP` → `PLAYER_TURN` (setup complete, legacy state)
    - `PLAYER_TURN` → `BETWEEN_TURNS` (turn ended) or `MATCH_ENDED` (win condition)
    - `BETWEEN_TURNS` → `PLAYER_TURN` (next turn) or `MATCH_ENDED` (win condition)
-   - Any state → `CANCELLED` (error, player leaves)
+   - `WAITING_FOR_PLAYERS` → `CANCELLED` (player cancels match - match is deleted from database)
+   - `DECK_VALIDATION` → `CANCELLED` (decks invalid - automatic system cancellation, match remains in database)
    - Any state → `MATCH_ENDED` (win condition met)
 
 2. **Terminal States**
@@ -95,7 +98,6 @@ This document describes the business rules and constraints that govern match lif
 ### Initial Setup Rules
 
 1. **Setup Sequence**
-   - After deck validation, coin toss is automatically performed to determine first player
    - **DRAWING_CARDS State**: Each player independently draws 7 cards by clicking "Draw Cards" button
    - **Start Game Rules Validation**: Each player's hand is validated against tournament start game rules
    - **Reshuffle Rule**: If a player's hand doesn't satisfy all start game rules:
@@ -103,12 +105,22 @@ This document describes the business rules and constraints that govern match lif
      - Hand cards are shuffled back into the deck
      - Player draws 7 new cards
      - Process repeats until hand satisfies all rules
-   - Once both players have valid decks, match transitions to SELECT_ACTIVE_POKEMON
+   - Once both players have valid decks, match transitions to SET_PRIZE_CARDS
+   - **SET_PRIZE_CARDS State**: Both players set their prize cards from their deck
+     - Prize card count comes from tournament configuration (default: 6)
+     - Top N cards are taken from each player's deck and set as prize cards (face down)
+     - Players cannot see what cards are in their prize cards (only the count)
+     - Once both players have set prize cards, match transitions to SELECT_ACTIVE_POKEMON
    - **SELECT_ACTIVE_POKEMON State**: Both players select their active Pokemon
      - Players can only see opponent's active Pokemon after selecting their own
    - **SELECT_BENCH_POKEMON State**: Both players optionally select bench Pokemon (can skip)
-   - Both players draw 6 prize cards (set up when transitioning to SELECT_BENCH_POKEMON)
-   - Once both players are ready, match transitions to PLAYER_TURN
+   - Once both players are ready (via COMPLETE_INITIAL_SETUP), match transitions to FIRST_PLAYER_SELECTION
+   - **FIRST_PLAYER_SELECTION State**: Coin toss to determine first player
+     - Both players have completed initial setup
+     - Coin toss is performed automatically when the first player confirms (via CONFIRM_FIRST_PLAYER)
+     - Both players must confirm the coin toss result
+     - Players see the coin toss result and must acknowledge it before proceeding
+     - Once both players confirm, match transitions to PLAYER_TURN
    - First player draws 1 card (if going first)
 
 2. **Start Game Rules**
@@ -118,8 +130,10 @@ This document describes the business rules and constraints that govern match lif
    - If no rules specified, default rule applies (at least 1 Basic Pokemon)
 
 3. **First Player**
-   - Determined by automatic coin toss after deck validation
+   - Determined by coin toss in FIRST_PLAYER_SELECTION state
+   - Coin toss happens automatically when first player confirms (via CONFIRM_FIRST_PLAYER action)
    - Coin toss result is deterministic (based on match ID) so both players see the same result
+   - Both players must confirm the coin toss result before match can proceed
    - First player cannot attack on first turn
    - First player draws 1 card after setup
 
@@ -218,7 +232,14 @@ This document describes the business rules and constraints that govern match lif
 1. **Deck Validation**
    - Both decks must be validated against tournament rules
    - Validation happens before match starts
-   - Invalid decks cancel the match
+   - Invalid decks cancel the match automatically (system cancellation)
+   - System cancellations mark match as CANCELLED but do not delete it from database
+
+2. **Match Cancellation**
+   - Players can manually cancel matches only when in `WAITING_FOR_PLAYERS` state
+   - When a match is cancelled in `WAITING_FOR_PLAYERS` state, it is permanently deleted from the database
+   - Only match participants (player1Id or player2Id) can cancel a match
+   - Cancellation endpoint: `DELETE /api/v1/matches/:matchId/cancel?playerId=:playerId`
 
 2. **Tournament Rules**
    - Match follows tournament format rules

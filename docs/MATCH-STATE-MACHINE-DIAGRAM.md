@@ -20,14 +20,20 @@ stateDiagram-v2
     PRE_GAME_SETUP --> CANCELLED: cancel match
     
     DRAWING_CARDS --> DRAWING_CARDS: player redraws (invalid deck)
-    DRAWING_CARDS --> SELECT_ACTIVE_POKEMON: both players have valid decks
+    DRAWING_CARDS --> SET_PRIZE_CARDS: both players have valid decks
     DRAWING_CARDS --> CANCELLED: cancel match
+    
+    SET_PRIZE_CARDS --> SELECT_ACTIVE_POKEMON: both players set prize cards
+    SET_PRIZE_CARDS --> CANCELLED: cancel match
     
     SELECT_ACTIVE_POKEMON --> SELECT_BENCH_POKEMON: both players selected active
     SELECT_ACTIVE_POKEMON --> CANCELLED: cancel match
     
-    SELECT_BENCH_POKEMON --> PLAYER_TURN: both players ready (COMPLETE_INITIAL_SETUP)
+    SELECT_BENCH_POKEMON --> FIRST_PLAYER_SELECTION: both players ready (COMPLETE_INITIAL_SETUP)
     SELECT_BENCH_POKEMON --> CANCELLED: cancel match
+    
+    FIRST_PLAYER_SELECTION --> PLAYER_TURN: both players confirm (CONFIRM_FIRST_PLAYER)
+    FIRST_PLAYER_SELECTION --> CANCELLED: cancel match
     
     INITIAL_SETUP --> PLAYER_TURN: setup complete (both players set active Pokemon)
     INITIAL_SETUP --> CANCELLED: cancel match
@@ -101,7 +107,14 @@ stateDiagram-v2
   - Hands are validated against start game rules
   - If invalid, player must redraw (opponent can see drawn cards)
   - If valid, player's deck is marked as valid
-  - Transitions to `SELECT_ACTIVE_POKEMON` when both players have valid decks
+  - Transitions to `SET_PRIZE_CARDS` when both players have valid decks
+
+- **SET_PRIZE_CARDS**: Players set prize cards from their deck
+  - Both players set their prize cards from their deck
+  - Prize card count comes from tournament configuration (default: 6)
+  - Top N cards are taken from each player's deck and set as prize cards (face down)
+  - Players cannot see what cards are in their prize cards (only the count)
+  - Transitions to `SELECT_ACTIVE_POKEMON` when both players have set prize cards
 
 - **SELECT_ACTIVE_POKEMON**: Players select active Pokemon
   - Both players select their active Pokemon
@@ -111,8 +124,14 @@ stateDiagram-v2
 - **SELECT_BENCH_POKEMON**: Players optionally select bench Pokemon
   - Both players can optionally play Pokemon to bench (max 5)
   - Players can skip this step
-  - Prize cards are set up (6 for each player)
-  - Transitions to `PLAYER_TURN` when both players are ready
+  - Transitions to `FIRST_PLAYER_SELECTION` when both players are ready
+
+- **FIRST_PLAYER_SELECTION**: Coin toss to determine first player
+  - Both players have completed initial setup
+  - Coin toss is performed automatically when first player confirms
+  - Both players must confirm the coin toss result
+  - Players see the coin toss result and must acknowledge it
+  - Transitions to `PLAYER_TURN` when both players confirm
 
 - **INITIAL_SETUP**: Initial game setup (legacy state)
   - Both players shuffle decks
@@ -149,12 +168,16 @@ stateDiagram-v2
 | PRE_GAME_SETUP | DRAWING_CARDS | Coin toss (automatic) | First player determined |
 | PRE_GAME_SETUP | CANCELLED | Cancel match | Match cancelled |
 | DRAWING_CARDS | DRAWING_CARDS | Player redraws | Invalid deck, must redraw |
-| DRAWING_CARDS | SELECT_ACTIVE_POKEMON | Both valid decks | Both players have valid decks |
+| DRAWING_CARDS | SET_PRIZE_CARDS | Both valid decks | Both players have valid decks |
 | DRAWING_CARDS | CANCELLED | Cancel match | Match cancelled |
+| SET_PRIZE_CARDS | SELECT_ACTIVE_POKEMON | Both set prize cards | Both players have set prize cards |
+| SET_PRIZE_CARDS | CANCELLED | Cancel match | Match cancelled |
 | SELECT_ACTIVE_POKEMON | SELECT_BENCH_POKEMON | Both selected active | Both players selected active Pokemon |
 | SELECT_ACTIVE_POKEMON | CANCELLED | Cancel match | Match cancelled |
-| SELECT_BENCH_POKEMON | PLAYER_TURN | Both ready | Both players clicked COMPLETE_INITIAL_SETUP |
+| SELECT_BENCH_POKEMON | FIRST_PLAYER_SELECTION | Both ready | Both players clicked COMPLETE_INITIAL_SETUP |
 | SELECT_BENCH_POKEMON | CANCELLED | Cancel match | Match cancelled |
+| FIRST_PLAYER_SELECTION | PLAYER_TURN | Both confirmed | Both players confirmed coin toss result (CONFIRM_FIRST_PLAYER) |
+| FIRST_PLAYER_SELECTION | CANCELLED | Cancel match | Match cancelled |
 | INITIAL_SETUP | PLAYER_TURN | Setup complete | Both players set active Pokemon (legacy) |
 | INITIAL_SETUP | CANCELLED | Cancel match | Match cancelled |
 | PLAYER_TURN | BETWEEN_TURNS | Turn ends | Player ends their turn |
@@ -212,21 +235,29 @@ The match can end in `MATCH_ENDED` state when any of these conditions are met:
 3. DECK_VALIDATION
    ↓ (decks valid)
 4. PRE_GAME_SETUP
-   ↓ (coin toss, first player = PLAYER1, automatic)
+   ↓ (transition to DRAWING_CARDS)
 5. DRAWING_CARDS
    ↓ (player 1 draws cards, validates)
    ↓ (player 2 draws cards, validates)
    ↓ (both players have valid decks)
-6. SELECT_ACTIVE_POKEMON
+6. SET_PRIZE_CARDS
+   ↓ (player 1 sets prize cards)
+   ↓ (player 2 sets prize cards)
+   ↓ (both players set prize cards)
+7. SELECT_ACTIVE_POKEMON
    ↓ (player 1 selects active)
    ↓ (player 2 selects active)
    ↓ (both players selected)
-7. SELECT_BENCH_POKEMON
-   ↓ (prize cards set up)
+8. SELECT_BENCH_POKEMON
    ↓ (player 1 ready)
    ↓ (player 2 ready)
    ↓ (both players ready)
-8. PLAYER_TURN (PLAYER1, DRAW phase)
+9. FIRST_PLAYER_SELECTION
+   ↓ (coin toss happens automatically when first player confirms)
+   ↓ (player 1 confirms coin toss result)
+   ↓ (player 2 confirms coin toss result)
+   ↓ (both players confirmed)
+10. PLAYER_TURN (PLAYER1, DRAW phase)
    ↓ (draw card)
    PLAYER_TURN (PLAYER1, MAIN_PHASE)
    ↓ (play cards, attach energy)
@@ -295,6 +326,10 @@ The match can end in `MATCH_ENDED` state when any of these conditions are met:
             [SELECT_BENCH_POKEMON] ───────→ [CANCELLED]
                        |
                        | (both ready)     (cancel)
+                       ↓                        ↓
+            [FIRST_PLAYER_SELECTION] ────→ [CANCELLED]
+                       |
+                       | (both confirmed)  (cancel)
                        ↓                        ↓
             [PLAYER_TURN] ───────────────→ [CANCELLED]
                        |

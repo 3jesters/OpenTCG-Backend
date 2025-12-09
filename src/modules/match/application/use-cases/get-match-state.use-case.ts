@@ -184,6 +184,26 @@ export class GetMatchStateUseCase {
       return actions;
     }
 
+    // SET_PRIZE_CARDS: check if player has set prize cards
+    if (match.state === MatchState.SET_PRIZE_CARDS) {
+      // Check if player already has set prize cards
+      const playerHasSetPrizeCards =
+        playerIdentifier === PlayerIdentifier.PLAYER1
+          ? match.player1HasSetPrizeCards
+          : match.player2HasSetPrizeCards;
+      
+      if (playerHasSetPrizeCards) {
+        // Player already has set prize cards, wait for opponent
+        return [PlayerActionType.CONCEDE];
+      }
+      // Player can set prize cards
+      return actions.filter(
+        (action) =>
+          action === PlayerActionType.SET_PRIZE_CARDS ||
+          action === PlayerActionType.CONCEDE,
+      );
+    }
+
     // SELECT_ACTIVE_POKEMON: check if player has set active Pokemon
     if (match.state === MatchState.SELECT_ACTIVE_POKEMON) {
       const playerState = match.gameState?.getPlayerState(playerIdentifier);
@@ -212,6 +232,25 @@ export class GetMatchStateUseCase {
       }
       // Player can play Pokemon or complete setup
       return actions;
+    }
+
+    // FIRST_PLAYER_SELECTION: check if player has confirmed first player
+    if (match.state === MatchState.FIRST_PLAYER_SELECTION) {
+      const playerHasConfirmed =
+        playerIdentifier === PlayerIdentifier.PLAYER1
+          ? match.player1HasConfirmedFirstPlayer
+          : match.player2HasConfirmedFirstPlayer;
+      
+      if (playerHasConfirmed) {
+        // Player has confirmed, wait for opponent
+        return [PlayerActionType.CONCEDE];
+      }
+      // Player can confirm first player
+      return actions.filter(
+        (action) =>
+          action === PlayerActionType.CONFIRM_FIRST_PLAYER ||
+          action === PlayerActionType.CONCEDE,
+      );
     }
 
     // INITIAL_SETUP: check if player has set active Pokemon (legacy state)

@@ -167,6 +167,38 @@ if (state.currentPlayer === myPlayerId) {
 const match = await createMatch(tournamentId, playerId, deckId);
 
 // Stage 3: Approve match
+```
+
+---
+
+### [CLIENT-SET-PRIZE-CARDS-GUIDE.md](./CLIENT-SET-PRIZE-CARDS-GUIDE.md)
+**Complete guide for implementing the SET_PRIZE_CARDS phase**
+
+**Contains:**
+- Detailed request/response examples for SET_PRIZE_CARDS phase
+- State detection and polling strategies
+- Error handling examples
+- Complete React/TypeScript implementation example
+- UI mockups and visual indicators
+- Step-by-step implementation guide
+
+**Use this when:**
+- Implementing the prize cards setup phase in the client
+- Understanding how to handle SET_PRIZE_CARDS state
+- Building UI for setting prize cards
+- Handling the transition from DRAWING_CARDS to SELECT_ACTIVE_POKEMON
+
+**Quick Example:**
+```typescript
+// Set prize cards
+POST /api/v1/matches/:matchId/actions
+{
+  "playerId": "player-1",
+  "actionType": "SET_PRIZE_CARDS"
+}
+```
+
+---
 await approveMatch(matchId, playerId);
 
 // Stage 4: Draw initial cards

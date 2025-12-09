@@ -46,6 +46,7 @@ export interface TournamentJson {
   maxParticipants?: number;
   format?: string;
   regulationMarks: string[];
+  prizeCardCount?: number;
 }
 
 /**
@@ -93,6 +94,7 @@ export class TournamentMapper {
       maxParticipants: tournament.maxParticipants,
       format: tournament.format,
       regulationMarks: tournament.regulationMarks,
+      prizeCardCount: tournament.prizeCardCount,
     };
   }
 
@@ -163,6 +165,11 @@ export class TournamentMapper {
 
     // Set regulation marks
     json.regulationMarks.forEach((mark) => tournament.addRegulationMark(mark));
+
+    // Set prize card count
+    if (json.prizeCardCount !== undefined) {
+      tournament.setPrizeCardCount(json.prizeCardCount);
+    }
 
     return tournament;
   }

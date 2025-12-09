@@ -8,4 +8,6 @@ export * from './get-match-state.use-case';
 export * from './list-matches.use-case';
 export * from './validate-match-decks.use-case';
 export * from './draw-initial-cards.use-case';
+export * from './set-prize-cards.use-case';
+export * from './cancel-match.use-case';
 

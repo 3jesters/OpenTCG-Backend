@@ -11,6 +11,8 @@ import {
   ValidateMatchDecksUseCase,
   PerformCoinTossUseCase,
   DrawInitialCardsUseCase,
+  SetPrizeCardsUseCase,
+  CancelMatchUseCase,
 } from './application/use-cases';
 import { IMatchRepository } from './domain/repositories';
 import { JsonMatchRepository } from './infrastructure/persistence/json-match.repository';
@@ -46,6 +48,8 @@ import { TournamentModule } from '../tournament/tournament.module';
     ValidateMatchDecksUseCase,
     PerformCoinTossUseCase,
     DrawInitialCardsUseCase,
+    SetPrizeCardsUseCase,
+    CancelMatchUseCase,
     // Domain Services
     MatchStateMachineService,
     StartGameRulesValidatorService,

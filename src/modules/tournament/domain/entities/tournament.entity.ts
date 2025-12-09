@@ -39,6 +39,7 @@ export class Tournament {
   private _maxParticipants?: number;
   private _format?: string;
   private _regulationMarks: string[];
+  private _prizeCardCount: number;
 
   constructor(
     id: string,
@@ -64,6 +65,7 @@ export class Tournament {
     this._setBannedCards = {};
     this._savedDecks = [];
     this._regulationMarks = [];
+    this._prizeCardCount = 6; // Default prize card count
 
     this.validate();
   }
@@ -146,6 +148,10 @@ export class Tournament {
 
   get regulationMarks(): string[] {
     return [...this._regulationMarks];
+  }
+
+  get prizeCardCount(): number {
+    return this._prizeCardCount;
   }
 
   // ========================================
@@ -232,6 +238,14 @@ export class Tournament {
 
   removeRegulationMark(mark: string): void {
     this._regulationMarks = this._regulationMarks.filter((m) => m !== mark);
+    this.touch();
+  }
+
+  setPrizeCardCount(count: number): void {
+    if (count < 1) {
+      throw new Error('Prize card count must be at least 1');
+    }
+    this._prizeCardCount = count;
     this.touch();
   }
 

@@ -34,11 +34,13 @@ The match lifecycle consists of **7 main stages** that progress from match creat
 ```
 1. CREATE MATCH → WAITING_FOR_PLAYERS
 2. PLAYER 2 JOINS → DECK_VALIDATION → MATCH_APPROVAL
-3. BOTH PLAYERS APPROVE → DRAWING_CARDS (coin toss automatic)
-4. BOTH PLAYERS DRAW → SELECT_ACTIVE_POKEMON
-5. BOTH PLAYERS SELECT ACTIVE → SELECT_BENCH_POKEMON
-6. BOTH PLAYERS COMPLETE SETUP → PLAYER_TURN
-7. GAMEPLAY LOOP → PLAYER_TURN ↔ BETWEEN_TURNS → MATCH_ENDED
+3. BOTH PLAYERS APPROVE → DRAWING_CARDS
+4. BOTH PLAYERS DRAW → SET_PRIZE_CARDS
+5. BOTH PLAYERS SET PRIZE CARDS → SELECT_ACTIVE_POKEMON
+6. BOTH PLAYERS SELECT ACTIVE → SELECT_BENCH_POKEMON
+7. BOTH PLAYERS COMPLETE SETUP → FIRST_PLAYER_SELECTION
+8. BOTH PLAYERS CONFIRM COIN TOSS → PLAYER_TURN
+9. GAMEPLAY LOOP → PLAYER_TURN ↔ BETWEEN_TURNS → MATCH_ENDED
 ```
 
 ---
@@ -328,11 +330,83 @@ GET /api/v1/matches/:matchId/state?playerId=:playerId
 - `availableActions.includes("DRAW_INITIAL_CARDS")`
 - `coinTossResult` is present
 - `opponentDeckId` is visible
-- After both draw: `state === "SELECT_ACTIVE_POKEMON"`
+- After both draw: `state === "SET_PRIZE_CARDS"`
 
 ---
 
-### Stage 5: Selecting Active Pokemon
+### Stage 5: Setting Prize Cards
+
+**Purpose:** Both players set their prize cards from their deck (face down).
+
+#### State Check
+
+```typescript
+GET /api/v1/matches/:matchId/state?playerId=:playerId
+```
+
+#### Expected Response
+
+```json
+{
+  "matchId": "match-id",
+  "state": "SET_PRIZE_CARDS",
+  "currentPlayer": null,
+  "turnNumber": 0,
+  "phase": null,
+  "playerState": {
+    "hand": ["card-id-1", "card-id-2", ...],  // 7 cards
+    "handCount": 7,
+    "deckCount": 53,
+    "discardCount": 0,
+    "activePokemon": null,
+    "bench": [],
+    "prizeCardsRemaining": 0,  // Not set yet
+    "prizeCards": []  // Hidden during SET_PRIZE_CARDS phase
+  },
+  "opponentState": {
+    "handCount": 7,
+    "deckCount": 53,
+    "discardCount": 0,
+    "activePokemon": null,
+    "bench": [],
+    "prizeCardsRemaining": 0
+  },
+  "availableActions": ["SET_PRIZE_CARDS"],
+  "playerDeckId": "classic-fire-starter-deck",
+  "opponentDeckId": "classic-water-starter-deck"
+}
+```
+
+#### Important Visibility Rules
+
+- **Prize cards are hidden** - Players only see `prizeCardsRemaining` count, not the actual card IDs
+- Prize card count comes from tournament configuration (default: 6)
+
+#### Client Actions (Both Players)
+
+1. **Display:**
+   - Show "Set Prize Cards" prompt
+   - Show deck count
+   - Show prize card count from tournament (e.g., "Set 6 prize cards")
+
+2. **Player Sets Prize Cards:**
+   ```typescript
+   POST /api/v1/matches/:matchId/actions
+   {
+     "playerId": "player-1",
+     "actionType": "SET_PRIZE_CARDS"
+   }
+   ```
+   - Top N cards are automatically taken from deck and set as prize cards
+   - State remains `SET_PRIZE_CARDS` (waiting for opponent)
+
+3. **After Both Set:**
+   - State transitions to `SELECT_ACTIVE_POKEMON`
+   - Prize cards remain hidden (face down)
+
+---
+
+### Stage 6: Selecting Active Pokemon
 
 **Purpose:** Both players select their active Pokemon from their hand.
 
@@ -540,19 +614,93 @@ GET /api/v1/matches/:matchId/state?playerId=:playerId
      "actionData": {}
    }
    ```
-   - When **both players** complete setup, state transitions to `PLAYER_TURN`
-   - First player (from coin toss) starts their turn
+   - When **both players** complete setup, state transitions to `FIRST_PLAYER_SELECTION`
 
 #### What to Check
 
 - `state === "SELECT_BENCH_POKEMON"`
 - `availableActions.includes("PLAY_POKEMON")` and `availableActions.includes("COMPLETE_INITIAL_SETUP")`
 - `opponentState.activePokemon` is visible
-- After both complete: `state === "PLAYER_TURN"` and `currentPlayer` is set
+- After both complete: `state === "FIRST_PLAYER_SELECTION"`
 
 ---
 
-### Stage 7: Gameplay Loop
+### Stage 8: First Player Selection
+
+**Purpose:** Coin toss determines who goes first, and both players must confirm the result.
+
+#### State Check
+
+```typescript
+POST /api/v1/matches/:matchId/state
+{
+  "playerId": "player-1"
+}
+```
+
+#### Expected Response
+
+```json
+{
+  "matchId": "match-id",
+  "state": "FIRST_PLAYER_SELECTION",
+  "currentPlayer": null,
+  "coinTossResult": null,
+  "turnNumber": 0,
+  "phase": null,
+  "playerState": { /* ... */ },
+  "opponentState": { /* ... */ },
+  "availableActions": ["CONFIRM_FIRST_PLAYER"],
+  "playerHasConfirmedFirstPlayer": false,
+  "opponentHasConfirmedFirstPlayer": false,
+  "coinTossResult": null
+}
+```
+
+#### Client Actions (Both Players)
+
+1. **Display:**
+   - Show "Determining First Player..." message
+   - Show coin toss animation modal (when coin toss result is available)
+   - Show "Confirm" button
+
+2. **Player 1 Confirms (First to Confirm):**
+   ```typescript
+   POST /api/v1/matches/:matchId/actions
+   {
+     "playerId": "player-1",
+     "actionType": "CONFIRM_FIRST_PLAYER",
+     "actionData": {}
+   }
+   ```
+   - Coin toss happens automatically when first player confirms
+   - State response now includes `coinTossResult` (PLAYER1 or PLAYER2)
+   - `currentPlayer` is set to match `coinTossResult`
+   - `playerHasConfirmedFirstPlayer` becomes `true`
+
+3. **Player 2 Confirms:**
+   ```typescript
+   POST /api/v1/matches/:matchId/actions
+   {
+     "playerId": "player-2",
+     "actionType": "CONFIRM_FIRST_PLAYER",
+     "actionData": {}
+   }
+   ```
+   - When **both players** confirm, state transitions to `PLAYER_TURN`
+   - First player (from coin toss) starts their turn
+
+#### What to Check
+
+- `state === "FIRST_PLAYER_SELECTION"`
+- `availableActions.includes("CONFIRM_FIRST_PLAYER")`
+- After first player confirms: `coinTossResult` is set (PLAYER1 or PLAYER2)
+- After first player confirms: `currentPlayer` matches `coinTossResult`
+- After both confirm: `state === "PLAYER_TURN"` and `currentPlayer` is set
+
+---
+
+### Stage 9: Gameplay Loop
 
 **Purpose:** Active gameplay with turns, actions, and win conditions.
 
@@ -702,14 +850,21 @@ During `PLAYER_TURN`, the game progresses through phases:
 - [ ] Show opponent's drawn cards if invalid
 - [ ] Poll state to detect when opponent draws
 
-### Stage 5: Selecting Active Pokemon
+### Stage 5: Setting Prize Cards
+- [ ] Display hand (7 cards)
+- [ ] Show "Set Prize Cards" button
+- [ ] Implement `SET_PRIZE_CARDS` action
+- [ ] Show prize cards remaining count (6)
+- [ ] Wait for opponent to set prize cards
+
+### Stage 6: Selecting Active Pokemon
 - [ ] Display hand (7 cards)
 - [ ] Show "Select Active Pokemon" prompt
 - [ ] Implement `SET_ACTIVE_POKEMON` action
 - [ ] **Hide opponent's active Pokemon** until you select
 - [ ] Show opponent's active Pokemon after both select
 
-### Stage 6: Setting Bench Pokemon
+### Stage 7: Setting Bench Pokemon
 - [ ] Display hand (6 cards)
 - [ ] Show active Pokemon (yours and opponent's)
 - [ ] Implement `PLAY_POKEMON` action (optional)
@@ -717,7 +872,15 @@ During `PLAYER_TURN`, the game progresses through phases:
 - [ ] Show "Ready" indicator when you're ready
 - [ ] Poll state to detect when opponent is ready
 
-### Stage 7: Gameplay Loop
+### Stage 8: First Player Selection
+- [ ] Display "Determining First Player..." message
+- [ ] Show coin toss animation modal when coin toss result is available
+- [ ] Display coin toss result (PLAYER1 or PLAYER2)
+- [ ] Implement `CONFIRM_FIRST_PLAYER` action
+- [ ] Show "Confirm" button
+- [ ] Wait for opponent to confirm
+
+### Stage 9: Gameplay Loop
 - [ ] Check `currentPlayer` to know whose turn
 - [ ] Filter `availableActions` based on player context
 - [ ] Implement action execution for your turn
@@ -820,7 +983,7 @@ class MatchFlowManager {
     return await response.json();
   }
 
-  // Stage 6: Complete Initial Setup
+  // Stage 7: Complete Initial Setup
   async completeInitialSetup() {
     const response = await fetch(
       `http://localhost:3000/api/v1/matches/${this.matchId}/actions`,
@@ -830,6 +993,23 @@ class MatchFlowManager {
         body: JSON.stringify({
           playerId: this.playerId,
           actionType: 'COMPLETE_INITIAL_SETUP',
+          actionData: {},
+        }),
+      }
+    );
+    return await response.json();
+  }
+
+  // Stage 8: Confirm First Player Selection
+  async confirmFirstPlayer() {
+    const response = await fetch(
+      `http://localhost:3000/api/v1/matches/${this.matchId}/actions`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerId: this.playerId,
+          actionType: 'CONFIRM_FIRST_PLAYER',
           actionData: {},
         }),
       }

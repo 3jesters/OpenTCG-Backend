@@ -178,8 +178,12 @@ describe('Match Entity', () => {
   });
 
   describe('cancelMatch', () => {
-    it('should cancel match with reason', () => {
+    it('should cancel match with reason when in WAITING_FOR_PLAYERS state', () => {
       const match = new Match('match-001', 'tournament-001');
+      match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      // Match should be in WAITING_FOR_PLAYERS state after assigning first player
+
+      expect(match.state).toBe(MatchState.WAITING_FOR_PLAYERS);
 
       match.cancelMatch('Player left');
 
@@ -199,6 +203,30 @@ describe('Match Entity', () => {
         match.cancelMatch('Reason');
       }).toThrow('Cannot cancel a match that has already ended');
     });
+
+    it('should throw error if match is not in WAITING_FOR_PLAYERS state', () => {
+      const match = new Match('match-001', 'tournament-001');
+      match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      // Match should be in DECK_VALIDATION state after assigning both players
+
+      expect(match.state).toBe(MatchState.DECK_VALIDATION);
+
+      expect(() => {
+        match.cancelMatch('Reason');
+      }).toThrow('Match can only be cancelled when in WAITING_FOR_PLAYERS state');
+    });
+
+    it('should throw error if match is in CREATED state', () => {
+      const match = new Match('match-001', 'tournament-001');
+      // Match starts in CREATED state
+
+      expect(match.state).toBe(MatchState.CREATED);
+
+      expect(() => {
+        match.cancelMatch('Reason');
+      }).toThrow('Match can only be cancelled when in WAITING_FOR_PLAYERS state');
+    });
   });
 
   describe('isTerminal', () => {
@@ -213,7 +241,9 @@ describe('Match Entity', () => {
 
     it('should return true for CANCELLED state', () => {
       const match = new Match('match-001', 'tournament-001');
-      match.cancelMatch('Reason');
+      match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      // Use system cancellation for test (doesn't require WAITING_FOR_PLAYERS)
+      match.cancelMatchSystem('Reason');
 
       expect(match.isTerminal()).toBe(true);
     });

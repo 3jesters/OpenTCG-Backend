@@ -2,11 +2,13 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   CreateMatchUseCase,
@@ -15,6 +17,7 @@ import {
   ExecuteTurnActionUseCase,
   GetMatchStateUseCase,
   ListMatchesUseCase,
+  CancelMatchUseCase,
 } from '../../application/use-cases';
 import {
   CreateMatchRequestDto,
@@ -49,6 +52,7 @@ export class MatchController {
     private readonly executeTurnActionUseCase: ExecuteTurnActionUseCase,
     private readonly getMatchStateUseCase: GetMatchStateUseCase,
     private readonly listMatchesUseCase: ListMatchesUseCase,
+    private readonly cancelMatchUseCase: CancelMatchUseCase,
     private readonly stateMachineService: MatchStateMachineService,
   ) {}
 
@@ -319,6 +323,23 @@ export class MatchController {
 
     // Other states: return as-is (typically just CONCEDE)
     return actions;
+  }
+
+  /**
+   * DELETE /api/v1/matches/:matchId/cancel
+   * Cancel and delete a match in WAITING_FOR_PLAYERS state
+   */
+  @Delete(':matchId/cancel')
+  @HttpCode(HttpStatus.OK)
+  async cancelMatch(
+    @Param('matchId') matchId: string,
+    @Query('playerId') playerId: string,
+  ): Promise<void> {
+    if (!playerId) {
+      throw new BadRequestException('playerId query parameter is required');
+    }
+
+    await this.cancelMatchUseCase.execute(matchId, playerId);
   }
 }
 

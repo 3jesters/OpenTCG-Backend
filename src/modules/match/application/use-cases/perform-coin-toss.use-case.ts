@@ -4,8 +4,8 @@ import { IMatchRepository } from '../../domain/repositories';
 
 /**
  * Perform Coin Toss Use Case
- * Automatically performs coin toss after deck validation
- * Determines first player and transitions to DRAWING_CARDS state
+ * Performs coin toss after both players have set active and bench Pokemon
+ * Determines first player (happens automatically in completeInitialSetup)
  */
 @Injectable()
 export class PerformCoinTossUseCase {
@@ -22,9 +22,9 @@ export class PerformCoinTossUseCase {
     }
 
     // Validate state
-    if (match.state !== MatchState.DRAWING_CARDS && match.state !== MatchState.SELECT_BENCH_POKEMON) {
+    if (match.state !== MatchState.SELECT_BENCH_POKEMON) {
       throw new Error(
-        `Cannot perform coin toss in state ${match.state}. Must be DRAWING_CARDS or SELECT_BENCH_POKEMON`,
+        `Cannot perform coin toss in state ${match.state}. Must be SELECT_BENCH_POKEMON`,
       );
     }
 
