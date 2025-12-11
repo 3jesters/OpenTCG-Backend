@@ -110,6 +110,36 @@ describe('Card Preview API (e2e)', () => {
           expect(res.body.ability.activationType).toBe('ACTIVATED');
           expect(res.body.ability).toHaveProperty('usageLimit');
           expect(res.body.ability.usageLimit).toBe('UNLIMITED');
+          // Verify effects array is present
+          expect(res.body.ability).toHaveProperty('effects');
+          expect(Array.isArray(res.body.ability.effects)).toBe(true);
+          expect(res.body.ability.effects.length).toBeGreaterThan(0);
+          // Verify effect structure
+          const effect = res.body.ability.effects[0];
+          expect(effect).toHaveProperty('effectType');
+          expect(effect.effectType).toBe('HEAL');
+        });
+    });
+
+    it('should include effects array for Blastoise Rain Dance ability', () => {
+      // Blastoise (card 2) has "Rain Dance" ability with ENERGY_ACCELERATION effect
+      return request(app.getHttpServer())
+        .get('/api/v1/cards/sets/preview/pokemon/base-set/v1.0/card/2')
+        .expect(200)
+        .expect((res) => {
+          expect(res.body.ability).toBeDefined();
+          expect(res.body.ability.name).toBe('Rain Dance');
+          expect(res.body.ability.effects).toBeDefined();
+          expect(Array.isArray(res.body.ability.effects)).toBe(true);
+          expect(res.body.ability.effects.length).toBe(1);
+          
+          const effect = res.body.ability.effects[0];
+          expect(effect.effectType).toBe('ENERGY_ACCELERATION');
+          expect(effect.target).toBe('ALL_YOURS');
+          expect(effect.source).toBe('HAND');
+          expect(effect.count).toBe(1);
+          expect(effect.energyType).toBe('WATER');
+          expect(effect.targetPokemonType).toBe('WATER');
         });
     });
   });

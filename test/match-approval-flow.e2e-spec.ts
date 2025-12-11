@@ -189,22 +189,55 @@ describe('Match Approval Flow E2E', () => {
         })
         .expect(200);
 
-      expect(player2DrawResponse.body.state).toBe('SELECT_ACTIVE_POKEMON');
+      expect(player2DrawResponse.body.state).toBe('SET_PRIZE_CARDS');
       expect(player2DrawResponse.body.playerState.hand.length).toBe(7);
 
-      // 14. Player 1 checks state - should now see opponent's drawn cards and state changed to SELECT_ACTIVE_POKEMON
+      // 14. Player 1 checks state - should now see opponent's drawn cards and state changed to SET_PRIZE_CARDS
       const player1State5 = await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
 
-      expect(player1State5.body.state).toBe('SELECT_ACTIVE_POKEMON');
+      expect(player1State5.body.state).toBe('SET_PRIZE_CARDS');
       expect(player1State5.body.opponentState.drawnCards).toBeUndefined(); // Opponent has valid deck, so no drawnCards shown
       expect(player1State5.body.opponentState.handCount).toBe(7);
-      expect(player1State5.body.availableActions).toContain('SET_ACTIVE_POKEMON');
+      expect(player1State5.body.availableActions).toContain('SET_PRIZE_CARDS');
 
-      // 15. Player 2 sets active Pokemon
-      const player2ActiveCard = player2DrawResponse.body.playerState.hand[0];
+      // 15. Player 1 sets prize cards
+      await request(server())
+        .post(`/api/v1/matches/${MATCH_ID}/actions`)
+        .send({
+          playerId: PLAYER1_ID,
+          actionType: 'SET_PRIZE_CARDS',
+          actionData: {},
+        })
+        .expect(200);
+
+      // 16. Player 2 sets prize cards
+      await request(server())
+        .post(`/api/v1/matches/${MATCH_ID}/actions`)
+        .send({
+          playerId: PLAYER2_ID,
+          actionType: 'SET_PRIZE_CARDS',
+          actionData: {},
+        })
+        .expect(200);
+
+      // 17. Player 1 checks state - should now be SELECT_ACTIVE_POKEMON
+      const player1State6 = await request(server())
+        .post(`/api/v1/matches/${MATCH_ID}/state`)
+        .send({ playerId: PLAYER1_ID })
+        .expect(200);
+
+      expect(player1State6.body.state).toBe('SELECT_ACTIVE_POKEMON');
+      expect(player1State6.body.availableActions).toContain('SET_ACTIVE_POKEMON');
+
+      // 18. Player 2 sets active Pokemon
+      const player2State6 = await request(server())
+        .post(`/api/v1/matches/${MATCH_ID}/state`)
+        .send({ playerId: PLAYER2_ID })
+        .expect(200);
+      const player2ActiveCard = player2State6.body.playerState.hand[0];
       await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)
         .send({
@@ -214,17 +247,17 @@ describe('Match Approval Flow E2E', () => {
         })
         .expect(200);
 
-      // 16. Player 1 checks state - should still be SELECT_ACTIVE_POKEMON (player 1 hasn't set yet)
-      const player1State6 = await request(server())
+      // 19. Player 1 checks state - should still be SELECT_ACTIVE_POKEMON (player 1 hasn't set yet)
+      const player1State7 = await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
 
-      expect(player1State6.body.state).toBe('SELECT_ACTIVE_POKEMON');
-      expect(player1State6.body.opponentState.activePokemon).toBeNull(); // Hidden until player 1 also selects
+      expect(player1State7.body.state).toBe('SELECT_ACTIVE_POKEMON');
+      expect(player1State7.body.opponentState.activePokemon).toBeNull(); // Hidden until player 1 also selects
 
-      // 17. Player 1 sets active Pokemon
-      const player1ActiveCard = player1State6.body.playerState.hand[0];
+      // 20. Player 1 sets active Pokemon
+      const player1ActiveCard = player1State7.body.playerState.hand[0];
       await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)
         .send({
@@ -234,19 +267,23 @@ describe('Match Approval Flow E2E', () => {
         })
         .expect(200);
 
-      // 18. Player 1 checks state - should now be SELECT_BENCH_POKEMON, and see opponent's active Pokemon
-      const player1State7 = await request(server())
+      // 21. Player 1 checks state - should now be SELECT_BENCH_POKEMON, and see opponent's active Pokemon
+      const player1State8 = await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
 
-      expect(player1State7.body.state).toBe('SELECT_BENCH_POKEMON');
-      expect(player1State7.body.opponentState.activePokemon).toBeTruthy();
-      expect(player1State7.body.availableActions).toContain('PLAY_POKEMON');
-      expect(player1State7.body.availableActions).toContain('COMPLETE_INITIAL_SETUP');
+      expect(player1State8.body.state).toBe('SELECT_BENCH_POKEMON');
+      expect(player1State8.body.opponentState.activePokemon).toBeTruthy();
+      expect(player1State8.body.availableActions).toContain('PLAY_POKEMON');
+      expect(player1State8.body.availableActions).toContain('COMPLETE_INITIAL_SETUP');
 
-      // 19. Player 2 sets bench Pokemon
-      const player2BenchCard = player2DrawResponse.body.playerState.hand[1];
+      // 23. Player 2 sets bench Pokemon
+      const player2State7 = await request(server())
+        .post(`/api/v1/matches/${MATCH_ID}/state`)
+        .send({ playerId: PLAYER2_ID })
+        .expect(200);
+      const player2BenchCard = player2State7.body.playerState.hand[1];
       await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)
         .send({
@@ -296,14 +333,14 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       // 24. Player 1 checks state - should now be FIRST_PLAYER_SELECTION
-      const player1State8 = await request(server())
+      const player1State9 = await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
 
-      expect(player1State8.body.state).toBe('FIRST_PLAYER_SELECTION');
-      expect(player1State8.body.availableActions).toContain('CONFIRM_FIRST_PLAYER');
-      expect(player1State8.body.playerHasConfirmedFirstPlayer).toBe(false);
+      expect(player1State9.body.state).toBe('FIRST_PLAYER_SELECTION');
+      expect(player1State9.body.availableActions).toContain('CONFIRM_FIRST_PLAYER');
+      expect(player1State9.body.playerHasConfirmedFirstPlayer).toBe(false);
 
       // 25. Player 1 confirms first player (coin toss happens immediately so player can see result)
       await request(server())
@@ -316,18 +353,18 @@ describe('Match Approval Flow E2E', () => {
         .expect(200);
 
       // 26. Player 1 checks state - coin toss should have happened
-      const player1State9 = await request(server())
+      const player1State10a = await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
 
-      expect(player1State9.body.state).toBe('FIRST_PLAYER_SELECTION');
-      expect(player1State9.body.firstPlayer).toBeTruthy(); // Coin toss should have happened
-      expect(['PLAYER1', 'PLAYER2']).toContain(player1State9.body.firstPlayer);
-      expect(player1State9.body.currentPlayer).toBeTruthy(); // currentPlayer should be set after coin toss
-      expect(player1State9.body.currentPlayer).toBe(player1State9.body.firstPlayer); // currentPlayer should match first player
-      expect(player1State9.body.playerHasConfirmedFirstPlayer).toBe(true);
-      expect(player1State9.body.opponentHasConfirmedFirstPlayer).toBe(false);
+      expect(player1State10a.body.state).toBe('FIRST_PLAYER_SELECTION');
+      expect(player1State10a.body.firstPlayer).toBeTruthy(); // Coin toss should have happened
+      expect(['PLAYER1', 'PLAYER2']).toContain(player1State10a.body.firstPlayer);
+      expect(player1State10a.body.currentPlayer).toBeTruthy(); // currentPlayer should be set after coin toss
+      expect(player1State10a.body.currentPlayer).toBe(player1State10a.body.firstPlayer); // currentPlayer should match first player
+      expect(player1State10a.body.playerHasConfirmedFirstPlayer).toBe(true);
+      expect(player1State10a.body.opponentHasConfirmedFirstPlayer).toBe(false);
 
       // 27. Player 2 confirms first player (both confirmed - coin toss happens and transitions to PLAYER_TURN)
       await request(server())
@@ -347,7 +384,7 @@ describe('Match Approval Flow E2E', () => {
 
       expect(player2State4.body.state).toBe('PLAYER_TURN');
       expect(player2State4.body.firstPlayer).toBeTruthy();
-      expect(player2State4.body.firstPlayer).toBe(player1State9.body.firstPlayer); // Same result for both players
+      expect(player2State4.body.firstPlayer).toBe(player1State10a.body.firstPlayer); // Same result for both players
       expect(player2State4.body.currentPlayer).toBeTruthy();
       expect(player2State4.body.currentPlayer).toBe(player2State4.body.firstPlayer);
       expect(player2State4.body.opponentState.activePokemon).toBeTruthy();

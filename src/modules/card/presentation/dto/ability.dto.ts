@@ -4,6 +4,7 @@ import {
   GameEventType,
   UsageLimit,
 } from '../../domain/enums';
+import { AbilityEffectDto } from './ability-effect.dto';
 
 /**
  * Ability DTO
@@ -44,5 +45,12 @@ export class AbilityDto {
     example: UsageLimit.UNLIMITED,
   })
   usageLimit?: UsageLimit;
+
+  @ApiProperty({
+    description: 'Structured effects of the ability',
+    type: [AbilityEffectDto],
+    required: false,
+  })
+  effects?: AbilityEffectDto[];
 }
 

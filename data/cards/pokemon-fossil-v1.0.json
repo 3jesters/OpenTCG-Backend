@@ -84,7 +84,8 @@
       "ability": {
         "name": "Transform",
         "text": "If Ditto is your Active Pokémon, treat it as if it were the same card as the Defending Pokémon, including type, Hit Points, and attacks, but Ditto keeps its own name and Weakness. (If the Defending Pokémon is Asleep, Confused, or Paralyzed, Ditto is now Asleep, Confused, or Paralyzed.) This power can't be used if Ditto is Asleep, Confused, or Paralyzed. If Ditto is Knocked Out, the Defending Pokémon is not Knocked Out.",
-        "activationType": "PASSIVE"
+        "activationType": "PASSIVE",
+        "effects": []
       },
       "weakness": {
         "type": "FIGHTING",
@@ -156,7 +157,14 @@
         "name": "Curse",
         "text": "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pokémon to another (even if it would Knock Out the other Pokémon). This power can't be used if Gengar is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "ONCE_PER_TURN"
+        "usageLimit": "ONCE_PER_TURN",
+        "effects": [
+          {
+            "effectType": "HEAL",
+            "target": "ALL_OPPONENTS",
+            "amount": 10
+          }
+        ]
       },
       "weakness": {
         "type": "PSYCHIC",
@@ -255,7 +263,8 @@
         "name": "Prophecy",
         "text": "Once during your turn (before your attack), you may look at up to 3 cards from the top of either player's deck and rearrange them as you like. This power can't be used if Hypno is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "ONCE_PER_TURN"
+        "usageLimit": "ONCE_PER_TURN",
+        "effects": []
       },
       "weakness": {
         "type": "PSYCHIC",
@@ -548,7 +557,8 @@
       "ability": {
         "name": "Transform",
         "text": "If Ditto is your Active Pokémon, treat it as if it were the same card as the Defending Pokémon, including type, Hit Points, and attacks, but Ditto keeps its own name and Weakness. (If the Defending Pokémon is Asleep, Confused, or Paralyzed, Ditto is now Asleep, Confused, or Paralyzed.) This power can't be used if Ditto is Asleep, Confused, or Paralyzed. If Ditto is Knocked Out, the Defending Pokémon is not Knocked Out.",
-        "activationType": "PASSIVE"
+        "activationType": "PASSIVE",
+        "effects": []
       },
       "weakness": {
         "type": "FIGHTING",
@@ -620,7 +630,14 @@
         "name": "Curse",
         "text": "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pokémon to another (even if it would Knock Out the other Pokémon). This power can't be used if Gengar is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "ONCE_PER_TURN"
+        "usageLimit": "ONCE_PER_TURN",
+        "effects": [
+          {
+            "effectType": "HEAL",
+            "target": "ALL_OPPONENTS",
+            "amount": 10
+          }
+        ]
       },
       "weakness": {
         "type": "PSYCHIC",
@@ -719,7 +736,8 @@
         "name": "Prophecy",
         "text": "Once during your turn (before your attack), you may look at up to 3 cards from the top of either player's deck and rearrange them as you like. This power can't be used if Hypno is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "ONCE_PER_TURN"
+        "usageLimit": "ONCE_PER_TURN",
+        "effects": []
       },
       "weakness": {
         "type": "PSYCHIC",
@@ -1316,7 +1334,14 @@
         "name": "Strange Behavior",
         "text": "Once during your turn (before your attack), you may move 1 damage counter from Slowbro to 1 of your other Pokémon. This power can't be used if Slowbro is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "ONCE_PER_TURN"
+        "usageLimit": "ONCE_PER_TURN",
+        "effects": [
+          {
+            "effectType": "HEAL",
+            "target": "ALL_YOURS",
+            "amount": 10
+          }
+        ]
       },
       "weakness": {
         "type": "PSYCHIC",

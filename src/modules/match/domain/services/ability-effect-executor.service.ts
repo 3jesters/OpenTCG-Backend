@@ -51,7 +51,7 @@ export class AbilityEffectExecutorService {
 
     // Execute effects in order
     // Sort effects by priority (similar to trainer effects)
-    const sortedEffects = this.sortEffectsByPriority(ability.effects);
+    const sortedEffects = this.sortEffectsByPriority(ability.effects as AnyAbilityEffect[]);
 
     for (const effect of sortedEffects) {
       const result = await this.executeEffect(
@@ -236,7 +236,7 @@ export class AbilityEffectExecutorService {
     let targetPokemon: CardInstance | null = null;
     let benchIndex: number | null = null;
     let isOpponent = false;
-    const targetPosition = (actionData as any).targetPokemon || actionData.target;
+    let targetPosition = (actionData as any).targetPokemon || actionData.target;
 
     if (effect.target === TargetType.SELF) {
       // Target the Pokemon using the ability

@@ -197,7 +197,15 @@
       "ability": {
         "name": "Invisible Wall",
         "text": "Whenever an attack (including your own) does 30 or more damage to Mr. Mime (after applying Weakness and Resistance), prevent all damage done by that attack. (Any other effects of attacks still happen.) This power can't be used if Mr. Mime is Asleep, Confused, or Paralyzed.",
-        "activationType": "PASSIVE"
+        "activationType": "PASSIVE",
+        "effects": [
+          {
+            "effectType": "PREVENT_DAMAGE",
+            "target": "SELF",
+            "duration": "this_turn",
+            "amount": "all"
+          }
+        ]
       },
       "weakness": {
         "type": "PSYCHIC",
@@ -713,7 +721,15 @@
       "ability": {
         "name": "Invisible Wall",
         "text": "Whenever an attack (including your own) does 30 or more damage to Mr. Mime (after applying Weakness and Resistance), prevent all damage done by that attack. (Any other effects of attacks still happen.) This power can't be used if Mr. Mime is Asleep, Confused, or Paralyzed.",
-        "activationType": "PASSIVE"
+        "activationType": "PASSIVE",
+        "effects": [
+          {
+            "effectType": "PREVENT_DAMAGE",
+            "target": "SELF",
+            "duration": "this_turn",
+            "amount": "all"
+          }
+        ]
       },
       "weakness": {
         "type": "PSYCHIC",

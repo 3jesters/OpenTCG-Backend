@@ -1665,7 +1665,8 @@ export class ExecuteTurnActionUseCase {
 
       // Handle USE_ABILITY action
       if (dto.actionType === PlayerActionType.USE_ABILITY) {
-        const actionData = dto.actionData as AbilityActionData;
+        const actionData = dto.actionData as unknown as AbilityActionData;
+        const playerState = gameState.getPlayerState(playerIdentifier);
 
         if (!actionData.cardId) {
           throw new BadRequestException('cardId is required for USE_ABILITY action');

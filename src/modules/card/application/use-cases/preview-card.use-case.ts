@@ -260,7 +260,7 @@ export class PreviewCardUseCase {
       if (dto.ability) {
         let effects: any[];
         
-        if (dto.ability.effects && dto.ability.effects.length > 0) {
+        if (dto.ability.effects && Array.isArray(dto.ability.effects) && dto.ability.effects.length > 0 && dto.ability.effects.some(e => e && e.effectType)) {
           // Convert AbilityEffectImportDto to AbilityEffect
           // The DTO already has the correct structure, just need to map conditions
           effects = dto.ability.effects.map(e => {
@@ -286,15 +286,87 @@ export class PreviewCardUseCase {
               return condition;
             }) || [];
             
-            return {
+            // Build effect object with all properties
+            const effect: any = {
               effectType: e.effectType,
-              target: e.targetType ? (e.targetType as any) : undefined,
+              target: e.target || (e.targetType ? (e.targetType as any) : undefined),
               requiredConditions,
-              // Include effect-specific properties
-              ...(e.value !== undefined && { value: e.value }),
-              ...(e.damageModifier && { damageModifier: e.damageModifier }),
-              ...(e.permanent !== undefined && { permanent: e.permanent }),
-            } as any; // Type assertion needed due to complex union types
+            };
+
+            // Add effect-specific properties based on effect type
+            switch (e.effectType) {
+              case 'HEAL':
+                if (e.amount !== undefined) effect.amount = e.amount;
+                break;
+              case 'PREVENT_DAMAGE':
+                if (e.duration !== undefined) effect.duration = e.duration;
+                if (e.amount !== undefined) effect.amount = e.amount;
+                break;
+              case 'STATUS_CONDITION':
+                if (e.statusCondition !== undefined) effect.statusCondition = e.statusCondition;
+                break;
+              case 'ENERGY_ACCELERATION':
+                if (e.source !== undefined) effect.source = e.source;
+                if (e.count !== undefined) effect.count = e.count;
+                if (e.energyType !== undefined) effect.energyType = e.energyType;
+                if (e.targetPokemonType !== undefined) effect.targetPokemonType = e.targetPokemonType;
+                if (e.sourcePokemonType !== undefined) effect.sourcePokemonType = e.sourcePokemonType;
+                if (e.selector !== undefined) effect.selector = e.selector;
+                break;
+              case 'SWITCH_POKEMON':
+                if (e.selector !== undefined) effect.selector = e.selector;
+                if (e.with !== undefined) effect.with = e.with;
+                break;
+              case 'DRAW_CARDS':
+                if (e.count !== undefined) effect.count = e.count;
+                break;
+              case 'SEARCH_DECK':
+                if (e.count !== undefined) effect.count = e.count;
+                if (e.destination !== undefined) effect.destination = e.destination;
+                if (e.cardType !== undefined) effect.cardType = e.cardType;
+                if (e.pokemonType !== undefined) effect.pokemonType = e.pokemonType;
+                if (e.selector !== undefined) effect.selector = e.selector;
+                break;
+              case 'BOOST_ATTACK':
+                if (e.modifier !== undefined) effect.modifier = e.modifier;
+                if (e.affectedTypes !== undefined) effect.affectedTypes = e.affectedTypes;
+                break;
+              case 'BOOST_HP':
+                if (e.modifier !== undefined) effect.modifier = e.modifier;
+                break;
+              case 'REDUCE_DAMAGE':
+                if (e.amount !== undefined) effect.amount = e.amount;
+                break;
+              case 'DISCARD_FROM_HAND':
+                if (e.count !== undefined) effect.count = e.count;
+                if (e.selector !== undefined) effect.selector = e.selector;
+                if (e.cardType !== undefined) effect.cardType = e.cardType;
+                break;
+              case 'ATTACH_FROM_DISCARD':
+                if (e.count !== undefined) effect.count = e.count;
+                if (e.energyType !== undefined) effect.energyType = e.energyType;
+                if (e.selector !== undefined) effect.selector = e.selector;
+                break;
+              case 'RETRIEVE_FROM_DISCARD':
+                if (e.count !== undefined) effect.count = e.count;
+                if (e.selector !== undefined) effect.selector = e.selector;
+                if (e.cardType !== undefined) effect.cardType = e.cardType;
+                if (e.pokemonType !== undefined) effect.pokemonType = e.pokemonType;
+                break;
+            }
+
+            // Legacy support for old properties
+            if (e.value !== undefined && !effect.amount && !effect.count && !effect.modifier) {
+              effect.value = e.value;
+            }
+            if (e.damageModifier) {
+              effect.damageModifier = e.damageModifier;
+            }
+            if (e.permanent !== undefined) {
+              effect.permanent = e.permanent;
+            }
+
+            return effect;
           });
         } else {
           // Create a placeholder effect for display purposes when no structured effects exist

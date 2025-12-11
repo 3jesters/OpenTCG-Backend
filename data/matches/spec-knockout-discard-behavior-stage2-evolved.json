@@ -1,0 +1,118 @@
+{
+  "id": "spec-knockout-discard-behavior-stage2-evolved",
+  "tournamentId": "classic-tournament",
+  "player1Id": "test-player-1",
+  "player2Id": "test-player-2",
+  "player1DeckId": "classic-fire-starter-deck",
+  "player2DeckId": "classic-grass-starter-deck",
+  "state": "MATCH_ENDED",
+  "currentPlayer": "PLAYER1",
+  "firstPlayer": "PLAYER1",
+  "player1HasDrawnValidHand": true,
+  "player2HasDrawnValidHand": true,
+  "player1HasSetPrizeCards": true,
+  "player2HasSetPrizeCards": true,
+  "player1ReadyToStart": true,
+  "player2ReadyToStart": true,
+  "player1HasConfirmedFirstPlayer": true,
+  "player2HasConfirmedFirstPlayer": true,
+  "player1HasApprovedMatch": true,
+  "player2HasApprovedMatch": true,
+  "createdAt": "2025-12-11T19:15:10.040Z",
+  "updatedAt": "2025-12-11T19:15:10.425Z",
+  "startedAt": "2025-12-11T19:15:10.040Z",
+  "endedAt": "2025-12-11T19:15:10.425Z",
+  "winnerId": "test-player-1",
+  "result": "PLAYER1_WIN",
+  "winCondition": "NO_POKEMON",
+  "cancellationReason": null,
+  "gameState": {
+    "player1State": {
+      "deck": [
+        "pokemon-base-set-v1.0-fire-energy--99"
+      ],
+      "hand": [],
+      "activePokemon": {
+        "instanceId": "ponyta-instance-1",
+        "cardId": "pokemon-base-set-v1.0-ponyta--62",
+        "position": "ACTIVE",
+        "currentHp": 40,
+        "maxHp": 40,
+        "attachedEnergy": [
+          "pokemon-base-set-v1.0-fire-energy--99",
+          "pokemon-base-set-v1.0-fire-energy--99"
+        ],
+        "statusEffect": "NONE",
+        "damageCounters": 0,
+        "evolutionChain": []
+      },
+      "bench": [],
+      "prizeCards": [
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99"
+      ],
+      "discardPile": [],
+      "hasAttachedEnergyThisTurn": true
+    },
+    "player2State": {
+      "deck": [
+        "pokemon-base-set-v1.0-grass-energy--100"
+      ],
+      "hand": [],
+      "activePokemon": null,
+      "bench": [],
+      "prizeCards": [
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100"
+      ],
+      "discardPile": [
+        "pokemon-base-set-v1.0-charizard--4",
+        "pokemon-base-set-v1.0-charmeleon--24",
+        "pokemon-base-set-v1.0-charmander--48",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99"
+      ],
+      "hasAttachedEnergyThisTurn": false
+    },
+    "turnNumber": 1,
+    "phase": "END",
+    "currentPlayer": "PLAYER1",
+    "lastAction": {
+      "actionId": "e244a603-1160-49bd-89ce-0b375030a924",
+      "playerId": "PLAYER1",
+      "actionType": "ATTACK",
+      "timestamp": "2025-12-11T19:15:10.425Z",
+      "actionData": {
+        "attackIndex": 1,
+        "damage": 30,
+        "isKnockedOut": true
+      }
+    },
+    "actionHistory": [
+      {
+        "actionId": "e244a603-1160-49bd-89ce-0b375030a924",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-11T19:15:10.425Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 30,
+          "isKnockedOut": true
+        }
+      }
+    ],
+    "coinFlipState": null,
+    "abilityUsageThisTurn": {
+      "PLAYER1": [],
+      "PLAYER2": []
+    }
+  }
+}

@@ -19,9 +19,9 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-10T10:36:57.847Z",
+  "updatedAt": "2025-12-11T19:15:07.869Z",
   "startedAt": "2025-01-01T00:00:00.000Z",
-  "endedAt": "2025-12-10T10:36:57.847Z",
+  "endedAt": "2025-12-11T19:15:07.869Z",
   "winnerId": "test-player-1",
   "result": "PLAYER1_WIN",
   "winCondition": "NO_POKEMON",
@@ -86,10 +86,10 @@
     "phase": "END",
     "currentPlayer": "PLAYER1",
     "lastAction": {
-      "actionId": "0a011e43-c62f-4150-bc48-44c1f55795f1",
+      "actionId": "f3cc806c-e52e-470c-9137-c2c55b83cca2",
       "playerId": "PLAYER1",
       "actionType": "ATTACK",
-      "timestamp": "2025-12-10T10:36:57.847Z",
+      "timestamp": "2025-12-11T19:15:07.869Z",
       "actionData": {
         "attackIndex": 1,
         "damage": 60,
@@ -98,10 +98,10 @@
     },
     "actionHistory": [
       {
-        "actionId": "0a011e43-c62f-4150-bc48-44c1f55795f1",
+        "actionId": "f3cc806c-e52e-470c-9137-c2c55b83cca2",
         "playerId": "PLAYER1",
         "actionType": "ATTACK",
-        "timestamp": "2025-12-10T10:36:57.847Z",
+        "timestamp": "2025-12-11T19:15:07.869Z",
         "actionData": {
           "attackIndex": 1,
           "damage": 60,
@@ -109,6 +109,10 @@
         }
       }
     ],
-    "coinFlipState": null
+    "coinFlipState": null,
+    "abilityUsageThisTurn": {
+      "PLAYER1": [],
+      "PLAYER2": []
+    }
   }
 }

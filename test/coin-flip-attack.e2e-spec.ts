@@ -10,8 +10,8 @@ describe('Coin Flip Attack E2E', () => {
   const server = () => app.getHttpServer();
   const matchesDirectory = join(process.cwd(), 'data', 'matches');
 
-  const BASE_MATCH_ID = '0bef5dd8-35a5-492e-9ede-0a8454b57213';
-  const PLAYER2_ID = 'test-player-2';
+  const BASE_MATCH_ID = '4c8b3958-420c-4271-877f-aa385ea717e3';
+  const PLAYER2_ID = 'test-player-1'; // In base match, player2Id is 'test-player-1'
 
   // Load the base match state from the provided file
   let baseMatchState: any;
@@ -27,8 +27,92 @@ describe('Coin Flip Attack E2E', () => {
 
     // Load the base match state
     const matchFilePath = join(matchesDirectory, `${BASE_MATCH_ID}.json`);
-    const matchData = await readFile(matchFilePath, 'utf-8');
-    baseMatchState = JSON.parse(matchData);
+    try {
+      const matchData = await readFile(matchFilePath, 'utf-8');
+      baseMatchState = JSON.parse(matchData);
+    } catch (error) {
+      // If file doesn't exist, create a minimal base match state
+      baseMatchState = {
+        tournamentId: 'classic-tournament',
+        player1Id: 'test-player-1',
+        player2Id: 'test-player-2',
+        player1DeckId: 'classic-fire-starter-deck',
+        player2DeckId: 'classic-grass-starter-deck',
+        state: 'PLAYER_TURN',
+        currentPlayer: 'PLAYER2',
+        firstPlayer: 'PLAYER1',
+        player1HasDrawnValidHand: true,
+        player2HasDrawnValidHand: true,
+        player1HasSetPrizeCards: true,
+        player2HasSetPrizeCards: true,
+        player1ReadyToStart: true,
+        player2ReadyToStart: true,
+        player1HasConfirmedFirstPlayer: true,
+        player2HasConfirmedFirstPlayer: true,
+        player1HasApprovedMatch: true,
+        player2HasApprovedMatch: true,
+        gameState: {
+          player1State: {
+            deck: [],
+            hand: [],
+            discardPile: [],
+            activePokemon: {
+              instanceId: 'test-instance-1',
+              cardId: 'pokemon-base-set-v1.0-vulpix--70',
+              position: 'ACTIVE',
+              currentHp: 50,
+              maxHp: 50,
+              attachedEnergy: [],
+              statusEffect: 'NONE',
+              damageCounters: 0,
+            },
+            bench: [],
+            prizeCards: [],
+          },
+          player2State: {
+            deck: [],
+            hand: [],
+            discardPile: [],
+            activePokemon: {
+              instanceId: 'test-instance-2',
+              cardId: 'pokemon-base-set-v1.0-nidoran--57',
+              position: 'ACTIVE',
+              currentHp: 40,
+              maxHp: 40,
+              attachedEnergy: [],
+              statusEffect: 'NONE',
+              damageCounters: 0,
+            },
+            bench: [],
+            prizeCards: [],
+          },
+          turnNumber: 1,
+          phase: 'MAIN_PHASE',
+          currentPlayer: 'PLAYER2',
+          coinFlipState: null,
+          lastAction: null,
+          actionHistory: [],
+          abilityUsageThisTurn: {},
+          player1State: baseMatchState.gameState?.player1State || {
+            deck: [],
+            hand: [],
+            discardPile: [],
+            activePokemon: {
+              instanceId: 'test-instance-1',
+              cardId: 'pokemon-base-set-v1.0-vulpix--70',
+              position: 'ACTIVE',
+              currentHp: 50,
+              maxHp: 50,
+              attachedEnergy: [],
+              statusEffect: 'NONE',
+              damageCounters: 0,
+            },
+            bench: [],
+            prizeCards: [],
+          },
+        },
+      };
+    }
   });
 
   afterAll(async () => {
@@ -105,10 +189,32 @@ describe('Coin Flip Attack E2E', () => {
           lastAction: null,
           actionHistory: [], // Empty history so action ID will be based on length 0
           player2State: {
-            ...baseMatchState.gameState.player2State,
+            ...(baseMatchState.gameState?.player2State || {
+              deck: [],
+              hand: [],
+              discardPile: [],
+              activePokemon: {
+                instanceId: 'test-instance-2',
+                cardId: 'pokemon-base-set-v1.0-nidoran--57',
+                position: 'ACTIVE',
+                currentHp: 40,
+                maxHp: 40,
+                attachedEnergy: [],
+                statusEffect: 'NONE',
+                damageCounters: 0,
+              },
+              bench: [],
+              prizeCards: [],
+            }),
             activePokemon: {
-              ...baseMatchState.gameState.player2State.activePokemon,
+              instanceId: baseMatchState.gameState?.player2State?.activePokemon?.instanceId || 'test-instance-2',
+              cardId: 'pokemon-base-set-v1.0-nidoran--57', // Override to use Nidoran with Horn Hazard
+              position: 'ACTIVE',
+              currentHp: 40,
+              maxHp: 40,
               attachedEnergy: ['pokemon-base-set-v1.0-grass-energy--100'], // 1 GRASS energy for Horn Hazard attack
+              statusEffect: 'NONE',
+              damageCounters: 0,
             },
           },
         },
@@ -125,7 +231,12 @@ describe('Coin Flip Attack E2E', () => {
     });
 
     it('should execute attack with coin flip - verify heads scenario (30 damage)', async () => {
-      const initialOpponentHp = 40;
+      // Get initial opponent HP from match state
+      const initialState = await request(server())
+        .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
+        .send({ playerId: PLAYER2_ID })
+        .expect(200);
+      const initialOpponentHp = initialState.body.opponentState.activePokemon?.currentHp || 50;
 
       // Execute ATTACK action
       const attackResponse = await request(server())
@@ -136,8 +247,12 @@ describe('Coin Flip Attack E2E', () => {
           actionData: {
             attackIndex: 0, // Horn Hazard attack
           },
-        })
-        .expect(200);
+        });
+      
+      if (attackResponse.status !== 200) {
+        console.error('Attack failed:', JSON.stringify(attackResponse.body, null, 2));
+      }
+      expect(attackResponse.status).toBe(200);
 
       const afterAttackState = attackResponse.body;
 
@@ -207,10 +322,32 @@ describe('Coin Flip Attack E2E', () => {
           lastAction: null,
           actionHistory: [], // Empty history so action ID will be based on length 0
           player2State: {
-            ...baseMatchState.gameState.player2State,
+            ...(baseMatchState.gameState?.player2State || {
+              deck: [],
+              hand: [],
+              discardPile: [],
+              activePokemon: {
+                instanceId: 'test-instance-2',
+                cardId: 'pokemon-base-set-v1.0-nidoran--57',
+                position: 'ACTIVE',
+                currentHp: 40,
+                maxHp: 40,
+                attachedEnergy: [],
+                statusEffect: 'NONE',
+                damageCounters: 0,
+              },
+              bench: [],
+              prizeCards: [],
+            }),
             activePokemon: {
-              ...baseMatchState.gameState.player2State.activePokemon,
+              instanceId: baseMatchState.gameState?.player2State?.activePokemon?.instanceId || 'test-instance-2',
+              cardId: 'pokemon-base-set-v1.0-nidoran--57', // Override to use Nidoran with Horn Hazard
+              position: 'ACTIVE',
+              currentHp: 40,
+              maxHp: 40,
               attachedEnergy: ['pokemon-base-set-v1.0-grass-energy--100'], // 1 GRASS energy for Horn Hazard attack
+              statusEffect: 'NONE',
+              damageCounters: 0,
             },
           },
         },
@@ -227,7 +364,12 @@ describe('Coin Flip Attack E2E', () => {
     });
 
     it('should execute attack with coin flip - verify tails scenario (0 damage)', async () => {
-      const initialOpponentHp = 40;
+      // Get initial opponent HP from match state
+      const initialState = await request(server())
+        .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
+        .send({ playerId: PLAYER2_ID })
+        .expect(200);
+      const initialOpponentHp = initialState.body.opponentState.activePokemon?.currentHp || 50;
 
       // Execute ATTACK action
       const attackResponse = await request(server())
@@ -283,10 +425,32 @@ describe('Coin Flip Attack E2E', () => {
           lastAction: null,
           actionHistory: [], // Empty history so action ID will be based on length 0
           player2State: {
-            ...baseMatchState.gameState.player2State,
+            ...(baseMatchState.gameState?.player2State || {
+              deck: [],
+              hand: [],
+              discardPile: [],
+              activePokemon: {
+                instanceId: 'test-instance-2',
+                cardId: 'pokemon-base-set-v1.0-nidoran--57',
+                position: 'ACTIVE',
+                currentHp: 40,
+                maxHp: 40,
+                attachedEnergy: [],
+                statusEffect: 'NONE',
+                damageCounters: 0,
+              },
+              bench: [],
+              prizeCards: [],
+            }),
             activePokemon: {
-              ...baseMatchState.gameState.player2State.activePokemon,
+              instanceId: baseMatchState.gameState?.player2State?.activePokemon?.instanceId || 'test-instance-2',
+              cardId: 'pokemon-base-set-v1.0-nidoran--57', // Override to use Nidoran with Horn Hazard
+              position: 'ACTIVE',
+              currentHp: 40,
+              maxHp: 40,
               attachedEnergy: ['pokemon-base-set-v1.0-grass-energy--100'], // 1 GRASS energy for Horn Hazard attack
+              statusEffect: 'NONE',
+              damageCounters: 0,
             },
           },
         },

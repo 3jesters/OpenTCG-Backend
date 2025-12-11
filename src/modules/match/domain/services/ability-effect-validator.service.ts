@@ -278,7 +278,7 @@ export class AbilityEffectValidatorService {
           }
         }
         // Validate target Pokemon type restriction
-        if (effect.targetPokemonType && actionData.targetPokemon) {
+        if (effect.targetPokemonType && 'targetPokemon' in actionData && actionData.targetPokemon) {
           try {
             const targetPosition = actionData.targetPokemon;
             let targetPokemonInstance: CardInstance | null = null;

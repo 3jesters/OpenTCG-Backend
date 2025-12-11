@@ -19,9 +19,9 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-10T10:36:57.308Z",
+  "updatedAt": "2025-12-11T19:15:06.613Z",
   "startedAt": "2025-01-01T00:00:00.000Z",
-  "endedAt": "2025-12-10T10:36:57.308Z",
+  "endedAt": "2025-12-11T19:15:06.613Z",
   "winnerId": "test-player-1",
   "result": "PLAYER1_WIN",
   "winCondition": "DECK_OUT",
@@ -90,6 +90,10 @@
     "currentPlayer": "PLAYER2",
     "lastAction": null,
     "actionHistory": [],
-    "coinFlipState": null
+    "coinFlipState": null,
+    "abilityUsageThisTurn": {
+      "PLAYER1": [],
+      "PLAYER2": []
+    }
   }
 }

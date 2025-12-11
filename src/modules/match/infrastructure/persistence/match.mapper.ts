@@ -236,7 +236,10 @@ export class MatchMapper {
    */
   private static gameStateToJson(gameState: GameState): GameStateJson {
     // Convert Map<PlayerIdentifier, Set<string>> to Record<PlayerIdentifier, string[]>
-    const abilityUsageJson: Record<PlayerIdentifier, string[]> = {};
+    const abilityUsageJson: Record<PlayerIdentifier, string[]> = {
+      [PlayerIdentifier.PLAYER1]: [],
+      [PlayerIdentifier.PLAYER2]: [],
+    };
     gameState.abilityUsageThisTurn.forEach((cardIds, playerId) => {
       abilityUsageJson[playerId] = Array.from(cardIds);
     });

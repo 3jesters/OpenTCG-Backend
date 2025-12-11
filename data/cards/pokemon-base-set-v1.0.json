@@ -36,7 +36,14 @@
         "name": "Damage Swap",
         "text": "As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pokémon to another as long as you don't Knock Out that Pokémon. This power can't be used if Alakazam is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "UNLIMITED"
+        "usageLimit": "UNLIMITED",
+        "effects": [
+          {
+            "effectType": "HEAL",
+            "target": "ALL_YOURS",
+            "amount": 10
+          }
+        ]
       },
       "weakness": {
         "type": "PSYCHIC",
@@ -72,7 +79,17 @@
         "name": "Rain Dance",
         "text": "As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon. (This doesn't use up your 1 energy card attachment for the turn.) This power can't be used if Blastoise is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "UNLIMITED"
+        "usageLimit": "UNLIMITED",
+        "effects": [
+          {
+            "effectType": "ENERGY_ACCELERATION",
+            "target": "ALL_YOURS",
+            "source": "HAND",
+            "count": 1,
+            "energyType": "WATER",
+            "targetPokemonType": "WATER"
+          }
+        ]
       },
       "weakness": {
         "type": "ELECTRIC",
@@ -152,7 +169,15 @@
         "name": "Energy Burn",
         "text": "As often as you like during your turn (before your attack), you may turn all Energy attached to Charizard into Fire Energy for the rest of the turn. This power can't be used if Charizard is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "UNLIMITED"
+        "usageLimit": "UNLIMITED",
+        "effects": [
+          {
+            "effectType": "BOOST_ATTACK",
+            "target": "SELF",
+            "modifier": 1,
+            "affectedTypes": ["FIRE"]
+          }
+        ]
       },
       "weakness": {
         "type": "WATER",
@@ -315,7 +340,14 @@
       "ability": {
         "name": "Strikes Back",
         "text": "Whenever your opponent's attack damages Machamp (even if Machamp is Knocked Out), place 1 damage counter on the Attacking Pokémon. This power can't be used if Machamp is Asleep, Confused, or Paralyzed.",
-        "activationType": "PASSIVE"
+        "activationType": "PASSIVE",
+        "effects": [
+          {
+            "effectType": "REDUCE_DAMAGE",
+            "target": "SELF",
+            "amount": "all"
+          }
+        ]
       },
       "weakness": {
         "type": "PSYCHIC",
@@ -592,7 +624,17 @@
         "name": "Energy Trans",
         "text": "As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can't be used if Venusaur is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "UNLIMITED"
+        "usageLimit": "UNLIMITED",
+        "effects": [
+          {
+            "effectType": "ENERGY_ACCELERATION",
+            "target": "ALL_YOURS",
+            "source": "SELF",
+            "count": 1,
+            "energyType": "GRASS",
+            "sourcePokemonType": "GRASS"
+          }
+        ]
       },
       "weakness": {
         "type": "FIRE",
@@ -838,7 +880,16 @@
         "name": "Buzzap",
         "text": "At any time during your turn (before your attack), you may Knock Out Electrode and attach it to 1 of your other Pokémon. If you do, choose a type of Energy. Electrode is now an Energy card of that type (instead of a Pokémon) that provides 2 Energy. This power can't be used if Electrode is Asleep, Confused, or Paralyzed.",
         "activationType": "ACTIVATED",
-        "usageLimit": "UNLIMITED"
+        "usageLimit": "UNLIMITED",
+        "effects": [
+          {
+            "effectType": "ENERGY_ACCELERATION",
+            "target": "ALL_YOURS",
+            "source": "SELF",
+            "count": 1,
+            "selector": "choice"
+          }
+        ]
       },
       "weakness": {
         "type": "FIGHTING",

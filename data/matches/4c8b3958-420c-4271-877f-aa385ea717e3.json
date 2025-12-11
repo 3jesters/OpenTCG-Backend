@@ -19,7 +19,7 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-12-09T12:25:06.696Z",
-  "updatedAt": "2025-12-10T10:39:50.860Z",
+  "updatedAt": "2025-12-11T13:12:50.313Z",
   "startedAt": null,
   "endedAt": null,
   "winnerId": null,
@@ -122,7 +122,6 @@
     },
     "player2State": {
       "deck": [
-        "pokemon-base-set-v1.0-pokemon-breeder--78",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-squirtle--65",
@@ -173,7 +172,8 @@
         "pokemon-base-set-v1.0-bill--92",
         "pokemon-base-set-v1.0-energy-retrieval--83",
         "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-water-energy--103"
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-pokemon-breeder--78"
       ],
       "activePokemon": {
         "instanceId": "9d7f71f4-cf50-4b84-ae45-24a4713241ad",
@@ -208,14 +208,12 @@
     "phase": "MAIN_PHASE",
     "currentPlayer": "PLAYER2",
     "lastAction": {
-      "actionId": "fe210fb7-a45c-4ce8-8cbe-4a1f5e30f018",
+      "actionId": "dfb19f77-0674-4efc-a508-6b1612de7d3f",
       "playerId": "PLAYER2",
-      "actionType": "PLAY_TRAINER",
-      "timestamp": "2025-12-10T10:39:50.860Z",
+      "actionType": "USE_ABILITY",
+      "timestamp": "2025-12-11T13:12:50.313Z",
       "actionData": {
-        "cardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
-        "targetPlayer": "PLAYER1",
-        "evolutionCardId": "pokemon-base-set-v1.0-blastoise--2",
+        "cardId": "pokemon-base-set-v1.0-blastoise--2",
         "target": "ACTIVE"
       }
     },
@@ -281,8 +279,24 @@
           "evolutionCardId": "pokemon-base-set-v1.0-blastoise--2",
           "target": "ACTIVE"
         }
+      },
+      {
+        "actionId": "dfb19f77-0674-4efc-a508-6b1612de7d3f",
+        "playerId": "PLAYER2",
+        "actionType": "USE_ABILITY",
+        "timestamp": "2025-12-11T13:12:50.313Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-blastoise--2",
+          "target": "ACTIVE"
+        }
       }
     ],
-    "coinFlipState": null
+    "coinFlipState": null,
+    "abilityUsageThisTurn": {
+      "PLAYER1": [],
+      "PLAYER2": [
+        "pokemon-base-set-v1.0-blastoise--2"
+      ]
+    }
   }
 }
