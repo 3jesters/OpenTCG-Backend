@@ -1815,6 +1815,7 @@
       "trainerEffects": [
         {
           "effectType": "RETRIEVE_FROM_DISCARD",
+          "source": "DISCARD",
           "target": "SELF",
           "value": 1,
           "cardType": "ENERGY",
@@ -1834,6 +1835,7 @@
       "trainerEffects": [
         {
           "effectType": "PUT_INTO_PLAY",
+          "source": "HAND",
           "target": "SELF",
           "description": "Play as a Basic Pokémon with special rules (evolves into fossil Pokémon)"
         }
@@ -1851,6 +1853,7 @@
       "trainerEffects": [
         {
           "effectType": "PUT_INTO_PLAY",
+          "source": "HAND",
           "target": "SELF",
           "description": "Play as a Basic Pokémon with special rules (evolves into fossil Pokémon)"
         }

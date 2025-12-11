@@ -5,6 +5,11 @@ import { EnergyType } from '../enums/energy-type.enum';
 import { PokemonType } from '../enums/pokemon-type.enum';
 import { CardType } from '../enums/card-type.enum';
 import { TargetType } from '../enums/target-type.enum';
+import { EnergySource } from '../enums/energy-source.enum';
+import { Duration } from '../enums/duration.enum';
+import { Selector } from '../enums/selector.enum';
+import { Destination } from '../enums/destination.enum';
+import { StatusCondition } from '../enums/status-condition.enum';
 
 describe('AbilityEffectValidator', () => {
   describe('validate - General', () => {
@@ -77,7 +82,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate prevent damage effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.preventDamage(TargetType.SELF, 'permanent', 20),
+          AbilityEffectFactory.preventDamage(TargetType.SELF, Duration.PERMANENT, 20),
         );
       }).not.toThrow();
     });
@@ -105,7 +110,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate status condition effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.statusCondition('PARALYZED'),
+          AbilityEffectFactory.statusCondition(StatusCondition.PARALYZED),
         );
       }).not.toThrow();
     });
@@ -143,7 +148,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate energy acceleration effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.energyAcceleration(TargetType.SELF, 'discard', 1),
+          AbilityEffectFactory.energyAcceleration(TargetType.SELF, EnergySource.DISCARD, 1),
         );
       }).not.toThrow();
     });
@@ -164,7 +169,7 @@ describe('AbilityEffectValidator', () => {
         AbilityEffectValidator.validate({
           effectType: AbilityEffectType.ENERGY_ACCELERATION,
           target: TargetType.SELF,
-          source: 'discard',
+          source: EnergySource.DISCARD,
           count: 0,
         });
       }).toThrow('Count must be at least 1');
@@ -175,7 +180,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate switch Pokémon effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.switchPokemon('choice'),
+          AbilityEffectFactory.switchPokemon(Selector.CHOICE),
         );
       }).not.toThrow();
     });
@@ -233,7 +238,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate search deck effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.searchDeck(1, 'hand'),
+          AbilityEffectFactory.searchDeck(1, Destination.HAND),
         );
       }).not.toThrow();
     });
@@ -341,7 +346,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate discard from hand effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.discardFromHand(1, 'choice'),
+          AbilityEffectFactory.discardFromHand(1, Selector.CHOICE),
         );
       }).not.toThrow();
     });
@@ -389,7 +394,7 @@ describe('AbilityEffectValidator', () => {
     it('should validate retrieve from discard effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.retrieveFromDiscard(2, 'choice'),
+          AbilityEffectFactory.retrieveFromDiscard(2, Selector.CHOICE),
         );
       }).not.toThrow();
     });

@@ -71,6 +71,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
     };
 
@@ -139,6 +141,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {
@@ -218,6 +222,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {
@@ -280,6 +286,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {
@@ -413,6 +421,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
     };
 
@@ -486,6 +496,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
     };
 
@@ -584,6 +596,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
     };
 
@@ -645,6 +659,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       await expect(
@@ -679,6 +695,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effects: TrainerEffectDto[] = [
@@ -736,6 +754,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {
@@ -786,6 +806,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {
@@ -839,6 +861,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {
@@ -878,6 +902,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {
@@ -907,6 +933,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {
@@ -957,6 +985,8 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
         null,
         [],
+        null,
+        new Map(),
       );
 
       const effect: TrainerEffectDto = {

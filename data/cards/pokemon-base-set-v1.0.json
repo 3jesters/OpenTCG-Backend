@@ -2586,6 +2586,7 @@
       "trainerEffects": [
         {
           "effectType": "PUT_INTO_PLAY",
+          "source": "HAND",
           "target": "SELF",
           "description": "Play as a Basic Pokémon with special rules"
         }
@@ -2684,6 +2685,7 @@
         },
         {
           "effectType": "RETRIEVE_FROM_DISCARD",
+          "source": "DISCARD",
           "target": "SELF",
           "value": 1,
           "cardType": "Trainer",
@@ -2721,6 +2723,7 @@
       "trainerEffects": [
         {
           "effectType": "EVOLVE_POKEMON",
+          "source": "HAND",
           "target": "ALL_YOURS",
           "description": "Evolve Basic Pokémon to Stage 2"
         }
@@ -2833,6 +2836,7 @@
         },
         {
           "effectType": "RETRIEVE_ENERGY",
+          "source": "DISCARD",
           "target": "SELF",
           "value": 2,
           "cardType": "Energy",

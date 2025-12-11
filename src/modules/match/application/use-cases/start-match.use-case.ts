@@ -161,6 +161,8 @@ export class StartMatchUseCase {
       firstPlayer,
       null,
       [],
+      null, // coinFlipState
+      new Map(), // abilityUsageThisTurn
     );
 
     // Set first player (transitions to DRAWING_CARDS)

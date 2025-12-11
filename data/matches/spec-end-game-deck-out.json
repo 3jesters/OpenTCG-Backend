@@ -8,7 +8,6 @@
   "state": "MATCH_ENDED",
   "currentPlayer": "PLAYER2",
   "firstPlayer": "PLAYER2",
-  "coinTossResult": "PLAYER2",
   "player1HasDrawnValidHand": true,
   "player2HasDrawnValidHand": true,
   "player1HasSetPrizeCards": true,
@@ -20,9 +19,9 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-09T12:53:18.355Z",
+  "updatedAt": "2025-12-10T10:36:57.308Z",
   "startedAt": "2025-01-01T00:00:00.000Z",
-  "endedAt": "2025-12-09T12:53:18.355Z",
+  "endedAt": "2025-12-10T10:36:57.308Z",
   "winnerId": "test-player-1",
   "result": "PLAYER1_WIN",
   "winCondition": "DECK_OUT",
@@ -43,7 +42,8 @@
         "maxHp": 40,
         "attachedEnergy": [],
         "statusEffect": "NONE",
-        "damageCounters": 0
+        "damageCounters": 0,
+        "evolutionChain": []
       },
       "bench": [],
       "prizeCards": [
@@ -70,7 +70,8 @@
         "maxHp": 40,
         "attachedEnergy": [],
         "statusEffect": "NONE",
-        "damageCounters": 0
+        "damageCounters": 0,
+        "evolutionChain": []
       },
       "bench": [],
       "prizeCards": [

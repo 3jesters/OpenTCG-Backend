@@ -392,6 +392,52 @@ if (effects.some(e => e.effectType === 'HEAL' && e.target === 'ALL_YOURS')) {
 
 ---
 
+### [ENUMS-REFERENCE.md](./ENUMS-REFERENCE.md)
+**Complete reference guide for all enum types used throughout the OpenTCG backend**
+
+**Contains:**
+- All 35+ enum types organized by domain (Card, Match, Tournament)
+- Complete list of values for each enum
+- Usage examples and code snippets
+- Enum relationships and dependencies
+- Best practices for enum usage
+- Cross-domain enum conversions
+
+**Use this when:**
+- Understanding what enum values are available
+- Looking up valid values for a specific enum type
+- Understanding relationships between enums
+- Implementing type-safe code with enums
+- Converting between domain enums (e.g., StatusCondition → StatusEffect)
+- Debugging enum-related issues
+
+**Quick Example:**
+```typescript
+// Check card type
+if (card.cardType === CardType.POKEMON) {
+  // Access Pokemon-specific fields
+  const pokemonType = card.pokemonType; // PokemonType enum
+}
+
+// Check ability activation
+if (ability.activationType === AbilityActivationType.ACTIVATED) {
+  // Check usage limit
+  if (ability.usageLimit === UsageLimit.ONCE_PER_TURN) {
+    // Validate usage tracking
+  }
+}
+
+// Check match state
+if (match.state === MatchState.PLAYER_TURN) {
+  // Check turn phase
+  if (gameState.turnPhase === TurnPhase.MAIN_PHASE) {
+    // Allow main phase actions
+  }
+}
+```
+
+---
+
 ### [FRONTEND-START-GAME-RULES.md](./FRONTEND-START-GAME-RULES.md)
 **Frontend guide for start game rules and reshuffle feature**
 

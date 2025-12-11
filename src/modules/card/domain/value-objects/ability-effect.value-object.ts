@@ -3,6 +3,11 @@ import { PokemonType } from '../enums/pokemon-type.enum';
 import { EnergyType } from '../enums/energy-type.enum';
 import { CardType } from '../enums/card-type.enum';
 import { TargetType } from '../enums/target-type.enum';
+import { EnergySource } from '../enums/energy-source.enum';
+import { Duration } from '../enums/duration.enum';
+import { Selector } from '../enums/selector.enum';
+import { Destination } from '../enums/destination.enum';
+import { StatusCondition } from '../enums/status-condition.enum';
 import { Condition } from './condition.value-object';
 
 /**
@@ -45,7 +50,7 @@ export interface PreventDamageAbilityEffect extends AbilityEffect {
     | TargetType.BENCHED_YOURS
     | TargetType.ACTIVE_YOURS
     | TargetType.DEFENDING;
-  duration: 'next_turn' | 'this_turn' | 'permanent';
+  duration: Duration;
   amount?: number | 'all';
 }
 
@@ -59,17 +64,12 @@ export interface StatusConditionAbilityEffect extends AbilityEffect {
     | TargetType.DEFENDING
     | TargetType.ALL_OPPONENTS
     | TargetType.ACTIVE_OPPONENT;
-  statusCondition:
-    | 'PARALYZED'
-    | 'POISONED'
-    | 'BURNED'
-    | 'ASLEEP'
-    | 'CONFUSED';
+  statusCondition: StatusCondition;
 }
 
 /**
  * Energy Acceleration Effect
- * Attach energy from deck/discard/hand
+ * Attach energy from deck/discard/hand/self
  */
 export interface EnergyAccelerationAbilityEffect extends AbilityEffect {
   effectType: AbilityEffectType.ENERGY_ACCELERATION;
@@ -78,10 +78,12 @@ export interface EnergyAccelerationAbilityEffect extends AbilityEffect {
     | TargetType.BENCHED_YOURS
     | TargetType.ALL_YOURS
     | TargetType.ACTIVE_YOURS;
-  source: 'deck' | 'discard' | 'hand';
+  source: EnergySource; // Use enum instead of string union
   count: number;
-  energyType?: EnergyType;
-  selector?: 'choice' | 'random';
+  energyType?: EnergyType; // Restrict energy type (e.g., WATER)
+  targetPokemonType?: PokemonType; // Restrict target Pokemon type (e.g., WATER)
+  sourcePokemonType?: PokemonType; // Restrict source Pokemon type (for SELF source)
+  selector?: Selector;
 }
 
 /**
@@ -92,7 +94,7 @@ export interface SwitchPokemonAbilityEffect extends AbilityEffect {
   effectType: AbilityEffectType.SWITCH_POKEMON;
   target: TargetType.SELF;
   with: TargetType.BENCHED_YOURS;
-  selector: 'choice' | 'random';
+  selector: Selector;
 }
 
 // ========================================
@@ -117,8 +119,8 @@ export interface SearchDeckEffect extends AbilityEffect {
   cardType?: CardType;
   pokemonType?: PokemonType;
   count: number;
-  destination: 'hand' | 'bench';
-  selector?: 'choice' | 'random';
+  destination: Destination;
+  selector?: Selector;
 }
 
 /**
@@ -172,7 +174,7 @@ export interface ReduceDamageEffect extends AbilityEffect {
 export interface DiscardFromHandEffect extends AbilityEffect {
   effectType: AbilityEffectType.DISCARD_FROM_HAND;
   count: number | 'all';
-  selector: 'choice' | 'random';
+  selector: Selector;
   cardType?: CardType;
 }
 
@@ -189,7 +191,7 @@ export interface AttachFromDiscardEffect extends AbilityEffect {
     | TargetType.ACTIVE_YOURS;
   energyType?: EnergyType;
   count: number;
-  selector?: 'choice' | 'random';
+  selector?: Selector;
 }
 
 /**
@@ -201,7 +203,7 @@ export interface RetrieveFromDiscardEffect extends AbilityEffect {
   cardType?: CardType;
   pokemonType?: PokemonType;
   count: number;
-  selector: 'choice' | 'random';
+  selector: Selector;
 }
 
 // ========================================
@@ -260,7 +262,7 @@ export class AbilityEffectFactory {
       | TargetType.BENCHED_YOURS
       | TargetType.ACTIVE_YOURS
       | TargetType.DEFENDING,
-    duration: 'next_turn' | 'this_turn' | 'permanent',
+    duration: Duration,
     amount?: number | 'all',
     conditions?: Condition[],
   ): PreventDamageAbilityEffect {
@@ -274,12 +276,7 @@ export class AbilityEffectFactory {
   }
 
   static statusCondition(
-    statusCondition:
-      | 'PARALYZED'
-      | 'POISONED'
-      | 'BURNED'
-      | 'ASLEEP'
-      | 'CONFUSED',
+    statusCondition: StatusCondition,
     target:
       | TargetType.DEFENDING
       | TargetType.ALL_OPPONENTS
@@ -300,10 +297,14 @@ export class AbilityEffectFactory {
       | TargetType.BENCHED_YOURS
       | TargetType.ALL_YOURS
       | TargetType.ACTIVE_YOURS,
-    source: 'deck' | 'discard' | 'hand',
+    source: EnergySource, // Use enum
     count: number,
     energyType?: EnergyType,
-    selector?: 'choice' | 'random',
+    params?: {
+      targetPokemonType?: PokemonType;
+      sourcePokemonType?: PokemonType;
+      selector?: Selector;
+    },
     conditions?: Condition[],
   ): EnergyAccelerationAbilityEffect {
     return {
@@ -312,13 +313,15 @@ export class AbilityEffectFactory {
       source,
       count,
       energyType,
-      selector,
+      targetPokemonType: params?.targetPokemonType,
+      sourcePokemonType: params?.sourcePokemonType,
+      selector: params?.selector,
       requiredConditions: conditions,
     };
   }
 
   static switchPokemon(
-    selector: 'choice' | 'random',
+    selector: Selector,
     conditions?: Condition[],
   ): SwitchPokemonAbilityEffect {
     return {
@@ -345,11 +348,11 @@ export class AbilityEffectFactory {
 
   static searchDeck(
     count: number,
-    destination: 'hand' | 'bench',
+    destination: Destination,
     params?: {
       cardType?: CardType;
       pokemonType?: PokemonType;
-      selector?: 'choice' | 'random';
+      selector?: Selector;
     },
     conditions?: Condition[],
   ): SearchDeckEffect {
@@ -421,7 +424,7 @@ export class AbilityEffectFactory {
 
   static discardFromHand(
     count: number | 'all',
-    selector: 'choice' | 'random',
+    selector: Selector,
     cardType?: CardType,
     conditions?: Condition[],
   ): DiscardFromHandEffect {
@@ -442,7 +445,7 @@ export class AbilityEffectFactory {
       | TargetType.ACTIVE_YOURS,
     count: number,
     energyType?: EnergyType,
-    selector?: 'choice' | 'random',
+    selector?: Selector,
     conditions?: Condition[],
   ): AttachFromDiscardEffect {
     return {
@@ -457,7 +460,7 @@ export class AbilityEffectFactory {
 
   static retrieveFromDiscard(
     count: number,
-    selector: 'choice' | 'random',
+    selector: Selector,
     params?: {
       cardType?: CardType;
       pokemonType?: PokemonType;

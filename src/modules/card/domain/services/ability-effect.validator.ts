@@ -1,5 +1,11 @@
 import { AbilityEffectType } from '../enums/ability-effect-type.enum';
 import { TargetType } from '../enums/target-type.enum';
+import { EnergySource } from '../enums/energy-source.enum';
+import { PokemonType } from '../enums/pokemon-type.enum';
+import { Duration } from '../enums/duration.enum';
+import { Selector } from '../enums/selector.enum';
+import { Destination } from '../enums/destination.enum';
+import { StatusCondition } from '../enums/status-condition.enum';
 import { ConditionValidator } from './condition.validator';
 import type {
   AbilityEffect,
@@ -148,10 +154,9 @@ export class AbilityEffectValidator {
       );
     }
 
-    const validDurations = ['next_turn', 'this_turn', 'permanent'];
-    if (!effect.duration || !validDurations.includes(effect.duration)) {
+    if (!effect.duration || !Object.values(Duration).includes(effect.duration)) {
       throw new Error(
-        'Duration must be: next_turn, this_turn, or permanent',
+        'Duration must be a valid Duration enum value',
       );
     }
 
@@ -178,19 +183,12 @@ export class AbilityEffectValidator {
       );
     }
 
-    const validStatuses = [
-      'PARALYZED',
-      'POISONED',
-      'BURNED',
-      'ASLEEP',
-      'CONFUSED',
-    ];
     if (
       !effect.statusCondition ||
-      !validStatuses.includes(effect.statusCondition)
+      !Object.values(StatusCondition).includes(effect.statusCondition)
     ) {
       throw new Error(
-        'Status condition must be: PARALYZED, POISONED, BURNED, ASLEEP, or CONFUSED',
+        'Status condition must be a valid StatusCondition enum value',
       );
     }
   }
@@ -210,21 +208,34 @@ export class AbilityEffectValidator {
       );
     }
 
-    const validSources = ['deck', 'discard', 'hand'];
-    if (!effect.source || !validSources.includes(effect.source)) {
-      throw new Error('Source must be: deck, discard, or hand');
+    // Validate source is a valid EnergySource enum value
+    if (!effect.source || !Object.values(EnergySource).includes(effect.source)) {
+      throw new Error('Source must be a valid EnergySource enum value');
     }
 
     if (typeof effect.count !== 'number' || effect.count < 1) {
       throw new Error('Count must be at least 1');
     }
 
+    // Validate Pokemon type restrictions (structure validation only - actual card validation happens at runtime)
+    if (effect.targetPokemonType && !Object.values(PokemonType).includes(effect.targetPokemonType)) {
+      throw new Error('targetPokemonType must be a valid PokemonType enum value');
+    }
+
+    if (effect.sourcePokemonType && !Object.values(PokemonType).includes(effect.sourcePokemonType)) {
+      throw new Error('sourcePokemonType must be a valid PokemonType enum value');
+    }
+
+    // Validate that sourcePokemonType is only used with SELF source
+    if (effect.sourcePokemonType && effect.source !== EnergySource.SELF) {
+      throw new Error('sourcePokemonType can only be specified when source is SELF');
+    }
+
     if (
       effect.selector &&
-      effect.selector !== 'choice' &&
-      effect.selector !== 'random'
+      !Object.values(Selector).includes(effect.selector)
     ) {
-      throw new Error('Selector must be: choice or random');
+      throw new Error('Selector must be a valid Selector enum value');
     }
   }
 
@@ -239,8 +250,8 @@ export class AbilityEffectValidator {
       throw new Error('Switch with must be: benched_yours');
     }
 
-    if (effect.selector !== 'choice' && effect.selector !== 'random') {
-      throw new Error('Selector must be: choice or random');
+    if (!effect.selector || !Object.values(Selector).includes(effect.selector)) {
+      throw new Error('Selector must be a valid Selector enum value');
     }
   }
 
@@ -255,20 +266,18 @@ export class AbilityEffectValidator {
       throw new Error('Search count must be at least 1');
     }
 
-    const validDestinations = ['hand', 'bench'];
     if (
       !effect.destination ||
-      !validDestinations.includes(effect.destination)
+      !Object.values(Destination).includes(effect.destination)
     ) {
-      throw new Error('Destination must be: hand or bench');
+      throw new Error('Destination must be a valid Destination enum value');
     }
 
     if (
       effect.selector &&
-      effect.selector !== 'choice' &&
-      effect.selector !== 'random'
+      !Object.values(Selector).includes(effect.selector)
     ) {
-      throw new Error('Selector must be: choice or random');
+      throw new Error('Selector must be a valid Selector enum value');
     }
   }
 
@@ -339,8 +348,8 @@ export class AbilityEffectValidator {
       throw new Error('Count must be at least 1 or "all"');
     }
 
-    if (effect.selector !== 'choice' && effect.selector !== 'random') {
-      throw new Error('Selector must be: choice or random');
+    if (!effect.selector || !Object.values(Selector).includes(effect.selector)) {
+      throw new Error('Selector must be a valid Selector enum value');
     }
   }
 
@@ -365,10 +374,9 @@ export class AbilityEffectValidator {
 
     if (
       effect.selector &&
-      effect.selector !== 'choice' &&
-      effect.selector !== 'random'
+      !Object.values(Selector).includes(effect.selector)
     ) {
-      throw new Error('Selector must be: choice or random');
+      throw new Error('Selector must be a valid Selector enum value');
     }
   }
 
@@ -379,8 +387,8 @@ export class AbilityEffectValidator {
       throw new Error('Count must be at least 1');
     }
 
-    if (effect.selector !== 'choice' && effect.selector !== 'random') {
-      throw new Error('Selector must be: choice or random');
+    if (!effect.selector || !Object.values(Selector).includes(effect.selector)) {
+      throw new Error('Selector must be a valid Selector enum value');
     }
   }
 }

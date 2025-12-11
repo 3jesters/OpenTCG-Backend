@@ -68,6 +68,7 @@ export interface GameStateJson {
   lastAction: ActionSummaryJson | null;
   actionHistory: ActionSummaryJson[];
   coinFlipState?: CoinFlipStateJson | null;
+  abilityUsageThisTurn?: Record<PlayerIdentifier, string[]>; // Optional for backward compatibility
 }
 
 /**
@@ -95,6 +96,7 @@ export interface CardInstanceJson {
   attachedEnergy: string[];
   statusEffect: StatusEffect;
   damageCounters: number;
+  evolutionChain?: string[]; // Optional for backward compatibility
 }
 
 /**
@@ -233,6 +235,12 @@ export class MatchMapper {
    * Convert GameState to JSON
    */
   private static gameStateToJson(gameState: GameState): GameStateJson {
+    // Convert Map<PlayerIdentifier, Set<string>> to Record<PlayerIdentifier, string[]>
+    const abilityUsageJson: Record<PlayerIdentifier, string[]> = {};
+    gameState.abilityUsageThisTurn.forEach((cardIds, playerId) => {
+      abilityUsageJson[playerId] = Array.from(cardIds);
+    });
+
     return {
       player1State: this.playerGameStateToJson(gameState.player1State),
       player2State: this.playerGameStateToJson(gameState.player2State),
@@ -248,6 +256,7 @@ export class MatchMapper {
       coinFlipState: gameState.coinFlipState
         ? this.coinFlipStateToJson(gameState.coinFlipState)
         : null,
+      abilityUsageThisTurn: Object.keys(abilityUsageJson).length > 0 ? abilityUsageJson : undefined,
     };
   }
 
@@ -255,6 +264,14 @@ export class MatchMapper {
    * Convert JSON to GameState
    */
   private static gameStateFromJson(json: GameStateJson): GameState {
+    // Convert Record<PlayerIdentifier, string[]> to Map<PlayerIdentifier, Set<string>>
+    const abilityUsageMap = new Map<PlayerIdentifier, Set<string>>();
+    if (json.abilityUsageThisTurn) {
+      Object.entries(json.abilityUsageThisTurn).forEach(([playerId, cardIds]) => {
+        abilityUsageMap.set(playerId as PlayerIdentifier, new Set(cardIds));
+      });
+    }
+
     return new GameState(
       this.playerGameStateFromJson(json.player1State),
       this.playerGameStateFromJson(json.player2State),
@@ -266,6 +283,7 @@ export class MatchMapper {
         : null,
       json.actionHistory.map((action) => this.actionSummaryFromJson(action)),
       json.coinFlipState ? this.coinFlipStateFromJson(json.coinFlipState) : null,
+      abilityUsageMap,
     );
   }
 
@@ -320,6 +338,7 @@ export class MatchMapper {
       attachedEnergy: card.attachedEnergy,
       statusEffect: card.statusEffect,
       damageCounters: card.damageCounters,
+      evolutionChain: card.evolutionChain || [],
     };
   }
 
@@ -336,6 +355,7 @@ export class MatchMapper {
       json.attachedEnergy,
       json.statusEffect,
       json.damageCounters,
+      json.evolutionChain || [],
     );
   }
 

@@ -477,5 +477,400 @@ describe('Knockout Discard Behavior E2E', () => {
 
     // File will be kept for inspection - cleaned up by jest-global-setup before next run
   });
+
+  it('should discard evolution chain when evolved Pokemon is knocked out', async () => {
+    const matchId = `${MATCH_ID}-evolved`;
+    const initialMatchState = {
+      id: matchId,
+      tournamentId: 'classic-tournament',
+      player1Id: PLAYER1_ID,
+      player2Id: PLAYER2_ID,
+      player1DeckId: 'classic-fire-starter-deck',
+      player2DeckId: 'classic-grass-starter-deck',
+      state: 'PLAYER_TURN',
+      currentPlayer: 'PLAYER1',
+      firstPlayer: 'PLAYER1',
+      coinTossResult: 'PLAYER1',
+      player1HasDrawnValidHand: true,
+      player2HasDrawnValidHand: true,
+      player1HasSetPrizeCards: true,
+      player2HasSetPrizeCards: true,
+      player1ReadyToStart: true,
+      player2ReadyToStart: true,
+      player1HasConfirmedFirstPlayer: true,
+      player2HasConfirmedFirstPlayer: true,
+      player1HasApprovedMatch: true,
+      player2HasApprovedMatch: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      endedAt: null,
+      winnerId: null,
+      result: null,
+      winCondition: null,
+      cancellationReason: null,
+      gameState: {
+        player1State: {
+          deck: ['pokemon-base-set-v1.0-fire-energy--99'],
+          hand: [],
+          activePokemon: {
+            instanceId: 'ponyta-instance-1',
+            cardId: 'pokemon-base-set-v1.0-ponyta--62',
+            position: 'ACTIVE',
+            maxHp: 40,
+            currentHp: 40,
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+            evolutionChain: [],
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-fire-energy--99'),
+          discardPile: [],
+          hasAttachedEnergyThisTurn: true,
+        },
+        player2State: {
+          deck: ['pokemon-base-set-v1.0-grass-energy--100'],
+          hand: [],
+          activePokemon: {
+            instanceId: 'ivysaur-instance-1',
+            cardId: 'pokemon-base-set-v1.0-ivysaur--30',
+            position: 'ACTIVE',
+            maxHp: 60,
+            currentHp: 60, // Will be knocked out by attack
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-grass-energy--100',
+              'pokemon-base-set-v1.0-grass-energy--100',
+            ],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+            evolutionChain: ['pokemon-base-set-v1.0-bulbasaur--46'], // Evolved from Bulbasaur
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-grass-energy--100'),
+          discardPile: [],
+          hasAttachedEnergyThisTurn: false,
+        },
+        turnNumber: 1,
+        phase: 'MAIN_PHASE',
+        currentPlayer: 'PLAYER1',
+        lastAction: null,
+        actionHistory: [],
+      },
+    };
+
+    await writeFile(
+      join(matchesDirectory, `${matchId}.json`),
+      JSON.stringify(initialMatchState, null, 2),
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const ivysaurCardId = 'pokemon-base-set-v1.0-ivysaur--30';
+    const bulbasaurCardId = 'pokemon-base-set-v1.0-bulbasaur--46';
+    const grassEnergyCardId = 'pokemon-base-set-v1.0-grass-energy--100';
+
+    // Player 1 attacks and knocks out evolved Ivysaur
+    // Ponyta's Flame Tail does 30 damage, but Ivysaur has weakness to Fire, so 60 damage (knockout)
+    const attackResponse = await request(server())
+      .post(`/api/v1/matches/${matchId}/actions`)
+      .send({
+        playerId: PLAYER1_ID,
+        actionType: 'ATTACK',
+        actionData: {
+          attackIndex: 1, // Flame Tail attack
+        },
+      })
+      .expect(200);
+
+    // Verify opponent's active Pokemon is null (knocked out)
+    expect(attackResponse.body.opponentState.activePokemon).toBeNull();
+
+    // Verify discard pile contains Ivysaur + Bulbasaur (from evolution chain) + 2 energy cards
+    const discardPile = attackResponse.body.opponentState.discardPile;
+    expect(discardPile).toContain(ivysaurCardId);
+    expect(discardPile).toContain(bulbasaurCardId); // From evolution chain
+    expect(discardPile).toContain(grassEnergyCardId);
+
+    // Count occurrences of grass energy in discard pile
+    const grassEnergyCount = discardPile.filter(
+      (id: string) => id === grassEnergyCardId,
+    ).length;
+    expect(grassEnergyCount).toBe(2); // Both attached energy cards should be in discard
+
+    // Verify discard pile contains exactly 4 cards (Ivysaur + Bulbasaur + 2 energy)
+    expect(discardPile.length).toBe(4);
+  });
+
+  it('should discard base card when Pokemon Breeder evolved Pokemon is knocked out', async () => {
+    const matchId = `${MATCH_ID}-breeder-evolved`;
+    const initialMatchState = {
+      id: matchId,
+      tournamentId: 'classic-tournament',
+      player1Id: PLAYER1_ID,
+      player2Id: PLAYER2_ID,
+      player1DeckId: 'classic-fire-starter-deck',
+      player2DeckId: 'classic-water-starter-deck',
+      state: 'PLAYER_TURN',
+      currentPlayer: 'PLAYER1',
+      firstPlayer: 'PLAYER1',
+      coinTossResult: 'PLAYER1',
+      player1HasDrawnValidHand: true,
+      player2HasDrawnValidHand: true,
+      player1HasSetPrizeCards: true,
+      player2HasSetPrizeCards: true,
+      player1ReadyToStart: true,
+      player2ReadyToStart: true,
+      player1HasConfirmedFirstPlayer: true,
+      player2HasConfirmedFirstPlayer: true,
+      player1HasApprovedMatch: true,
+      player2HasApprovedMatch: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      endedAt: null,
+      winnerId: null,
+      result: null,
+      winCondition: null,
+      cancellationReason: null,
+      gameState: {
+        player1State: {
+          deck: ['pokemon-base-set-v1.0-fire-energy--99'],
+          hand: [],
+          activePokemon: {
+            instanceId: 'ponyta-instance-1',
+            cardId: 'pokemon-base-set-v1.0-ponyta--62',
+            position: 'ACTIVE',
+            maxHp: 40,
+            currentHp: 40,
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+            evolutionChain: [],
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-fire-energy--99'),
+          discardPile: [],
+          hasAttachedEnergyThisTurn: true,
+        },
+        player2State: {
+          deck: ['pokemon-base-set-v1.0-water-energy--103'],
+          hand: [],
+          activePokemon: {
+            instanceId: 'blastoise-instance-1',
+            cardId: 'pokemon-base-set-v1.0-blastoise--2',
+            position: 'ACTIVE',
+            maxHp: 100,
+            currentHp: 30, // Will be knocked out by attack (30 damage)
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-water-energy--103',
+              'pokemon-base-set-v1.0-water-energy--103',
+            ],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+            evolutionChain: ['pokemon-base-set-v1.0-squirtle--65'], // Evolved directly from Squirtle via Pokemon Breeder (NO Wartortle)
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-water-energy--103'),
+          discardPile: [],
+          hasAttachedEnergyThisTurn: false,
+        },
+        turnNumber: 1,
+        phase: 'MAIN_PHASE',
+        currentPlayer: 'PLAYER1',
+        lastAction: null,
+        actionHistory: [],
+      },
+    };
+
+    await writeFile(
+      join(matchesDirectory, `${matchId}.json`),
+      JSON.stringify(initialMatchState, null, 2),
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const blastoiseCardId = 'pokemon-base-set-v1.0-blastoise--2';
+    const squirtleCardId = 'pokemon-base-set-v1.0-squirtle--65';
+    const wartortleCardId = 'pokemon-base-set-v1.0-wartortle--44';
+    const waterEnergyCardId = 'pokemon-base-set-v1.0-water-energy--103';
+
+    await writeFile(
+      join(matchesDirectory, `${matchId}.json`),
+      JSON.stringify(initialMatchState, null, 2),
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Player 1 attacks and knocks out Blastoise
+    // Ponyta's Flame Tail does 30 damage (knockout at 30 HP)
+    const attackResponse = await request(server())
+      .post(`/api/v1/matches/${matchId}/actions`)
+      .send({
+        playerId: PLAYER1_ID,
+        actionType: 'ATTACK',
+        actionData: {
+          attackIndex: 1, // Flame Tail attack
+        },
+      })
+      .expect(200);
+
+    // Verify opponent's active Pokemon is null (knocked out)
+    expect(attackResponse.body.opponentState.activePokemon).toBeNull();
+
+    // Verify discard pile contains Blastoise + Squirtle (from evolution chain, NO Wartortle) + 2 energy cards
+    const discardPile = attackResponse.body.opponentState.discardPile;
+    expect(discardPile).toContain(blastoiseCardId);
+    expect(discardPile).toContain(squirtleCardId); // From evolution chain (Pokemon Breeder evolution)
+    expect(discardPile).not.toContain(wartortleCardId); // Should NOT be in discard (was never evolved)
+    expect(discardPile).toContain(waterEnergyCardId);
+
+    // Count occurrences of water energy in discard pile
+    const waterEnergyCount = discardPile.filter(
+      (id: string) => id === waterEnergyCardId,
+    ).length;
+    expect(waterEnergyCount).toBe(2); // Both attached energy cards should be in discard
+
+    // Verify discard pile contains exactly 4 cards (Blastoise + Squirtle + 2 energy)
+    expect(discardPile.length).toBe(4);
+  });
+
+  it('should discard full evolution chain when Stage 2 Pokemon is knocked out', async () => {
+    const matchId = `${MATCH_ID}-stage2-evolved`;
+    const initialMatchState = {
+      id: matchId,
+      tournamentId: 'classic-tournament',
+      player1Id: PLAYER1_ID,
+      player2Id: PLAYER2_ID,
+      player1DeckId: 'classic-fire-starter-deck',
+      player2DeckId: 'classic-grass-starter-deck',
+      state: 'PLAYER_TURN',
+      currentPlayer: 'PLAYER1',
+      firstPlayer: 'PLAYER1',
+      coinTossResult: 'PLAYER1',
+      player1HasDrawnValidHand: true,
+      player2HasDrawnValidHand: true,
+      player1HasSetPrizeCards: true,
+      player2HasSetPrizeCards: true,
+      player1ReadyToStart: true,
+      player2ReadyToStart: true,
+      player1HasConfirmedFirstPlayer: true,
+      player2HasConfirmedFirstPlayer: true,
+      player1HasApprovedMatch: true,
+      player2HasApprovedMatch: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      endedAt: null,
+      winnerId: null,
+      result: null,
+      winCondition: null,
+      cancellationReason: null,
+      gameState: {
+        player1State: {
+          deck: ['pokemon-base-set-v1.0-fire-energy--99'],
+          hand: [],
+          activePokemon: {
+            instanceId: 'ponyta-instance-1',
+            cardId: 'pokemon-base-set-v1.0-ponyta--62',
+            position: 'ACTIVE',
+            maxHp: 40,
+            currentHp: 40,
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+            evolutionChain: [],
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-fire-energy--99'),
+          discardPile: [],
+          hasAttachedEnergyThisTurn: true,
+        },
+        player2State: {
+          deck: ['pokemon-base-set-v1.0-grass-energy--100'],
+          hand: [],
+          activePokemon: {
+            instanceId: 'charizard-instance-1',
+            cardId: 'pokemon-base-set-v1.0-charizard--4',
+            position: 'ACTIVE',
+            maxHp: 120,
+            currentHp: 30, // Will be knocked out by attack (30 damage)
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ],
+            statusEffect: 'NONE',
+            damageCounters: 0,
+            evolutionChain: [
+              'pokemon-base-set-v1.0-charmeleon--24', // Stage 1
+              'pokemon-base-set-v1.0-charmander--48', // Basic
+            ], // Full evolution chain: Charmander → Charmeleon → Charizard
+          },
+          bench: [],
+          prizeCards: Array(6).fill('pokemon-base-set-v1.0-grass-energy--100'),
+          discardPile: [],
+          hasAttachedEnergyThisTurn: false,
+        },
+        turnNumber: 1,
+        phase: 'MAIN_PHASE',
+        currentPlayer: 'PLAYER1',
+        lastAction: null,
+        actionHistory: [],
+      },
+    };
+
+    await writeFile(
+      join(matchesDirectory, `${matchId}.json`),
+      JSON.stringify(initialMatchState, null, 2),
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const charizardCardId = 'pokemon-base-set-v1.0-charizard--4';
+    const charmeleonCardId = 'pokemon-base-set-v1.0-charmeleon--24';
+    const charmanderCardId = 'pokemon-base-set-v1.0-charmander--48';
+    const fireEnergyCardId = 'pokemon-base-set-v1.0-fire-energy--99';
+
+    // Player 1 attacks and knocks out Charizard
+    // Ponyta's Flame Tail does 30 damage (knockout at 30 HP)
+    const attackResponse = await request(server())
+      .post(`/api/v1/matches/${matchId}/actions`)
+      .send({
+        playerId: PLAYER1_ID,
+        actionType: 'ATTACK',
+        actionData: {
+          attackIndex: 1, // Flame Tail attack
+        },
+      })
+      .expect(200);
+
+    // Verify opponent's active Pokemon is null (knocked out)
+    expect(attackResponse.body.opponentState.activePokemon).toBeNull();
+
+    // Verify discard pile contains Charizard + Charmeleon + Charmander (full evolution chain) + 2 energy cards
+    const discardPile = attackResponse.body.opponentState.discardPile;
+    expect(discardPile).toContain(charizardCardId);
+    expect(discardPile).toContain(charmeleonCardId); // From evolution chain
+    expect(discardPile).toContain(charmanderCardId); // From evolution chain
+    expect(discardPile).toContain(fireEnergyCardId);
+
+    // Count occurrences of fire energy in discard pile
+    const fireEnergyCount = discardPile.filter(
+      (id: string) => id === fireEnergyCardId,
+    ).length;
+    expect(fireEnergyCount).toBe(2); // Both attached energy cards should be in discard
+
+    // Verify discard pile contains exactly 5 cards (Charizard + Charmeleon + Charmander + 2 energy)
+    expect(discardPile.length).toBe(5);
+  });
 });
 

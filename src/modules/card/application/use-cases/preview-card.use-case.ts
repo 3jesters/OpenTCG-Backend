@@ -9,6 +9,7 @@ import { Weakness } from '../../domain/value-objects/weakness.value-object';
 import { Resistance } from '../../domain/value-objects/resistance.value-object';
 import { Attack } from '../../domain/value-objects/attack.value-object';
 import { Ability } from '../../domain/value-objects/ability.value-object';
+import { AbilityEffectFactory } from '../../domain/value-objects/ability-effect.value-object';
 import { Evolution } from '../../domain/value-objects/evolution.value-object';
 import { TrainerEffect } from '../../domain/value-objects/trainer-effect.value-object';
 import { EnergyProvision } from '../../domain/value-objects/energy-provision.value-object';
@@ -87,6 +88,69 @@ export class PreviewCardUseCase {
         throw error;
       }
       throw new Error(`Failed to preview card: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get Card domain entity (for internal use when domain entity is needed)
+   */
+  async getCardEntity(
+    author: string,
+    setName: string,
+    version: string,
+    cardNumber: string,
+  ): Promise<Card> {
+    try {
+      // Construct filename
+      const filename = `${author}-${setName}-v${version}.json`;
+
+      // Check if file exists
+      const exists = await this.fileReader.fileExists(filename);
+      if (!exists) {
+        throw new NotFoundException(
+          `Set file not found: ${author}-${setName}-v${version}`,
+        );
+      }
+
+      // Read file
+      const rawData = await this.fileReader.readCardFile(filename);
+
+      // Validate and transform data
+      const cardFileDto = plainToClass(CardFileDto, rawData);
+      const errors = await validate(cardFileDto, {
+        whitelist: true,
+        forbidNonWhitelisted: false,
+      });
+
+      if (errors.length > 0) {
+        throw new Error(`Validation failed: ${JSON.stringify(errors)}`);
+      }
+
+      // Find the specific card by card number
+      const cardDto = cardFileDto.cards.find(
+        (c) => c.cardNumber === cardNumber,
+      );
+
+      if (!cardDto) {
+        throw new NotFoundException(
+          `Card #${cardNumber} not found in set ${author}-${setName}-v${version}`,
+        );
+      }
+
+      // Convert DTO to domain entity
+      const card = await this.convertDtoToEntity(
+        cardDto,
+        author,
+        setName,
+        version,
+      );
+
+      return card;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new Error(`Failed to get card entity: ${error.message}`);
     }
   }
 
@@ -191,44 +255,54 @@ export class PreviewCardUseCase {
 
       // Set ability
       // NOTE: Abilities require at least one effect. If the card data doesn't have
-      // structured effects yet, we skip setting the ability for now.
-      // This is a temporary workaround until all abilities have structured effects.
-      if (dto.ability && dto.ability.effects && dto.ability.effects.length > 0) {
-        // Convert AbilityEffectImportDto to AbilityEffect
-        // The DTO already has the correct structure, just need to map conditions
-        const effects = dto.ability.effects.map(e => {
-          // Convert conditions from DTO to domain objects
-          // ConditionImportDto has value as string, but Condition needs ConditionValue object
-          const requiredConditions = e.conditions?.map(c => {
-            const condition: any = {
-              type: c.type,
-            };
+      // structured effects yet, we create a placeholder effect for display purposes.
+      // This allows abilities to be sent to the client even without structured effects.
+      if (dto.ability) {
+        let effects: any[];
+        
+        if (dto.ability.effects && dto.ability.effects.length > 0) {
+          // Convert AbilityEffectImportDto to AbilityEffect
+          // The DTO already has the correct structure, just need to map conditions
+          effects = dto.ability.effects.map(e => {
+            // Convert conditions from DTO to domain objects
+            // ConditionImportDto has value as string, but Condition needs ConditionValue object
+            const requiredConditions = e.conditions?.map(c => {
+              const condition: any = {
+                type: c.type,
+              };
+              
+              // Only add value if it's properly structured (for now, skip string values)
+              // TODO: Add proper conversion from string to ConditionValue when needed
+              if (c.numericValue !== undefined) {
+                condition.value = { minimumAmount: c.numericValue };
+              } else if (c.value && c.value !== '') {
+                // For now, skip string values that can't be converted
+                // This will be handled when card data is updated with proper structures
+              }
+              
+              // Condition interface doesn't have operator, so we skip it
+              // If needed in the future, it can be added to the Condition interface
+              
+              return condition;
+            }) || [];
             
-            // Only add value if it's properly structured (for now, skip string values)
-            // TODO: Add proper conversion from string to ConditionValue when needed
-            if (c.numericValue !== undefined) {
-              condition.value = { minimumAmount: c.numericValue };
-            } else if (c.value && c.value !== '') {
-              // For now, skip string values that can't be converted
-              // This will be handled when card data is updated with proper structures
-            }
-            
-            // Condition interface doesn't have operator, so we skip it
-            // If needed in the future, it can be added to the Condition interface
-            
-            return condition;
-          }) || [];
-          
-          return {
-            effectType: e.effectType,
-            target: e.targetType ? (e.targetType as any) : undefined,
-            requiredConditions,
-            // Include effect-specific properties
-            ...(e.value !== undefined && { value: e.value }),
-            ...(e.damageModifier && { damageModifier: e.damageModifier }),
-            ...(e.permanent !== undefined && { permanent: e.permanent }),
-          } as any; // Type assertion needed due to complex union types
-        });
+            return {
+              effectType: e.effectType,
+              target: e.targetType ? (e.targetType as any) : undefined,
+              requiredConditions,
+              // Include effect-specific properties
+              ...(e.value !== undefined && { value: e.value }),
+              ...(e.damageModifier && { damageModifier: e.damageModifier }),
+              ...(e.permanent !== undefined && { permanent: e.permanent }),
+            } as any; // Type assertion needed due to complex union types
+          });
+        } else {
+          // Create a placeholder effect for display purposes when no structured effects exist
+          // This allows the ability to be sent to the client with name, text, etc.
+          // The effect type DRAW_CARDS with count 1 is a placeholder that satisfies validation
+          // Note: This effect is only used for display - it won't be executed in gameplay
+          effects = [AbilityEffectFactory.drawCards(1)];
+        }
         
         const ability = new Ability(
           dto.ability.name,
@@ -240,8 +314,6 @@ export class PreviewCardUseCase {
         );
         card.setAbility(ability);
       }
-      // If ability has no effects, skip it (abilities without structured effects
-      // will be supported once card data is updated with effect structures)
 
       if (dto.attacks && dto.attacks.length > 0) {
         for (const attackDto of dto.attacks) {

@@ -93,5 +93,24 @@ describe('Card Preview API (e2e)', () => {
           // setName format may vary, just check it exists
         });
     });
+
+    it('should include ability (Pokemon power) in card details when present', () => {
+      // Alakazam (card 1) has "Damage Swap" ability in the card data
+      return request(app.getHttpServer())
+        .get('/api/v1/cards/sets/preview/pokemon/base-set/v1.0/card/1')
+        .expect(200)
+        .expect((res) => {
+          // Abilities should now be included even without structured effects
+          expect(res.body.ability).toBeDefined();
+          expect(res.body.ability).toHaveProperty('name');
+          expect(res.body.ability.name).toBe('Damage Swap');
+          expect(res.body.ability).toHaveProperty('text');
+          expect(res.body.ability.text).toContain('move 1 damage counter');
+          expect(res.body.ability).toHaveProperty('activationType');
+          expect(res.body.ability.activationType).toBe('ACTIVATED');
+          expect(res.body.ability).toHaveProperty('usageLimit');
+          expect(res.body.ability.usageLimit).toBe('UNLIMITED');
+        });
+    });
   });
 });

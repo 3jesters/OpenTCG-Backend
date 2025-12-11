@@ -2072,6 +2072,7 @@
       "trainerEffects": [
         {
           "effectType": "SEARCH_DECK",
+          "source": "DECK",
           "target": "SELF",
           "value": 1,
           "cardType": "POKEMON",

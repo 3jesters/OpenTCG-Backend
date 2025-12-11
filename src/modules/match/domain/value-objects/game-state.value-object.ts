@@ -18,6 +18,7 @@ export class GameState {
     public readonly lastAction: ActionSummary | null, // Last action taken
     public readonly actionHistory: ActionSummary[], // Complete history of actions
     public readonly coinFlipState: CoinFlipState | null = null, // Current coin flip state
+    public readonly abilityUsageThisTurn: Map<PlayerIdentifier, Set<string>> = new Map(), // Track abilities used this turn (playerId -> Set of cardIds)
   ) {
     this.validate();
   }
@@ -44,6 +45,7 @@ export class GameState {
       this.lastAction,
       this.actionHistory,
       this.coinFlipState,
+      this.abilityUsageThisTurn,
     );
   }
 
@@ -60,6 +62,7 @@ export class GameState {
       this.lastAction,
       this.actionHistory,
       this.coinFlipState,
+      this.abilityUsageThisTurn,
     );
   }
 
@@ -76,6 +79,7 @@ export class GameState {
       this.lastAction,
       this.actionHistory,
       this.coinFlipState,
+      this.abilityUsageThisTurn,
     );
   }
 
@@ -92,6 +96,7 @@ export class GameState {
       this.lastAction,
       this.actionHistory,
       this.coinFlipState,
+      this.abilityUsageThisTurn,
     );
   }
 
@@ -108,6 +113,7 @@ export class GameState {
       this.lastAction,
       this.actionHistory,
       this.coinFlipState,
+      this.abilityUsageThisTurn,
     );
   }
 
@@ -124,6 +130,7 @@ export class GameState {
       action,
       [...this.actionHistory, action],
       this.coinFlipState,
+      this.abilityUsageThisTurn,
     );
   }
 
@@ -140,6 +147,7 @@ export class GameState {
       this.lastAction,
       this.actionHistory,
       coinFlipState,
+      this.abilityUsageThisTurn,
     );
   }
 
@@ -159,6 +167,57 @@ export class GameState {
     return playerId === PlayerIdentifier.PLAYER1
       ? this.player2State
       : this.player1State;
+  }
+
+  /**
+   * Mark an ability as used this turn
+   */
+  markAbilityUsed(playerId: PlayerIdentifier, cardId: string): GameState {
+    const newUsageMap = new Map(this.abilityUsageThisTurn);
+    const playerUsage = newUsageMap.get(playerId) || new Set<string>();
+    const updatedPlayerUsage = new Set(playerUsage);
+    updatedPlayerUsage.add(cardId);
+    newUsageMap.set(playerId, updatedPlayerUsage);
+
+    return new GameState(
+      this.player1State,
+      this.player2State,
+      this.turnNumber,
+      this.phase,
+      this.currentPlayer,
+      this.lastAction,
+      this.actionHistory,
+      this.coinFlipState,
+      newUsageMap,
+    );
+  }
+
+  /**
+   * Check if an ability has been used this turn
+   */
+  hasAbilityBeenUsed(playerId: PlayerIdentifier, cardId: string): boolean {
+    const playerUsage = this.abilityUsageThisTurn.get(playerId);
+    return playerUsage ? playerUsage.has(cardId) : false;
+  }
+
+  /**
+   * Reset ability usage for a specific player (called on turn end)
+   */
+  resetAbilityUsage(playerId: PlayerIdentifier): GameState {
+    const newUsageMap = new Map(this.abilityUsageThisTurn);
+    newUsageMap.set(playerId, new Set<string>());
+
+    return new GameState(
+      this.player1State,
+      this.player2State,
+      this.turnNumber,
+      this.phase,
+      this.currentPlayer,
+      this.lastAction,
+      this.actionHistory,
+      this.coinFlipState,
+      newUsageMap,
+    );
   }
 }
 

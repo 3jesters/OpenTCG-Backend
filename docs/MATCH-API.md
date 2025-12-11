@@ -801,18 +801,33 @@ Declare and execute an attack.
 
 #### USE_ABILITY
 
-Use a Pokemon ability.
+Use a Pokemon ability (ACTIVATED abilities only).
 
 ```json
 {
   "actionType": "USE_ABILITY",
   "actionData": {
+    "cardId": "pokemon-base-set-v1.0-blastoise--2",
     "target": "ACTIVE"
   }
 }
 ```
 
 **Valid Phases:** MAIN_PHASE
+
+**Required Fields:**
+- `cardId`: The Pokemon card template ID
+- `target`: Position of the Pokemon using the ability (`ACTIVE`, `BENCH_0`, `BENCH_1`, etc.)
+
+**Optional Fields:**
+- `pokemonInstanceId`: For disambiguation if multiple instances of the same card exist
+
+**Notes:**
+- Only ACTIVATED abilities can be used via this action
+- PASSIVE abilities are always active (no action needed)
+- TRIGGERED abilities activate automatically on game events
+- Abilities with `ONCE_PER_TURN` usage limit can only be used once per turn
+- Some abilities cannot be used if the Pokemon is Asleep, Confused, or Paralyzed
 
 #### END_TURN
 

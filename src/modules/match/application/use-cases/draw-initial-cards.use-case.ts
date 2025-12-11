@@ -204,6 +204,8 @@ export class DrawInitialCardsUseCase {
           match.firstPlayer || PlayerIdentifier.PLAYER1,
           null,
           [],
+          null, // coinFlipState
+          new Map(), // abilityUsageThisTurn
         );
       } else {
         gameState = new GameState(
@@ -214,6 +216,8 @@ export class DrawInitialCardsUseCase {
           match.firstPlayer || PlayerIdentifier.PLAYER1,
           null,
           [],
+          null, // coinFlipState
+          new Map(), // abilityUsageThisTurn
         );
       }
     } else {
@@ -237,6 +241,8 @@ export class DrawInitialCardsUseCase {
           gameState.currentPlayer,
           gameState.lastAction,
           gameState.actionHistory,
+          gameState.coinFlipState,
+          gameState.abilityUsageThisTurn,
         );
       } else {
         gameState = new GameState(
@@ -247,6 +253,8 @@ export class DrawInitialCardsUseCase {
           gameState.currentPlayer,
           gameState.lastAction,
           gameState.actionHistory,
+          gameState.coinFlipState,
+          gameState.abilityUsageThisTurn,
         );
       }
     }

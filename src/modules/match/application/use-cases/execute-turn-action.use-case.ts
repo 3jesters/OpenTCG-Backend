@@ -34,11 +34,15 @@ import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-f
 import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
 import { TrainerEffectExecutorService } from '../../domain/services/trainer-effect-executor.service';
 import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
+import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
+import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
 import { TrainerActionData } from '../../domain/types/trainer-action-data.types';
+import { AbilityActionData } from '../../domain/types/ability-action-data.types';
 import { PokemonPosition } from '../../domain/enums';
 import { v4 as uuidv4 } from 'uuid';
 import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
 import { Attack } from '../../../card/domain/value-objects/attack.value-object';
+import { AbilityActivationType } from '../../../card/domain/enums/ability-activation-type.enum';
 
 /**
  * Execute Turn Action Use Case
@@ -59,6 +63,8 @@ export class ExecuteTurnActionUseCase {
     private readonly attackEnergyValidator: AttackEnergyValidatorService,
     private readonly trainerEffectExecutor: TrainerEffectExecutorService,
     private readonly trainerEffectValidator: TrainerEffectValidatorService,
+    private readonly abilityEffectExecutor: AbilityEffectExecutorService,
+    private readonly abilityEffectValidator: AbilityEffectValidatorService,
   ) {}
 
   async execute(dto: ExecuteActionDto): Promise<Match> {
@@ -762,6 +768,12 @@ export class ExecuteTurnActionUseCase {
         // New current HP = new max HP - same damage amount
         const newCurrentHp = Math.max(0, evolutionCardHp - damageTaken);
 
+        // Build evolution chain: add current card to existing chain
+        const evolutionChain = [
+          targetPokemon.cardId,
+          ...targetPokemon.evolutionChain,
+        ];
+
         // Create evolved Pokemon instance (preserve damage amount, energy, status)
         const evolvedPokemon = new CardInstance(
           targetPokemon.instanceId, // Keep same instance ID
@@ -772,6 +784,7 @@ export class ExecuteTurnActionUseCase {
           targetPokemon.attachedEnergy, // Preserve attached energy
           targetPokemon.statusEffect,
           targetPokemon.damageCounters,
+          evolutionChain, // Add evolution chain
         );
 
         // Remove evolution card from hand
@@ -876,6 +889,11 @@ export class ExecuteTurnActionUseCase {
         const resetPlayer2State =
           gameState.player2State.withHasAttachedEnergyThisTurn(false);
 
+        // Reset ability usage for the player whose turn just ended
+        const gameStateWithResetAbilityUsage = gameStateWithAction.resetAbilityUsage(
+          playerIdentifier,
+        );
+
         // Create new game state for next turn (DRAW phase)
         // Use the END_TURN action as the last action (it's already in history)
         const nextGameState = new GameState(
@@ -886,6 +904,8 @@ export class ExecuteTurnActionUseCase {
           nextPlayer,
           actionSummary, // Last action is the END_TURN we just created
           gameStateWithAction.actionHistory, // Keep history including END_TURN
+          null, // coinFlipState
+          gameStateWithResetAbilityUsage.abilityUsageThisTurn, // Preserve ability usage tracking
         );
 
         // Process between turns (transitions back to PLAYER_TURN)
@@ -1217,14 +1237,12 @@ export class ExecuteTurnActionUseCase {
               pokemon.attachedEnergy,
               pokemon.statusEffect,
               pokemon.damageCounters,
+              pokemon.evolutionChain,
             );
           });
           
-          // Collect all cards to discard: Pokemon card + attached energy
-          const cardsToDiscard = knockedOutBench.flatMap((p) => [
-            p.cardId,
-            ...p.attachedEnergy,
-          ]);
+          // Collect all cards to discard: Pokemon card + evolution chain + attached energy
+          const cardsToDiscard = knockedOutBench.flatMap((p) => p.getAllCardsToDiscard());
           
           const discardPile = [
             ...opponentState.discardPile,
@@ -1259,14 +1277,12 @@ export class ExecuteTurnActionUseCase {
               pokemon.attachedEnergy,
               pokemon.statusEffect,
               pokemon.damageCounters,
+              pokemon.evolutionChain,
             );
           });
           
-          // Collect all cards to discard: Pokemon card + attached energy
-          const playerCardsToDiscard = knockedOutPlayerBench.flatMap((p) => [
-            p.cardId,
-            ...p.attachedEnergy,
-          ]);
+          // Collect all cards to discard: Pokemon card + evolution chain + attached energy
+          const playerCardsToDiscard = knockedOutPlayerBench.flatMap((p) => p.getAllCardsToDiscard());
           
           const playerDiscardPile = [
             ...playerState.discardPile,
@@ -1285,11 +1301,8 @@ export class ExecuteTurnActionUseCase {
           
           // Check if attacker is knocked out by self-damage
           if (attackerNewHp === 0) {
-            // Collect all cards to discard: Pokemon card + attached energy
-            const attackerCardsToDiscard = [
-              playerState.activePokemon.cardId,
-              ...playerState.activePokemon.attachedEnergy,
-            ];
+            // Collect all cards to discard: Pokemon card + evolution chain + attached energy
+            const attackerCardsToDiscard = playerState.activePokemon.getAllCardsToDiscard();
             const attackerDiscardPile = [...updatedPlayerState.discardPile, ...attackerCardsToDiscard];
             updatedPlayerState = updatedPlayerState
               .withActivePokemon(null)
@@ -1301,11 +1314,8 @@ export class ExecuteTurnActionUseCase {
 
         // If opponent's active Pokemon is knocked out, move to discard pile
         if (isKnockedOut) {
-          // Collect all cards to discard: Pokemon card + attached energy
-          const activeCardsToDiscard = [
-            opponentState.activePokemon.cardId,
-            ...opponentState.activePokemon.attachedEnergy,
-          ];
+          // Collect all cards to discard: Pokemon card + evolution chain + attached energy
+          const activeCardsToDiscard = opponentState.activePokemon.getAllCardsToDiscard();
           const discardPile = [...updatedOpponentState.discardPile, ...activeCardsToDiscard];
           updatedOpponentState = updatedOpponentState
             .withActivePokemon(null)
@@ -1496,7 +1506,8 @@ export class ExecuteTurnActionUseCase {
 
               // If knocked out, move to discard pile
               if (isKnockedOut) {
-                const discardPile = [...opponentState.discardPile, opponentState.activePokemon.cardId];
+                const cardsToDiscard = opponentState.activePokemon.getAllCardsToDiscard();
+                const discardPile = [...opponentState.discardPile, ...cardsToDiscard];
                 updatedOpponentState = updatedOpponentState
                   .withActivePokemon(null)
                   .withDiscardPile(discardPile);
@@ -1648,6 +1659,114 @@ export class ExecuteTurnActionUseCase {
             winCheck.winCondition as WinCondition,
           );
         }
+
+        return await this.matchRepository.save(match);
+      }
+
+      // Handle USE_ABILITY action
+      if (dto.actionType === PlayerActionType.USE_ABILITY) {
+        const actionData = dto.actionData as AbilityActionData;
+
+        if (!actionData.cardId) {
+          throw new BadRequestException('cardId is required for USE_ABILITY action');
+        }
+
+        if (!actionData.target) {
+          throw new BadRequestException('target is required for USE_ABILITY action');
+        }
+
+        // Get card domain entity (needed for ability with effects)
+        const cardEntity = await this.getCardByIdUseCase.getCardEntity(actionData.cardId);
+
+        if (cardEntity.cardType !== 'POKEMON') {
+          throw new BadRequestException('Card must be a Pokemon card');
+        }
+
+        const ability = cardEntity.ability;
+        if (!ability) {
+          throw new BadRequestException('Pokemon must have an ability');
+        }
+
+        // Get Pokemon instance from game state
+        let pokemon: CardInstance | null = null;
+        if (actionData.target === 'ACTIVE') {
+          if (!playerState.activePokemon) {
+            throw new BadRequestException('No active Pokemon found');
+          }
+          pokemon = playerState.activePokemon;
+        } else {
+          const benchIndex = parseInt(actionData.target.replace('BENCH_', ''));
+          if (isNaN(benchIndex) || benchIndex < 0 || benchIndex >= playerState.bench.length) {
+            throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+          }
+          pokemon = playerState.bench[benchIndex];
+        }
+
+        if (!pokemon) {
+          throw new BadRequestException('Pokemon not found at specified position');
+        }
+
+        // Validate Pokemon matches cardId (or instanceId if provided)
+        if (actionData.pokemonInstanceId) {
+          if (pokemon.instanceId !== actionData.pokemonInstanceId) {
+            throw new BadRequestException('Pokemon instanceId does not match');
+          }
+        } else {
+          // Validate cardId matches
+          if (pokemon.cardId !== actionData.cardId) {
+            throw new BadRequestException('Pokemon cardId does not match');
+          }
+        }
+
+        // Validate ability can be used
+        const validation = await this.abilityEffectValidator.validateAbilityUsage(
+          ability,
+          actionData,
+          pokemon,
+          gameState,
+          playerIdentifier,
+        );
+
+        if (!validation.isValid) {
+          throw new BadRequestException(
+            `Invalid ability usage: ${validation.errors.join(', ')}`,
+          );
+        }
+
+        // Execute ability effects
+        const result = await this.abilityEffectExecutor.executeEffects(
+          ability,
+          actionData,
+          gameState,
+          playerIdentifier,
+        );
+
+        // Update game state
+        const updatedGameState =
+          playerIdentifier === PlayerIdentifier.PLAYER1
+            ? gameState
+                .withPlayer1State(result.playerState)
+                .withPlayer2State(result.opponentState)
+            : gameState
+                .withPlayer2State(result.playerState)
+                .withPlayer1State(result.opponentState);
+
+        // Mark ability as used (for ONCE_PER_TURN tracking)
+        const gameStateWithUsage = updatedGameState.markAbilityUsed(
+          playerIdentifier,
+          actionData.cardId,
+        );
+
+        const actionSummary = new ActionSummary(
+          uuidv4(),
+          playerIdentifier,
+          PlayerActionType.USE_ABILITY,
+          new Date(),
+          actionData as unknown as Record<string, unknown>,
+        );
+
+        const finalGameState = gameStateWithUsage.withAction(actionSummary);
+        match.updateGameState(finalGameState);
 
         return await this.matchRepository.save(match);
       }

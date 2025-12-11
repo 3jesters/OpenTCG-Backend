@@ -15,6 +15,7 @@ export class CardInstance {
     public readonly attachedEnergy: string[], // Array of energy card IDs attached
     public readonly statusEffect: StatusEffect, // Current status condition
     public readonly damageCounters: number, // Number of damage counters
+    public readonly evolutionChain: string[] = [], // Array of card IDs that this Pokemon evolved from (for reference)
   ) {
     this.validate();
   }
@@ -48,6 +49,18 @@ export class CardInstance {
   }
 
   /**
+   * Get all cards to discard when this Pokemon is knocked out
+   * Returns: current card + all evolution chain cards + attached energy cards
+   */
+  getAllCardsToDiscard(): string[] {
+    return [
+      this.cardId,
+      ...this.evolutionChain,
+      ...this.attachedEnergy,
+    ];
+  }
+
+  /**
    * Create a new CardInstance with updated HP
    */
   withHp(newHp: number): CardInstance {
@@ -60,6 +73,7 @@ export class CardInstance {
       this.attachedEnergy,
       this.statusEffect,
       this.damageCounters,
+      this.evolutionChain,
     );
   }
 
@@ -76,6 +90,7 @@ export class CardInstance {
       this.attachedEnergy,
       this.statusEffect,
       damage,
+      this.evolutionChain,
     );
   }
 
@@ -92,6 +107,7 @@ export class CardInstance {
       energyCardIds,
       this.statusEffect,
       this.damageCounters,
+      this.evolutionChain,
     );
   }
 
@@ -108,6 +124,7 @@ export class CardInstance {
       this.attachedEnergy,
       status,
       this.damageCounters,
+      this.evolutionChain,
     );
   }
 
@@ -124,6 +141,7 @@ export class CardInstance {
       this.attachedEnergy,
       this.statusEffect,
       this.damageCounters,
+      this.evolutionChain,
     );
   }
 

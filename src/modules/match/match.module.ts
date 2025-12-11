@@ -25,6 +25,8 @@ import {
   AttackEnergyValidatorService,
   TrainerEffectExecutorService,
   TrainerEffectValidatorService,
+  AbilityEffectExecutorService,
+  AbilityEffectValidatorService,
 } from './domain/services';
 import { DeckModule } from '../deck/deck.module';
 import { CardModule } from '../card/card.module';
@@ -60,6 +62,8 @@ import { TournamentModule } from '../tournament/tournament.module';
     AttackEnergyValidatorService,
     TrainerEffectExecutorService,
     TrainerEffectValidatorService,
+    AbilityEffectExecutorService,
+    AbilityEffectValidatorService,
     // Repository
     {
       provide: IMatchRepository,

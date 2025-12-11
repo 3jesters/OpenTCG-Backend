@@ -6,9 +6,8 @@
   "player1DeckId": "classic-fire-starter-deck",
   "player2DeckId": "classic-water-starter-deck",
   "state": "PLAYER_TURN",
-  "currentPlayer": "PLAYER1",
+  "currentPlayer": "PLAYER2",
   "firstPlayer": "PLAYER1",
-  "coinTossResult": "PLAYER1",
   "player1HasDrawnValidHand": true,
   "player2HasDrawnValidHand": true,
   "player1HasSetPrizeCards": true,
@@ -20,7 +19,7 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-12-09T12:25:06.696Z",
-  "updatedAt": "2025-12-09T13:40:08.405Z",
+  "updatedAt": "2025-12-10T10:39:50.860Z",
   "startedAt": null,
   "endedAt": null,
   "winnerId": null,
@@ -37,7 +36,6 @@
         "pokemon-base-set-v1.0-ponyta--62",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-gust-of-wind--94",
-        "pokemon-base-set-v1.0-charmeleon--24",
         "pokemon-base-set-v1.0-bill--92",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
@@ -50,7 +48,6 @@
         "pokemon-base-set-v1.0-magmar--36",
         "pokemon-base-set-v1.0-energy-removal--93",
         "pokemon-base-set-v1.0-potion--90",
-        "pokemon-base-set-v1.0-charmander--48",
         "pokemon-base-set-v1.0-charmander--48",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
@@ -78,7 +75,7 @@
         "pokemon-base-set-v1.0-growlithe--28"
       ],
       "hand": [
-        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-charmeleon--24",
         "pokemon-base-set-v1.0-switch--96",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
@@ -92,11 +89,26 @@
         "position": "ACTIVE",
         "currentHp": 50,
         "maxHp": 50,
-        "attachedEnergy": [],
+        "attachedEnergy": [
+          "pokemon-base-set-v1.0-fire-energy--99"
+        ],
         "statusEffect": "NONE",
-        "damageCounters": 0
+        "damageCounters": 0,
+        "evolutionChain": []
       },
-      "bench": [],
+      "bench": [
+        {
+          "instanceId": "b6e95877-6111-408e-a377-6b23f15ee75b",
+          "cardId": "pokemon-base-set-v1.0-charmander--48",
+          "position": "BENCH_0",
+          "currentHp": 50,
+          "maxHp": 50,
+          "attachedEnergy": [],
+          "statusEffect": "NONE",
+          "damageCounters": 0,
+          "evolutionChain": []
+        }
+      ],
       "prizeCards": [
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-bill--92",
@@ -110,12 +122,10 @@
     },
     "player2State": {
       "deck": [
-        "pokemon-base-set-v1.0-blastoise--2",
         "pokemon-base-set-v1.0-pokemon-breeder--78",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-squirtle--65",
-        "pokemon-base-set-v1.0-pokemon-breeder--78",
         "pokemon-base-set-v1.0-wartortle--44",
         "pokemon-base-set-v1.0-poliwrath--13",
         "pokemon-base-set-v1.0-poliwhirl--40",
@@ -160,7 +170,6 @@
       ],
       "hand": [
         "pokemon-base-set-v1.0-bill--92",
-        "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-bill--92",
         "pokemon-base-set-v1.0-energy-retrieval--83",
         "pokemon-base-set-v1.0-water-energy--103",
@@ -168,13 +177,18 @@
       ],
       "activePokemon": {
         "instanceId": "9d7f71f4-cf50-4b84-ae45-24a4713241ad",
-        "cardId": "pokemon-base-set-v1.0-squirtle--65",
+        "cardId": "pokemon-base-set-v1.0-blastoise--2",
         "position": "ACTIVE",
         "currentHp": 40,
         "maxHp": 40,
-        "attachedEnergy": [],
+        "attachedEnergy": [
+          "pokemon-base-set-v1.0-water-energy--103"
+        ],
         "statusEffect": "NONE",
-        "damageCounters": 0
+        "damageCounters": 0,
+        "evolutionChain": [
+          "pokemon-base-set-v1.0-squirtle--65"
+        ]
       },
       "bench": [],
       "prizeCards": [
@@ -185,18 +199,25 @@
         "pokemon-base-set-v1.0-poliwhirl--40",
         "pokemon-base-set-v1.0-seel--43"
       ],
-      "discardPile": [],
-      "hasAttachedEnergyThisTurn": false
+      "discardPile": [
+        "pokemon-base-set-v1.0-pokemon-breeder--78"
+      ],
+      "hasAttachedEnergyThisTurn": true
     },
-    "turnNumber": 1,
+    "turnNumber": 2,
     "phase": "MAIN_PHASE",
-    "currentPlayer": "PLAYER1",
+    "currentPlayer": "PLAYER2",
     "lastAction": {
-      "actionId": "9a50c959-6cb3-49e4-a334-f168904567ca",
-      "playerId": "PLAYER1",
-      "actionType": "DRAW_CARD",
-      "timestamp": "2025-12-09T13:40:08.405Z",
-      "actionData": {}
+      "actionId": "fe210fb7-a45c-4ce8-8cbe-4a1f5e30f018",
+      "playerId": "PLAYER2",
+      "actionType": "PLAY_TRAINER",
+      "timestamp": "2025-12-10T10:39:50.860Z",
+      "actionData": {
+        "cardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
+        "targetPlayer": "PLAYER1",
+        "evolutionCardId": "pokemon-base-set-v1.0-blastoise--2",
+        "target": "ACTIVE"
+      }
     },
     "actionHistory": [
       {
@@ -205,6 +226,61 @@
         "actionType": "DRAW_CARD",
         "timestamp": "2025-12-09T13:40:08.405Z",
         "actionData": {}
+      },
+      {
+        "actionId": "f093aa9b-1169-4e16-b1b3-ffb3c0131a7b",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-09T19:29:56.676Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-charmander--48"
+        }
+      },
+      {
+        "actionId": "12ddfd74-4e37-4c15-a39c-5dee4fe673bc",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-09T19:30:08.440Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-fire-energy--99",
+          "target": "ACTIVE"
+        }
+      },
+      {
+        "actionId": "dd32eea2-6244-4c53-b3b5-77073de6dfaf",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-09T19:30:23.966Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "8b6b36d3-2c9e-4399-9b32-fa3fdcb2b357",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-09T19:30:30.259Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "838a6cf8-90b8-4541-8a14-7c9ffc579994",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-09T19:31:47.157Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "ACTIVE"
+        }
+      },
+      {
+        "actionId": "fe210fb7-a45c-4ce8-8cbe-4a1f5e30f018",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-10T10:39:50.860Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
+          "targetPlayer": "PLAYER1",
+          "evolutionCardId": "pokemon-base-set-v1.0-blastoise--2",
+          "target": "ACTIVE"
+        }
       }
     ],
     "coinFlipState": null

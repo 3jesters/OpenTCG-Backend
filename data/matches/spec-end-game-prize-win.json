@@ -8,7 +8,6 @@
   "state": "MATCH_ENDED",
   "currentPlayer": "PLAYER1",
   "firstPlayer": "PLAYER1",
-  "coinTossResult": "PLAYER1",
   "player1HasDrawnValidHand": true,
   "player2HasDrawnValidHand": true,
   "player1HasSetPrizeCards": true,
@@ -20,9 +19,9 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-09T12:53:18.344Z",
+  "updatedAt": "2025-12-10T10:36:57.299Z",
   "startedAt": "2025-01-01T00:00:00.000Z",
-  "endedAt": "2025-12-09T12:53:18.344Z",
+  "endedAt": "2025-12-10T10:36:57.299Z",
   "winnerId": "test-player-1",
   "result": "PLAYER1_WIN",
   "winCondition": "PRIZE_CARDS",
@@ -47,7 +46,8 @@
           "pokemon-base-set-v1.0-fire-energy--99"
         ],
         "statusEffect": "NONE",
-        "damageCounters": 0
+        "damageCounters": 0,
+        "evolutionChain": []
       },
       "bench": [],
       "prizeCards": [],
@@ -71,7 +71,8 @@
           "maxHp": 40,
           "attachedEnergy": [],
           "statusEffect": "NONE",
-          "damageCounters": 0
+          "damageCounters": 0,
+          "evolutionChain": []
         }
       ],
       "prizeCards": [
@@ -91,10 +92,10 @@
     "phase": "END",
     "currentPlayer": "PLAYER1",
     "lastAction": {
-      "actionId": "f9b03405-b9db-469e-b60f-1d102fb1ef63",
+      "actionId": "03033761-76b3-41f9-85a0-8b5225ddb34d",
       "playerId": "PLAYER1",
       "actionType": "SELECT_PRIZE",
-      "timestamp": "2025-12-09T12:53:18.344Z",
+      "timestamp": "2025-12-10T10:36:57.299Z",
       "actionData": {
         "prizeCard": "pokemon-base-set-v1.0-fire-energy--99",
         "prizeIndex": 0
@@ -102,10 +103,10 @@
     },
     "actionHistory": [
       {
-        "actionId": "7e1c5b04-8fed-4ebe-8bf9-dda9c60098df",
+        "actionId": "c5b6c370-8fab-41af-b3d1-78107889ef95",
         "playerId": "PLAYER1",
         "actionType": "ATTACK",
-        "timestamp": "2025-12-09T12:53:18.240Z",
+        "timestamp": "2025-12-10T10:36:57.284Z",
         "actionData": {
           "attackIndex": 1,
           "damage": 60,
@@ -113,10 +114,10 @@
         }
       },
       {
-        "actionId": "f9b03405-b9db-469e-b60f-1d102fb1ef63",
+        "actionId": "03033761-76b3-41f9-85a0-8b5225ddb34d",
         "playerId": "PLAYER1",
         "actionType": "SELECT_PRIZE",
-        "timestamp": "2025-12-09T12:53:18.344Z",
+        "timestamp": "2025-12-10T10:36:57.299Z",
         "actionData": {
           "prizeCard": "pokemon-base-set-v1.0-fire-energy--99",
           "prizeIndex": 0

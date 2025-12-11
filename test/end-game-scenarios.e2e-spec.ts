@@ -551,6 +551,23 @@ describe('End Game Scenarios E2E', () => {
       // Player 2's active should be knocked out (40 damage)
       // Player 1's Magnemite should be knocked out (40 self-damage)
       
+      // Verify discard piles contain correct cards
+      const player1DiscardPile = attackResponse.body.playerState.discardPile;
+      const player2DiscardPile = attackResponse.body.opponentState.discardPile;
+      
+      // Player 1's Magnemite should be in discard (knocked out by self-damage)
+      expect(player1DiscardPile).toContain('pokemon-base-set-v1.0-magnemite--37');
+      // Magnemite had 2 lightning energy attached
+      const lightningEnergyCount = player1DiscardPile.filter(
+        (id: string) => id === 'pokemon-base-set-v1.0-lightning-energy--101',
+      ).length;
+      expect(lightningEnergyCount).toBe(2);
+      
+      // Player 2's Bulbasaur should be in discard (knocked out by attack)
+      expect(player2DiscardPile).toContain('pokemon-base-set-v1.0-bulbasaur--46');
+      // Bulbasaur had no energy attached
+      expect(player2DiscardPile.length).toBe(1); // Only Bulbasaur card
+      
       // Step 2: Player 1 selects a prize card (for knocking out Player 2's Pokemon)
       const prizeResponse = await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)

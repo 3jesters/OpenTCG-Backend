@@ -16,4 +16,9 @@ export * from './legacy-ability-type.enum';
 export * from './card-rule-type.enum';
 export * from './rule-priority.enum';
 export * from './target-type.enum';
+export * from './energy-source.enum';
+export * from './duration.enum';
+export * from './selector.enum';
+export * from './destination.enum';
+export * from './status-condition.enum';
 

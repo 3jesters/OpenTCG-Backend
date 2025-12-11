@@ -796,6 +796,7 @@ export class TrainerEffectExecutorService {
       benchPokemon.attachedEnergy,
       benchPokemon.statusEffect,
       benchPokemon.damageCounters,
+      benchPokemon.evolutionChain,
     );
 
     const newBench = new CardInstance(
@@ -807,6 +808,7 @@ export class TrainerEffectExecutorService {
       activePokemon.attachedEnergy,
       activePokemon.statusEffect,
       activePokemon.damageCounters,
+      activePokemon.evolutionChain,
     );
 
     const updatedBench = [...playerState.bench];
@@ -854,6 +856,7 @@ export class TrainerEffectExecutorService {
       benchPokemon.attachedEnergy,
       benchPokemon.statusEffect,
       benchPokemon.damageCounters,
+      benchPokemon.evolutionChain,
     );
 
     const newBench = new CardInstance(
@@ -865,6 +868,7 @@ export class TrainerEffectExecutorService {
       activePokemon.attachedEnergy,
       activePokemon.statusEffect,
       activePokemon.damageCounters,
+      activePokemon.evolutionChain,
     );
 
     const updatedBench = [...opponentState.bench];
@@ -939,6 +943,7 @@ export class TrainerEffectExecutorService {
       targetPokemon.attachedEnergy,
       StatusEffect.NONE,
       targetPokemon.damageCounters,
+      targetPokemon.evolutionChain,
     );
 
     if (isOpponent) {
@@ -1108,6 +1113,7 @@ export class TrainerEffectExecutorService {
           pokemon.attachedEnergy,
           pokemon.statusEffect,
           pokemon.damageCounters,
+          pokemon.evolutionChain,
         );
       });
       const newActiveInstance = new CardInstance(
@@ -1119,6 +1125,7 @@ export class TrainerEffectExecutorService {
         newActive.attachedEnergy,
         newActive.statusEffect,
         newActive.damageCounters,
+        newActive.evolutionChain,
       );
       return {
         playerState: playerState
@@ -1143,6 +1150,7 @@ export class TrainerEffectExecutorService {
           pokemon.attachedEnergy,
           pokemon.statusEffect,
           pokemon.damageCounters,
+          pokemon.evolutionChain,
         );
       });
       return {
@@ -1197,6 +1205,12 @@ export class TrainerEffectExecutorService {
     // Remove evolution card from hand
     const updatedHand = playerState.hand.filter((id) => id !== actionData.evolutionCardId);
 
+    // Build evolution chain: add current card to existing chain
+    const evolutionChain = [
+      targetPokemon.cardId,
+      ...targetPokemon.evolutionChain,
+    ];
+
     // Create evolved Pokémon (keep same instance ID, position, HP, energy, status)
     const evolvedPokemon = new CardInstance(
       targetPokemon.instanceId,
@@ -1207,6 +1221,7 @@ export class TrainerEffectExecutorService {
       targetPokemon.attachedEnergy,
       targetPokemon.statusEffect,
       targetPokemon.damageCounters,
+      evolutionChain, // Add evolution chain
     );
 
     // Update state
