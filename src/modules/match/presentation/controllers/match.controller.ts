@@ -20,6 +20,7 @@ import {
   ListMatchesUseCase,
   CancelMatchUseCase,
 } from '../../application/use-cases';
+import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
 import {
   CreateMatchRequestDto,
   JoinMatchRequestDto,
@@ -56,6 +57,7 @@ export class MatchController {
     private readonly listMatchesUseCase: ListMatchesUseCase,
     private readonly cancelMatchUseCase: CancelMatchUseCase,
     private readonly stateMachineService: MatchStateMachineService,
+    private readonly getCardByIdUseCase: GetCardByIdUseCase,
   ) {}
 
   /**
@@ -158,10 +160,11 @@ export class MatchController {
   ): Promise<MatchStateResponseDto> {
     const { match, availableActions } =
       await this.getMatchStateUseCase.execute(matchId, requestDto.playerId);
-    return MatchStateResponseDto.fromDomain(
+    return await MatchStateResponseDto.fromDomain(
       match,
       requestDto.playerId,
       availableActions,
+      this.getCardByIdUseCase,
     );
   }
 
@@ -231,10 +234,11 @@ export class MatchController {
       playerIdentifier!,
     );
 
-    return MatchStateResponseDto.fromDomain(
+    return await MatchStateResponseDto.fromDomain(
       match,
       requestDto.playerId,
       filteredActions,
+      this.getCardByIdUseCase,
     );
   }
 

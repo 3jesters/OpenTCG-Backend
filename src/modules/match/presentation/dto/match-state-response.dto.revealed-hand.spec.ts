@@ -4,7 +4,7 @@ import { GameState, PlayerGameState } from '../../domain/value-objects';
 
 describe('MatchStateResponseDto - Revealed Hand', () => {
   describe('fromDomain', () => {
-    it('should include revealedHand in opponentState during INITIAL_SETUP', () => {
+    it('should include revealedHand in opponentState during INITIAL_SETUP', async () => {
       // Arrange
       const match = new Match('match-1', 'tournament-1');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
@@ -50,7 +50,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       (match as any)._state = MatchState.INITIAL_SETUP;
 
       // Act
-      const dto = MatchStateResponseDto.fromDomain(match, 'player-1');
+      const dto = await MatchStateResponseDto.fromDomain(match, 'player-1');
 
       // Assert
       expect(dto.state).toBe(MatchState.INITIAL_SETUP);
@@ -62,7 +62,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       ]);
     });
 
-    it('should not include revealedHand in opponentState after INITIAL_SETUP', () => {
+    it('should not include revealedHand in opponentState after INITIAL_SETUP', async () => {
       // Arrange
       const match = new Match('match-1', 'tournament-1');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
@@ -110,7 +110,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       (match as any)._state = MatchState.PLAYER_TURN;
 
       // Act
-      const dto = MatchStateResponseDto.fromDomain(match, 'player-1');
+      const dto = await MatchStateResponseDto.fromDomain(match, 'player-1');
 
       // Assert
       expect(dto.state).not.toBe(MatchState.INITIAL_SETUP);
@@ -163,7 +163,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       (match as any)._state = MatchState.INITIAL_SETUP;
 
       // Act
-      const dto = MatchStateResponseDto.fromDomain(match, 'player-1');
+      const dto = await MatchStateResponseDto.fromDomain(match, 'player-1');
 
       // Assert
       expect(dto.opponentState.revealedHand).toEqual([
@@ -173,7 +173,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       ]);
     });
 
-    it('should show revealedHand for player 1 when viewing from player 2 perspective', () => {
+    it('should show revealedHand for player 1 when viewing from player 2 perspective', async () => {
       // Arrange
       const match = new Match('match-1', 'tournament-1');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
@@ -219,7 +219,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       (match as any)._state = MatchState.INITIAL_SETUP;
 
       // Act
-      const dto = MatchStateResponseDto.fromDomain(match, 'player-2');
+      const dto = await MatchStateResponseDto.fromDomain(match, 'player-2');
 
       // Assert
       expect(dto.opponentState.revealedHand).toEqual([
@@ -229,7 +229,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       ]);
     });
 
-    it('should not include revealedHand when opponentState is empty', () => {
+    it('should not include revealedHand when opponentState is empty', async () => {
       // Arrange
       const match = new Match('match-1', 'tournament-1');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
@@ -264,13 +264,13 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       (match as any)._state = MatchState.INITIAL_SETUP;
 
       // Act
-      const dto = MatchStateResponseDto.fromDomain(match, 'player-1');
+      const dto = await MatchStateResponseDto.fromDomain(match, 'player-1');
 
       // Assert
       expect(dto.opponentState.revealedHand).toBeUndefined();
     });
 
-    it('should show empty revealedHand when opponent has no cards in hand', () => {
+    it('should show empty revealedHand when opponent has no cards in hand', async () => {
       // Arrange
       const match = new Match('match-1', 'tournament-1');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
@@ -316,7 +316,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       (match as any)._state = MatchState.INITIAL_SETUP;
 
       // Act
-      const dto = MatchStateResponseDto.fromDomain(match, 'player-1');
+      const dto = await MatchStateResponseDto.fromDomain(match, 'player-1');
 
       // Assert
       expect(dto.opponentState.revealedHand).toEqual([]);

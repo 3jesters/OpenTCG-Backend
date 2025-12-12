@@ -181,7 +181,9 @@ describe('AbilityEffectExecutorService', () => {
 
         mockGetCardByIdUseCase.getCardEntity
           .mockResolvedValueOnce(blastoiseCard) // Target Pokemon validation
-          .mockResolvedValueOnce(waterEnergyCard1); // Energy card validation
+          .mockResolvedValueOnce(waterEnergyCard1) // Selected energy card validation
+          .mockResolvedValueOnce(waterEnergyCard1) // Count validation - checking hand[0]
+          .mockResolvedValueOnce(waterEnergyCard1); // Count validation - checking hand[1]
 
         const result = await service.executeEffects(
           ability,
@@ -194,11 +196,276 @@ describe('AbilityEffectExecutorService', () => {
         expect(result.playerState.activePokemon?.attachedEnergy).toContain(
           waterEnergy1,
         );
-        // Since both waterEnergy1 and waterEnergy2 have the same cardId,
-        // the filter removes all instances of that cardId from hand
-        expect(result.playerState.hand).not.toContain(waterEnergy1);
-        // Note: Current implementation removes all instances of the same cardId,
-        // so both energies are removed even though only one was selected
+        // Only the selected card should be removed from hand
+        // Since waterEnergy1 and waterEnergy2 have the same cardId, we verify by count
+        // Started with 2 cards, removed 1, so 1 should remain
+        expect(result.playerState.hand).toHaveLength(1);
+        // The remaining card should still be a water energy (same ID)
+        expect(result.playerState.hand[0]).toBe(waterEnergy2);
+      });
+
+      it('should remove exactly count cards when multiple cards with same ID exist', async () => {
+        const cardId = 'pokemon-base-set-v1.0-blastoise--2';
+        const ability = new Ability(
+          'Rain Dance',
+          'As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon.',
+          AbilityActivationType.ACTIVATED,
+          [
+            AbilityEffectFactory.energyAcceleration(
+              TargetType.ALL_YOURS,
+              EnergySource.HAND,
+              2, // count: 2 - should attach 2 cards
+              EnergyType.WATER,
+              PokemonType.WATER,
+            ),
+          ],
+          undefined, // triggerEvent
+          UsageLimit.UNLIMITED, // usageLimit
+        );
+
+        const blastoise = new CardInstance(
+          'instance-1',
+          cardId,
+          PokemonPosition.ACTIVE,
+          100,
+          100,
+          [],
+          StatusEffect.NONE,
+          0,
+        );
+
+        // Create hand with 3 water energy cards (all same ID)
+        const waterEnergy1 = 'pokemon-base-set-v1.0-water-energy--103';
+        const waterEnergy2 = 'pokemon-base-set-v1.0-water-energy--103';
+        const waterEnergy3 = 'pokemon-base-set-v1.0-water-energy--103';
+        const gameState = createGameState(
+          blastoise,
+          [],
+          [waterEnergy1, waterEnergy2, waterEnergy3],
+        );
+
+        // Verify hand has 3 cards
+        expect(gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand).toHaveLength(3);
+
+        const actionData: AbilityActionData = {
+          cardId,
+          target: PokemonPosition.ACTIVE,
+          selectedCardIds: [waterEnergy1, waterEnergy2], // Select 2 cards (count: 2)
+        };
+
+        // Mock Card entities for validation
+        const blastoiseCard = Card.createPokemonCard(
+          'instance-1',
+          cardId,
+          '009',
+          'Blastoise',
+          'base-set',
+          '2',
+          Rarity.RARE_HOLO,
+          'A brutal Pokémon',
+          'Ken Sugimori',
+          '',
+        );
+        blastoiseCard.setPokemonType(PokemonType.WATER);
+        blastoiseCard.setHp(100);
+
+        const waterEnergyCard = Card.createEnergyCard(
+          'energy-1',
+          waterEnergy1,
+          'N/A',
+          'Water Energy',
+          'base-set',
+          '103',
+          Rarity.COMMON,
+          'Basic Water Energy',
+          '',
+          '',
+        );
+        waterEnergyCard.setEnergyType(EnergyType.WATER);
+
+        // Clear any previous mocks
+        mockGetCardByIdUseCase.getCardEntity.mockClear();
+        
+        // Mock implementation: return blastoiseCard for blastoise cardId, waterEnergyCard for energy cardId
+        mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
+          if (cardId === 'pokemon-base-set-v1.0-blastoise--2') {
+            return Promise.resolve(blastoiseCard);
+          } else if (cardId === 'pokemon-base-set-v1.0-water-energy--103') {
+            return Promise.resolve(waterEnergyCard);
+          }
+          return Promise.reject(new Error(`Unexpected cardId: ${cardId}`));
+        });
+
+        const result = await service.executeEffects(
+          ability,
+          actionData,
+          gameState,
+          PlayerIdentifier.PLAYER1,
+        );
+
+        // Should attach exactly 2 cards
+        expect(result.playerState.activePokemon?.attachedEnergy).toHaveLength(2);
+        expect(result.playerState.activePokemon?.attachedEnergy).toContain(waterEnergy1);
+        expect(result.playerState.activePokemon?.attachedEnergy).toContain(waterEnergy2);
+
+        // Should remove exactly 2 cards from hand, leaving 1
+        expect(result.playerState.hand).toHaveLength(1);
+        expect(result.playerState.hand[0]).toBe(waterEnergy3);
+      });
+
+      it('should validate there are enough matching cards before removal', async () => {
+        const cardId = 'pokemon-base-set-v1.0-blastoise--2';
+        const ability = new Ability(
+          'Rain Dance',
+          'As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon.',
+          AbilityActivationType.ACTIVATED,
+          [
+            AbilityEffectFactory.energyAcceleration(
+              TargetType.ALL_YOURS,
+              EnergySource.HAND,
+              2, // count: 2 - need 2 water energy cards
+              EnergyType.WATER,
+              PokemonType.WATER,
+            ),
+          ],
+          undefined, // triggerEvent
+          UsageLimit.UNLIMITED, // usageLimit
+        );
+
+        const blastoise = new CardInstance(
+          'instance-1',
+          cardId,
+          PokemonPosition.ACTIVE,
+          100,
+          100,
+          [],
+          StatusEffect.NONE,
+          0,
+        );
+
+        // Create hand with only 1 water energy card
+        const waterEnergy1 = 'pokemon-base-set-v1.0-water-energy--103';
+        const fireEnergy = 'pokemon-base-set-v1.0-fire-energy--99';
+        const gameState = createGameState(
+          blastoise,
+          [],
+          [waterEnergy1, fireEnergy],
+        );
+
+        const actionData: AbilityActionData = {
+          cardId,
+          target: PokemonPosition.ACTIVE,
+          selectedCardIds: [waterEnergy1, waterEnergy1], // Try to select 2 (but only 1 exists)
+        };
+
+        // Mock Card entities
+        const blastoiseCard = Card.createPokemonCard(
+          'instance-1',
+          cardId,
+          '009',
+          'Blastoise',
+          'base-set',
+          '2',
+          Rarity.RARE_HOLO,
+          'A brutal Pokémon',
+          'Ken Sugimori',
+          '',
+        );
+        blastoiseCard.setPokemonType(PokemonType.WATER);
+        blastoiseCard.setHp(100);
+
+        const waterEnergyCard = Card.createEnergyCard(
+          'energy-1',
+          waterEnergy1,
+          'N/A',
+          'Water Energy',
+          'base-set',
+          '103',
+          Rarity.COMMON,
+          'Basic Water Energy',
+          '',
+          '',
+        );
+        waterEnergyCard.setEnergyType(EnergyType.WATER);
+
+        const fireEnergyCard = Card.createEnergyCard(
+          'energy-2',
+          fireEnergy,
+          'N/A',
+          'Fire Energy',
+          'base-set',
+          '99',
+          Rarity.COMMON,
+          'Basic Fire Energy',
+          '',
+          '',
+        );
+        fireEnergyCard.setEnergyType(EnergyType.FIRE);
+
+        // Clear any previous mocks
+        mockGetCardByIdUseCase.getCardEntity.mockClear();
+        
+        // Mock implementation: return appropriate card based on cardId
+        mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
+          if (cardId === 'pokemon-base-set-v1.0-blastoise--2') {
+            return Promise.resolve(blastoiseCard);
+          } else if (cardId === 'pokemon-base-set-v1.0-water-energy--103') {
+            return Promise.resolve(waterEnergyCard);
+          } else if (cardId === 'pokemon-base-set-v1.0-fire-energy--99') {
+            return Promise.resolve(fireEnergyCard);
+          }
+          return Promise.reject(new Error(`Unexpected cardId: ${cardId}`));
+        });
+
+        await expect(
+          service.executeEffects(ability, actionData, gameState, PlayerIdentifier.PLAYER1),
+        ).rejects.toThrow('Not enough WATER Energy cards in hand');
+      });
+
+      it('should validate selectedCardIds length matches count', async () => {
+        const cardId = 'pokemon-base-set-v1.0-blastoise--2';
+        const ability = new Ability(
+          'Rain Dance',
+          'As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon.',
+          AbilityActivationType.ACTIVATED,
+          [
+            AbilityEffectFactory.energyAcceleration(
+              TargetType.ALL_YOURS,
+              EnergySource.HAND,
+              1, // count: 1
+              EnergyType.WATER,
+              PokemonType.WATER,
+            ),
+          ],
+          undefined, // triggerEvent
+          UsageLimit.UNLIMITED, // usageLimit
+        );
+
+        const blastoise = new CardInstance(
+          'instance-1',
+          cardId,
+          PokemonPosition.ACTIVE,
+          100,
+          100,
+          [],
+          StatusEffect.NONE,
+          0,
+        );
+
+        const waterEnergy1 = 'pokemon-base-set-v1.0-water-energy--103';
+        const waterEnergy2 = 'pokemon-base-set-v1.0-water-energy--103';
+        const gameState = createGameState(blastoise, [], [waterEnergy1, waterEnergy2]);
+
+        // Try to select 2 cards when count is 1
+        const actionData: AbilityActionData = {
+          cardId,
+          target: PokemonPosition.ACTIVE,
+          selectedCardIds: [waterEnergy1, waterEnergy2], // 2 cards selected, but count is 1
+        };
+
+        await expect(
+          service.executeEffects(ability, actionData, gameState, PlayerIdentifier.PLAYER1),
+        ).rejects.toThrow('Expected 1 energy card(s) to be selected, but got 2');
       });
     });
 
@@ -1123,9 +1390,16 @@ describe('AbilityEffectExecutorService', () => {
         );
         waterEnergyCard.setEnergyType(EnergyType.WATER);
 
+        // Mock for: target Pokemon validation, selected card validation, then count validation (all cards in hand)
+        const hand = gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand;
         mockGetCardByIdUseCase.getCardEntity
-          .mockResolvedValueOnce(blastoiseCard)
-          .mockResolvedValueOnce(waterEnergyCard);
+          .mockResolvedValueOnce(blastoiseCard) // Target Pokemon validation
+          .mockResolvedValueOnce(waterEnergyCard); // Selected card validation
+        
+        // Add mocks for count validation (checking all cards in hand)
+        for (let i = 0; i < hand.length; i++) {
+          mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(waterEnergyCard);
+        }
 
         const actionData: AbilityActionData = {
           cardId,

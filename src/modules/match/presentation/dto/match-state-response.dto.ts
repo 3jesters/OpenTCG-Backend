@@ -12,6 +12,7 @@ import {
   CoinFlipState,
 } from '../../domain/value-objects';
 import { CardId } from '../../../../shared/types/card.types';
+import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
 
 /**
  * Match State Response DTO
@@ -43,11 +44,12 @@ export class MatchStateResponseDto {
   winCondition?: string | null;
   endedAt?: string | null;
 
-  static fromDomain(
+  static async fromDomain(
     match: Match,
     playerId: string,
     availableActions: PlayerActionType[] = [],
-  ): MatchStateResponseDto {
+    getCardByIdUseCase?: GetCardByIdUseCase,
+  ): Promise<MatchStateResponseDto> {
     const playerIdentifier = match.getPlayerIdentifier(playerId);
     if (!playerIdentifier) {
       throw new Error('Player is not part of this match');
@@ -123,15 +125,16 @@ export class MatchStateResponseDto {
       turnNumber: gameState?.turnNumber || 0,
       phase: gameState?.phase || null,
       playerState: playerState
-        ? PlayerStateDto.fromDomain(playerState, match.state)
+        ? await PlayerStateDto.fromDomain(playerState, match.state, getCardByIdUseCase)
         : PlayerStateDto.empty(),
       opponentState: opponentState
-        ? OpponentStateDto.fromDomain(
+        ? await OpponentStateDto.fromDomain(
             opponentState,
             match.state,
             playerState,
             playerHasDrawnValidHand,
             opponentHasDrawnValidHand,
+            getCardByIdUseCase,
           )
         : OpponentStateDto.empty(),
       availableActions: availableActions.map((action) => action.toString()),
@@ -175,7 +178,11 @@ class PlayerStateDto {
   prizeCards: CardId[]; // Prize cards for selection (visible to player)
   attachedEnergy: CardId[];
 
-  static fromDomain(state: PlayerGameState, matchState: MatchState): PlayerStateDto {
+  static async fromDomain(
+    state: PlayerGameState,
+    matchState: MatchState,
+    getCardByIdUseCase?: GetCardByIdUseCase,
+  ): Promise<PlayerStateDto> {
     // Hide prize card IDs during SET_PRIZE_CARDS phase (only show count)
     const prizeCards =
       matchState === MatchState.SET_PRIZE_CARDS ? [] : state.prizeCards;
@@ -187,9 +194,11 @@ class PlayerStateDto {
       discardCount: state.discardPile.length,
       discardPile: state.discardPile, // Include discard pile contents
       activePokemon: state.activePokemon
-        ? PokemonInPlayDto.fromDomain(state.activePokemon)
+        ? await PokemonInPlayDto.fromDomain(state.activePokemon, getCardByIdUseCase)
         : null,
-      bench: state.bench.map((card) => PokemonInPlayDto.fromDomain(card)),
+      bench: await Promise.all(
+        state.bench.map((card) => PokemonInPlayDto.fromDomain(card, getCardByIdUseCase)),
+      ),
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
       prizeCards, // Hide prize card IDs during SET_PRIZE_CARDS phase
       attachedEnergy: state.activePokemon?.attachedEnergy || [],
@@ -230,22 +239,25 @@ class OpponentStateDto {
   drawnCards?: CardId[]; // Opponent's drawn cards during DRAWING_CARDS (if not validated)
   isDrawing?: boolean; // Indicates opponent is in process of drawing
 
-  static fromDomain(
+  static async fromDomain(
     state: PlayerGameState,
     matchState: MatchState,
     playerState: PlayerGameState | null,
     playerHasDrawnValidHand: boolean,
     opponentHasDrawnValidHand: boolean,
-  ): OpponentStateDto {
+    getCardByIdUseCase?: GetCardByIdUseCase,
+  ): Promise<OpponentStateDto> {
     const dto: OpponentStateDto = {
       handCount: state.getHandCount(),
       deckCount: state.getDeckCount(),
       discardCount: state.discardPile.length,
       discardPile: state.discardPile, // Include discard pile contents
       activePokemon: state.activePokemon
-        ? PokemonInPlayDto.fromDomain(state.activePokemon)
+        ? await PokemonInPlayDto.fromDomain(state.activePokemon, getCardByIdUseCase)
         : null,
-      bench: state.bench.map((card) => PokemonInPlayDto.fromDomain(card)),
+      bench: await Promise.all(
+        state.bench.map((card) => PokemonInPlayDto.fromDomain(card, getCardByIdUseCase)),
+      ),
       benchCount: state.bench.length,
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
       attachedEnergy: state.activePokemon?.attachedEnergy || [],
@@ -313,13 +325,30 @@ class PokemonInPlayDto {
   statusEffect: string;
   damageCounters: number;
 
-  static fromDomain(card: CardInstance): PokemonInPlayDto {
+  static async fromDomain(
+    card: CardInstance,
+    getCardByIdUseCase?: GetCardByIdUseCase,
+  ): Promise<PokemonInPlayDto> {
+    // Always fetch the correct maxHp from card data to fix any incorrect stored values
+    let correctMaxHp = card.maxHp;
+    if (getCardByIdUseCase) {
+      try {
+        const cardDetail = await getCardByIdUseCase.execute(card.cardId);
+        if (cardDetail.hp !== undefined) {
+          correctMaxHp = cardDetail.hp;
+        }
+      } catch (error) {
+        // If card lookup fails, use the stored maxHp as fallback
+        // This can happen in test environments or if card data is missing
+      }
+    }
+
     return {
       instanceId: card.instanceId,
       cardId: card.cardId,
       position: card.position,
       currentHp: card.currentHp,
-      maxHp: card.maxHp,
+      maxHp: correctMaxHp,
       attachedEnergy: card.attachedEnergy,
       statusEffect: card.statusEffect,
       damageCounters: card.damageCounters,

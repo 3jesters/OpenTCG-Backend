@@ -3,6 +3,7 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import {
   Match,
@@ -50,6 +51,8 @@ import { AbilityActivationType } from '../../../card/domain/enums/ability-activa
  */
 @Injectable()
 export class ExecuteTurnActionUseCase {
+  private readonly logger = new Logger(ExecuteTurnActionUseCase.name);
+
   constructor(
     @Inject(IMatchRepository)
     private readonly matchRepository: IMatchRepository,
@@ -935,14 +938,18 @@ export class ExecuteTurnActionUseCase {
 
       // Handle PLAY_TRAINER action
       if (dto.actionType === PlayerActionType.PLAY_TRAINER) {
+        const actionData = dto.actionData as unknown as TrainerActionData;
+        const cardId = actionData.cardId;
+        
+        this.logger.log(
+          `Player ${playerIdentifier} playing trainer card: ${cardId} in match ${dto.matchId}`,
+        );
+
         if (gameState.phase !== TurnPhase.MAIN_PHASE) {
           throw new BadRequestException(
             `Cannot play trainer card in phase ${gameState.phase}. Must be MAIN_PHASE`,
           );
         }
-
-        const actionData = dto.actionData as unknown as TrainerActionData;
-        const cardId = actionData.cardId;
 
         if (!cardId) {
           throw new BadRequestException('cardId is required');
@@ -1030,6 +1037,10 @@ export class ExecuteTurnActionUseCase {
         }
 
         // Execute trainer effects using metadata-driven executor
+        this.logger.debug(
+          `Executing trainer effects for card ${cardId}: ${cardDetail.trainerEffects.map(e => e.effectType).join(', ')}`,
+        );
+        
         const result = await this.trainerEffectExecutor.executeEffects(
           cardDetail.trainerEffects,
           actionData,
@@ -1039,11 +1050,33 @@ export class ExecuteTurnActionUseCase {
 
         // Remove trainer card from hand and add to discard pile
         // Note: For cards with DISCARD_HAND/RETRIEVE_ENERGY, hand may have already been updated
-        const finalHand = result.playerState.hand.filter((id) => id !== cardId);
+        // Remove only the first occurrence of the played card (to handle duplicates correctly)
+        const updatedHand = [...result.playerState.hand];
+        this.logger.debug(
+          `Removing trainer card ${cardId} from hand. Hand before removal: ${updatedHand.join(', ')}`,
+        );
+        const cardIndexInUpdatedHand = updatedHand.indexOf(cardId);
+        if (cardIndexInUpdatedHand === -1) {
+          // Card might have been removed by an effect (shouldn't happen, but handle gracefully)
+          this.logger.warn(
+            `Played trainer card ${cardId} not found in hand after effects executed. Hand: ${updatedHand.join(', ')}`,
+          );
+          // Continue without removing (card was already removed by effect)
+        } else {
+          updatedHand.splice(cardIndexInUpdatedHand, 1);
+          this.logger.debug(
+            `Removed trainer card at index ${cardIndexInUpdatedHand}. Hand after removal: ${updatedHand.join(', ')}`,
+          );
+        }
+        const finalHand = updatedHand;
         const finalDiscardPile = [...result.playerState.discardPile, cardId];
         const finalPlayerState = result.playerState
           .withHand(finalHand)
           .withDiscardPile(finalDiscardPile);
+        
+        this.logger.log(
+          `Trainer card ${cardId} played successfully. Hand: ${finalHand.length} cards, Discard: ${finalDiscardPile.length} cards`,
+        );
 
         // Update game state
         const updatedGameState =

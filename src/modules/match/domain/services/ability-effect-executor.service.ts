@@ -549,15 +549,26 @@ export class AbilityEffectExecutorService {
       if (!energyActionData.selectedCardIds || energyActionData.selectedCardIds.length === 0) {
         throw new BadRequestException('selectedCardIds is required when source is hand');
       }
-      energyCards = energyActionData.selectedCardIds.slice(0, count);
-      // Validate cards are in hand
+      
+      // Validate that we have the correct number of selected cards
+      if (energyActionData.selectedCardIds.length !== count) {
+        throw new BadRequestException(
+          `Expected ${count} energy card(s) to be selected, but got ${energyActionData.selectedCardIds.length}`,
+        );
+      }
+      
+      energyCards = energyActionData.selectedCardIds;
+      
+      // First, validate that all selected cards are in hand
       for (const cardId of energyCards) {
         if (!playerState.hand.includes(cardId)) {
           throw new BadRequestException(`Selected card ${cardId} is not in hand`);
         }
       }
+      
       // Validate energy type restrictions
       if (effect.energyType) {
+        // Validate all selected cards match the energy type
         for (const cardId of energyCards) {
           const card = await this.getCardByIdUseCase.getCardEntity(cardId);
           if (card.cardType !== CardType.ENERGY) {
@@ -569,22 +580,67 @@ export class AbilityEffectExecutorService {
             );
           }
         }
+        
+        // Count how many matching energy cards are in hand (for error message if needed)
+        let matchingCount = 0;
+        for (const cardId of playerState.hand) {
+          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          if (card.cardType === CardType.ENERGY && card.energyType === effect.energyType) {
+            matchingCount++;
+          }
+        }
+        
+        // Validate we have enough matching cards in hand
+        if (matchingCount < count) {
+          throw new BadRequestException(
+            `Not enough ${effect.energyType} Energy cards in hand. Need ${count}, but only ${matchingCount} available.`,
+          );
+        }
+      } else {
+        // No energy type restriction - just validate they're energy cards
+        for (const cardId of energyCards) {
+          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          if (card.cardType !== CardType.ENERGY) {
+            throw new BadRequestException(`Selected card ${cardId} is not an Energy card`);
+          }
+        }
       }
-      updatedHand = playerState.hand.filter((id) => !energyCards.includes(id));
+      
+      // Remove exactly the selected cards (one by one to handle duplicates correctly)
+      // This removes the first occurrence of each selected card ID
+      updatedHand = [...playerState.hand];
+      for (const cardId of energyCards) {
+        const index = updatedHand.indexOf(cardId);
+        if (index === -1) {
+          throw new BadRequestException(`Selected card ${cardId} is not in hand`);
+        }
+        updatedHand.splice(index, 1);
+      }
     } else if (source === EnergySource.DISCARD) {
       // Select energy cards from discard
       if (!energyActionData.selectedCardIds || energyActionData.selectedCardIds.length === 0) {
         throw new BadRequestException('selectedCardIds is required when source is discard');
       }
-      energyCards = energyActionData.selectedCardIds.slice(0, count);
-      // Validate cards are in discard pile
+      
+      // Validate that we have the correct number of selected cards
+      if (energyActionData.selectedCardIds.length !== count) {
+        throw new BadRequestException(
+          `Expected ${count} energy card(s) to be selected, but got ${energyActionData.selectedCardIds.length}`,
+        );
+      }
+      
+      energyCards = energyActionData.selectedCardIds;
+      
+      // First, validate that all selected cards are in discard pile
       for (const cardId of energyCards) {
         if (!playerState.discardPile.includes(cardId)) {
           throw new BadRequestException(`Selected card ${cardId} is not in discard pile`);
         }
       }
+      
       // Validate energy type restrictions
       if (effect.energyType) {
+        // Validate all selected cards match the energy type
         for (const cardId of energyCards) {
           const card = await this.getCardByIdUseCase.getCardEntity(cardId);
           if (card.cardType !== CardType.ENERGY) {
@@ -596,8 +652,42 @@ export class AbilityEffectExecutorService {
             );
           }
         }
+        
+        // Count how many matching energy cards are in discard pile (for error message if needed)
+        let matchingCount = 0;
+        for (const cardId of playerState.discardPile) {
+          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          if (card.cardType === CardType.ENERGY && card.energyType === effect.energyType) {
+            matchingCount++;
+          }
+        }
+        
+        // Validate we have enough matching cards in discard pile
+        if (matchingCount < count) {
+          throw new BadRequestException(
+            `Not enough ${effect.energyType} Energy cards in discard pile. Need ${count}, but only ${matchingCount} available.`,
+          );
+        }
+      } else {
+        // No energy type restriction - just validate they're energy cards
+        for (const cardId of energyCards) {
+          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          if (card.cardType !== CardType.ENERGY) {
+            throw new BadRequestException(`Selected card ${cardId} is not an Energy card`);
+          }
+        }
       }
-      updatedDiscardPile = playerState.discardPile.filter((id) => !energyCards.includes(id));
+      
+      // Remove exactly the selected cards (one by one to handle duplicates correctly)
+      // This removes the first occurrence of each selected card ID
+      updatedDiscardPile = [...playerState.discardPile];
+      for (const cardId of energyCards) {
+        const index = updatedDiscardPile.indexOf(cardId);
+        if (index === -1) {
+          throw new BadRequestException(`Selected card ${cardId} is not in discard pile`);
+        }
+        updatedDiscardPile.splice(index, 1);
+      }
     } else if (source === EnergySource.SELF) {
       // Move energy from the Pokemon using the ability
       // Find the source Pokemon (the one using the ability)
@@ -805,10 +895,15 @@ export class AbilityEffectExecutorService {
       }
     }
 
-    // Remove cards from hand
-    const updatedHand = playerState.hand.filter(
-      (id) => !discardActionData.handCardIds.includes(id),
-    );
+    // Remove exactly the selected cards (one by one to handle duplicates correctly)
+    const updatedHand = [...playerState.hand];
+    for (const cardId of discardActionData.handCardIds) {
+      const index = updatedHand.indexOf(cardId);
+      if (index === -1) {
+        throw new BadRequestException(`Card ${cardId} is not in hand`);
+      }
+      updatedHand.splice(index, 1);
+    }
 
     // Add cards to discard pile
     const updatedDiscardPile = [...playerState.discardPile, ...discardActionData.handCardIds];
@@ -839,8 +934,12 @@ export class AbilityEffectExecutorService {
     }
 
     const count = effect.count || 1;
-    if (attachActionData.selectedCardIds.length > count) {
-      throw new BadRequestException(`ATTACH_FROM_DISCARD can attach at most ${count} card(s)`);
+    
+    // Validate that we have the correct number of selected cards
+    if (attachActionData.selectedCardIds.length !== count) {
+      throw new BadRequestException(
+        `Expected ${count} energy card(s) to be selected, but got ${attachActionData.selectedCardIds.length}`,
+      );
     }
 
     // Validate all cards are in discard pile
@@ -889,10 +988,15 @@ export class AbilityEffectExecutorService {
       throw new BadRequestException('Target Pokemon not found');
     }
 
-    // Remove cards from discard pile
-    const updatedDiscardPile = playerState.discardPile.filter(
-      (id) => !attachActionData.selectedCardIds.includes(id),
-    );
+    // Remove only the selected cards (one by one to handle duplicates correctly)
+    const updatedDiscardPile = [...playerState.discardPile];
+    for (const cardId of attachActionData.selectedCardIds) {
+      const index = updatedDiscardPile.indexOf(cardId);
+      if (index === -1) {
+        throw new BadRequestException(`Selected card ${cardId} is not in discard pile`);
+      }
+      updatedDiscardPile.splice(index, 1);
+    }
 
     // Attach energy to target Pokemon
     const updatedEnergy = [...targetPokemon.attachedEnergy, ...attachActionData.selectedCardIds];
