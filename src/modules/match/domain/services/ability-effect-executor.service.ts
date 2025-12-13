@@ -279,12 +279,15 @@ export class AbilityEffectExecutorService {
       throw new BadRequestException('Target Pokemon not found');
     }
 
-    // Calculate new HP
-    const currentDamageFromHp = targetPokemon.maxHp - targetPokemon.currentHp;
-    const newDamageFromHp = Math.max(0, currentDamageFromHp - healAmount);
-    const newHp = Math.min(targetPokemon.maxHp, targetPokemon.maxHp - newDamageFromHp);
+    // Calculate new HP after healing
+    // Heal removes damage, so new HP = current HP + heal amount (capped at maxHp)
+    const newHp = Math.min(
+      targetPokemon.maxHp,
+      targetPokemon.currentHp + healAmount,
+    );
 
-    const finalPokemon = targetPokemon.withDamageCounters(newDamageFromHp).withHp(newHp);
+    // Update HP (damageCounters is calculated automatically)
+    const finalPokemon = targetPokemon.withHp(newHp);
 
     // Update state
     if (isOpponent) {
@@ -829,8 +832,8 @@ export class AbilityEffectExecutorService {
       benchPokemon.maxHp,
       benchPokemon.attachedEnergy,
       benchPokemon.statusEffect,
-      benchPokemon.damageCounters,
       benchPokemon.evolutionChain,
+      benchPokemon.poisonDamageAmount,
     );
 
     // Map bench index to PokemonPosition enum
@@ -851,8 +854,8 @@ export class AbilityEffectExecutorService {
       activePokemon.maxHp,
       activePokemon.attachedEnergy,
       activePokemon.statusEffect,
-      activePokemon.damageCounters,
       activePokemon.evolutionChain,
+      activePokemon.poisonDamageAmount,
     );
 
     const updatedBench = [...playerState.bench];

@@ -14,8 +14,8 @@ export class CardInstance {
     public readonly maxHp: number, // Maximum HP from card
     public readonly attachedEnergy: string[], // Array of energy card IDs attached
     public readonly statusEffect: StatusEffect, // Current status condition
-    public readonly damageCounters: number, // Number of damage counters
     public readonly evolutionChain: string[] = [], // Array of card IDs that this Pokemon evolved from (for reference)
+    public readonly poisonDamageAmount?: number, // Poison damage amount (10 or 20), only set if POISONED
   ) {
     this.validate();
   }
@@ -36,16 +36,31 @@ export class CardInstance {
     if (this.currentHp > this.maxHp) {
       throw new Error('Current HP cannot exceed max HP');
     }
-    if (this.damageCounters < 0) {
-      throw new Error('Damage counters cannot be negative');
+    if (this.poisonDamageAmount !== undefined) {
+      if (this.poisonDamageAmount !== 10 && this.poisonDamageAmount !== 20) {
+        throw new Error('Poison damage amount must be 10 or 20');
+      }
+      // If poisonDamageAmount is set, statusEffect should be POISONED
+      if (this.statusEffect !== StatusEffect.POISONED) {
+        throw new Error('poisonDamageAmount can only be set when statusEffect is POISONED');
+      }
     }
+    // If statusEffect is POISONED, poisonDamageAmount should be set (but we allow undefined for backward compatibility)
+  }
+
+  /**
+   * Get damage counters (computed from HP)
+   * Damage counters = maxHp - currentHp
+   */
+  getDamageCounters(): number {
+    return this.maxHp - this.currentHp;
   }
 
   /**
    * Check if this Pokemon is knocked out
    */
   isKnockedOut(): boolean {
-    return this.currentHp <= 0 || this.damageCounters >= this.maxHp;
+    return this.currentHp <= 0 || this.getDamageCounters() >= this.maxHp;
   }
 
   /**
@@ -72,25 +87,8 @@ export class CardInstance {
       this.maxHp,
       this.attachedEnergy,
       this.statusEffect,
-      this.damageCounters,
       this.evolutionChain,
-    );
-  }
-
-  /**
-   * Create a new CardInstance with updated damage counters
-   */
-  withDamageCounters(damage: number): CardInstance {
-    return new CardInstance(
-      this.instanceId,
-      this.cardId,
-      this.position,
-      this.currentHp,
-      this.maxHp,
-      this.attachedEnergy,
-      this.statusEffect,
-      damage,
-      this.evolutionChain,
+      this.poisonDamageAmount,
     );
   }
 
@@ -106,15 +104,15 @@ export class CardInstance {
       this.maxHp,
       energyCardIds,
       this.statusEffect,
-      this.damageCounters,
       this.evolutionChain,
+      this.poisonDamageAmount,
     );
   }
 
   /**
    * Create a new CardInstance with updated status effect
    */
-  withStatusEffect(status: StatusEffect): CardInstance {
+  withStatusEffect(status: StatusEffect, poisonDamageAmount?: number): CardInstance {
     return new CardInstance(
       this.instanceId,
       this.cardId,
@@ -123,8 +121,8 @@ export class CardInstance {
       this.maxHp,
       this.attachedEnergy,
       status,
-      this.damageCounters,
       this.evolutionChain,
+      poisonDamageAmount, // Set poison damage amount when applying POISONED status
     );
   }
 
@@ -140,8 +138,8 @@ export class CardInstance {
       this.maxHp,
       this.attachedEnergy,
       this.statusEffect,
-      this.damageCounters,
       this.evolutionChain,
+      this.poisonDamageAmount,
     );
   }
 

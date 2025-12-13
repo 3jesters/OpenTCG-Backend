@@ -38,6 +38,8 @@ import {
   MatchState,
   PlayerActionType,
   TurnPhase,
+  CoinFlipStatus,
+  CoinFlipContext,
 } from '../../domain';
 import { MatchStateMachineService } from '../../domain/services';
 
@@ -221,6 +223,8 @@ export class MatchController {
                   ]
                 : []),
             ],
+            player1State: match.gameState.player1State,
+            player2State: match.gameState.player2State,
           }
         : undefined,
       match.currentPlayer || undefined,
@@ -255,6 +259,18 @@ export class MatchController {
       if (match.currentPlayer !== playerIdentifier) {
         // Not player's turn - only show CONCEDE
         return [PlayerActionType.CONCEDE];
+      }
+      
+      // Add GENERATE_COIN_FLIP if coin flip is ready for ATTACK context (both players can approve)
+      // STATUS_CHECK contexts (confusion/sleep) are handled automatically - coin flip state is created
+      // automatically, client can call GENERATE_COIN_FLIP when coinFlipState exists, but it doesn't need to be in availableActions
+      if (match.gameState?.coinFlipState && match.gameState.coinFlipState.status === CoinFlipStatus.READY_TO_FLIP) {
+        const coinFlipContext = match.gameState.coinFlipState.context;
+        if (coinFlipContext === CoinFlipContext.ATTACK) {
+          if (!actions.includes(PlayerActionType.GENERATE_COIN_FLIP)) {
+            actions.push(PlayerActionType.GENERATE_COIN_FLIP);
+          }
+        }
       }
       
       // Filter out ATTACH_ENERGY if energy was already attached this turn

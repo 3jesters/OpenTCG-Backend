@@ -12,7 +12,7 @@ describe('CardInstance Value Object', () => {
         60,
         [],
         StatusEffect.NONE,
-        10,
+        [],
       );
 
       expect(card.instanceId).toBe('instance-001');
@@ -22,7 +22,7 @@ describe('CardInstance Value Object', () => {
       expect(card.maxHp).toBe(60);
       expect(card.attachedEnergy).toEqual([]);
       expect(card.statusEffect).toBe(StatusEffect.NONE);
-      expect(card.damageCounters).toBe(10);
+      expect(card.getDamageCounters()).toBe(10); // 60 - 50 = 10
     });
 
     it('should throw error if instanceId is empty', () => {
@@ -35,7 +35,6 @@ describe('CardInstance Value Object', () => {
           60,
           [],
           StatusEffect.NONE,
-          0,
         );
       }).toThrow('Instance ID is required');
     });
@@ -100,7 +99,7 @@ describe('CardInstance Value Object', () => {
       }).toThrow('Current HP cannot exceed max HP');
     });
 
-    it('should throw error if damageCounters is negative', () => {
+    it('should throw error if poisonDamageAmount is invalid', () => {
       expect(() => {
         new CardInstance(
           'instance-001',
@@ -109,10 +108,11 @@ describe('CardInstance Value Object', () => {
           50,
           60,
           [],
-          StatusEffect.NONE,
-          -5,
+          StatusEffect.POISONED,
+          [],
+          15, // Invalid: must be 10 or 20
         );
-      }).toThrow('Damage counters cannot be negative');
+      }).toThrow('Poison damage amount must be 10 or 20');
     });
   });
 
@@ -137,27 +137,25 @@ describe('CardInstance Value Object', () => {
         'instance-001',
         'card-001',
         PokemonPosition.ACTIVE,
-        10,
+        0, // currentHp = 0 means damageCounters = 60 (maxHp - currentHp)
         60,
         [],
         StatusEffect.NONE,
-        60,
       );
 
       expect(card.isKnockedOut()).toBe(true);
     });
 
     it('should return false when Pokemon is healthy', () => {
-      const card = new CardInstance(
-        'instance-001',
-        'card-001',
-        PokemonPosition.ACTIVE,
-        50,
-        60,
-        [],
-        StatusEffect.NONE,
-        10,
-      );
+      const card =         new CardInstance(
+          'instance-001',
+          'card-001',
+          PokemonPosition.ACTIVE,
+          50,
+          60,
+          [],
+          StatusEffect.NONE,
+        );
 
       expect(card.isKnockedOut()).toBe(false);
     });
@@ -165,16 +163,15 @@ describe('CardInstance Value Object', () => {
 
   describe('withHp', () => {
     it('should create new instance with updated HP', () => {
-      const card = new CardInstance(
-        'instance-001',
-        'card-001',
-        PokemonPosition.ACTIVE,
-        50,
-        60,
-        [],
-        StatusEffect.NONE,
-        10,
-      );
+      const card =         new CardInstance(
+          'instance-001',
+          'card-001',
+          PokemonPosition.ACTIVE,
+          50,
+          60,
+          [],
+          StatusEffect.NONE,
+        );
 
       const updated = card.withHp(40);
 
@@ -186,16 +183,15 @@ describe('CardInstance Value Object', () => {
 
   describe('withAttachedEnergy', () => {
     it('should create new instance with updated energy', () => {
-      const card = new CardInstance(
-        'instance-001',
-        'card-001',
-        PokemonPosition.ACTIVE,
-        50,
-        60,
-        [],
-        StatusEffect.NONE,
-        10,
-      );
+      const card =         new CardInstance(
+          'instance-001',
+          'card-001',
+          PokemonPosition.ACTIVE,
+          50,
+          60,
+          [],
+          StatusEffect.NONE,
+        );
 
       const updated = card.withAttachedEnergy(['energy-001', 'energy-002']);
 
@@ -206,16 +202,15 @@ describe('CardInstance Value Object', () => {
 
   describe('withStatusEffect', () => {
     it('should create new instance with updated status', () => {
-      const card = new CardInstance(
-        'instance-001',
-        'card-001',
-        PokemonPosition.ACTIVE,
-        50,
-        60,
-        [],
-        StatusEffect.NONE,
-        10,
-      );
+      const card =         new CardInstance(
+          'instance-001',
+          'card-001',
+          PokemonPosition.ACTIVE,
+          50,
+          60,
+          [],
+          StatusEffect.NONE,
+        );
 
       const updated = card.withStatusEffect(StatusEffect.POISONED);
 
@@ -226,16 +221,15 @@ describe('CardInstance Value Object', () => {
 
   describe('equals', () => {
     it('should return true for same instanceId', () => {
-      const card1 = new CardInstance(
-        'instance-001',
-        'card-001',
-        PokemonPosition.ACTIVE,
-        50,
-        60,
-        [],
-        StatusEffect.NONE,
-        10,
-      );
+      const card1 =         new CardInstance(
+          'instance-001',
+          'card-001',
+          PokemonPosition.ACTIVE,
+          50,
+          60,
+          [],
+          StatusEffect.NONE,
+        );
       const card2 = new CardInstance(
         'instance-001',
         'card-002',
@@ -251,16 +245,15 @@ describe('CardInstance Value Object', () => {
     });
 
     it('should return false for different instanceId', () => {
-      const card1 = new CardInstance(
-        'instance-001',
-        'card-001',
-        PokemonPosition.ACTIVE,
-        50,
-        60,
-        [],
-        StatusEffect.NONE,
-        10,
-      );
+      const card1 =         new CardInstance(
+          'instance-001',
+          'card-001',
+          PokemonPosition.ACTIVE,
+          50,
+          60,
+          [],
+          StatusEffect.NONE,
+        );
       const card2 = new CardInstance(
         'instance-002',
         'card-001',

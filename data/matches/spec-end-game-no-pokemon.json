@@ -19,9 +19,9 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-11T19:15:07.869Z",
+  "updatedAt": "2025-12-13T19:07:03.511Z",
   "startedAt": "2025-01-01T00:00:00.000Z",
-  "endedAt": "2025-12-11T19:15:07.869Z",
+  "endedAt": "2025-12-13T19:07:03.511Z",
   "winnerId": "test-player-1",
   "result": "PLAYER1_WIN",
   "winCondition": "NO_POKEMON",
@@ -86,10 +86,10 @@
     "phase": "END",
     "currentPlayer": "PLAYER1",
     "lastAction": {
-      "actionId": "f3cc806c-e52e-470c-9137-c2c55b83cca2",
+      "actionId": "f6a316cb-e8c7-4ae5-9ad5-0dacf5f3661e",
       "playerId": "PLAYER1",
       "actionType": "ATTACK",
-      "timestamp": "2025-12-11T19:15:07.869Z",
+      "timestamp": "2025-12-13T19:07:03.511Z",
       "actionData": {
         "attackIndex": 1,
         "damage": 60,
@@ -98,10 +98,10 @@
     },
     "actionHistory": [
       {
-        "actionId": "f3cc806c-e52e-470c-9137-c2c55b83cca2",
+        "actionId": "f6a316cb-e8c7-4ae5-9ad5-0dacf5f3661e",
         "playerId": "PLAYER1",
         "actionType": "ATTACK",
-        "timestamp": "2025-12-11T19:15:07.869Z",
+        "timestamp": "2025-12-13T19:07:03.511Z",
         "actionData": {
           "attackIndex": 1,
           "damage": 60,

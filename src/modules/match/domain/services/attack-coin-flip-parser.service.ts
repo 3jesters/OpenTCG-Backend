@@ -82,10 +82,12 @@ export class AttackCoinFlipParserService {
       );
     }
 
-    // Pattern 5: "Flip a coin. If heads, [effect]. If tails, [effect]." (status effects, no damage change)
-    // These don't affect damage calculation, so return null
+    // Pattern 5: "Flip a coin. If heads, [effect]. If tails, [effect]." (status effects)
+    // These may still have damage, but coin flip determines status effect
+    // We still need to create a coin flip configuration so both players can see it
+    // Note: text is already lowercase from line 17
     if (text.includes('flip a coin') && (text.includes('if heads') || text.includes('if tails'))) {
-      // Check if it's just status effects
+      // Check if it's status effects (damage may still apply)
       if (
         text.includes('now') &&
         (text.includes('paralyzed') ||
@@ -93,8 +95,17 @@ export class AttackCoinFlipParserService {
           text.includes('asleep') ||
           text.includes('poisoned'))
       ) {
-        // Status effect coin flip - doesn't affect damage, return null
-        return null;
+        // Status effect coin flip - damage always applies, coin flip only determines status
+        // Use STATUS_EFFECT_ONLY type (damage always applies, coin flip is for status effect)
+        const baseDamage = this.parseBaseDamage(damage);
+        return new CoinFlipConfiguration(
+          CoinFlipCountType.FIXED,
+          1,
+          undefined,
+          undefined,
+          DamageCalculationType.STATUS_EFFECT_ONLY,
+          baseDamage,
+        );
       }
     }
 

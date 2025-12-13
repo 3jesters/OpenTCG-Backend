@@ -31,6 +31,7 @@ export enum DamageCalculationType {
   MULTIPLY_BY_HEADS = 'MULTIPLY_BY_HEADS', // Base damage × number of heads
   CONDITIONAL_BONUS = 'CONDITIONAL_BONUS', // Base damage + bonus if condition met
   CONDITIONAL_SELF_DAMAGE = 'CONDITIONAL_SELF_DAMAGE', // Self damage on tails
+  STATUS_EFFECT_ONLY = 'STATUS_EFFECT_ONLY', // Damage always applies, coin flip only affects status effect
 }
 
 /**

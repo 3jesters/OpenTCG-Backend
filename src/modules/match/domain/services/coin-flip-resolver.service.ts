@@ -1,4 +1,4 @@
-import { CoinFlipConfiguration, CoinFlipCountType, VariableCoinCountSource } from '../value-objects/coin-flip-configuration.value-object';
+import { CoinFlipConfiguration, CoinFlipCountType, VariableCoinCountSource, DamageCalculationType } from '../value-objects/coin-flip-configuration.value-object';
 import { CoinFlipResult } from '../value-objects/coin-flip-result.value-object';
 import { PlayerGameState } from '../value-objects/player-game-state.value-object';
 import { EnergyType } from '../../../card/domain/enums';
@@ -138,24 +138,28 @@ export class CoinFlipResolverService {
     const hasTails = results.some((r) => r.isTails());
 
     switch (configuration.damageCalculationType) {
-      case 'BASE_DAMAGE':
+      case DamageCalculationType.BASE_DAMAGE:
         // If tails, attack does nothing (0 damage)
         // If heads, use base damage
         return hasTails ? 0 : baseDamage;
 
-      case 'MULTIPLY_BY_HEADS':
+      case DamageCalculationType.MULTIPLY_BY_HEADS:
         // Damage = damagePerHead × number of heads
         return (configuration.damagePerHead || 0) * headsCount;
 
-      case 'CONDITIONAL_BONUS':
+      case DamageCalculationType.CONDITIONAL_BONUS:
         // Base damage + bonus if condition met (e.g., if heads)
         if (hasTails) {
           return baseDamage; // Base damage even on tails
         }
         return baseDamage + (configuration.conditionalBonus || 0);
 
-      case 'CONDITIONAL_SELF_DAMAGE':
+      case DamageCalculationType.CONDITIONAL_SELF_DAMAGE:
         // Base damage, but self-damage on tails (handled separately)
+        return baseDamage;
+
+      case DamageCalculationType.STATUS_EFFECT_ONLY:
+        // Damage always applies, coin flip only affects status effect
         return baseDamage;
 
       default:
@@ -173,10 +177,14 @@ export class CoinFlipResolverService {
   ): boolean {
     // If we have a BASE_DAMAGE type and tails appeared, attack does nothing
     if (
-      configuration.damageCalculationType === 'BASE_DAMAGE' &&
+      configuration.damageCalculationType === DamageCalculationType.BASE_DAMAGE &&
       results.some((r) => r.isTails())
     ) {
       return false;
+    }
+    // STATUS_EFFECT_ONLY always proceeds (damage always applies)
+    if (configuration.damageCalculationType === DamageCalculationType.STATUS_EFFECT_ONLY) {
+      return true;
     }
     return true;
   }

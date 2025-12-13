@@ -95,8 +95,9 @@ export interface CardInstanceJson {
   maxHp: number;
   attachedEnergy: string[];
   statusEffect: StatusEffect;
-  damageCounters: number;
+  damageCounters?: number; // Optional for backward compatibility (calculated from HP if not present)
   evolutionChain?: string[]; // Optional for backward compatibility
+  poisonDamageAmount?: number; // Optional, poison damage amount (10 or 20)
 }
 
 /**
@@ -122,6 +123,8 @@ export interface CoinFlipStateJson {
   pokemonInstanceId?: string;
   statusEffect?: string;
   actionId?: string;
+  player1HasApproved?: boolean;
+  player2HasApproved?: boolean;
 }
 
 /**
@@ -340,8 +343,9 @@ export class MatchMapper {
       maxHp: card.maxHp,
       attachedEnergy: card.attachedEnergy,
       statusEffect: card.statusEffect,
-      damageCounters: card.damageCounters,
+      damageCounters: card.getDamageCounters(), // Calculate from HP for backward compatibility
       evolutionChain: card.evolutionChain || [],
+      poisonDamageAmount: card.poisonDamageAmount,
     };
   }
 
@@ -349,6 +353,16 @@ export class MatchMapper {
    * Convert JSON to CardInstance
    */
   private static cardInstanceFromJson(json: CardInstanceJson): CardInstance {
+    // Calculate damageCounters from HP for backward compatibility (if not present in JSON)
+    // Note: We don't use damageCounters in CardInstance anymore, but we validate it matches
+    const calculatedDamageCounters = json.maxHp - json.currentHp;
+    if (json.damageCounters !== undefined && json.damageCounters !== calculatedDamageCounters) {
+      // Log warning but use calculated value (HP is source of truth)
+      console.warn(
+        `CardInstance ${json.instanceId}: damageCounters mismatch. JSON: ${json.damageCounters}, Calculated: ${calculatedDamageCounters}. Using calculated value.`,
+      );
+    }
+    
     return new CardInstance(
       json.instanceId,
       json.cardId,
@@ -357,8 +371,8 @@ export class MatchMapper {
       json.maxHp,
       json.attachedEnergy,
       json.statusEffect,
-      json.damageCounters,
       json.evolutionChain || [],
+      json.poisonDamageAmount,
     );
   }
 
@@ -401,6 +415,8 @@ export class MatchMapper {
       pokemonInstanceId: state.pokemonInstanceId,
       statusEffect: state.statusEffect,
       actionId: state.actionId,
+      player1HasApproved: state.player1HasApproved,
+      player2HasApproved: state.player2HasApproved,
     };
   }
 
@@ -409,14 +425,16 @@ export class MatchMapper {
    */
   private static coinFlipStateFromJson(json: CoinFlipStateJson): CoinFlipState {
     return new CoinFlipState(
-      json.status,
-      json.context,
+      this.validateCoinFlipStatus(json.status),
+      this.validateCoinFlipContext(json.context),
       this.coinFlipConfigurationFromJson(json.configuration),
       json.results.map((r) => this.coinFlipResultFromJson(r)),
       json.attackIndex,
       json.pokemonInstanceId,
       json.statusEffect,
       json.actionId,
+      json.player1HasApproved ?? false,
+      json.player2HasApproved ?? false,
     );
   }
 
@@ -464,16 +482,66 @@ export class MatchMapper {
     json: CoinFlipConfigurationJson,
   ): CoinFlipConfiguration {
     return new CoinFlipConfiguration(
-      json.countType,
+      this.validateCoinFlipCountType(json.countType),
       json.fixedCount,
-      json.variableSource,
+      json.variableSource ? this.validateVariableCoinCountSource(json.variableSource) : undefined,
       json.energyType,
-      json.damageCalculationType,
+      this.validateDamageCalculationType(json.damageCalculationType),
       json.baseDamage,
       json.damagePerHead,
       json.conditionalBonus,
       json.selfDamageOnTails,
     );
+  }
+
+  /**
+   * Validate and convert string to CoinFlipStatus enum
+   */
+  private static validateCoinFlipStatus(value: string): CoinFlipStatus {
+    if (Object.values(CoinFlipStatus).includes(value as CoinFlipStatus)) {
+      return value as CoinFlipStatus;
+    }
+    throw new Error(`Invalid CoinFlipStatus: ${value}`);
+  }
+
+  /**
+   * Validate and convert string to CoinFlipContext enum
+   */
+  private static validateCoinFlipContext(value: string): CoinFlipContext {
+    if (Object.values(CoinFlipContext).includes(value as CoinFlipContext)) {
+      return value as CoinFlipContext;
+    }
+    throw new Error(`Invalid CoinFlipContext: ${value}`);
+  }
+
+  /**
+   * Validate and convert string to CoinFlipCountType enum
+   */
+  private static validateCoinFlipCountType(value: string): CoinFlipCountType {
+    if (Object.values(CoinFlipCountType).includes(value as CoinFlipCountType)) {
+      return value as CoinFlipCountType;
+    }
+    throw new Error(`Invalid CoinFlipCountType: ${value}`);
+  }
+
+  /**
+   * Validate and convert string to VariableCoinCountSource enum
+   */
+  private static validateVariableCoinCountSource(value: string): VariableCoinCountSource {
+    if (Object.values(VariableCoinCountSource).includes(value as VariableCoinCountSource)) {
+      return value as VariableCoinCountSource;
+    }
+    throw new Error(`Invalid VariableCoinCountSource: ${value}`);
+  }
+
+  /**
+   * Validate and convert string to DamageCalculationType enum
+   */
+  private static validateDamageCalculationType(value: string): DamageCalculationType {
+    if (Object.values(DamageCalculationType).includes(value as DamageCalculationType)) {
+      return value as DamageCalculationType;
+    }
+    throw new Error(`Invalid DamageCalculationType: ${value}`);
   }
 }
 

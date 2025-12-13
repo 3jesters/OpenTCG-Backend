@@ -423,19 +423,15 @@ export class TrainerEffectExecutorService {
       throw new BadRequestException('Target Pokemon not found');
     }
 
-    // Calculate current damage from HP (damageCounters may be out of sync)
-    // damageCounters stores HP amount of damage, same as healAmount
-    const currentDamageFromHp = targetPokemon.maxHp - targetPokemon.currentHp;
-    const newDamageFromHp = Math.max(0, currentDamageFromHp - healAmount);
+    // Calculate new HP after healing
+    // Heal removes damage, so new HP = current HP + heal amount (capped at maxHp)
     const newHp = Math.min(
       targetPokemon.maxHp,
-      targetPokemon.maxHp - newDamageFromHp,
+      targetPokemon.currentHp + healAmount,
     );
     
-    // Update both damageCounters and HP to keep them in sync
-    const finalPokemon = targetPokemon
-      .withDamageCounters(newDamageFromHp)
-      .withHp(newHp);
+    // Update HP (damageCounters is calculated automatically)
+    const finalPokemon = targetPokemon.withHp(newHp);
 
     // Update state
     if (isOpponent) {
@@ -795,8 +791,8 @@ export class TrainerEffectExecutorService {
       benchPokemon.maxHp,
       benchPokemon.attachedEnergy,
       benchPokemon.statusEffect,
-      benchPokemon.damageCounters,
       benchPokemon.evolutionChain,
+      benchPokemon.poisonDamageAmount,
     );
 
     const newBench = new CardInstance(
@@ -807,8 +803,8 @@ export class TrainerEffectExecutorService {
       activePokemon.maxHp,
       activePokemon.attachedEnergy,
       activePokemon.statusEffect,
-      activePokemon.damageCounters,
       activePokemon.evolutionChain,
+      activePokemon.poisonDamageAmount,
     );
 
     const updatedBench = [...playerState.bench];
@@ -855,8 +851,8 @@ export class TrainerEffectExecutorService {
       benchPokemon.maxHp,
       benchPokemon.attachedEnergy,
       benchPokemon.statusEffect,
-      benchPokemon.damageCounters,
       benchPokemon.evolutionChain,
+      benchPokemon.poisonDamageAmount,
     );
 
     const newBench = new CardInstance(
@@ -867,8 +863,8 @@ export class TrainerEffectExecutorService {
       activePokemon.maxHp,
       activePokemon.attachedEnergy,
       activePokemon.statusEffect,
-      activePokemon.damageCounters,
       activePokemon.evolutionChain,
+      activePokemon.poisonDamageAmount,
     );
 
     const updatedBench = [...opponentState.bench];
@@ -933,7 +929,7 @@ export class TrainerEffectExecutorService {
       throw new BadRequestException('Target Pokemon not found');
     }
 
-    // Remove status effect
+    // Remove status effect (also clear poison damage amount if was poisoned)
     const curedPokemon = new CardInstance(
       targetPokemon.instanceId,
       targetPokemon.cardId,
@@ -942,8 +938,8 @@ export class TrainerEffectExecutorService {
       targetPokemon.maxHp,
       targetPokemon.attachedEnergy,
       StatusEffect.NONE,
-      targetPokemon.damageCounters,
       targetPokemon.evolutionChain,
+      undefined, // Clear poison damage amount when status is cured
     );
 
     if (isOpponent) {
@@ -1112,8 +1108,8 @@ export class TrainerEffectExecutorService {
           pokemon.maxHp,
           pokemon.attachedEnergy,
           pokemon.statusEffect,
-          pokemon.damageCounters,
           pokemon.evolutionChain,
+          pokemon.poisonDamageAmount,
         );
       });
       const newActiveInstance = new CardInstance(
@@ -1124,8 +1120,8 @@ export class TrainerEffectExecutorService {
         newActive.maxHp,
         newActive.attachedEnergy,
         newActive.statusEffect,
-        newActive.damageCounters,
         newActive.evolutionChain,
+        newActive.poisonDamageAmount,
       );
       return {
         playerState: playerState
@@ -1149,8 +1145,8 @@ export class TrainerEffectExecutorService {
           pokemon.maxHp,
           pokemon.attachedEnergy,
           pokemon.statusEffect,
-          pokemon.damageCounters,
           pokemon.evolutionChain,
+          pokemon.poisonDamageAmount,
         );
       });
       return {
@@ -1220,8 +1216,8 @@ export class TrainerEffectExecutorService {
       targetPokemon.maxHp, // Will need to update maxHp from card data, but keeping for now
       targetPokemon.attachedEnergy,
       targetPokemon.statusEffect,
-      targetPokemon.damageCounters,
       evolutionChain, // Add evolution chain
+      targetPokemon.poisonDamageAmount, // Preserve poison damage amount
     );
 
     // Update state
@@ -1330,7 +1326,6 @@ export class TrainerEffectExecutorService {
       defaultHp,
       [],
       StatusEffect.NONE,
-      0,
     );
 
     const updatedTargetBench = [...targetBench, newPokemon];

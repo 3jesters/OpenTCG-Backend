@@ -19,7 +19,7 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-12-09T12:25:06.696Z",
-  "updatedAt": "2025-12-11T19:15:06.744Z",
+  "updatedAt": "2025-12-13T19:07:04.131Z",
   "startedAt": null,
   "endedAt": null,
   "winnerId": null,
@@ -29,19 +29,6 @@
   "gameState": {
     "player1State": {
       "deck": [
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-vulpix--70",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-ponyta--62",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-gust-of-wind--94",
-        "pokemon-base-set-v1.0-bill--92",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-energy-removal--93",
-        "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-magmar--36",
         "pokemon-base-set-v1.0-fire-energy--99",
@@ -78,9 +65,21 @@
         "pokemon-base-set-v1.0-charmeleon--24",
         "pokemon-base-set-v1.0-switch--96",
         "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-charizard--4",
         "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-vulpix--70",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-gust-of-wind--94",
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-energy-removal--93",
+        "pokemon-base-set-v1.0-bill--92",
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
       "activePokemon": {
@@ -90,10 +89,11 @@
         "currentHp": 20,
         "maxHp": 50,
         "attachedEnergy": [
+          "pokemon-base-set-v1.0-fire-energy--99",
           "pokemon-base-set-v1.0-fire-energy--99"
         ],
         "statusEffect": "NONE",
-        "damageCounters": 0,
+        "damageCounters": 30,
         "evolutionChain": []
       },
       "bench": [
@@ -110,27 +110,19 @@
         }
       ],
       "prizeCards": [
-        "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-bill--92",
         "pokemon-base-set-v1.0-energy-retrieval--83",
         "pokemon-base-set-v1.0-potion--90",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-energy-retrieval--83"
       ],
-      "discardPile": [],
+      "discardPile": [
+        "pokemon-base-set-v1.0-fire-energy--99",
+        "pokemon-base-set-v1.0-ponyta--62"
+      ],
       "hasAttachedEnergyThisTurn": false
     },
     "player2State": {
       "deck": [
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-squirtle--65",
-        "pokemon-base-set-v1.0-wartortle--44",
-        "pokemon-base-set-v1.0-poliwrath--13",
-        "pokemon-base-set-v1.0-poliwhirl--40",
-        "pokemon-base-set-v1.0-starmie--66",
-        "pokemon-base-set-v1.0-magikarp--35",
-        "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-water-energy--103",
@@ -169,14 +161,15 @@
       ],
       "hand": [
         "pokemon-base-set-v1.0-bill--92",
-        "pokemon-base-set-v1.0-bill--92",
         "pokemon-base-set-v1.0-energy-retrieval--83",
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
         "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-pokemon-breeder--78"
+        "pokemon-base-set-v1.0-poliwhirl--40",
+        "pokemon-base-set-v1.0-starmie--66",
+        "pokemon-base-set-v1.0-water-energy--103"
       ],
       "activePokemon": {
-        "instanceId": "9d7f71f4-cf50-4b84-ae45-24a4713241ad",
+        "instanceId": "c0e6c45e-e092-4a33-b5bd-2c142257b103",
         "cardId": "pokemon-base-set-v1.0-nidoran--57",
         "position": "ACTIVE",
         "currentHp": 40,
@@ -188,7 +181,19 @@
         "damageCounters": 0,
         "evolutionChain": []
       },
-      "bench": [],
+      "bench": [
+        {
+          "instanceId": "6d2106a3-7e66-4fd0-a1aa-e92e02ab863b",
+          "cardId": "pokemon-base-set-v1.0-poliwrath--13",
+          "position": "BENCH_0",
+          "currentHp": 90,
+          "maxHp": 90,
+          "attachedEnergy": [],
+          "statusEffect": "NONE",
+          "damageCounters": 0,
+          "evolutionChain": []
+        }
+      ],
       "prizeCards": [
         "pokemon-base-set-v1.0-energy-removal--93",
         "pokemon-base-set-v1.0-bill--92",
@@ -198,18 +203,24 @@
         "pokemon-base-set-v1.0-seel--43"
       ],
       "discardPile": [
-        "pokemon-base-set-v1.0-pokemon-breeder--78"
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-blastoise--2",
+        "pokemon-base-set-v1.0-squirtle--65",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-magikarp--35"
       ],
-      "hasAttachedEnergyThisTurn": true
+      "hasAttachedEnergyThisTurn": false
     },
     "turnNumber": 1,
     "phase": "END",
     "currentPlayer": "PLAYER2",
     "lastAction": {
-      "actionId": "49f67a0c-24dd-4fcc-9345-f84450a15949",
+      "actionId": "14f511b3-6703-45af-8250-7882f3454e73",
       "playerId": "PLAYER2",
       "actionType": "ATTACK",
-      "timestamp": "2025-12-11T19:15:06.744Z",
+      "timestamp": "2025-12-13T19:07:04.131Z",
       "actionData": {
         "attackIndex": 0,
         "damage": 30,
@@ -227,17 +238,17 @@
         "actionId": "coin-flip-heads-0000-turn1-action0",
         "playerId": "PLAYER2",
         "actionType": "ATTACK",
-        "timestamp": "2025-12-11T19:15:06.265Z",
+        "timestamp": "2025-12-13T19:07:02.100Z",
         "actionData": {
           "attackIndex": 0,
           "coinFlipRequired": true
         }
       },
       {
-        "actionId": "49f67a0c-24dd-4fcc-9345-f84450a15949",
+        "actionId": "14f511b3-6703-45af-8250-7882f3454e73",
         "playerId": "PLAYER2",
         "actionType": "ATTACK",
-        "timestamp": "2025-12-11T19:15:06.744Z",
+        "timestamp": "2025-12-13T19:07:04.131Z",
         "actionData": {
           "attackIndex": 0,
           "damage": 30,
@@ -254,9 +265,7 @@
     "coinFlipState": null,
     "abilityUsageThisTurn": {
       "PLAYER1": [],
-      "PLAYER2": [
-        "pokemon-base-set-v1.0-blastoise--2"
-      ]
+      "PLAYER2": []
     }
   }
 }

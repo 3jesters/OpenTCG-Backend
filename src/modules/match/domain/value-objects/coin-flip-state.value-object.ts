@@ -1,6 +1,6 @@
 import { CoinFlipStatus } from '../enums/coin-flip-status.enum';
 import { CoinFlipContext } from '../enums/coin-flip-context.enum';
-import { CoinFlipConfiguration } from './coin-flip-configuration.value-object';
+import { CoinFlipConfiguration, CoinFlipCountType } from './coin-flip-configuration.value-object';
 import { CoinFlipResult } from './coin-flip-result.value-object';
 
 /**
@@ -18,6 +18,9 @@ export class CoinFlipState {
     public readonly pokemonInstanceId?: string, // For STATUS_CHECK context
     public readonly statusEffect?: string, // For STATUS_CHECK context
     public readonly actionId?: string, // ID of the action that triggered this coin flip
+    // Approval tracking (for attack coin flips requiring both players to see)
+    public readonly player1HasApproved: boolean = false,
+    public readonly player2HasApproved: boolean = false,
   ) {}
 
   /**
@@ -33,6 +36,8 @@ export class CoinFlipState {
       this.pokemonInstanceId,
       this.statusEffect,
       this.actionId,
+      this.player1HasApproved,
+      this.player2HasApproved,
     );
   }
 
@@ -49,7 +54,52 @@ export class CoinFlipState {
       this.pokemonInstanceId,
       this.statusEffect,
       this.actionId,
+      this.player1HasApproved,
+      this.player2HasApproved,
     );
+  }
+
+  /**
+   * Create a new CoinFlipState with player 1 approval
+   */
+  withPlayer1Approval(): CoinFlipState {
+    return new CoinFlipState(
+      this.status,
+      this.context,
+      this.configuration,
+      this.results,
+      this.attackIndex,
+      this.pokemonInstanceId,
+      this.statusEffect,
+      this.actionId,
+      true,
+      this.player2HasApproved,
+    );
+  }
+
+  /**
+   * Create a new CoinFlipState with player 2 approval
+   */
+  withPlayer2Approval(): CoinFlipState {
+    return new CoinFlipState(
+      this.status,
+      this.context,
+      this.configuration,
+      this.results,
+      this.attackIndex,
+      this.pokemonInstanceId,
+      this.statusEffect,
+      this.actionId,
+      this.player1HasApproved,
+      true,
+    );
+  }
+
+  /**
+   * Check if both players have approved
+   */
+  hasBothApprovals(): boolean {
+    return this.player1HasApproved && this.player2HasApproved;
   }
 
   /**
@@ -70,11 +120,11 @@ export class CoinFlipState {
    * Check if all required flips are complete
    */
   isComplete(): boolean {
-    if (this.configuration.countType === 'UNTIL_TAILS') {
+    if (this.configuration.countType === CoinFlipCountType.UNTIL_TAILS) {
       // Complete if we have at least one tails
       return this.getTailsCount() > 0;
     }
-    if (this.configuration.countType === 'FIXED') {
+    if (this.configuration.countType === CoinFlipCountType.FIXED) {
       // Complete if we have the required number of flips
       return this.results.length >= (this.configuration.fixedCount || 0);
     }

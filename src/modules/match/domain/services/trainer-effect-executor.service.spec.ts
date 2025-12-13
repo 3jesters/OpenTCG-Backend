@@ -95,7 +95,7 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
       );
 
-      expect(result.playerState.activePokemon?.damageCounters).toBe(0);
+      expect(result.playerState.activePokemon?.getDamageCounters()).toBe(0);
       expect(result.playerState.activePokemon?.currentHp).toBe(60);
     });
 
@@ -162,7 +162,7 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
       );
 
-      expect(result.playerState.bench[0].damageCounters).toBe(0);
+      expect(result.playerState.bench[0].getDamageCounters()).toBe(0);
       expect(result.playerState.bench[0].currentHp).toBe(50);
     });
 
@@ -185,7 +185,7 @@ describe('TrainerEffectExecutorService', () => {
         PlayerIdentifier.PLAYER1,
       );
 
-      expect(result.playerState.activePokemon?.damageCounters).toBe(0);
+      expect(result.playerState.activePokemon?.getDamageCounters()).toBe(0);
       expect(result.playerState.activePokemon?.currentHp).toBe(60);
     });
 
@@ -245,13 +245,13 @@ describe('TrainerEffectExecutorService', () => {
 
       // Should heal 20 HP: 10 HP -> 30 HP (not 40 HP!)
       expect(result.playerState.activePokemon?.currentHp).toBe(30);
-      // damageCounters should be updated to match: 40 - 30 = 10
-      expect(result.playerState.activePokemon?.damageCounters).toBe(10);
+      // damageCounters should be calculated: 40 - 30 = 10
+      expect(result.playerState.activePokemon?.getDamageCounters()).toBe(10);
       // Verify they are in sync
       expect(
         result.playerState.activePokemon!.maxHp -
           result.playerState.activePokemon!.currentHp,
-      ).toBe(result.playerState.activePokemon!.damageCounters);
+      ).toBe(result.playerState.activePokemon!.getDamageCounters());
     });
 
     it('should calculate healing from HP, not damageCounters', async () => {
@@ -310,7 +310,7 @@ describe('TrainerEffectExecutorService', () => {
       // Should heal 20 HP: 40 HP -> 60 HP (full HP)
       expect(result.playerState.activePokemon?.currentHp).toBe(60);
       // damageCounters should be updated to 0 (no damage)
-      expect(result.playerState.activePokemon?.damageCounters).toBe(0);
+      expect(result.playerState.activePokemon?.getDamageCounters()).toBe(0);
     });
 
     it('should keep damageCounters and HP in sync after healing', async () => {
@@ -335,9 +335,9 @@ describe('TrainerEffectExecutorService', () => {
       const pokemon = result.playerState.activePokemon!;
       // Verify damageCounters and HP are in sync
       const calculatedDamage = pokemon.maxHp - pokemon.currentHp;
-      expect(pokemon.damageCounters).toBe(calculatedDamage);
+      expect(pokemon.getDamageCounters()).toBe(calculatedDamage);
       // Should have 10 damage remaining (30 - 20 = 10)
-      expect(pokemon.damageCounters).toBe(10);
+      expect(pokemon.getDamageCounters()).toBe(10);
       expect(pokemon.currentHp).toBe(50); // 60 - 10 = 50
     });
 
@@ -364,7 +364,7 @@ describe('TrainerEffectExecutorService', () => {
       // Should heal 20 HP: 10 HP -> 30 HP
       expect(result.playerState.activePokemon?.currentHp).toBe(30);
       // Should have 30 damage remaining (50 - 20 = 30)
-      expect(result.playerState.activePokemon?.damageCounters).toBe(30);
+      expect(result.playerState.activePokemon?.getDamageCounters()).toBe(30);
     });
 
     it('should throw error if target is missing', async () => {

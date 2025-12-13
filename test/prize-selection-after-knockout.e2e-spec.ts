@@ -221,21 +221,26 @@ describe('Prize Selection After Knockout E2E', () => {
     expect(prizeSelectionResponse.body.lastAction.actionData.prizeIndex).toBe(2);
     expect(prizeSelectionResponse.body.lastAction.actionData.prizeCard).toBe('prize-card-3');
 
-    // Step 5: Verify that END_TURN is now available
+    // Step 5: Verify phase transitioned to SELECT_ACTIVE_POKEMON (opponent needs to select active Pokemon)
     const stateAfterPrize = await request(server())
       .post(`/api/v1/matches/${MATCH_ID}/state`)
       .send({ playerId: PLAYER1_ID })
       .expect(200);
 
-    expect(stateAfterPrize.body.availableActions).toContain('END_TURN');
+    // Phase should be SELECT_ACTIVE_POKEMON since opponent has bench Pokemon
+    expect(stateAfterPrize.body.phase).toBe('SELECT_ACTIVE_POKEMON');
+    expect(stateAfterPrize.body.availableActions).not.toContain('END_TURN'); // Can't end turn until opponent selects active
     expect(stateAfterPrize.body.availableActions).not.toContain('SELECT_PRIZE');
 
-    // Step 6: Verify opponent cannot select active Pokemon yet (prize was just selected, but turn hasn't ended)
+    // Step 6: Verify opponent can select active Pokemon after prize is selected
     const opponentStateBeforeTurnEnd = await request(server())
       .post(`/api/v1/matches/${MATCH_ID}/state`)
       .send({ playerId: PLAYER2_ID })
       .expect(200);
 
+    // Phase should be SELECT_ACTIVE_POKEMON
+    expect(opponentStateBeforeTurnEnd.body.phase).toBe('SELECT_ACTIVE_POKEMON');
+    expect(opponentStateBeforeTurnEnd.body.requiresActivePokemonSelection).toBe(true);
     // Opponent should be able to select active Pokemon after prize is selected
     expect(opponentStateBeforeTurnEnd.body.availableActions).toContain('SET_ACTIVE_POKEMON');
     // Player 2's active Pokemon should be null (knocked out), opponentState shows Player 1's active Pokemon
@@ -254,13 +259,15 @@ describe('Prize Selection After Knockout E2E', () => {
       .expect(200);
 
     expect(selectActiveResponse.body.state).toBe('PLAYER_TURN');
+    // Phase should transition back to END after active Pokemon is selected
+    expect(selectActiveResponse.body.phase).toBe('END');
     // From Player 2's perspective, playerState is their own state
     expect(selectActiveResponse.body.playerState.activePokemon).not.toBeNull();
     expect(selectActiveResponse.body.playerState.activePokemon.cardId).toBe(
       'pokemon-base-set-v1.0-ivysaur--30',
     );
 
-    // Step 8: Player 1 can now end turn
+    // Step 8: Player 1 can now end turn (after opponent selected active Pokemon)
     const endTurnAfterPrize = await request(server())
       .post(`/api/v1/matches/${MATCH_ID}/actions`)
       .send({
@@ -718,13 +725,14 @@ describe('Prize Selection After Knockout E2E', () => {
     expect(prizeResponse.body.playerState.prizeCardsRemaining).toBe(4);
     expect(prizeResponse.body.lastAction.actionType).toBe('SELECT_PRIZE');
 
-    // Step 3: After prize selection, END_TURN should be available, SELECT_PRIZE should not
+    // Step 3: After prize selection, phase should be SELECT_ACTIVE_POKEMON (opponent needs to select)
     const stateAfterPrize = await request(server())
       .post(`/api/v1/matches/${MATCH_ID}/state`)
       .send({ playerId: PLAYER1_ID })
       .expect(200);
 
-    expect(stateAfterPrize.body.availableActions).toContain('END_TURN');
+    expect(stateAfterPrize.body.phase).toBe('SELECT_ACTIVE_POKEMON');
+    expect(stateAfterPrize.body.availableActions).not.toContain('END_TURN'); // Can't end turn until opponent selects
     expect(stateAfterPrize.body.availableActions).not.toContain('SELECT_PRIZE');
   });
 });

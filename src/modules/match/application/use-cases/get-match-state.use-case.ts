@@ -8,6 +8,8 @@ import {
 } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
 import { MatchStateMachineService } from '../../domain/services';
+import { CoinFlipContext } from '../../domain/enums/coin-flip-context.enum';
+import { CoinFlipStatus } from '../../domain/enums/coin-flip-status.enum';
 
 /**
  * Get Match State Use Case
@@ -71,6 +73,8 @@ export class GetMatchStateUseCase {
                   ]
                 : []),
             ],
+            player1State: match.gameState.player1State,
+            player2State: match.gameState.player2State,
           }
         : undefined,
       match.currentPlayer || undefined,
@@ -101,7 +105,27 @@ export class GetMatchStateUseCase {
         const opponentState = match.gameState?.getPlayerState(playerIdentifier);
         const gameState = match.gameState;
         
-        if (opponentState?.activePokemon === null && gameState) {
+        // Check if coin flip is ready for ATTACK context (both players can approve)
+        // STATUS_CHECK contexts (confusion/sleep) are handled automatically - no need to add to availableActions
+        const allowedActions: PlayerActionType[] = [];
+        if (gameState?.coinFlipState && gameState.coinFlipState.status === CoinFlipStatus.READY_TO_FLIP) {
+          const coinFlipContext = gameState.coinFlipState.context;
+          if (coinFlipContext === CoinFlipContext.ATTACK) {
+            allowedActions.push(PlayerActionType.GENERATE_COIN_FLIP);
+          }
+          // STATUS_CHECK (confusion/sleep) - coin flip state is created automatically,
+          // client can call GENERATE_COIN_FLIP when coinFlipState exists, but it doesn't need to be in availableActions
+        }
+        
+        // Check if phase is SELECT_ACTIVE_POKEMON - both players may need to select
+        if (gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON) {
+          const playerState = gameState.getPlayerState(playerIdentifier);
+          // If player has no active Pokemon and has bench Pokemon, they can select
+          if (playerState.activePokemon === null && playerState.bench.length > 0) {
+            allowedActions.push(PlayerActionType.SET_ACTIVE_POKEMON);
+          }
+        } else if (opponentState?.activePokemon === null && gameState) {
+          // Legacy check for backward compatibility (when phase is not SELECT_ACTIVE_POKEMON yet)
           // Check if knockout occurred and prize was selected
           // We need to find the ATTACK action in history (lastAction might be SELECT_PRIZE now)
           // Find the most recent ATTACK action that caused a knockout
@@ -134,13 +158,27 @@ export class GetMatchStateUseCase {
             
             if (prizeSelected) {
               // Prize was selected, opponent can select active Pokemon
-              return [PlayerActionType.SET_ACTIVE_POKEMON, PlayerActionType.CONCEDE];
+              allowedActions.push(PlayerActionType.SET_ACTIVE_POKEMON);
             }
           }
         }
         
-        // Not player's turn and no active selection needed - only show CONCEDE
-        return [PlayerActionType.CONCEDE];
+        // Always allow CONCEDE
+        allowedActions.push(PlayerActionType.CONCEDE);
+        
+        // Not player's turn - return allowed actions
+        return allowedActions;
+      }
+      
+      // Check if phase is SELECT_ACTIVE_POKEMON - current player may also need to select (double knockout)
+      if (match.gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON) {
+        const playerState = match.gameState.getPlayerState(playerIdentifier);
+        // If player has no active Pokemon and has bench Pokemon, they can select
+        if (playerState.activePokemon === null && playerState.bench.length > 0) {
+          if (!actions.includes(PlayerActionType.SET_ACTIVE_POKEMON)) {
+            actions.push(PlayerActionType.SET_ACTIVE_POKEMON);
+          }
+        }
       }
       
       // Filter out ATTACH_ENERGY if energy was already attached this turn
@@ -154,14 +192,15 @@ export class GetMatchStateUseCase {
         );
       }
       
-      // Add GENERATE_COIN_FLIP if coin flip is ready
-      if (
-        match.gameState?.coinFlipState &&
-        match.gameState.coinFlipState.status === 'READY_TO_FLIP' &&
-        match.gameState.currentPlayer === playerIdentifier
-      ) {
-        if (!actions.includes(PlayerActionType.GENERATE_COIN_FLIP)) {
-          actions.push(PlayerActionType.GENERATE_COIN_FLIP);
+      // Add GENERATE_COIN_FLIP if coin flip is ready for ATTACK context (both players can approve)
+      // STATUS_CHECK contexts (confusion/sleep) are handled automatically - coin flip state is created
+      // automatically, client can call GENERATE_COIN_FLIP when coinFlipState exists, but it doesn't need to be in availableActions
+      if (match.gameState?.coinFlipState && match.gameState.coinFlipState.status === CoinFlipStatus.READY_TO_FLIP) {
+        const coinFlipContext = match.gameState.coinFlipState.context;
+        if (coinFlipContext === CoinFlipContext.ATTACK) {
+          if (!actions.includes(PlayerActionType.GENERATE_COIN_FLIP)) {
+            actions.push(PlayerActionType.GENERATE_COIN_FLIP);
+          }
         }
       }
       

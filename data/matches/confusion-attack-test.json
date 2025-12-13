@@ -1,12 +1,12 @@
 {
-  "id": "coin-flip-tails-0001",
+  "id": "confusion-attack-test",
   "tournamentId": "classic-tournament",
   "player1Id": "test-player-2",
   "player2Id": "test-player-1",
   "player1DeckId": "classic-fire-starter-deck",
   "player2DeckId": "classic-water-starter-deck",
   "state": "PLAYER_TURN",
-  "currentPlayer": "PLAYER2",
+  "currentPlayer": "PLAYER1",
   "firstPlayer": "PLAYER1",
   "player1HasDrawnValidHand": true,
   "player2HasDrawnValidHand": true,
@@ -19,7 +19,7 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-12-09T12:25:06.696Z",
-  "updatedAt": "2025-12-13T19:07:10.248Z",
+  "updatedAt": "2025-12-13T19:07:42.388Z",
   "startedAt": null,
   "endedAt": null,
   "winnerId": null,
@@ -83,7 +83,7 @@
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
       "activePokemon": {
-        "instanceId": "42d07a45-145a-47b2-acb8-06c9eee6a653",
+        "instanceId": "test-instance-1",
         "cardId": "pokemon-base-set-v1.0-vulpix--70",
         "position": "ACTIVE",
         "currentHp": 50,
@@ -92,7 +92,7 @@
           "pokemon-base-set-v1.0-fire-energy--99",
           "pokemon-base-set-v1.0-fire-energy--99"
         ],
-        "statusEffect": "NONE",
+        "statusEffect": "CONFUSED",
         "damageCounters": 0,
         "evolutionChain": []
       },
@@ -169,14 +169,12 @@
         "pokemon-base-set-v1.0-water-energy--103"
       ],
       "activePokemon": {
-        "instanceId": "c0e6c45e-e092-4a33-b5bd-2c142257b103",
+        "instanceId": "test-instance-2",
         "cardId": "pokemon-base-set-v1.0-nidoran--57",
         "position": "ACTIVE",
         "currentHp": 40,
         "maxHp": 40,
-        "attachedEnergy": [
-          "pokemon-base-set-v1.0-grass-energy--100"
-        ],
+        "attachedEnergy": [],
         "statusEffect": "NONE",
         "damageCounters": 0,
         "evolutionChain": []
@@ -214,57 +212,27 @@
       "hasAttachedEnergyThisTurn": false
     },
     "turnNumber": 1,
-    "phase": "END",
-    "currentPlayer": "PLAYER2",
-    "lastAction": {
-      "actionId": "c03e5244-6b32-43ee-b2da-ec03b6b46598",
-      "playerId": "PLAYER2",
-      "actionType": "ATTACK",
-      "timestamp": "2025-12-13T19:07:10.248Z",
-      "actionData": {
-        "attackIndex": 0,
-        "damage": 0,
-        "isKnockedOut": false,
-        "coinFlipResults": [
-          {
-            "flipIndex": 0,
-            "result": "tails"
-          }
-        ],
-        "attackFailed": true
-      }
-    },
-    "actionHistory": [
-      {
-        "actionId": "coin-flip-tails-0001-turn1-action0",
-        "playerId": "PLAYER2",
-        "actionType": "ATTACK",
-        "timestamp": "2025-12-13T19:07:08.928Z",
-        "actionData": {
-          "attackIndex": 0,
-          "coinFlipRequired": true
-        }
+    "phase": "ATTACK",
+    "currentPlayer": "PLAYER1",
+    "lastAction": null,
+    "actionHistory": [],
+    "coinFlipState": {
+      "status": "READY_TO_FLIP",
+      "context": "STATUS_CHECK",
+      "configuration": {
+        "countType": "FIXED",
+        "fixedCount": 1,
+        "damageCalculationType": "BASE_DAMAGE",
+        "baseDamage": 0
       },
-      {
-        "actionId": "c03e5244-6b32-43ee-b2da-ec03b6b46598",
-        "playerId": "PLAYER2",
-        "actionType": "ATTACK",
-        "timestamp": "2025-12-13T19:07:10.248Z",
-        "actionData": {
-          "attackIndex": 0,
-          "damage": 0,
-          "isKnockedOut": false,
-          "coinFlipResults": [
-            {
-              "flipIndex": 0,
-              "result": "tails"
-            }
-          ],
-          "attackFailed": true
-        }
-      }
-    ],
-    "coinFlipState": null,
+      "results": [],
+      "attackIndex": 0,
+      "pokemonInstanceId": "test-instance-1",
+      "statusEffect": "CONFUSED",
+      "actionId": "confusion-attack-test-turn1-confusion-test-instance-1",
+      "player1HasApproved": false,
+      "player2HasApproved": false
+    },
     "abilityUsageThisTurn": {
       "PLAYER1": [],
       "PLAYER2": []

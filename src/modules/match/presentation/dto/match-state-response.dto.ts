@@ -39,6 +39,8 @@ export class MatchStateResponseDto {
   opponentHasConfirmedFirstPlayer: boolean;
   canAttachEnergy: boolean;
   coinFlipState?: CoinFlipStateDto | null;
+  requiresActivePokemonSelection?: boolean; // True when player needs to select active Pokemon from bench
+  playersRequiringActiveSelection?: PlayerIdentifier[]; // Array of players who need to select (for double knockout)
   winnerId?: string | null;
   result?: string | null;
   winCondition?: string | null;
@@ -118,6 +120,25 @@ export class MatchStateResponseDto {
         ? !playerState?.hasAttachedEnergyThisTurn
         : false;
 
+    // Calculate requiresActivePokemonSelection and playersRequiringActiveSelection
+    const requiresActivePokemonSelection = 
+      gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON &&
+      playerState?.activePokemon === null &&
+      (playerState?.bench.length || 0) > 0;
+    
+    const playersRequiringActiveSelection: PlayerIdentifier[] = [];
+    if (gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON) {
+      if (gameState.player1State.activePokemon === null && gameState.player1State.bench.length > 0) {
+        playersRequiringActiveSelection.push(PlayerIdentifier.PLAYER1);
+      }
+      if (gameState.player2State.activePokemon === null && gameState.player2State.bench.length > 0) {
+        playersRequiringActiveSelection.push(PlayerIdentifier.PLAYER2);
+      }
+    }
+    
+    // Always set requiresActivePokemonSelection (false if not needed, true if needed)
+    const requiresActivePokemonSelectionValue = requiresActivePokemonSelection || false;
+
     return {
       matchId: match.id,
       state: match.state,
@@ -154,6 +175,12 @@ export class MatchStateResponseDto {
       coinFlipState: gameState?.coinFlipState
         ? CoinFlipStateDto.fromDomain(gameState.coinFlipState)
         : null,
+      requiresActivePokemonSelection: gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON 
+        ? requiresActivePokemonSelectionValue 
+        : undefined,
+      playersRequiringActiveSelection: playersRequiringActiveSelection.length > 0 
+        ? playersRequiringActiveSelection 
+        : undefined,
       winnerId: match.winnerId,
       result: match.result,
       winCondition: match.winCondition,
@@ -324,6 +351,7 @@ class PokemonInPlayDto {
   attachedEnergy: CardId[];
   statusEffect: string;
   damageCounters: number;
+  poisonDamageAmount?: number; // Optional, poison damage amount (10 or 20)
 
   static async fromDomain(
     card: CardInstance,
@@ -351,7 +379,8 @@ class PokemonInPlayDto {
       maxHp: correctMaxHp,
       attachedEnergy: card.attachedEnergy,
       statusEffect: card.statusEffect,
-      damageCounters: card.damageCounters,
+      damageCounters: card.getDamageCounters(), // Calculate from HP
+      poisonDamageAmount: card.poisonDamageAmount,
     };
   }
 }
@@ -389,6 +418,8 @@ class CoinFlipStateDto {
   pokemonInstanceId?: string;
   statusEffect?: string;
   actionId?: string;
+  player1HasApproved: boolean;
+  player2HasApproved: boolean;
 
   static fromDomain(state: CoinFlipState): CoinFlipStateDto {
     return {
@@ -410,6 +441,8 @@ class CoinFlipStateDto {
       pokemonInstanceId: state.pokemonInstanceId,
       statusEffect: state.statusEffect,
       actionId: state.actionId,
+      player1HasApproved: state.player1HasApproved,
+      player2HasApproved: state.player2HasApproved,
     };
   }
 }

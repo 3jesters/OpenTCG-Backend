@@ -89,8 +89,8 @@ describe('AbilityEffectValidatorService', () => {
         100, // maxHp
         [], // attachedEnergy
         statusEffect, // statusEffect
-        0, // damageCounters
         [], // evolutionChain
+        undefined, // poisonDamageAmount (only set if POISONED)
       );
     };
 

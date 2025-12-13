@@ -760,22 +760,20 @@ describe('AbilityEffectExecutorService', () => {
           'instance-opponent-1',
           'pokemon-base-set-v1.0-pikachu--60',
           PokemonPosition.ACTIVE,
-          40,
+          80, // currentHp = maxHp - damageCounters = 100 - 20 = 80
           100,
           [],
           StatusEffect.NONE,
-          20, // 20 damage
         );
 
         const opponentBench = new CardInstance(
           'instance-opponent-2',
           'pokemon-base-set-v1.0-charmander--48',
           PokemonPosition.BENCH_0,
-          50,
+          100, // currentHp = maxHp - damageCounters = 100 - 0 = 100
           100,
           [],
           StatusEffect.NONE,
-          0,
         );
 
         const gameState = createGameState(
@@ -804,9 +802,9 @@ describe('AbilityEffectExecutorService', () => {
         );
 
         // Gengar should be healed (damage reduced by 10, from 0 to 0)
-        expect(result.playerState.activePokemon?.damageCounters).toBe(0);
+        expect(result.playerState.activePokemon?.getDamageCounters()).toBe(0);
         // Opponent active damage unchanged (HEAL doesn't move damage, only heals target)
-        expect(result.opponentState.activePokemon?.damageCounters).toBe(20);
+        expect(result.opponentState.activePokemon?.getDamageCounters()).toBe(20);
       });
     });
 
@@ -832,18 +830,16 @@ describe('AbilityEffectExecutorService', () => {
           100,
           [],
           StatusEffect.NONE,
-          0,
         );
 
         const benchPokemon = new CardInstance(
           'instance-2',
           'pokemon-base-set-v1.0-abra--63',
           PokemonPosition.BENCH_0,
-          30,
+          80, // currentHp = maxHp - damageCounters = 100 - 20 = 80
           100,
           [],
           StatusEffect.NONE,
-          20, // 20 damage
         );
 
         const gameState = createGameState(alakazam, [benchPokemon]);
@@ -864,11 +860,11 @@ describe('AbilityEffectExecutorService', () => {
         );
 
         // Alakazam should be healed (damage reduced by 10, from 0 to 0)
-        expect(result.playerState.activePokemon?.damageCounters).toBe(0);
+        expect(result.playerState.activePokemon?.getDamageCounters()).toBe(0);
         // Bench Pokemon damage unchanged (HEAL doesn't move damage, only heals target)
         expect(
           result.playerState.bench.find((p) => p.instanceId === 'instance-2')
-            ?.damageCounters,
+            ?.getDamageCounters(),
         ).toBe(20);
       });
     });
@@ -895,18 +891,16 @@ describe('AbilityEffectExecutorService', () => {
           100,
           [],
           StatusEffect.NONE,
-          30, // 30 damage counters
         );
 
         const opponentActive = new CardInstance(
           'instance-opponent-1',
           'pokemon-base-set-v1.0-pikachu--60',
           PokemonPosition.ACTIVE,
-          40,
+          100, // currentHp = maxHp - damageCounters = 100 - 0 = 100
           100,
           [],
           StatusEffect.NONE,
-          0,
         );
         // opponentActive has 0 damage counters (set in constructor above)
 
@@ -935,9 +929,9 @@ describe('AbilityEffectExecutorService', () => {
         );
 
         // Slowbro should be healed (damage reduced by 10, from 30 to 20)
-        expect(result.playerState.activePokemon?.damageCounters).toBe(20);
+        expect(result.playerState.activePokemon?.getDamageCounters()).toBe(20);
         // Opponent active damage unchanged (HEAL doesn't move damage, only heals target)
-        expect(result.opponentState.activePokemon?.damageCounters).toBe(0);
+        expect(result.opponentState.activePokemon?.getDamageCounters()).toBe(0);
       });
     });
 

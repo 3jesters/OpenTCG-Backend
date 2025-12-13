@@ -117,7 +117,7 @@ describe('MatchStateResponseDto - Revealed Hand', () => {
       expect(dto.opponentState.revealedHand).toBeUndefined();
     });
 
-    it('should show revealedHand for player 2 when viewing from player 1 perspective', () => {
+    it('should show revealedHand for player 2 when viewing from player 1 perspective', async () => {
       // Arrange
       const match = new Match('match-1', 'tournament-1');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);

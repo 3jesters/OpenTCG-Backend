@@ -65,7 +65,7 @@ This document describes the business rules and constraints that govern match lif
 ### Player Actions
 
 1. **Valid Actions by Phase**
-   - `DRAW`: `DRAW_CARD`, `END_TURN`
+   - `DRAW`: `DRAW_CARD` (must draw before ending turn)
    - `MAIN_PHASE`: `PLAY_POKEMON`, `ATTACH_ENERGY`, `PLAY_TRAINER`, `EVOLVE_POKEMON`, `RETREAT`, `USE_ABILITY`, `ATTACK`, `END_TURN`
    - `ATTACK`: `ATTACK`, `END_TURN`
    - `END`: `END_TURN`

@@ -130,6 +130,11 @@ export class MatchStateMachineService {
       if (actionType === PlayerActionType.SET_ACTIVE_POKEMON) {
         return { isValid: true }; // Will be validated in use case that opponent's active is null
       }
+      // Allow GENERATE_COIN_FLIP for both players when coin flip is in progress (for ATTACK context)
+      // Will be validated in use case that coin flip state exists and is ready
+      if (actionType === PlayerActionType.GENERATE_COIN_FLIP) {
+        return { isValid: true };
+      }
       return {
         isValid: false,
         error: ActionValidationError.NOT_PLAYER_TURN,
@@ -224,7 +229,7 @@ export class MatchStateMachineService {
     actionType: PlayerActionType,
   ): { isValid: boolean; error?: ActionValidationError } {
     const phaseActions: Record<TurnPhase, PlayerActionType[]> = {
-      [TurnPhase.DRAW]: [PlayerActionType.DRAW_CARD, PlayerActionType.END_TURN],
+      [TurnPhase.DRAW]: [PlayerActionType.DRAW_CARD],
       [TurnPhase.MAIN_PHASE]: [
         PlayerActionType.PLAY_POKEMON,
         PlayerActionType.SET_ACTIVE_POKEMON,
@@ -248,6 +253,11 @@ export class MatchStateMachineService {
         PlayerActionType.DRAW_PRIZE, // Alias for SELECT_PRIZE (client compatibility)
         PlayerActionType.SET_ACTIVE_POKEMON, // Allow selecting active Pokemon after knockout
         PlayerActionType.END_TURN,
+        PlayerActionType.CONCEDE,
+      ],
+      [TurnPhase.SELECT_ACTIVE_POKEMON]: [
+        PlayerActionType.SET_ACTIVE_POKEMON, // Select active Pokemon from bench
+        PlayerActionType.END_TURN, // Allow ending turn after selecting (if both players selected in double knockout)
         PlayerActionType.CONCEDE,
       ],
     };
@@ -295,6 +305,13 @@ export class MatchStateMachineService {
 
     if (currentPhase === TurnPhase.END) {
       return null; // Will transition to BETWEEN_TURNS
+    }
+
+    if (currentPhase === TurnPhase.SELECT_ACTIVE_POKEMON) {
+      if (actionType === PlayerActionType.SET_ACTIVE_POKEMON) {
+        // After selecting active Pokemon, transition back to END phase
+        return TurnPhase.END;
+      }
     }
 
     return currentPhase;
@@ -426,7 +443,7 @@ export class MatchStateMachineService {
   getAvailableActions(
     state: MatchState,
     phase: TurnPhase | null,
-    gameState?: { lastAction: { actionType: PlayerActionType; playerId: PlayerIdentifier; actionData?: any; actionId?: string } | null; actionHistory: Array<{ actionType: PlayerActionType; playerId: PlayerIdentifier; actionId?: string }> },
+    gameState?: { lastAction: { actionType: PlayerActionType; playerId: PlayerIdentifier; actionData?: any; actionId?: string } | null; actionHistory: Array<{ actionType: PlayerActionType; playerId: PlayerIdentifier; actionId?: string }>; player1State?: any; player2State?: any },
     currentPlayer?: PlayerIdentifier,
   ): PlayerActionType[] {
     if (state === MatchState.MATCH_APPROVAL) {
@@ -496,7 +513,7 @@ export class MatchStateMachineService {
     }
 
     const phaseActions: Record<TurnPhase, PlayerActionType[]> = {
-      [TurnPhase.DRAW]: [PlayerActionType.DRAW_CARD, PlayerActionType.END_TURN],
+      [TurnPhase.DRAW]: [PlayerActionType.DRAW_CARD],
       [TurnPhase.MAIN_PHASE]: [
         PlayerActionType.PLAY_POKEMON,
         PlayerActionType.ATTACH_ENERGY,
@@ -513,14 +530,48 @@ export class MatchStateMachineService {
         PlayerActionType.END_TURN,
       ],
       [TurnPhase.END]: [PlayerActionType.END_TURN],
+      [TurnPhase.SELECT_ACTIVE_POKEMON]: [
+        PlayerActionType.SET_ACTIVE_POKEMON,
+        PlayerActionType.END_TURN,
+        PlayerActionType.CONCEDE,
+      ],
     };
 
     // Explicitly handle DRAW phase to ensure DRAW_CARD is always included
     let actions: PlayerActionType[];
     if (phase === TurnPhase.DRAW) {
-      actions = [PlayerActionType.DRAW_CARD, PlayerActionType.END_TURN];
+      actions = [PlayerActionType.DRAW_CARD];
     } else {
       actions = phaseActions[phase] || [];
+    }
+    
+    // Add GENERATE_COIN_FLIP if coin flip state exists and is ready
+    // This handles STATUS_CHECK context (confusion/sleep) in MAIN_PHASE or DRAW phase
+    // Note: gameState parameter doesn't include coinFlipState, so we check it separately
+    // The caller (get-match-state.use-case) handles coin flip state filtering
+    
+    // If in SELECT_ACTIVE_POKEMON phase, check if both players need to select (double knockout)
+    if (phase === TurnPhase.SELECT_ACTIVE_POKEMON && gameState && gameState.player1State && gameState.player2State) {
+      const player1State = gameState.player1State;
+      const player2State = gameState.player2State;
+      const player1NeedsActive = player1State.activePokemon === null && player1State.bench.length > 0;
+      const player2NeedsActive = player2State.activePokemon === null && player2State.bench.length > 0;
+      
+      // If current player needs to select, they can select
+      const currentPlayerState = currentPlayer === PlayerIdentifier.PLAYER1 ? player1State : player2State;
+      const currentPlayerNeedsActive = currentPlayerState && currentPlayerState.activePokemon === null && currentPlayerState.bench.length > 0;
+      
+      if (currentPlayerNeedsActive) {
+        // Player needs to select active Pokemon
+        if (!actions.includes(PlayerActionType.SET_ACTIVE_POKEMON)) {
+          actions.push(PlayerActionType.SET_ACTIVE_POKEMON);
+        }
+      }
+      
+      // If both players still need to select, don't allow END_TURN
+      if (player1NeedsActive || player2NeedsActive) {
+        actions = actions.filter((action) => action !== PlayerActionType.END_TURN);
+      }
     }
     
     // If in END phase and knockout occurred, require SELECT_PRIZE before END_TURN
