@@ -828,8 +828,16 @@ export class ExecuteTurnActionUseCase {
           targetPokemon = playerState.bench[benchIndex];
         }
 
-        // TODO: Validate evolution chain (check if evolutionCardId can evolve from targetPokemon.cardId)
-        // For now, we'll allow any evolution
+        // Validate that this Pokemon hasn't been evolved this turn (check first)
+        this.validatePokemonNotEvolvedThisTurn(
+          gameState,
+          playerIdentifier,
+          targetPokemon.instanceId,
+          targetPokemon.cardId,
+        );
+
+        // Validate evolution chain
+        await this.validateEvolution(targetPokemon.cardId, evolutionCardId);
 
         // Load evolution card details to get HP
         const evolutionCardHp = await this.getCardHp(evolutionCardId);
@@ -890,13 +898,13 @@ export class ExecuteTurnActionUseCase {
             ? gameState.withPlayer1State(updatedPlayerState)
             : gameState.withPlayer2State(updatedPlayerState);
 
-        // Create action summary
+        // Create action summary (include instanceId to track which Pokemon was evolved)
         const actionSummary = new ActionSummary(
           uuidv4(),
           playerIdentifier,
           PlayerActionType.EVOLVE_POKEMON,
           new Date(),
-          { evolutionCardId, target },
+          { evolutionCardId, target, instanceId: targetPokemon.instanceId },
         );
 
         const finalGameState = updatedGameState.withAction(actionSummary);
@@ -3288,6 +3296,277 @@ export class ExecuteTurnActionUseCase {
     throw new BadRequestException(
       `Action ${dto.actionType} could not be processed`,
     );
+  }
+
+  /**
+   * Validate that a Pokemon hasn't been evolved this turn
+   * @param gameState The current game state
+   * @param playerIdentifier The player attempting to evolve
+   * @param instanceId The instance ID of the Pokemon to evolve
+   * @param cardId The card ID of the Pokemon (for error message)
+   * @throws BadRequestException if the Pokemon has already been evolved this turn
+   * 
+   * Why we check both lastAction and actionHistory:
+   * - When withAction() is called, the action is added to BOTH lastAction AND actionHistory
+   * - lastAction is a direct reference to the most recent action (fast check)
+   * - actionHistory contains all actions, and we iterate in reverse to find earlier evolutions in the same turn
+   * - We check lastAction first for efficiency (most common case: Pokemon was just evolved)
+   * - We check actionHistory in reverse to catch evolutions from earlier in the turn, stopping at END_TURN (turn boundary)
+   * - This ensures we only check actions from the current turn, not previous turns
+   */
+  private validatePokemonNotEvolvedThisTurn(
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    instanceId: string,
+    cardId: string,
+  ): void {
+    // Check lastAction first (most recent action, definitely from current turn if from current player)
+    // This is a fast path for the most common case: Pokemon was just evolved in the previous action
+    if (gameState.lastAction && gameState.lastAction.playerId === playerIdentifier) {
+      if (gameState.lastAction.actionType === PlayerActionType.EVOLVE_POKEMON) {
+        const actionData = gameState.lastAction.actionData as any;
+        if (actionData.instanceId === instanceId) {
+          throw new BadRequestException(
+            `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
+          );
+        }
+      } else if (gameState.lastAction.actionType === PlayerActionType.PLAY_TRAINER) {
+        const actionData = gameState.lastAction.actionData as any;
+        if (actionData.evolutionCardId && actionData.target) {
+          const playerState = gameState.getPlayerState(playerIdentifier);
+          let targetInstanceId: string | null = null;
+
+          if (actionData.target === 'ACTIVE') {
+            targetInstanceId = playerState.activePokemon?.instanceId || null;
+          } else if (actionData.target.startsWith('BENCH_')) {
+            const benchIndex = parseInt(
+              actionData.target.replace('BENCH_', ''),
+              10,
+            );
+            if (benchIndex >= 0 && benchIndex < playerState.bench.length) {
+              targetInstanceId = playerState.bench[benchIndex]?.instanceId || null;
+            }
+          }
+
+          if (targetInstanceId === instanceId) {
+            throw new BadRequestException(
+              `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
+            );
+          }
+        }
+      }
+    }
+
+    // Check action history in reverse order (most recent first)
+    // Note: lastAction is also the last item in actionHistory, but we check actionHistory
+    // to find evolutions that happened earlier in the same turn (before the most recent action)
+    // Stop when we hit an END_TURN action (turn boundary) or an action from a different player
+    // This ensures we only check actions from the current turn, not previous turns
+    for (let i = gameState.actionHistory.length - 1; i >= 0; i--) {
+      const action = gameState.actionHistory[i];
+
+      // Stop if we hit an END_TURN action (turn boundary)
+      if (action.actionType === PlayerActionType.END_TURN) {
+        break;
+      }
+
+      // Only check actions from the current player
+      if (action.playerId !== playerIdentifier) {
+        continue;
+      }
+
+      // Check EVOLVE_POKEMON actions
+      if (action.actionType === PlayerActionType.EVOLVE_POKEMON) {
+        const actionData = action.actionData as any;
+        if (actionData.instanceId === instanceId) {
+          throw new BadRequestException(
+            `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
+          );
+        }
+      }
+
+      // Check PLAY_TRAINER actions that might have evolved this Pokemon
+      if (action.actionType === PlayerActionType.PLAY_TRAINER) {
+        const actionData = action.actionData as any;
+        if (actionData.evolutionCardId && actionData.target) {
+          const playerState = gameState.getPlayerState(playerIdentifier);
+          let targetInstanceId: string | null = null;
+
+          if (actionData.target === 'ACTIVE') {
+            targetInstanceId = playerState.activePokemon?.instanceId || null;
+          } else if (actionData.target.startsWith('BENCH_')) {
+            const benchIndex = parseInt(
+              actionData.target.replace('BENCH_', ''),
+              10,
+            );
+            if (benchIndex >= 0 && benchIndex < playerState.bench.length) {
+              targetInstanceId = playerState.bench[benchIndex]?.instanceId || null;
+            }
+          }
+
+          if (targetInstanceId === instanceId) {
+            throw new BadRequestException(
+              `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate that a Pokemon hasn't been evolved this turn
+   * @param gameState Current game state
+   * @param playerIdentifier Player attempting the evolution
+   * @param instanceId Instance ID of the Pokemon to evolve
+   * @param cardId Card ID of the Pokemon (for error message)
+   * @throws BadRequestException if the Pokemon has already been evolved this turn
+   */
+  private validatePokemonNotEvolvedThisTurn(
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    instanceId: string,
+    cardId: string,
+  ): void {
+    // Check action history for EVOLVE_POKEMON actions from this player in the current turn
+    // We check all actions from this player, but since instanceId is unique per Pokemon instance,
+    // if we find an evolution action with the same instanceId, it means this Pokemon was already evolved
+    
+    // Check lastAction first (most recent action)
+    if (
+      gameState.lastAction &&
+      gameState.lastAction.playerId === playerIdentifier &&
+      gameState.lastAction.actionType === PlayerActionType.EVOLVE_POKEMON
+    ) {
+      const actionData = gameState.lastAction.actionData as any;
+      if (actionData.instanceId === instanceId) {
+        // Get Pokemon name for better error message
+        throw new BadRequestException(
+          `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
+        );
+      }
+    }
+
+    // Check action history for other EVOLVE_POKEMON actions from this player
+    // We need to check actions from the current turn only
+    // Since we don't have turn number in action data, we'll check all actions from this player
+    // and filter by checking if the instanceId matches
+    for (const action of gameState.actionHistory) {
+      if (
+        action.playerId === playerIdentifier &&
+        action.actionType === PlayerActionType.EVOLVE_POKEMON
+      ) {
+        const actionData = action.actionData as any;
+        // Check if this action evolved the same Pokemon instance
+        // We check both the instanceId directly and also check if the evolution chain
+        // would include this instanceId (for cases where a Pokemon was evolved earlier in the turn)
+        if (actionData.instanceId === instanceId) {
+          throw new BadRequestException(
+            `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate that an evolution card can evolve from the current Pokemon
+   * @param currentPokemonCardId The card ID of the Pokemon to evolve
+   * @param evolutionCardId The card ID of the evolution card
+   * @throws BadRequestException if the evolution is invalid
+   */
+  private async validateEvolution(
+    currentPokemonCardId: string,
+    evolutionCardId: string,
+  ): Promise<void> {
+    // Get both card entities
+    const currentPokemonCard =
+      await this.getCardByIdUseCase.getCardEntity(currentPokemonCardId);
+    const evolutionCard =
+      await this.getCardByIdUseCase.getCardEntity(evolutionCardId);
+
+    // Validate that both are Pokemon cards
+    if (currentPokemonCard.cardType !== CardType.POKEMON) {
+      throw new BadRequestException(
+        `Cannot evolve non-Pokemon card. The selected card is not a Pokemon.`,
+      );
+    }
+    if (evolutionCard.cardType !== CardType.POKEMON) {
+      throw new BadRequestException(
+        `Evolution card must be a Pokemon card. The selected evolution card is not a Pokemon.`,
+      );
+    }
+
+    // Validate that evolution card has evolvesFrom
+    if (!evolutionCard.evolvesFrom) {
+      throw new BadRequestException(
+        `Cannot evolve to ${evolutionCard.name}. This card cannot be used for evolution.`,
+      );
+    }
+
+    // Validate that the current Pokemon's name matches the evolution's evolvesFrom name
+    const currentPokemonName = currentPokemonCard.name;
+    const evolvesFromName = evolutionCard.evolvesFrom.name;
+
+    if (!evolvesFromName) {
+      throw new BadRequestException(
+        `Cannot evolve to ${evolutionCard.name}. Evolution information is missing.`,
+      );
+    }
+
+    // Check if current Pokemon name exactly matches the evolvesFrom name (case-insensitive)
+    // The name must exactly match (e.g., "Charmeleon" must equal "Charmeleon" or "charmeleon")
+    // This prevents "Dark basicCharmeleon" from evolving to Charizard (requires "Charmeleon")
+    if (currentPokemonName.toLowerCase() !== evolvesFromName.toLowerCase()) {
+      throw new BadRequestException(
+        `Cannot evolve ${currentPokemonName} to ${evolutionCard.name}. ` +
+          `Evolution requires ${evolvesFromName}, but current Pokemon is ${currentPokemonName}`,
+      );
+    }
+
+    // Validate stage progression: BASIC -> STAGE_1 -> STAGE_2
+    const currentStage = currentPokemonCard.stage;
+    const evolutionStage = evolutionCard.stage;
+
+    if (!currentStage) {
+      throw new BadRequestException(
+        `Cannot evolve ${currentPokemonName}. This Pokemon does not have a valid evolution stage.`,
+      );
+    }
+    if (!evolutionStage) {
+      throw new BadRequestException(
+        `Cannot evolve to ${evolutionCard.name}. The evolution card does not have a valid stage.`,
+      );
+    }
+
+    // Define valid stage progression
+    const stageProgression: Record<EvolutionStage, EvolutionStage | null> = {
+      [EvolutionStage.BASIC]: EvolutionStage.STAGE_1,
+      [EvolutionStage.STAGE_1]: EvolutionStage.STAGE_2,
+      [EvolutionStage.STAGE_2]: null, // STAGE_2 cannot evolve further
+      [EvolutionStage.VMAX]: null,
+      [EvolutionStage.VSTAR]: null,
+      [EvolutionStage.GX]: null,
+      [EvolutionStage.EX]: null,
+      [EvolutionStage.MEGA]: null,
+      [EvolutionStage.BREAK]: null,
+      [EvolutionStage.LEGEND]: null,
+    };
+
+    const expectedNextStage = stageProgression[currentStage];
+    if (expectedNextStage === null) {
+      throw new BadRequestException(
+        `Cannot evolve ${currentPokemonName}. Pokemon at stage ${currentStage} cannot evolve further.`,
+      );
+    }
+
+    if (evolutionStage !== expectedNextStage) {
+      throw new BadRequestException(
+        `Cannot evolve ${currentPokemonName} to ${evolutionCard.name}. ` +
+          `Invalid evolution stage: ${currentPokemonName} is ${currentStage}, ` +
+          `but ${evolutionCard.name} is ${evolutionStage}. Expected ${expectedNextStage}.`,
+      );
+    }
   }
 
   /**

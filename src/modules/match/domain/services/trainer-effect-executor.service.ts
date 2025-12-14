@@ -5,6 +5,7 @@ import { TargetType } from '../../../card/domain/enums/target-type.enum';
 import { GameState } from '../value-objects/game-state.value-object';
 import { PlayerGameState } from '../value-objects/player-game-state.value-object';
 import { PlayerIdentifier } from '../enums/player-identifier.enum';
+import { PlayerActionType } from '../enums/player-action-type.enum';
 import { CardInstance } from '../value-objects/card-instance.value-object';
 import {
   TrainerActionData,
@@ -264,6 +265,7 @@ export class TrainerEffectExecutorService {
         return this.handleEvolvePokemon(
           effect,
           actionData as EvolvePokemonActionData,
+          gameState,
           currentPlayerState,
           currentOpponentState,
           playerIdentifier,
@@ -1162,6 +1164,7 @@ export class TrainerEffectExecutorService {
   private handleEvolvePokemon(
     effect: TrainerEffectDto,
     actionData: EvolvePokemonActionData,
+    gameState: GameState,
     playerState: PlayerGameState,
     opponentState: PlayerGameState,
     playerIdentifier: PlayerIdentifier,
@@ -1197,6 +1200,13 @@ export class TrainerEffectExecutorService {
     if (!targetPokemon) {
       throw new BadRequestException('Target Pokemon not found');
     }
+
+    // Validate that this Pokemon hasn't been evolved this turn
+    this.validatePokemonNotEvolvedThisTurn(
+      gameState,
+      playerIdentifier,
+      targetPokemon.instanceId,
+    );
 
     // Remove evolution card from hand
     const updatedHand = playerState.hand.filter((id) => id !== actionData.evolutionCardId);
@@ -1607,6 +1617,76 @@ export class TrainerEffectExecutorService {
       throw new BadRequestException(`Invalid bench target format: ${target}`);
     }
     return parseInt(target.replace('BENCH_', ''), 10);
+  }
+
+  /**
+   * Validate that a Pokemon hasn't been evolved this turn
+   * @param gameState The current game state
+   * @param playerIdentifier The player attempting to evolve
+   * @param instanceId The instance ID of the Pokemon to evolve
+   * @throws BadRequestException if the Pokemon has already been evolved this turn
+   */
+  private validatePokemonNotEvolvedThisTurn(
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    instanceId: string,
+  ): void {
+    // Get all actions from the current turn by this player
+    const currentTurnActions = gameState.actionHistory.filter(
+      (action) => action.playerId === playerIdentifier,
+    );
+
+    // Also check lastAction if it's from the current turn
+    if (
+      gameState.lastAction &&
+      gameState.lastAction.playerId === playerIdentifier
+    ) {
+      currentTurnActions.push(gameState.lastAction);
+    }
+
+    // Check EVOLVE_POKEMON actions
+    const evolveActions = currentTurnActions.filter(
+      (action) => action.actionType === PlayerActionType.EVOLVE_POKEMON,
+    );
+    for (const action of evolveActions) {
+      const actionInstanceId = (action.actionData as any)?.instanceId;
+      if (actionInstanceId === instanceId) {
+        throw new BadRequestException(
+          `Cannot evolve this Pokemon. This Pokemon has already been evolved this turn.`,
+        );
+      }
+    }
+
+    // Check PLAY_TRAINER actions that might have evolved this Pokemon
+    const trainerActions = currentTurnActions.filter(
+      (action) => action.actionType === PlayerActionType.PLAY_TRAINER,
+    );
+    for (const action of trainerActions) {
+      const actionData = action.actionData as any;
+      // Check if this trainer action had an EVOLVE_POKEMON effect
+      if (actionData.evolutionCardId && actionData.target) {
+        // Determine instanceId from target by checking current game state
+        // Note: This checks the current state, which should be accurate since
+        // we're checking actions from the same turn
+        const playerState = gameState.getPlayerState(playerIdentifier);
+        let targetInstanceId: string | null = null;
+
+        if (actionData.target === 'ACTIVE') {
+          targetInstanceId = playerState.activePokemon?.instanceId || null;
+        } else if (actionData.target.startsWith('BENCH_')) {
+          const benchIndex = parseInt(actionData.target.replace('BENCH_', ''), 10);
+          if (benchIndex >= 0 && benchIndex < playerState.bench.length) {
+            targetInstanceId = playerState.bench[benchIndex]?.instanceId || null;
+          }
+        }
+
+        if (targetInstanceId === instanceId) {
+          throw new BadRequestException(
+            `Cannot evolve this Pokemon. This Pokemon has already been evolved this turn.`,
+          );
+        }
+      }
+    }
   }
 }
 
