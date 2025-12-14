@@ -834,6 +834,7 @@ export class AbilityEffectExecutorService {
       benchPokemon.statusEffect,
       benchPokemon.evolutionChain,
       benchPokemon.poisonDamageAmount,
+      benchPokemon.evolvedAt,
     );
 
     // Map bench index to PokemonPosition enum
@@ -856,6 +857,7 @@ export class AbilityEffectExecutorService {
       activePokemon.statusEffect,
       activePokemon.evolutionChain,
       activePokemon.poisonDamageAmount,
+      activePokemon.evolvedAt,
     );
 
     const updatedBench = [...playerState.bench];

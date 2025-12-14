@@ -16,6 +16,7 @@ export class CardInstance {
     public readonly statusEffect: StatusEffect, // Current status condition
     public readonly evolutionChain: string[] = [], // Array of card IDs that this Pokemon evolved from (for reference)
     public readonly poisonDamageAmount?: number, // Poison damage amount (10 or 20), only set if POISONED
+    public readonly evolvedAt?: number, // Turn number when this Pokemon was evolved (undefined if never evolved or evolved in previous turn)
   ) {
     this.validate();
   }
@@ -89,6 +90,7 @@ export class CardInstance {
       this.statusEffect,
       this.evolutionChain,
       this.poisonDamageAmount,
+      this.evolvedAt,
     );
   }
 
@@ -106,6 +108,7 @@ export class CardInstance {
       this.statusEffect,
       this.evolutionChain,
       this.poisonDamageAmount,
+      this.evolvedAt,
     );
   }
 
@@ -123,6 +126,7 @@ export class CardInstance {
       status,
       this.evolutionChain,
       poisonDamageAmount, // Set poison damage amount when applying POISONED status
+      this.evolvedAt,
     );
   }
 
@@ -140,6 +144,25 @@ export class CardInstance {
       this.statusEffect,
       this.evolutionChain,
       this.poisonDamageAmount,
+      this.evolvedAt,
+    );
+  }
+
+  /**
+   * Create a new CardInstance with updated evolvedAt turn number
+   */
+  withEvolvedAt(turnNumber: number): CardInstance {
+    return new CardInstance(
+      this.instanceId,
+      this.cardId,
+      this.position,
+      this.currentHp,
+      this.maxHp,
+      this.attachedEnergy,
+      this.statusEffect,
+      this.evolutionChain,
+      this.poisonDamageAmount,
+      turnNumber,
     );
   }
 

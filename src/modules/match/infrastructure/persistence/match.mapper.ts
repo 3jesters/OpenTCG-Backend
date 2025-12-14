@@ -98,6 +98,7 @@ export interface CardInstanceJson {
   damageCounters?: number; // Optional for backward compatibility (calculated from HP if not present)
   evolutionChain?: string[]; // Optional for backward compatibility
   poisonDamageAmount?: number; // Optional, poison damage amount (10 or 20)
+  evolvedAt?: number; // Optional, turn number when this Pokemon was evolved
 }
 
 /**
@@ -346,6 +347,7 @@ export class MatchMapper {
       damageCounters: card.getDamageCounters(), // Calculate from HP for backward compatibility
       evolutionChain: card.evolutionChain || [],
       poisonDamageAmount: card.poisonDamageAmount,
+      evolvedAt: card.evolvedAt,
     };
   }
 
@@ -358,9 +360,14 @@ export class MatchMapper {
     const calculatedDamageCounters = json.maxHp - json.currentHp;
     if (json.damageCounters !== undefined && json.damageCounters !== calculatedDamageCounters) {
       // Log warning but use calculated value (HP is source of truth)
-      console.warn(
-        `CardInstance ${json.instanceId}: damageCounters mismatch. JSON: ${json.damageCounters}, Calculated: ${calculatedDamageCounters}. Using calculated value.`,
-      );
+      // Note: This is expected during migration from stored damageCounters to computed values
+      // In production, we can remove this warning after all matches are migrated
+      if (process.env.NODE_ENV !== 'test') {
+        // Use console.warn here since MatchMapper is a static utility class without Logger injection
+        console.warn(
+          `CardInstance ${json.instanceId}: damageCounters mismatch. JSON: ${json.damageCounters}, Calculated: ${calculatedDamageCounters}. Using calculated value.`,
+        );
+      }
     }
     
     return new CardInstance(
@@ -373,6 +380,7 @@ export class MatchMapper {
       json.statusEffect,
       json.evolutionChain || [],
       json.poisonDamageAmount,
+      json.evolvedAt, // Default to undefined for backward compatibility
     );
   }
 

@@ -24,6 +24,7 @@ import {
   EvolvePokemonActionData,
   DevolvePokemonActionData,
   ReturnToHandActionData,
+  ReturnToDeckActionData,
   PutIntoPlayActionData,
   AttachToPokemonActionData,
   TradeCardsActionData,
@@ -118,6 +119,7 @@ export class TrainerEffectExecutorService {
       [TrainerEffectType.EVOLVE_POKEMON]: 3,
       [TrainerEffectType.DEVOLVE_POKEMON]: 3,
       [TrainerEffectType.RETURN_TO_HAND]: 3,
+      [TrainerEffectType.RETURN_TO_DECK]: 3,
       [TrainerEffectType.PUT_INTO_PLAY]: 3,
       [TrainerEffectType.ATTACH_TO_POKEMON]: 3,
       [TrainerEffectType.LOOK_AT_DECK]: 2,
@@ -256,6 +258,15 @@ export class TrainerEffectExecutorService {
         return this.handleReturnToHand(
           effect,
           actionData as ReturnToHandActionData,
+          currentPlayerState,
+          currentOpponentState,
+          playerIdentifier,
+        );
+
+      case TrainerEffectType.RETURN_TO_DECK:
+        return this.handleReturnToDeck(
+          effect,
+          actionData as ReturnToDeckActionData,
           currentPlayerState,
           currentOpponentState,
           playerIdentifier,
@@ -795,6 +806,7 @@ export class TrainerEffectExecutorService {
       benchPokemon.statusEffect,
       benchPokemon.evolutionChain,
       benchPokemon.poisonDamageAmount,
+      benchPokemon.evolvedAt,
     );
 
     const newBench = new CardInstance(
@@ -807,6 +819,7 @@ export class TrainerEffectExecutorService {
       activePokemon.statusEffect,
       activePokemon.evolutionChain,
       activePokemon.poisonDamageAmount,
+      activePokemon.evolvedAt,
     );
 
     const updatedBench = [...playerState.bench];
@@ -855,6 +868,7 @@ export class TrainerEffectExecutorService {
       benchPokemon.statusEffect,
       benchPokemon.evolutionChain,
       benchPokemon.poisonDamageAmount,
+      benchPokemon.evolvedAt,
     );
 
     const newBench = new CardInstance(
@@ -867,6 +881,7 @@ export class TrainerEffectExecutorService {
       activePokemon.statusEffect,
       activePokemon.evolutionChain,
       activePokemon.poisonDamageAmount,
+      activePokemon.evolvedAt,
     );
 
     const updatedBench = [...opponentState.bench];
@@ -942,6 +957,7 @@ export class TrainerEffectExecutorService {
       StatusEffect.NONE,
       targetPokemon.evolutionChain,
       undefined, // Clear poison damage amount when status is cured
+      targetPokemon.evolvedAt, // Preserve evolvedAt
     );
 
     if (isOpponent) {
@@ -1124,6 +1140,7 @@ export class TrainerEffectExecutorService {
         newActive.statusEffect,
         newActive.evolutionChain,
         newActive.poisonDamageAmount,
+        newActive.evolvedAt,
       );
       return {
         playerState: playerState
@@ -1153,6 +1170,117 @@ export class TrainerEffectExecutorService {
       });
       return {
         playerState: playerState.withBench(reindexedBench).withHand(updatedHand),
+        opponentState,
+      };
+    }
+  }
+
+  /**
+   * Handle RETURN_TO_DECK effect - Return Pokémon and attached cards to deck
+   */
+  private handleReturnToDeck(
+    effect: TrainerEffectDto,
+    actionData: ReturnToDeckActionData,
+    playerState: PlayerGameState,
+    opponentState: PlayerGameState,
+    playerIdentifier: PlayerIdentifier,
+  ): ExecuteEffectsResult {
+    if (!actionData.target) {
+      throw new BadRequestException('target is required for RETURN_TO_DECK effect');
+    }
+
+    let targetPokemon: CardInstance | null = null;
+    let benchIndex: number | null = null;
+
+    if (actionData.target === 'ACTIVE') {
+      if (!playerState.activePokemon) {
+        throw new BadRequestException('No active Pokemon to return');
+      }
+      targetPokemon = playerState.activePokemon;
+    } else {
+      benchIndex = this.parseBenchIndex(actionData.target);
+      if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
+        throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+      }
+      targetPokemon = playerState.bench[benchIndex];
+    }
+
+    if (!targetPokemon) {
+      throw new BadRequestException('Target Pokemon not found');
+    }
+
+    // Collect all cards to add to deck: Pokemon card + attached energy cards
+    const cardsToAddToDeck: string[] = [
+      targetPokemon.cardId,
+      ...targetPokemon.attachedEnergy,
+    ];
+
+    // Add all cards to deck
+    const updatedDeck = [...playerState.deck, ...cardsToAddToDeck];
+
+    // Remove from play
+    if (actionData.target === 'ACTIVE') {
+      // If active is returned, must have bench Pokémon to replace (game rule)
+      if (playerState.bench.length === 0) {
+        throw new BadRequestException('Cannot return active Pokemon: no bench Pokemon available');
+      }
+      // Move first bench to active
+      const newActive = playerState.bench[0];
+      const updatedBench = playerState.bench.slice(1).map((pokemon, index) => {
+        return new CardInstance(
+          pokemon.instanceId,
+          pokemon.cardId,
+          `BENCH_${index}` as PokemonPosition,
+          pokemon.currentHp,
+          pokemon.maxHp,
+          pokemon.attachedEnergy,
+          pokemon.statusEffect,
+          pokemon.evolutionChain,
+          pokemon.poisonDamageAmount,
+          pokemon.evolvedAt,
+        );
+      });
+      const newActiveInstance = new CardInstance(
+        newActive.instanceId,
+        newActive.cardId,
+        'ACTIVE' as PokemonPosition,
+        newActive.currentHp,
+        newActive.maxHp,
+        newActive.attachedEnergy,
+        newActive.statusEffect,
+        newActive.evolutionChain,
+        newActive.poisonDamageAmount,
+        newActive.evolvedAt,
+      );
+      return {
+        playerState: playerState
+          .withActivePokemon(newActiveInstance)
+          .withBench(updatedBench)
+          .withDeck(updatedDeck),
+        opponentState,
+      };
+    } else {
+      if (benchIndex === null) {
+        throw new BadRequestException('Bench index is required');
+      }
+      const updatedBench = playerState.bench.filter((_, index) => index !== benchIndex);
+      // Reindex bench positions
+      const reindexedBench = updatedBench.map((pokemon, index) => {
+        return new CardInstance(
+          pokemon.instanceId,
+          pokemon.cardId,
+          `BENCH_${index}` as PokemonPosition,
+          pokemon.currentHp,
+          pokemon.maxHp,
+          pokemon.attachedEnergy,
+          pokemon.statusEffect,
+          pokemon.evolutionChain,
+          pokemon.poisonDamageAmount,
+          pokemon.evolvedAt,
+        );
+      });
+      return {
+        playerState: playerState.withBench(reindexedBench).withDeck(updatedDeck),
         opponentState,
       };
     }
@@ -1336,6 +1464,9 @@ export class TrainerEffectExecutorService {
       defaultHp,
       [],
       StatusEffect.NONE,
+      [], // evolutionChain
+      undefined, // poisonDamageAmount
+      undefined, // evolvedAt (new Pokemon, not evolved)
     );
 
     const updatedTargetBench = [...targetBench, newPokemon];

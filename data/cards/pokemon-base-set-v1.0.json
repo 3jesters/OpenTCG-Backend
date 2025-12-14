@@ -3145,7 +3145,7 @@
       "trainerEffects": [
         {
           "effectType": "SWITCH_ACTIVE",
-          "target": "ACTIVE_YOURS",
+          "target": "BENCHED_YOURS",
           "description": "Switch your Active Pokémon"
         }
       ]

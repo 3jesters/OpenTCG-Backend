@@ -1369,6 +1369,14 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       // Execute first evolution
       const matchAfterFirstEvolution = await useCase.execute(firstEvolutionDto);
 
+      // Verify that after first evolution, evolvedAt is set to current turn number
+      expect(matchAfterFirstEvolution.gameState?.player1State.activePokemon?.evolvedAt).toBe(
+        matchAfterFirstEvolution.gameState?.turnNumber,
+      );
+      expect(matchAfterFirstEvolution.gameState?.player1State.activePokemon?.cardId).toBe(
+        'charmeleon-id',
+      );
+
       // Now try to evolve the same Pokemon again (Charmeleon -> Charizard)
       // The instanceId is the same ('instance-1'), so it should be blocked
       mockMatchRepository.findById.mockResolvedValue(matchAfterFirstEvolution);
@@ -1864,6 +1872,432 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
 
       // This test verifies the boundary logic - in a real scenario after END_TURN,
       // a new turn starts and the validation would stop at END_TURN, allowing evolution
+    });
+
+    it('should reject evolution when Pokemon has evolvedAt matching current turn number', async () => {
+      // Arrange: Create Pokemon with evolvedAt = 5 (same as current turn)
+      const charmeleon = new CardInstance(
+        'instance-1',
+        'charmeleon-id',
+        PokemonPosition.ACTIVE,
+        80,
+        80,
+        [],
+        StatusEffect.NONE,
+        [],
+        undefined,
+        5, // evolvedAt = 5
+      );
+
+      const charmeleonCard = createPokemonCard(
+        'charmeleon-id',
+        'Charmeleon',
+        EvolutionStage.STAGE_1,
+        80,
+        'Charmander',
+      );
+
+      const charizardCard = createPokemonCard(
+        'charizard-id',
+        'Charizard',
+        EvolutionStage.STAGE_2,
+        120,
+        'Charmeleon',
+      );
+
+      const match = createMatchWithGameState(
+        charmeleon,
+        [],
+        ['charizard-id'],
+      );
+
+      const gameState = new GameState(
+        match.gameState!.player1State,
+        match.gameState!.player2State,
+        5, // turnNumber: 5
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+      match.updateGameState(gameState);
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      // Mock getCardEntity: first call returns current Pokemon (Charmeleon), second returns evolution card (Charizard)
+      // But validation should fail before we get to validateEvolution, so we might not need the second call
+      mockGetCardByIdUseCase.getCardEntity
+        .mockResolvedValueOnce(charmeleonCard)
+        .mockResolvedValueOnce(charizardCard);
+
+      // Act & Assert: Attempt to evolve - should fail
+      const dto: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.EVOLVE_POKEMON,
+        actionData: {
+          evolutionCardId: 'charizard-id',
+          target: 'ACTIVE',
+        },
+      };
+
+      await expect(useCase.execute(dto)).rejects.toThrow(
+        'Cannot evolve this Pokemon again this turn',
+      );
+    });
+
+    it('should allow evolution when evolvedAt is from previous turn', async () => {
+      // Arrange: Create Pokemon with evolvedAt = 4, but current turn is 5
+      const charmeleon = new CardInstance(
+        'instance-1',
+        'charmeleon-id',
+        PokemonPosition.ACTIVE,
+        80,
+        80,
+        [],
+        StatusEffect.NONE,
+        [],
+        undefined,
+        4, // evolvedAt = 4 (previous turn)
+      );
+
+      const charmeleonCard = createPokemonCard(
+        'charmeleon-id',
+        'Charmeleon',
+        EvolutionStage.STAGE_1,
+        80,
+        'Charmander',
+      );
+
+      const charizardCard = createPokemonCard(
+        'charizard-id',
+        'Charizard',
+        EvolutionStage.STAGE_2,
+        120,
+        'Charmeleon',
+      );
+
+      const match = createMatchWithGameState(
+        charmeleon,
+        [],
+        ['charizard-id'],
+      );
+
+      const gameState = new GameState(
+        match.gameState!.player1State,
+        match.gameState!.player2State,
+        5, // turnNumber: 5
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+      match.updateGameState(gameState);
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      // Mock getCardEntity: first call returns current Pokemon (Charmeleon), second returns evolution card (Charizard)
+      mockGetCardByIdUseCase.getCardEntity
+        .mockResolvedValueOnce(charmeleonCard)
+        .mockResolvedValueOnce(charizardCard);
+      mockGetCardByIdUseCase.execute.mockResolvedValue({
+        cardId: 'charizard-id',
+        hp: 120,
+      } as any);
+      mockMatchRepository.save.mockImplementation((m) => Promise.resolve(m));
+
+      // Act: Attempt to evolve - should succeed because evolvedAt (4) !== turnNumber (5)
+      const dto: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.EVOLVE_POKEMON,
+        actionData: {
+          evolutionCardId: 'charizard-id',
+          target: 'ACTIVE',
+        },
+      };
+
+      const result = await useCase.execute(dto);
+
+      // Assert
+      expect(result.gameState?.player1State.activePokemon?.cardId).toBe('charizard-id');
+      expect(result.gameState?.player1State.activePokemon?.evolvedAt).toBe(5); // Updated to current turn
+    });
+
+    it('should track evolution by instanceId regardless of position changes', async () => {
+      // Arrange: Evolve Pokemon on bench (evolvedAt = 5)
+      const charmeleon = new CardInstance(
+        'instance-1',
+        'charmeleon-id',
+        PokemonPosition.BENCH_0,
+        80,
+        80,
+        [],
+        StatusEffect.NONE,
+        [],
+        undefined,
+        5, // evolvedAt = 5
+      );
+
+      const charmeleonCard = createPokemonCard(
+        'charmeleon-id',
+        'Charmeleon',
+        EvolutionStage.STAGE_1,
+        80,
+        'Charmander',
+      );
+
+      const charizardCard = createPokemonCard(
+        'charizard-id',
+        'Charizard',
+        EvolutionStage.STAGE_2,
+        120,
+        'Charmeleon',
+      );
+
+      const match = createMatchWithGameState(
+        null,
+        [charmeleon],
+        ['charizard-id'],
+      );
+
+      const gameState = new GameState(
+        match.gameState!.player1State,
+        match.gameState!.player2State,
+        5, // turnNumber: 5
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+      match.updateGameState(gameState);
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockGetCardByIdUseCase.getCardEntity
+        .mockResolvedValueOnce(charmeleonCard)
+        .mockResolvedValueOnce(charizardCard);
+
+      // Act & Assert: Try to evolve again - should fail because evolvedAt = 5 matches current turn
+      // This verifies that position changes don't break the validation
+      const dto: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.EVOLVE_POKEMON,
+        actionData: {
+          evolutionCardId: 'charizard-id',
+          target: 'BENCH_0',
+        },
+      };
+
+      await expect(useCase.execute(dto)).rejects.toThrow(
+        'Cannot evolve this Pokemon again this turn',
+      );
+    });
+
+    it('should allow evolving different Pokemon instances in same turn', async () => {
+      // Arrange: Two Charmeleons on bench, both can evolve independently
+      const charmeleon1 = new CardInstance(
+        'instance-1',
+        'charmeleon-id',
+        PokemonPosition.BENCH_0,
+        80,
+        80,
+        [],
+        StatusEffect.NONE,
+        [],
+      );
+      const charmeleon2 = new CardInstance(
+        'instance-2',
+        'charmeleon-id',
+        PokemonPosition.BENCH_1,
+        80,
+        80,
+        [],
+        StatusEffect.NONE,
+        [],
+      );
+
+      const charmeleonCard = createPokemonCard(
+        'charmeleon-id',
+        'Charmeleon',
+        EvolutionStage.STAGE_1,
+        80,
+        'Charmander',
+      );
+
+      const charizardCard = createPokemonCard(
+        'charizard-id',
+        'Charizard',
+        EvolutionStage.STAGE_2,
+        120,
+        'Charmeleon',
+      );
+
+      const match = createMatchWithGameState(
+        null,
+        [charmeleon1, charmeleon2],
+        ['charizard-id', 'charizard-id'],
+      );
+
+      const gameState = new GameState(
+        match.gameState!.player1State,
+        match.gameState!.player2State,
+        5,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+      match.updateGameState(gameState);
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockGetCardByIdUseCase.getCardEntity
+        .mockResolvedValueOnce(charmeleonCard)
+        .mockResolvedValueOnce(charizardCard);
+      mockGetCardByIdUseCase.execute.mockResolvedValue({
+        cardId: 'charizard-id',
+        hp: 120,
+      } as any);
+      mockMatchRepository.save.mockImplementation((m) => Promise.resolve(m));
+
+      // Act: Evolve first one (instance-1) -> should succeed
+      const dto1: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.EVOLVE_POKEMON,
+        actionData: {
+          evolutionCardId: 'charizard-id',
+          target: 'BENCH_0',
+        },
+      };
+
+      const result1 = await useCase.execute(dto1);
+      expect(result1.gameState?.player1State.bench[0]?.cardId).toBe('charizard-id');
+      expect(result1.gameState?.player1State.bench[0]?.evolvedAt).toBe(5);
+
+      // Update match state for second evolution
+      // Note: After first evolution, the evolution card was removed from hand
+      // We need to ensure the hand still has the card for the second evolution
+      // In a real scenario, the player would have multiple evolution cards
+      const updatedMatch = result1;
+      // Manually add the evolution card back to hand for testing
+      const updatedPlayerState = new PlayerGameState(
+        updatedMatch.gameState!.player1State.deck,
+        [...updatedMatch.gameState!.player1State.hand, 'charizard-id'], // Add card back to hand
+        updatedMatch.gameState!.player1State.activePokemon,
+        updatedMatch.gameState!.player1State.bench,
+        updatedMatch.gameState!.player1State.prizeCards,
+        updatedMatch.gameState!.player1State.discardPile,
+        updatedMatch.gameState!.player1State.hasAttachedEnergyThisTurn,
+      );
+      const updatedGameState = new GameState(
+        updatedPlayerState,
+        updatedMatch.gameState!.player2State,
+        updatedMatch.gameState!.turnNumber,
+        updatedMatch.gameState!.phase,
+        updatedMatch.gameState!.currentPlayer,
+        updatedMatch.gameState!.lastAction,
+        updatedMatch.gameState!.actionHistory,
+        updatedMatch.gameState!.coinFlipState,
+        updatedMatch.gameState!.abilityUsageThisTurn,
+        updatedMatch.gameState!.damagePrevention,
+        updatedMatch.gameState!.damageReduction,
+      );
+      updatedMatch.updateGameState(updatedGameState);
+
+      mockMatchRepository.findById.mockResolvedValue(updatedMatch);
+      // Reset mocks for second evolution
+      mockGetCardByIdUseCase.getCardEntity
+        .mockResolvedValueOnce(charmeleonCard)
+        .mockResolvedValueOnce(charizardCard);
+
+      // Act: Evolve second one (instance-2) -> should succeed
+      const dto2: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.EVOLVE_POKEMON,
+        actionData: {
+          evolutionCardId: 'charizard-id',
+          target: 'BENCH_1',
+        },
+      };
+
+      const result2 = await useCase.execute(dto2);
+      expect(result2.gameState?.player1State.bench[1]?.cardId).toBe('charizard-id');
+      expect(result2.gameState?.player1State.bench[1]?.evolvedAt).toBe(5);
+      // This verifies that each instance is tracked independently
+    });
+
+    it('should set evolvedAt to current turn number when evolving', async () => {
+      // Arrange: Evolve Pokemon in turn 5
+      const charmeleon = new CardInstance(
+        'instance-1',
+        'charmeleon-id',
+        PokemonPosition.ACTIVE,
+        80,
+        80,
+        [],
+        StatusEffect.NONE,
+        [],
+      );
+
+      const charmeleonCard = createPokemonCard(
+        'charmeleon-id',
+        'Charmeleon',
+        EvolutionStage.STAGE_1,
+        80,
+        'Charmander',
+      );
+
+      const charizardCard = createPokemonCard(
+        'charizard-id',
+        'Charizard',
+        EvolutionStage.STAGE_2,
+        120,
+        'Charmeleon',
+      );
+
+      const match = createMatchWithGameState(
+        charmeleon,
+        [],
+        ['charizard-id'],
+      );
+
+      const gameState = new GameState(
+        match.gameState!.player1State,
+        match.gameState!.player2State,
+        5, // turnNumber: 5
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+      match.updateGameState(gameState);
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockGetCardByIdUseCase.getCardEntity
+        .mockResolvedValueOnce(charmeleonCard)
+        .mockResolvedValueOnce(charizardCard);
+      mockGetCardByIdUseCase.execute.mockResolvedValue({
+        cardId: 'charizard-id',
+        hp: 120,
+      } as any);
+      mockMatchRepository.save.mockImplementation((m) => Promise.resolve(m));
+
+      // Act
+      const dto: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.EVOLVE_POKEMON,
+        actionData: {
+          evolutionCardId: 'charizard-id',
+          target: 'ACTIVE',
+        },
+      };
+
+      const result = await useCase.execute(dto);
+
+      // Assert: Verify that evolved Pokemon has evolvedAt = 5
+      expect(result.gameState?.player1State.activePokemon?.evolvedAt).toBe(5);
+      expect(result.gameState?.player1State.activePokemon?.cardId).toBe('charizard-id');
     });
   });
 });

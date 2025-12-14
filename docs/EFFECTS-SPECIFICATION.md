@@ -386,29 +386,30 @@ This document specifies all effects that need to be supported in the game, based
 ## Implementation Checklist
 
 ### Status Effects
-- [ ] POISONED: Track damage amount (10/20), apply between turns
-- [ ] CONFUSED: Coin flip before attack, 30 self-damage on tails
-- [ ] ASLEEP: Coin flip at turn start, block attacks
-- [ ] PARALYZED: Block attacks, clear at end of turn
-- [ ] BURNED: 20 damage per turn, apply between turns
+- [x] POISONED: Track damage amount (10/20), apply between turns
+- [x] CONFUSED: Coin flip before attack, 30 self-damage on tails
+- [x] ASLEEP: Coin flip at turn start, block attacks
+- [x] PARALYZED: Block attacks, clear at end of turn
+- [x] BURNED: 20 damage per turn, apply between turns
 
 ### Damage Modifiers
-- [ ] PLUS_DAMAGE (energy-based): Count energy, apply modifier
-- [ ] PLUS_DAMAGE (fixed/coin flip): Apply based on coin flip result
+- [x] PLUS_DAMAGE (energy-based): Count energy, apply modifier
+- [x] PLUS_DAMAGE (fixed/coin flip): Apply based on coin flip result
 
 ### Damage Prevention/Reduction
-- [ ] PREVENT_DAMAGE (all): Track in GameState, apply when calculating damage
-- [ ] PREVENT_DAMAGE (amount): Track with threshold, apply conditionally
-- [ ] REDUCE_DAMAGE: Track in GameState, reduce damage by amount
+- [x] PREVENT_DAMAGE (all): Track in GameState, apply when calculating damage
+- [x] PREVENT_DAMAGE (amount): Track with threshold, apply conditionally (if damage <= threshold, prevent all; otherwise apply full)
+- [x] REDUCE_DAMAGE: Track in GameState, reduce damage by amount
 
 ### Other Effects
-- [ ] Self-damage: Apply after attack, check for knockout
-- [ ] Bench damage: Apply to bench Pokemon, handle knockouts
+- [x] Self-damage: Apply after attack, check for knockout
+- [x] Bench damage: Apply to bench Pokemon, handle knockouts
+- [x] Resistance: Apply after weakness, reduce damage by fixed amount
 
 ### Between Turns Processing
-- [ ] Process poison damage (10 or 20 per Pokemon)
-- [ ] Process burn damage (20 per Pokemon)
-- [ ] Process sleep wake-up coin flips
-- [ ] Clear paralyzed status (if auto-clears)
-- [ ] Expire damage prevention/reduction effects
+- [x] Process poison damage (10 or 20 per Pokemon)
+- [x] Process burn damage (20 per Pokemon)
+- [x] Process sleep wake-up coin flips
+- [x] Clear paralyzed status (if auto-clears)
+- [x] Expire damage prevention/reduction effects
 

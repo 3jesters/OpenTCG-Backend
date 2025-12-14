@@ -164,6 +164,12 @@ export class TrainerEffectValidatorService {
         }
         break;
 
+      case TrainerEffectType.RETURN_TO_DECK:
+        if (!('target' in actionData) || !actionData.target) {
+          errors.push('target is required for RETURN_TO_DECK effect');
+        }
+        break;
+
       case TrainerEffectType.PUT_INTO_PLAY:
         if (!('target' in actionData) || !actionData.target) {
           errors.push('target is required for PUT_INTO_PLAY effect');

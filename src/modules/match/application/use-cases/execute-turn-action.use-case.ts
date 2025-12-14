@@ -240,6 +240,9 @@ export class ExecuteTurnActionUseCase {
           cardHp,
         [],
         'NONE' as any,
+        [],
+        undefined,
+        undefined, // evolvedAt - new Pokemon, not evolved
       );
         // Remove from hand
         updatedHand = playerState.hand.filter((id) => id !== cardId);
@@ -393,6 +396,8 @@ export class ExecuteTurnActionUseCase {
         [],
         'NONE' as any,
         [],
+        undefined, // poisonDamageAmount
+        undefined, // evolvedAt - new Pokemon, not evolved
       );
 
       // Remove card from hand and add to bench
@@ -747,6 +752,9 @@ export class ExecuteTurnActionUseCase {
           cardHp,
           [],
           'NONE' as any,
+          [], // evolutionChain
+          undefined, // poisonDamageAmount
+          undefined, // evolvedAt - new Pokemon, not evolved
         );
 
         // Remove card from hand and add to bench
@@ -866,6 +874,7 @@ export class ExecuteTurnActionUseCase {
           targetPokemon.statusEffect,
           evolutionChain, // Add evolution chain
           targetPokemon.poisonDamageAmount, // Preserve poison damage amount
+          gameState.turnNumber, // evolvedAt = current turn number
         );
 
         // Remove evolution card from hand
@@ -1145,10 +1154,6 @@ export class ExecuteTurnActionUseCase {
         }
 
         // Execute trainer effects using metadata-driven executor
-        this.logger.debug(
-          `Executing trainer effects for card ${cardId}: ${cardDetail.trainerEffects.map(e => e.effectType).join(', ')}`,
-        );
-        
         const result = await this.trainerEffectExecutor.executeEffects(
           cardDetail.trainerEffects,
           actionData,
@@ -1160,9 +1165,6 @@ export class ExecuteTurnActionUseCase {
         // Note: For cards with DISCARD_HAND/RETRIEVE_ENERGY, hand may have already been updated
         // Remove only the first occurrence of the played card (to handle duplicates correctly)
         const updatedHand = [...result.playerState.hand];
-        this.logger.debug(
-          `Removing trainer card ${cardId} from hand. Hand before removal: ${updatedHand.join(', ')}`,
-        );
         const cardIndexInUpdatedHand = updatedHand.indexOf(cardId);
         if (cardIndexInUpdatedHand === -1) {
           // Card might have been removed by an effect (shouldn't happen, but handle gracefully)
@@ -1172,9 +1174,6 @@ export class ExecuteTurnActionUseCase {
           // Continue without removing (card was already removed by effect)
         } else {
           updatedHand.splice(cardIndexInUpdatedHand, 1);
-          this.logger.debug(
-            `Removed trainer card at index ${cardIndexInUpdatedHand}. Hand after removal: ${updatedHand.join(', ')}`,
-          );
         }
         const finalHand = updatedHand;
         const finalDiscardPile = [...result.playerState.discardPile, cardId];
@@ -1458,15 +1457,79 @@ export class ExecuteTurnActionUseCase {
           opponentState.activePokemon.cardId,
         );
 
-        // Apply weakness if applicable
+        // Apply damage modifiers from attack effects (before weakness/resistance)
+        let finalDamage = damage;
+        if (attack.hasEffects()) {
+          const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
+          for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
+            const conditionsMet = await this.evaluateEffectConditions(
+              modifierEffect.requiredConditions || [],
+              gameState,
+              playerIdentifier,
+              playerState,
+              opponentState,
+            );
+            if (conditionsMet) {
+              finalDamage += modifierEffect.modifier;
+            }
+          }
+          finalDamage = Math.max(0, finalDamage); // Damage can't be negative
+        }
+
+        // Apply weakness if applicable (after damage modifiers)
         if (defenderCard.weakness && attackerCard.pokemonType) {
           // Compare by string value since EnergyType and PokemonType are different enums
           if (defenderCard.weakness.type === attackerCard.pokemonType.toString()) {
             const modifier = defenderCard.weakness.modifier;
             if (modifier === '×2') {
-              damage = damage * 2;
+              finalDamage = finalDamage * 2;
             }
           }
+        }
+
+        // Apply resistance if applicable (after weakness)
+        if (defenderCard.resistance && attackerCard.pokemonType) {
+          if (defenderCard.resistance.type === attackerCard.pokemonType.toString()) {
+            const modifier = defenderCard.resistance.modifier;
+            // Parse modifier (e.g., "-20", "-30") and reduce damage
+            const reduction = parseInt(modifier, 10);
+            if (!isNaN(reduction)) {
+              finalDamage = Math.max(0, finalDamage + reduction); // reduction is negative, so add it
+            }
+          }
+        }
+
+        // Check for damage prevention/reduction effects
+        const preventionEffect = gameState.getDamagePrevention(
+          playerIdentifier === PlayerIdentifier.PLAYER1
+            ? PlayerIdentifier.PLAYER2
+            : PlayerIdentifier.PLAYER1,
+          opponentState.activePokemon.instanceId,
+        );
+        
+        if (preventionEffect) {
+          if (preventionEffect.amount === 'all') {
+            // Prevent all damage
+            finalDamage = 0;
+          } else if (typeof preventionEffect.amount === 'number') {
+            // Threshold-based prevention: if damage <= threshold, prevent all; otherwise apply full damage
+            // This matches cards like Graveler's Harden: "whenever 30 or less damage is done, prevent that damage"
+            if (finalDamage <= preventionEffect.amount) {
+              finalDamage = 0; // Prevent all damage if within threshold
+            }
+            // If damage > threshold, apply full damage (no change)
+          }
+        }
+        
+        // Apply damage reduction
+        const reductionAmount = gameState.getDamageReduction(
+          playerIdentifier === PlayerIdentifier.PLAYER1
+            ? PlayerIdentifier.PLAYER2
+            : PlayerIdentifier.PLAYER1,
+          opponentState.activePokemon.instanceId,
+        );
+        if (reductionAmount > 0) {
+          finalDamage = Math.max(0, finalDamage - reductionAmount);
         }
 
         // Parse attack text for self-damage and bench damage
@@ -1475,7 +1538,7 @@ export class ExecuteTurnActionUseCase {
         const benchDamage = this.parseBenchDamage(attackText);
 
         // Apply damage to opponent's active Pokemon
-        const newHp = Math.max(0, opponentState.activePokemon.currentHp - damage);
+        const newHp = Math.max(0, opponentState.activePokemon.currentHp - finalDamage);
         let updatedOpponentActive = opponentState.activePokemon.withHp(newHp);
 
         // Apply status effects from attack (if any)
@@ -1500,8 +1563,8 @@ export class ExecuteTurnActionUseCase {
                 case 'POISONED':
                   status = StatusEffect.POISONED;
                   // Check if this is Nidoking's Toxic attack (20 damage) or normal poison (10)
-                  // For now, default to 10. We can check attack name or add a field to the effect
-                  poisonDamageAmount = 10; // Default, can be overridden if attack is Toxic
+                  // Nidoking's Toxic attack does 20 poison damage, all others do 10
+                  poisonDamageAmount = attack.name === 'Toxic' ? 20 : 10;
                   break;
                 case 'CONFUSED':
                   status = StatusEffect.CONFUSED;
@@ -1559,6 +1622,7 @@ export class ExecuteTurnActionUseCase {
               pokemon.statusEffect,
               pokemon.evolutionChain,
               pokemon.poisonDamageAmount,
+              pokemon.evolvedAt,
             );
           });
           
@@ -1599,6 +1663,7 @@ export class ExecuteTurnActionUseCase {
               pokemon.statusEffect,
               pokemon.evolutionChain,
               pokemon.poisonDamageAmount,
+              pokemon.evolvedAt,
             );
           });
           
@@ -1893,16 +1958,6 @@ export class ExecuteTurnActionUseCase {
                 opponentState.activePokemon.cardId,
               );
 
-              // Apply weakness if applicable
-              if (defenderCard.weakness && attackerCard.pokemonType) {
-                if (defenderCard.weakness.type === attackerCard.pokemonType.toString()) {
-                  const modifier = defenderCard.weakness.modifier;
-                  if (modifier === '×2') {
-                    damage = damage * 2;
-                  }
-                }
-              }
-
               // Apply damage modifiers from attack effects (before weakness/resistance)
               let finalDamage = damage;
               if (attack.hasEffects()) {
@@ -1933,6 +1988,18 @@ export class ExecuteTurnActionUseCase {
                 }
               }
 
+              // Apply resistance if applicable (after weakness)
+              if (defenderCard.resistance && attackerCard.pokemonType) {
+                if (defenderCard.resistance.type === attackerCard.pokemonType.toString()) {
+                  const modifier = defenderCard.resistance.modifier;
+                  // Parse modifier (e.g., "-20", "-30") and reduce damage
+                  const reduction = parseInt(modifier, 10);
+                  if (!isNaN(reduction)) {
+                    finalDamage = Math.max(0, finalDamage + reduction); // reduction is negative, so add it
+                  }
+                }
+              }
+
               // Check for damage prevention/reduction effects
               const preventionEffect = gameState.getDamagePrevention(
                 attackingPlayer === PlayerIdentifier.PLAYER1
@@ -1943,9 +2010,14 @@ export class ExecuteTurnActionUseCase {
               
               if (preventionEffect) {
                 if (preventionEffect.amount === 'all') {
+                  // Prevent all damage
                   finalDamage = 0;
-                } else if (preventionEffect.amount !== undefined) {
-                  finalDamage = Math.max(0, finalDamage - preventionEffect.amount);
+                } else if (typeof preventionEffect.amount === 'number') {
+                  // Threshold-based prevention: if damage <= threshold, prevent all; otherwise apply full damage
+                  if (finalDamage <= preventionEffect.amount) {
+                    finalDamage = 0; // Prevent all damage if within threshold
+                  }
+                  // If damage > threshold, apply full damage (no change)
                 }
               }
               
@@ -1991,8 +2063,8 @@ export class ExecuteTurnActionUseCase {
                       case 'POISONED':
                         status = StatusEffect.POISONED;
                         // Check if this is Nidoking's Toxic attack (20 damage) or normal poison (10)
-                        // For now, default to 10. We can check attack name or add a field to the effect
-                        poisonDamageAmount = 10; // Default, can be overridden if attack is Toxic
+                        // Nidoking's Toxic attack does 20 poison damage, all others do 10
+                        poisonDamageAmount = attack.name === 'Toxic' ? 20 : 10;
                         break;
                       case 'CONFUSED':
                         status = StatusEffect.CONFUSED;
@@ -2135,25 +2207,83 @@ export class ExecuteTurnActionUseCase {
               if (coinFlipConfig.damageCalculationType === DamageCalculationType.STATUS_EFFECT_ONLY) {
                 // For STATUS_EFFECT_ONLY, damage always applies, only effect fails
                 const baseDamage = parseInt(attack.damage || '0', 10);
-                let damage = baseDamage;
-
+                
                 // Load defender card for weakness/resistance
                 const defenderCard = await this.getCardByIdUseCase.execute(
                   opponentState.activePokemon.cardId,
                 );
 
-                // Apply weakness if applicable
+                // Apply damage modifiers from attack effects (before weakness/resistance)
+                let finalDamage = baseDamage;
+                if (attack.hasEffects()) {
+                  const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
+                  for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
+                    const conditionsMet = await this.evaluateEffectConditions(
+                      modifierEffect.requiredConditions || [],
+                      gameState,
+                      attackingPlayer,
+                      playerState,
+                      opponentState,
+                      finalCoinFlipState.results,
+                    );
+                    if (conditionsMet) {
+                      finalDamage += modifierEffect.modifier;
+                    }
+                  }
+                  finalDamage = Math.max(0, finalDamage); // Damage can't be negative
+                }
+
+                // Apply weakness if applicable (after damage modifiers)
                 if (defenderCard.weakness && attackerCard.pokemonType) {
                   if (defenderCard.weakness.type === attackerCard.pokemonType.toString()) {
                     const modifier = defenderCard.weakness.modifier;
                     if (modifier === '×2') {
-                      damage = damage * 2;
+                      finalDamage = finalDamage * 2;
                     }
                   }
                 }
 
+                // Apply resistance if applicable (after weakness)
+                if (defenderCard.resistance && attackerCard.pokemonType) {
+                  if (defenderCard.resistance.type === attackerCard.pokemonType.toString()) {
+                    const modifier = defenderCard.resistance.modifier;
+                    // Parse modifier (e.g., "-20", "-30") and reduce damage
+                    const reduction = parseInt(modifier, 10);
+                    if (!isNaN(reduction)) {
+                      finalDamage = Math.max(0, finalDamage + reduction); // reduction is negative, so add it
+                    }
+                  }
+                }
+
+                // Check for damage prevention/reduction effects
+                const preventionEffect = gameState.getDamagePrevention(
+                  attackingPlayer === PlayerIdentifier.PLAYER1
+                    ? PlayerIdentifier.PLAYER2
+                    : PlayerIdentifier.PLAYER1,
+                  opponentState.activePokemon.instanceId,
+                );
+                
+                if (preventionEffect) {
+                  if (preventionEffect.amount === 'all') {
+                    finalDamage = 0;
+                  } else if (preventionEffect.amount !== undefined) {
+                    finalDamage = Math.max(0, finalDamage - preventionEffect.amount);
+                  }
+                }
+                
+                // Apply damage reduction
+                const reductionAmount = gameState.getDamageReduction(
+                  attackingPlayer === PlayerIdentifier.PLAYER1
+                    ? PlayerIdentifier.PLAYER2
+                    : PlayerIdentifier.PLAYER1,
+                  opponentState.activePokemon.instanceId,
+                );
+                if (reductionAmount > 0) {
+                  finalDamage = Math.max(0, finalDamage - reductionAmount);
+                }
+
                 // Apply damage to opponent's active Pokemon
-                const newHp = Math.max(0, opponentState.activePokemon.currentHp - damage);
+                const newHp = Math.max(0, opponentState.activePokemon.currentHp - finalDamage);
                 let updatedOpponentActive = opponentState.activePokemon.withHp(newHp);
                 const isKnockedOut = newHp === 0;
 
@@ -2189,7 +2319,7 @@ export class ExecuteTurnActionUseCase {
                   new Date(),
                   {
                     attackIndex: finalCoinFlipState.attackIndex,
-                    damage,
+                    damage: finalDamage,
                     isKnockedOut,
                     coinFlipResults: results,
                     effectFailed: true, // Status effect failed (tails), but damage applied
@@ -2543,42 +2673,44 @@ export class ExecuteTurnActionUseCase {
                     opponentState.activePokemon.cardId,
                   );
                   
-                  // Apply weakness
-                  if (defenderCard.weakness && attackerCard.pokemonType) {
-                    if (defenderCard.weakness.type === attackerCard.pokemonType.toString()) {
-                      const modifier = defenderCard.weakness.modifier;
-                      if (modifier === '×2') {
-                        damage = damage * 2;
-                      }
-                    }
-                  }
-                  
-                  // Apply damage modifiers
+                  // Apply damage modifiers from attack effects (before weakness/resistance)
                   let finalDamage = damage;
                   if (attack.hasEffects()) {
                     const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
                     for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
                       const conditionsMet = await this.evaluateEffectConditions(
                         modifierEffect.requiredConditions || [],
-                      gameState,
-                      confusedPlayerId,
-                      playerState,
-                      opponentState,
-                      attackCoinFlipState.results,
-                    );
+                        gameState,
+                        confusedPlayerId,
+                        playerState,
+                        opponentState,
+                        attackCoinFlipState.results,
+                      );
                       if (conditionsMet) {
                         finalDamage += modifierEffect.modifier;
                       }
                     }
-                    finalDamage = Math.max(0, finalDamage);
+                    finalDamage = Math.max(0, finalDamage); // Damage can't be negative
                   }
                   
-                  // Apply weakness again after modifiers
+                  // Apply weakness if applicable (after damage modifiers)
                   if (defenderCard.weakness && attackerCard.pokemonType) {
                     if (defenderCard.weakness.type === attackerCard.pokemonType.toString()) {
                       const modifier = defenderCard.weakness.modifier;
                       if (modifier === '×2') {
                         finalDamage = finalDamage * 2;
+                      }
+                    }
+                  }
+                  
+                  // Apply resistance if applicable (after weakness)
+                  if (defenderCard.resistance && attackerCard.pokemonType) {
+                    if (defenderCard.resistance.type === attackerCard.pokemonType.toString()) {
+                      const modifier = defenderCard.resistance.modifier;
+                      // Parse modifier (e.g., "-20", "-30") and reduce damage
+                      const reduction = parseInt(modifier, 10);
+                      if (!isNaN(reduction)) {
+                        finalDamage = Math.max(0, finalDamage + reduction); // reduction is negative, so add it
                       }
                     }
                   }
@@ -2821,14 +2953,72 @@ export class ExecuteTurnActionUseCase {
                   opponentState.activePokemon.cardId,
                 );
                 
-                // Apply weakness if applicable
+                // Apply damage modifiers from attack effects (before weakness/resistance)
+                let finalDamage = damage;
+                if (attack.hasEffects()) {
+                  const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
+                  for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
+                    const conditionsMet = await this.evaluateEffectConditions(
+                      modifierEffect.requiredConditions || [],
+                      gameState,
+                      confusedPlayerId,
+                      playerState,
+                      opponentState,
+                    );
+                    if (conditionsMet) {
+                      finalDamage += modifierEffect.modifier;
+                    }
+                  }
+                  finalDamage = Math.max(0, finalDamage); // Damage can't be negative
+                }
+                
+                // Apply weakness if applicable (after damage modifiers)
                 if (defenderCard.weakness && attackerCard.pokemonType) {
                   if (defenderCard.weakness.type === attackerCard.pokemonType.toString()) {
                     const modifier = defenderCard.weakness.modifier;
                     if (modifier === '×2') {
-                      damage = damage * 2;
+                      finalDamage = finalDamage * 2;
                     }
                   }
+                }
+                
+                // Apply resistance if applicable (after weakness)
+                if (defenderCard.resistance && attackerCard.pokemonType) {
+                  if (defenderCard.resistance.type === attackerCard.pokemonType.toString()) {
+                    const modifier = defenderCard.resistance.modifier;
+                    // Parse modifier (e.g., "-20", "-30") and reduce damage
+                    const reduction = parseInt(modifier, 10);
+                    if (!isNaN(reduction)) {
+                      finalDamage = Math.max(0, finalDamage + reduction); // reduction is negative, so add it
+                    }
+                  }
+                }
+                
+                // Check for damage prevention/reduction effects
+                const preventionEffect = gameState.getDamagePrevention(
+                  confusedPlayerId === PlayerIdentifier.PLAYER1
+                    ? PlayerIdentifier.PLAYER2
+                    : PlayerIdentifier.PLAYER1,
+                  opponentState.activePokemon.instanceId,
+                );
+                
+                if (preventionEffect) {
+                  if (preventionEffect.amount === 'all') {
+                    finalDamage = 0;
+                  } else if (preventionEffect.amount !== undefined) {
+                    finalDamage = Math.max(0, finalDamage - preventionEffect.amount);
+                  }
+                }
+                
+                // Apply damage reduction
+                const reductionAmount = gameState.getDamageReduction(
+                  confusedPlayerId === PlayerIdentifier.PLAYER1
+                    ? PlayerIdentifier.PLAYER2
+                    : PlayerIdentifier.PLAYER1,
+                  opponentState.activePokemon.instanceId,
+                );
+                if (reductionAmount > 0) {
+                  finalDamage = Math.max(0, finalDamage - reductionAmount);
                 }
                 
                 // Parse attack text for self-damage and bench damage
@@ -2837,7 +3027,7 @@ export class ExecuteTurnActionUseCase {
                 const benchDamage = this.parseBenchDamage(attackText);
                 
                 // Apply damage to opponent's active Pokemon
-                const newHp = Math.max(0, opponentState.activePokemon.currentHp - damage);
+                const newHp = Math.max(0, opponentState.activePokemon.currentHp - finalDamage);
                 let updatedOpponentActive = opponentState.activePokemon.withHp(newHp);
                 
                 // Apply status effects from attack
@@ -2860,7 +3050,9 @@ export class ExecuteTurnActionUseCase {
                       switch (statusEffect.statusCondition) {
                         case 'POISONED':
                           status = StatusEffect.POISONED;
-                          poisonDamageAmount = 10;
+                          // Check if this is Nidoking's Toxic attack (20 damage) or normal poison (10)
+                          // Nidoking's Toxic attack does 20 poison damage, all others do 10
+                          poisonDamageAmount = attack.name === 'Toxic' ? 20 : 10;
                           break;
                         case 'CONFUSED':
                           status = StatusEffect.CONFUSED;
@@ -2965,6 +3157,7 @@ export class ExecuteTurnActionUseCase {
                       pokemon.statusEffect,
                       pokemon.evolutionChain,
                       pokemon.poisonDamageAmount,
+                      pokemon.evolvedAt,
                     );
                   });
                   
@@ -3320,8 +3513,32 @@ export class ExecuteTurnActionUseCase {
     instanceId: string,
     cardId: string,
   ): void {
+    // Find the Pokemon instance to check its evolvedAt field
+    const playerState = gameState.getPlayerState(playerIdentifier);
+    let targetPokemon: CardInstance | null = null;
+
+    // Check active Pokemon
+    if (playerState.activePokemon?.instanceId === instanceId) {
+      targetPokemon = playerState.activePokemon;
+    } else {
+      // Check bench Pokemon
+      targetPokemon = playerState.bench.find((p) => p.instanceId === instanceId) || null;
+    }
+
+    // Primary check: Use evolvedAt field if available (new approach)
+    if (targetPokemon && targetPokemon.evolvedAt !== undefined) {
+      if (targetPokemon.evolvedAt === gameState.turnNumber) {
+        throw new BadRequestException(
+          `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
+        );
+      }
+      // If evolvedAt is set but from a different turn, allow evolution
+      return;
+    }
+
+    // Fallback: Check action history for backward compatibility with existing matches
+    // This handles cases where evolvedAt is not set (old matches or edge cases)
     // Check lastAction first (most recent action, definitely from current turn if from current player)
-    // This is a fast path for the most common case: Pokemon was just evolved in the previous action
     if (gameState.lastAction && gameState.lastAction.playerId === playerIdentifier) {
       if (gameState.lastAction.actionType === PlayerActionType.EVOLVE_POKEMON) {
         const actionData = gameState.lastAction.actionData as any;
@@ -3333,7 +3550,6 @@ export class ExecuteTurnActionUseCase {
       } else if (gameState.lastAction.actionType === PlayerActionType.PLAY_TRAINER) {
         const actionData = gameState.lastAction.actionData as any;
         if (actionData.evolutionCardId && actionData.target) {
-          const playerState = gameState.getPlayerState(playerIdentifier);
           let targetInstanceId: string | null = null;
 
           if (actionData.target === 'ACTIVE') {
@@ -3358,10 +3574,7 @@ export class ExecuteTurnActionUseCase {
     }
 
     // Check action history in reverse order (most recent first)
-    // Note: lastAction is also the last item in actionHistory, but we check actionHistory
-    // to find evolutions that happened earlier in the same turn (before the most recent action)
     // Stop when we hit an END_TURN action (turn boundary) or an action from a different player
-    // This ensures we only check actions from the current turn, not previous turns
     for (let i = gameState.actionHistory.length - 1; i >= 0; i--) {
       const action = gameState.actionHistory[i];
 
@@ -3389,7 +3602,6 @@ export class ExecuteTurnActionUseCase {
       if (action.actionType === PlayerActionType.PLAY_TRAINER) {
         const actionData = action.actionData as any;
         if (actionData.evolutionCardId && actionData.target) {
-          const playerState = gameState.getPlayerState(playerIdentifier);
           let targetInstanceId: string | null = null;
 
           if (actionData.target === 'ACTIVE') {
@@ -3414,60 +3626,6 @@ export class ExecuteTurnActionUseCase {
     }
   }
 
-  /**
-   * Validate that a Pokemon hasn't been evolved this turn
-   * @param gameState Current game state
-   * @param playerIdentifier Player attempting the evolution
-   * @param instanceId Instance ID of the Pokemon to evolve
-   * @param cardId Card ID of the Pokemon (for error message)
-   * @throws BadRequestException if the Pokemon has already been evolved this turn
-   */
-  private validatePokemonNotEvolvedThisTurn(
-    gameState: GameState,
-    playerIdentifier: PlayerIdentifier,
-    instanceId: string,
-    cardId: string,
-  ): void {
-    // Check action history for EVOLVE_POKEMON actions from this player in the current turn
-    // We check all actions from this player, but since instanceId is unique per Pokemon instance,
-    // if we find an evolution action with the same instanceId, it means this Pokemon was already evolved
-    
-    // Check lastAction first (most recent action)
-    if (
-      gameState.lastAction &&
-      gameState.lastAction.playerId === playerIdentifier &&
-      gameState.lastAction.actionType === PlayerActionType.EVOLVE_POKEMON
-    ) {
-      const actionData = gameState.lastAction.actionData as any;
-      if (actionData.instanceId === instanceId) {
-        // Get Pokemon name for better error message
-        throw new BadRequestException(
-          `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
-        );
-      }
-    }
-
-    // Check action history for other EVOLVE_POKEMON actions from this player
-    // We need to check actions from the current turn only
-    // Since we don't have turn number in action data, we'll check all actions from this player
-    // and filter by checking if the instanceId matches
-    for (const action of gameState.actionHistory) {
-      if (
-        action.playerId === playerIdentifier &&
-        action.actionType === PlayerActionType.EVOLVE_POKEMON
-      ) {
-        const actionData = action.actionData as any;
-        // Check if this action evolved the same Pokemon instance
-        // We check both the instanceId directly and also check if the evolution chain
-        // would include this instanceId (for cases where a Pokemon was evolved earlier in the turn)
-        if (actionData.instanceId === instanceId) {
-          throw new BadRequestException(
-            `Cannot evolve this Pokemon again this turn. Each Pokemon can only be evolved once per turn.`,
-          );
-        }
-      }
-    }
-  }
 
   /**
    * Validate that an evolution card can evolve from the current Pokemon
@@ -3588,7 +3746,7 @@ export class ExecuteTurnActionUseCase {
       }
       // Default to 100 if we can't infer
       if (process.env.NODE_ENV !== 'test') {
-        console.warn(`Card not found for HP lookup: ${cardId}, using default HP`);
+        this.logger.warn(`Card not found for HP lookup: ${cardId}, using default HP`);
       }
       return 100;
     }

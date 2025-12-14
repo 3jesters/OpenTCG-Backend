@@ -19,7 +19,7 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-12-09T12:25:06.696Z",
-  "updatedAt": "2025-12-14T06:20:41.345Z",
+  "updatedAt": "2025-12-14T12:09:54.221Z",
   "startedAt": null,
   "endedAt": null,
   "winnerId": null,
@@ -61,7 +61,7 @@
         "pokemon-base-set-v1.0-growlithe--28"
       ],
       "hand": [
-        "pokemon-base-set-v1.0-switch--96",
+        "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-charizard--4",
         "pokemon-base-set-v1.0-fire-energy--99",
         "pokemon-base-set-v1.0-fire-energy--99",
@@ -81,34 +81,33 @@
         "pokemon-base-set-v1.0-fire-energy--99"
       ],
       "activePokemon": {
-        "instanceId": "42d07a45-145a-47b2-acb8-06c9eee6a653",
-        "cardId": "pokemon-base-set-v1.0-vulpix--70",
+        "instanceId": "b6e95877-6111-408e-a377-6b23f15ee75b",
+        "cardId": "pokemon-base-set-v1.0-charmeleon--24",
         "position": "ACTIVE",
-        "currentHp": 50,
-        "maxHp": 50,
-        "attachedEnergy": [
-          "pokemon-base-set-v1.0-fire-energy--99",
-          "pokemon-base-set-v1.0-fire-energy--99"
-        ],
+        "currentHp": 80,
+        "maxHp": 80,
+        "attachedEnergy": [],
         "statusEffect": "NONE",
         "damageCounters": 0,
-        "evolutionChain": []
+        "evolutionChain": [
+          "pokemon-base-set-v1.0-charmander--48"
+        ],
+        "evolvedAt": 25
       },
       "bench": [
         {
-          "instanceId": "b6e95877-6111-408e-a377-6b23f15ee75b",
-          "cardId": "pokemon-base-set-v1.0-charmeleon--24",
+          "instanceId": "42d07a45-145a-47b2-acb8-06c9eee6a653",
+          "cardId": "pokemon-base-set-v1.0-vulpix--70",
           "position": "BENCH_0",
-          "currentHp": 80,
-          "maxHp": 80,
+          "currentHp": 50,
+          "maxHp": 50,
           "attachedEnergy": [
+            "pokemon-base-set-v1.0-fire-energy--99",
             "pokemon-base-set-v1.0-fire-energy--99"
           ],
           "statusEffect": "NONE",
           "damageCounters": 0,
-          "evolutionChain": [
-            "pokemon-base-set-v1.0-charmander--48"
-          ]
+          "evolutionChain": []
         }
       ],
       "prizeCards": [
@@ -119,9 +118,10 @@
       ],
       "discardPile": [
         "pokemon-base-set-v1.0-fire-energy--99",
-        "pokemon-base-set-v1.0-ponyta--62"
+        "pokemon-base-set-v1.0-ponyta--62",
+        "pokemon-base-set-v1.0-switch--96"
       ],
-      "hasAttachedEnergyThisTurn": true
+      "hasAttachedEnergyThisTurn": false
     },
     "player2State": {
       "deck": [
@@ -222,13 +222,15 @@
     "phase": "MAIN_PHASE",
     "currentPlayer": "PLAYER1",
     "lastAction": {
-      "actionId": "265f83c3-64f8-4061-8a25-8fc219c100c4",
+      "actionId": "cde9f60f-0cd8-42ae-af3e-40fafe3be8e0",
       "playerId": "PLAYER1",
-      "actionType": "ATTACH_ENERGY",
-      "timestamp": "2025-12-14T06:20:41.345Z",
+      "actionType": "PLAY_TRAINER",
+      "timestamp": "2025-12-14T12:09:54.220Z",
       "actionData": {
-        "energyCardId": "pokemon-base-set-v1.0-fire-energy--99",
-        "target": "BENCH_0"
+        "cardId": "pokemon-base-set-v1.0-switch--96",
+        "targetPlayer": "PLAYER2",
+        "benchPosition": "BENCH_0",
+        "instanceId": "32aa261a-7976-4681-8529-f31560ab7962"
       }
     },
     "actionHistory": [
@@ -1031,23 +1033,26 @@
         "actionData": {}
       },
       {
-        "actionId": "a3bfd1a3-572f-47e6-8590-c480f6ec0c7c",
+        "actionId": "6b52cd0d-f427-4810-a432-883116aa5b73",
         "playerId": "PLAYER1",
         "actionType": "EVOLVE_POKEMON",
-        "timestamp": "2025-12-14T06:20:30.209Z",
+        "timestamp": "2025-12-14T11:27:46.578Z",
         "actionData": {
           "evolutionCardId": "pokemon-base-set-v1.0-charmeleon--24",
-          "target": "BENCH_0"
+          "target": "BENCH_0",
+          "instanceId": "b6e95877-6111-408e-a377-6b23f15ee75b"
         }
       },
       {
-        "actionId": "265f83c3-64f8-4061-8a25-8fc219c100c4",
+        "actionId": "cde9f60f-0cd8-42ae-af3e-40fafe3be8e0",
         "playerId": "PLAYER1",
-        "actionType": "ATTACH_ENERGY",
-        "timestamp": "2025-12-14T06:20:41.345Z",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-14T12:09:54.220Z",
         "actionData": {
-          "energyCardId": "pokemon-base-set-v1.0-fire-energy--99",
-          "target": "BENCH_0"
+          "cardId": "pokemon-base-set-v1.0-switch--96",
+          "targetPlayer": "PLAYER2",
+          "benchPosition": "BENCH_0",
+          "instanceId": "32aa261a-7976-4681-8529-f31560ab7962"
         }
       }
     ],

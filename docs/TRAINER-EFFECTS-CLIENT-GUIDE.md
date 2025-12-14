@@ -376,6 +376,32 @@ The `target` field in trainer effects determines which Pokémon/cards are shown 
 
 ---
 
+### RETURN_TO_DECK
+**Effect Type:** `RETURN_TO_DECK`  
+**Description:** Return Pokémon and attached cards to deck (e.g., Mr. Fuji)  
+**Target Types:** `ALL_YOURS`, `ACTIVE_YOURS`, `BENCHED_YOURS`  
+**Value:** N/A
+
+**Required actionData:**
+```typescript
+{
+  cardId: string;
+  target: string; // 'ACTIVE' | 'BENCH_0' | 'BENCH_1' | etc.
+}
+```
+
+**Client UI Required:**
+- Open **player's** active and bench Pokémon selection modal
+- Show active Pokémon and all bench Pokémon
+- User selects which Pokémon to return to deck
+- Return `target: 'ACTIVE'` or `target: 'BENCH_X'`
+- **Note:** If active is returned, must have bench Pokémon to replace
+- **Note:** This effect adds the Pokémon card AND all attached energy cards to the deck. The deck should be shuffled after this effect (typically with a `SHUFFLE_DECK` effect following it).
+
+**Example Cards:** Mr. Fuji
+
+---
+
 ### EVOLVE_POKEMON
 **Effect Type:** `EVOLVE_POKEMON`  
 **Description:** Force evolution (e.g., Pokémon Breeder)  
@@ -735,6 +761,7 @@ Some trainer cards have **multiple effects** that execute in sequence. The clien
 | CURE_STATUS | Yes | Pokémon Selection | Player or Opponent |
 | DISCARD_ENERGY | Yes | Pokémon + Energy Selection | Player |
 | RETURN_TO_HAND | Yes | Pokémon Selection | Player |
+| RETURN_TO_DECK | Yes | Pokémon Selection | Player |
 | EVOLVE_POKEMON | Yes | Pokémon + Hand Selection | Player |
 | DEVOLVE_POKEMON | Yes | Pokémon Selection | Player |
 | PUT_INTO_PLAY | Yes | DISCARD_PILE + BENCH_POKEMON | Player or Opponent (depends on source & target) |

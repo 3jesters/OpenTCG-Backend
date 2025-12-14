@@ -23,6 +23,7 @@ export enum TrainerEffectType {
   // ========================================
   SWITCH_ACTIVE = 'SWITCH_ACTIVE', // Switch active Pokémon
   RETURN_TO_HAND = 'RETURN_TO_HAND', // Return Pokémon to hand (Scoop Up)
+  RETURN_TO_DECK = 'RETURN_TO_DECK', // Return Pokémon and attached cards to deck (Mr. Fuji)
   FORCE_SWITCH = 'FORCE_SWITCH', // Force opponent to switch (Gust of Wind)
   EVOLVE_POKEMON = 'EVOLVE_POKEMON', // Force evolution (Pokémon Breeder)
   DEVOLVE_POKEMON = 'DEVOLVE_POKEMON', // Devolve Pokémon (Devolution Spray)

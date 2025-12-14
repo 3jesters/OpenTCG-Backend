@@ -1775,9 +1775,14 @@
       "imageUrl": "https://www.pikawiz.com/images/fossil/57.png",
       "trainerEffects": [
         {
-          "effectType": "RETURN_TO_HAND",
-          "target": "SELF",
+          "effectType": "RETURN_TO_DECK",
+          "target": "BENCHED_YOURS",
           "description": "Choose a Pokémon on your Bench. Shuffle it and any cards attached to it into your deck"
+        },
+        {
+          "effectType": "SHUFFLE_DECK",
+          "target": "SELF",
+          "description": "Shuffle your deck"
         }
       ]
     },

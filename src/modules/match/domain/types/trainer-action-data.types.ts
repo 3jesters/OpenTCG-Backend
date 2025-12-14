@@ -125,6 +125,13 @@ export interface ReturnToHandActionData extends BaseTrainerActionData {
 }
 
 /**
+ * Action data for RETURN_TO_DECK effect
+ */
+export interface ReturnToDeckActionData extends BaseTrainerActionData {
+  target: string; // Required
+}
+
+/**
  * Action data for PUT_INTO_PLAY effect
  */
 export interface PutIntoPlayActionData extends BaseTrainerActionData {
@@ -166,6 +173,7 @@ export type TrainerActionData =
   | EvolvePokemonActionData
   | DevolvePokemonActionData
   | ReturnToHandActionData
+  | ReturnToDeckActionData
   | PutIntoPlayActionData
   | AttachToPokemonActionData
   | TradeCardsActionData;
