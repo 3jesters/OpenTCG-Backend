@@ -99,7 +99,15 @@
           "name": "Flamethrower",
           "energyCost": ["FIRE", "FIRE", "COLORLESS"],
           "damage": "60",
-          "text": "Discard 1 Fire Energy card attached to Flareon in order to use this attack."
+          "text": "Discard 1 Fire Energy card attached to Flareon in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "FIRE"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -399,7 +407,8 @@
           "name": "Water Gun",
           "energyCost": ["WATER", "WATER", "COLORLESS"],
           "damage": "30+",
-          "text": "Does 30 damage plus 10 more damage for each Water Energy attached to Vaporeon but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 30 damage plus 10 more damage for each Water Energy attached to Vaporeon but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         }
       ],
       "weakness": {

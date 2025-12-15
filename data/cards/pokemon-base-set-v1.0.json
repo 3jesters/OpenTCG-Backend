@@ -72,7 +72,8 @@
             "WATER"
           ],
           "damage": "40+",
-          "text": "Does 40 damage plus 10 more damage for each Water Energy attached to Blastoise but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 40 damage plus 10 more damage for each Water Energy attached to Blastoise but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         }
       ],
       "ability": {
@@ -162,7 +163,14 @@
             "FIRE"
           ],
           "damage": "100",
-          "text": "Discard 2 Energy cards attached to Charizard in order to use this attack."
+          "text": "Discard 2 Energy cards attached to Charizard in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 2
+            }
+          ]
         }
       ],
       "ability": {
@@ -424,7 +432,15 @@
             "PSYCHIC"
           ],
           "damage": "0",
-          "text": "Discard 1 Psychic Energy card attached to Mewtwo in order to use this attack. During your opponent's next turn, prevent all effects of attacks, including damage, done to Mewtwo."
+          "text": "Discard 1 Psychic Energy card attached to Mewtwo in order to use this attack. During your opponent's next turn, prevent all effects of attacks, including damage, done to Mewtwo.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "PSYCHIC"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -504,7 +520,15 @@
             "FIRE"
           ],
           "damage": "80",
-          "text": "Discard 1 Fire Energy card attached to Ninetales in order to use this attack."
+          "text": "Discard 1 Fire Energy card attached to Ninetales in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "FIRE"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -534,7 +558,8 @@
             "COLORLESS"
           ],
           "damage": "30+",
-          "text": "Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         },
         {
           "name": "Whirlpool",
@@ -674,7 +699,14 @@
             "ELECTRIC"
           ],
           "damage": "100",
-          "text": "Discard all Energy cards attached to Zapdos in order to use this attack."
+          "text": "Discard all Energy cards attached to Zapdos in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": "all"
+            }
+          ]
         }
       ],
       "resistance": {
@@ -961,7 +993,15 @@
             "COLORLESS"
           ],
           "damage": "50",
-          "text": "Discard 1 Fire Energy card attached to Arcanine in order to use this attack."
+          "text": "Discard 1 Fire Energy card attached to Arcanine in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "FIRE"
+            }
+          ]
         },
         {
           "name": "Take Down",
@@ -1012,7 +1052,15 @@
             "COLORLESS"
           ],
           "damage": "50",
-          "text": "Discard 1 Fire Energy card attached to Charmeleon in order to use this attack."
+          "text": "Discard 1 Fire Energy card attached to Charmeleon in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "FIRE"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -1295,7 +1343,15 @@
             "PSYCHIC"
           ],
           "damage": "0",
-          "text": "Discard 1 Psychic Energy card attached to Kadabra in order to use this attack. Remove all damage counters from Kadabra."
+          "text": "Discard 1 Psychic Energy card attached to Kadabra in order to use this attack. Remove all damage counters from Kadabra.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "PSYCHIC"
+            }
+          ]
         },
         {
           "name": "Super Psy",
@@ -1457,7 +1513,15 @@
             "COLORLESS"
           ],
           "damage": "50",
-          "text": "Discard 1 Fire Energy card attached to Magmar in order to use this attack."
+          "text": "Discard 1 Fire Energy card attached to Magmar in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "FIRE"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -1561,7 +1625,8 @@
             "WATER"
           ],
           "damage": "10+",
-          "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Poliwag but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Poliwag but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         }
       ],
       "weakness": {
@@ -1866,7 +1931,15 @@
             "COLORLESS"
           ],
           "damage": "30",
-          "text": "Discard 1 Fire Energy card attached to Charmander in order to use this attack."
+          "text": "Discard 1 Fire Energy card attached to Charmander in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "FIRE"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -2011,7 +2084,15 @@
             "PSYCHIC"
           ],
           "damage": "0",
-          "text": "Discard 1 Psychic Energy card attached to Gastly in order to use this attack. If, during your opponent's next turn, an attack Knocks Out Gastly, Knock Out the attacking Pokémon."
+          "text": "Discard 1 Psychic Energy card attached to Gastly in order to use this attack. If, during your opponent's next turn, an attack Knocks Out Gastly, Knock Out the attacking Pokémon.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "PSYCHIC"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -2457,7 +2538,15 @@
             "WATER"
           ],
           "damage": "0",
-          "text": "Discard 1 Water Energy card attached to Starmie in order to use this attack. Remove all damage counters from Starmie."
+          "text": "Discard 1 Water Energy card attached to Starmie in order to use this attack. Remove all damage counters from Starmie.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "WATER"
+            }
+          ]
         },
         {
           "name": "Star Freeze",

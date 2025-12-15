@@ -52,7 +52,9 @@ import { EvolutionStage } from '../../../card/domain/enums/evolution-stage.enum'
 import { CardType } from '../../../card/domain/enums/card-type.enum';
 import { TrainerEffectType } from '../../../card/domain/enums/trainer-effect-type.enum';
 import { TargetType } from '../../../card/domain/enums/target-type.enum';
-import type { StatusConditionEffect, DamageModifierEffect, PreventDamageEffect } from '../../../card/domain/value-objects/attack-effect.value-object';
+import { EnergyType } from '../../../card/domain/enums/energy-type.enum';
+import { CardDetailDto } from '../../../card/presentation/dto/card-detail.dto';
+import type { StatusConditionEffect, DamageModifierEffect, PreventDamageEffect, DiscardEnergyEffect } from '../../../card/domain/value-objects/attack-effect.value-object';
 import { AttackEffectFactory } from '../../../card/domain/value-objects/attack-effect.value-object';
 import { ConditionFactory } from '../../../card/domain/value-objects/condition.value-object';
 
@@ -1057,10 +1059,6 @@ export class ExecuteTurnActionUseCase {
       if (dto.actionType === PlayerActionType.PLAY_TRAINER) {
         const actionData = dto.actionData as unknown as TrainerActionData;
         const cardId = actionData.cardId;
-        
-        this.logger.log(
-          `Player ${playerIdentifier} playing trainer card: ${cardId} in match ${dto.matchId}`,
-        );
 
         if (gameState.phase !== TurnPhase.MAIN_PHASE) {
           throw new BadRequestException(
@@ -1180,10 +1178,6 @@ export class ExecuteTurnActionUseCase {
         const finalPlayerState = result.playerState
           .withHand(finalHand)
           .withDiscardPile(finalDiscardPile);
-        
-        this.logger.log(
-          `Trainer card ${cardId} played successfully. Hand: ${finalHand.length} cards, Discard: ${finalDiscardPile.length} cards`,
-        );
 
         // Update game state
         const updatedGameState =
@@ -1211,6 +1205,12 @@ export class ExecuteTurnActionUseCase {
 
       // Handle ATTACK action
       if (dto.actionType === PlayerActionType.ATTACK) {
+        // Get game state for this action
+        let gameState = match.gameState;
+        if (!gameState) {
+          throw new NotFoundException('Match game state not found');
+        }
+        
         // Allow attack from MAIN_PHASE or ATTACK phase
         if (gameState.phase !== TurnPhase.MAIN_PHASE && gameState.phase !== TurnPhase.ATTACK) {
           throw new BadRequestException(
@@ -1408,6 +1408,69 @@ export class ExecuteTurnActionUseCase {
           );
         }
         
+        // Check if attack requires energy discard as a cost (from structured effects)
+        // Look for DISCARD_ENERGY effects that target SELF (costs happen before attack)
+        const discardEnergyCostEffects = attack.hasEffects()
+          ? attack.getEffectsByType(AttackEffectType.DISCARD_ENERGY).filter(
+              (effect) => (effect as DiscardEnergyEffect).target === TargetType.SELF
+            )
+          : [];
+
+        // If energy discard is required as a cost, validate that energy was selected
+        if (discardEnergyCostEffects.length > 0) {
+          const discardEffect = discardEnergyCostEffects[0] as DiscardEnergyEffect;
+          const actionData = dto.actionData as any;
+          const selectedEnergyIds = actionData.selectedEnergyIds || [];
+
+          if (!selectedEnergyIds || selectedEnergyIds.length === 0) {
+            // Return error with requirement details for client to show modal
+            throw new BadRequestException(
+              JSON.stringify({
+                error: 'ENERGY_SELECTION_REQUIRED',
+                message: `This attack requires discarding ${discardEffect.amount === 'all' ? 'all' : discardEffect.amount} ${discardEffect.energyType ? discardEffect.energyType + ' ' : ''}Energy card(s)`,
+                requirement: {
+                  amount: discardEffect.amount,
+                  energyType: discardEffect.energyType,
+                  target: 'self',
+                },
+                availableEnergy: playerState.activePokemon.attachedEnergy,
+              }),
+            );
+          }
+
+          // Validate selected energy against attack effect requirements
+          const validationError = await this.validateEnergySelection(
+            selectedEnergyIds,
+            discardEffect,
+            playerState.activePokemon,
+          );
+          if (validationError) {
+            throw new BadRequestException(validationError);
+          }
+
+          // Discard energy BEFORE attack executes (this is a cost)
+          // Remove first instance of each selected energy card (handle duplicates)
+          let updatedAttachedEnergy = [...playerState.activePokemon.attachedEnergy];
+          for (const energyId of selectedEnergyIds) {
+            const energyIndex = updatedAttachedEnergy.indexOf(energyId);
+            if (energyIndex === -1) {
+              throw new BadRequestException(`Energy card ${energyId} is not attached to this Pokemon`);
+            }
+            updatedAttachedEnergy.splice(energyIndex, 1);
+          }
+          
+          const updatedAttacker = playerState.activePokemon.withAttachedEnergy(updatedAttachedEnergy);
+          const updatedDiscardPile = [...playerState.discardPile, ...selectedEnergyIds];
+          const updatedPlayerState = playerState
+            .withActivePokemon(updatedAttacker)
+            .withDiscardPile(updatedDiscardPile);
+          
+          // Update game state with modified player state (immutable update)
+          gameState = playerIdentifier === PlayerIdentifier.PLAYER1
+            ? gameState.withPlayer1State(updatedPlayerState)
+            : gameState.withPlayer2State(updatedPlayerState);
+        }
+
         // Check if attack requires coin flip
         const coinFlipConfig = this.attackCoinFlipParser.parseCoinFlipFromAttack(
           attack.text,
@@ -1439,7 +1502,7 @@ export class ExecuteTurnActionUseCase {
             { attackIndex, coinFlipRequired: true },
           );
 
-          // Update game state with coin flip state
+          // Update game state with coin flip state (immutable update)
           const updatedGameState = gameState
             .withCoinFlipState(coinFlipState)
             .withAction(actionSummary)
@@ -1450,15 +1513,49 @@ export class ExecuteTurnActionUseCase {
         }
 
         // No coin flip required - execute attack immediately
+        // Re-get player state in case it was modified (e.g., energy discarded as cost)
+        const currentPlayerState = gameState.getPlayerState(playerIdentifier);
+        const currentOpponentState = gameState.getOpponentState(playerIdentifier);
+        
+        if (!currentOpponentState.activePokemon) {
+          throw new BadRequestException('No opponent active Pokemon to attack');
+        }
+        
         let damage = parseInt(attack.damage || '0', 10);
+
+        // Apply minus damage reduction (for attacks like "50-")
+        damage = this.calculateMinusDamageReduction(
+          damage,
+          attack,
+          attack.text,
+          attackerCard.name,
+          currentPlayerState,
+          currentOpponentState,
+        );
 
         // Load defender card details for weakness/resistance
         const defenderCard = await this.getCardByIdUseCase.execute(
-          opponentState.activePokemon.cardId,
+          currentOpponentState.activePokemon.cardId,
         );
 
         // Apply damage modifiers from attack effects (before weakness/resistance)
         let finalDamage = damage;
+        
+                // Handle "+" damage attacks (energy-based, damage counter-based, etc.)
+                if (attack.damage && attack.damage.endsWith('+')) {
+                  const plusDamageBonus = await this.calculatePlusDamageBonus(
+                    attack,
+                    attackerCard.name,
+                    currentPlayerState,
+                    currentOpponentState,
+                    attack.text,
+                    gameState,
+                    playerIdentifier,
+                  );
+                  finalDamage += plusDamageBonus;
+                }
+        
+        // Apply structured damage modifiers from attack effects
         if (attack.hasEffects()) {
           const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
           for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
@@ -1466,15 +1563,16 @@ export class ExecuteTurnActionUseCase {
               modifierEffect.requiredConditions || [],
               gameState,
               playerIdentifier,
-              playerState,
-              opponentState,
+              currentPlayerState,
+              currentOpponentState,
             );
             if (conditionsMet) {
               finalDamage += modifierEffect.modifier;
             }
           }
-          finalDamage = Math.max(0, finalDamage); // Damage can't be negative
         }
+        
+        finalDamage = Math.max(0, finalDamage); // Damage can't be negative
 
         // Apply weakness if applicable (after damage modifiers)
         if (defenderCard.weakness && attackerCard.pokemonType) {
@@ -1504,7 +1602,7 @@ export class ExecuteTurnActionUseCase {
           playerIdentifier === PlayerIdentifier.PLAYER1
             ? PlayerIdentifier.PLAYER2
             : PlayerIdentifier.PLAYER1,
-          opponentState.activePokemon.instanceId,
+          currentOpponentState.activePokemon!.instanceId,
         );
         
         if (preventionEffect) {
@@ -1526,7 +1624,7 @@ export class ExecuteTurnActionUseCase {
           playerIdentifier === PlayerIdentifier.PLAYER1
             ? PlayerIdentifier.PLAYER2
             : PlayerIdentifier.PLAYER1,
-          opponentState.activePokemon.instanceId,
+          currentOpponentState.activePokemon.instanceId,
         );
         if (reductionAmount > 0) {
           finalDamage = Math.max(0, finalDamage - reductionAmount);
@@ -1538,8 +1636,8 @@ export class ExecuteTurnActionUseCase {
         const benchDamage = this.parseBenchDamage(attackText);
 
         // Apply damage to opponent's active Pokemon
-        const newHp = Math.max(0, opponentState.activePokemon.currentHp - finalDamage);
-        let updatedOpponentActive = opponentState.activePokemon.withHp(newHp);
+        const newHp = Math.max(0, currentOpponentState.activePokemon.currentHp - finalDamage);
+        let updatedOpponentActive = currentOpponentState.activePokemon.withHp(newHp);
 
         // Apply status effects from attack (if any)
         if (attack.hasEffects()) {
@@ -1550,8 +1648,8 @@ export class ExecuteTurnActionUseCase {
               statusEffect.requiredConditions || [],
               gameState,
               playerIdentifier,
-              playerState,
-              opponentState,
+              currentPlayerState,
+              currentOpponentState,
             );
             
             if (conditionsMet) {
@@ -1595,8 +1693,22 @@ export class ExecuteTurnActionUseCase {
         // Check if Pokemon is knocked out
         const isKnockedOut = newHp === 0;
 
-        let updatedOpponentState = opponentState.withActivePokemon(updatedOpponentActive);
-        let updatedPlayerState = playerState;
+        let updatedOpponentState = currentOpponentState.withActivePokemon(updatedOpponentActive);
+        let updatedPlayerState = currentPlayerState;
+
+        // Apply DISCARD_ENERGY effects from attack (if any)
+        // Note: DISCARD_ENERGY effects that target SELF are handled as costs above (before attack executes)
+        // This handles DISCARD_ENERGY effects that target DEFENDING (effects that happen after attack)
+        // Filter out SELF-targeted DISCARD_ENERGY effects since they're already handled as costs
+        const discardEnergyResult = await this.applyDiscardEnergyEffects(
+          attack,
+          gameState,
+          playerIdentifier,
+          updatedPlayerState,
+          updatedOpponentState,
+        );
+        updatedPlayerState = discardEnergyResult.updatedPlayerState;
+        updatedOpponentState = discardEnergyResult.updatedOpponentState;
 
         // Apply bench damage to opponent's bench Pokemon
         if (benchDamage > 0) {
@@ -1711,7 +1823,7 @@ export class ExecuteTurnActionUseCase {
           // For now, we'll keep it in ATTACK phase and require SELECT_PRIZE action
         }
 
-        // Update game state
+        // Update game state (immutable update)
         const updatedGameState =
           playerIdentifier === PlayerIdentifier.PLAYER1
             ? gameState
@@ -1946,11 +2058,24 @@ export class ExecuteTurnActionUseCase {
             );
 
             if (shouldProceed) {
+              // Calculate base damage
+              let baseDamageValue = parseInt(attack.damage || '0', 10);
+              
+              // Apply minus damage reduction (for attacks like "50-")
+              baseDamageValue = this.calculateMinusDamageReduction(
+                baseDamageValue,
+                attack,
+                attack.text,
+                attackerCard.name,
+                playerState,
+                opponentState,
+              );
+              
               // Calculate damage based on coin flip results using correct configuration
               let damage = this.coinFlipResolver.calculateDamage(
                 coinFlipConfig,
                 finalCoinFlipState.results,
-                baseDamage,
+                baseDamageValue,
               );
 
               // Load defender card for weakness/resistance
@@ -1960,6 +2085,22 @@ export class ExecuteTurnActionUseCase {
 
               // Apply damage modifiers from attack effects (before weakness/resistance)
               let finalDamage = damage;
+              
+              // Handle "+" damage attacks (energy-based, damage counter-based, etc.)
+              if (attack.damage && attack.damage.endsWith('+')) {
+                const plusDamageBonus = await this.calculatePlusDamageBonus(
+                  attack,
+                  attackerCard.name,
+                  playerState,
+                  opponentState,
+                  attack.text,
+                  gameState,
+                  attackingPlayer,
+                );
+                finalDamage += plusDamageBonus;
+              }
+              
+              // Apply structured damage modifiers from attack effects
               if (attack.hasEffects()) {
                 const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
                 for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
@@ -1975,8 +2116,9 @@ export class ExecuteTurnActionUseCase {
                     finalDamage += modifierEffect.modifier;
                   }
                 }
-                finalDamage = Math.max(0, finalDamage); // Damage can't be negative
               }
+              
+              finalDamage = Math.max(0, finalDamage); // Damage can't be negative
 
               // Apply weakness if applicable (after damage modifiers)
               if (defenderCard.weakness && attackerCard.pokemonType) {
@@ -2153,11 +2295,24 @@ export class ExecuteTurnActionUseCase {
               const effectFailed = isStatusEffectOnly && hasTails && !statusEffectApplied;
 
               let updatedOpponentState = opponentState.withActivePokemon(updatedOpponentActive);
+              let updatedPlayerState = playerState;
+
+              // Apply DISCARD_ENERGY effects from attack (if any)
+              const discardEnergyResult = await this.applyDiscardEnergyEffects(
+                attack,
+                gameState,
+                attackingPlayer,
+                updatedPlayerState,
+                updatedOpponentState,
+                finalCoinFlipState.results,
+              );
+              updatedPlayerState = discardEnergyResult.updatedPlayerState;
+              updatedOpponentState = discardEnergyResult.updatedOpponentState;
 
               // If knocked out, move to discard pile
               if (isKnockedOut) {
-                const cardsToDiscard = opponentState.activePokemon.getAllCardsToDiscard();
-                const discardPile = [...opponentState.discardPile, ...cardsToDiscard];
+                const cardsToDiscard = updatedOpponentState.activePokemon?.getAllCardsToDiscard() || [];
+                const discardPile = [...updatedOpponentState.discardPile, ...cardsToDiscard];
                 updatedOpponentState = updatedOpponentState
                   .withActivePokemon(null)
                   .withDiscardPile(discardPile);
@@ -2206,7 +2361,22 @@ export class ExecuteTurnActionUseCase {
               // Use the correct configuration (re-parsed) instead of saved one
               if (coinFlipConfig.damageCalculationType === DamageCalculationType.STATUS_EFFECT_ONLY) {
                 // For STATUS_EFFECT_ONLY, damage always applies, only effect fails
-                const baseDamage = parseInt(attack.damage || '0', 10);
+                // Load attacker card for name/type checks
+                const attackerCard = await this.getCardByIdUseCase.execute(
+                  playerState.activePokemon.cardId,
+                );
+                
+                let baseDamage = parseInt(attack.damage || '0', 10);
+                
+                // Apply minus damage reduction (for attacks like "50-")
+                baseDamage = this.calculateMinusDamageReduction(
+                  baseDamage,
+                  attack,
+                  attack.text,
+                  attackerCard.name,
+                  playerState,
+                  opponentState,
+                );
                 
                 // Load defender card for weakness/resistance
                 const defenderCard = await this.getCardByIdUseCase.execute(
@@ -2215,6 +2385,22 @@ export class ExecuteTurnActionUseCase {
 
                 // Apply damage modifiers from attack effects (before weakness/resistance)
                 let finalDamage = baseDamage;
+                
+                // Handle "+" damage attacks (energy-based, damage counter-based, etc.)
+                if (attack.damage && attack.damage.endsWith('+')) {
+                  const plusDamageBonus = await this.calculatePlusDamageBonus(
+                    attack,
+                    attackerCard.name,
+                    playerState,
+                    opponentState,
+                    attack.text,
+                    gameState,
+                    attackingPlayer,
+                  );
+                  finalDamage += plusDamageBonus;
+                }
+                
+                // Apply structured damage modifiers from attack effects
                 if (attack.hasEffects()) {
                   const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
                   for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
@@ -2230,8 +2416,9 @@ export class ExecuteTurnActionUseCase {
                       finalDamage += modifierEffect.modifier;
                     }
                   }
-                  finalDamage = Math.max(0, finalDamage); // Damage can't be negative
                 }
+                
+                finalDamage = Math.max(0, finalDamage); // Damage can't be negative
 
                 // Apply weakness if applicable (after damage modifiers)
                 if (defenderCard.weakness && attackerCard.pokemonType) {
@@ -2288,11 +2475,24 @@ export class ExecuteTurnActionUseCase {
                 const isKnockedOut = newHp === 0;
 
                 let updatedOpponentState = opponentState.withActivePokemon(updatedOpponentActive);
+                let updatedPlayerState = playerState;
+
+                // Apply DISCARD_ENERGY effects from attack (if any)
+                const discardEnergyResult = await this.applyDiscardEnergyEffects(
+                  attack,
+                  gameState,
+                  attackingPlayer,
+                  updatedPlayerState,
+                  updatedOpponentState,
+                  finalCoinFlipState.results,
+                );
+                updatedPlayerState = discardEnergyResult.updatedPlayerState;
+                updatedOpponentState = discardEnergyResult.updatedOpponentState;
 
                 // If knocked out, move to discard pile
                 if (isKnockedOut) {
-                  const cardsToDiscard = opponentState.activePokemon.getAllCardsToDiscard();
-                  const discardPile = [...opponentState.discardPile, ...cardsToDiscard];
+                  const cardsToDiscard = updatedOpponentState.activePokemon?.getAllCardsToDiscard() || [];
+                  const discardPile = [...updatedOpponentState.discardPile, ...cardsToDiscard];
                   updatedOpponentState = updatedOpponentState
                     .withActivePokemon(null)
                     .withDiscardPile(discardPile);
@@ -2302,10 +2502,10 @@ export class ExecuteTurnActionUseCase {
                 const updatedGameState =
                   attackingPlayer === PlayerIdentifier.PLAYER1
                     ? gameState
-                        .withPlayer1State(playerState)
+                        .withPlayer1State(updatedPlayerState)
                         .withPlayer2State(updatedOpponentState)
                     : gameState
-                        .withPlayer2State(playerState)
+                        .withPlayer2State(updatedPlayerState)
                         .withPlayer1State(updatedOpponentState);
 
                 const finalGameState = updatedGameState
@@ -2660,12 +2860,24 @@ export class ExecuteTurnActionUseCase {
                 );
                 
                 if (shouldProceed) {
-                  // Calculate damage
-                  const baseDamage = parseInt(attack.damage || '0', 10);
+                  // Calculate base damage
+                  let baseDamageValue = parseInt(attack.damage || '0', 10);
+                  
+                  // Apply minus damage reduction (for attacks like "50-")
+                  baseDamageValue = this.calculateMinusDamageReduction(
+                    baseDamageValue,
+                    attack,
+                    attack.text,
+                    attackerCard.name,
+                    playerState,
+                    opponentState,
+                  );
+                  
+                  // Calculate damage based on coin flip
                   let damage = this.coinFlipResolver.calculateDamage(
                     coinFlipConfig,
                     attackCoinFlipState.results,
-                    baseDamage,
+                    baseDamageValue,
                   );
                   
                   // Load defender card
@@ -2675,6 +2887,22 @@ export class ExecuteTurnActionUseCase {
                   
                   // Apply damage modifiers from attack effects (before weakness/resistance)
                   let finalDamage = damage;
+                  
+                  // Handle "+" damage attacks (energy-based, damage counter-based, etc.)
+                  if (attack.damage && attack.damage.endsWith('+')) {
+                    const plusDamageBonus = await this.calculatePlusDamageBonus(
+                      attack,
+                      attackerCard.name,
+                      playerState,
+                      opponentState,
+                      attack.text,
+                      gameState,
+                      confusedPlayerId,
+                    );
+                    finalDamage += plusDamageBonus;
+                  }
+                  
+                  // Apply structured damage modifiers from attack effects
                   if (attack.hasEffects()) {
                     const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
                     for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
@@ -2690,8 +2918,9 @@ export class ExecuteTurnActionUseCase {
                         finalDamage += modifierEffect.modifier;
                       }
                     }
-                    finalDamage = Math.max(0, finalDamage); // Damage can't be negative
                   }
+                  
+                  finalDamage = Math.max(0, finalDamage); // Damage can't be negative
                   
                   // Apply weakness if applicable (after damage modifiers)
                   if (defenderCard.weakness && attackerCard.pokemonType) {
@@ -2852,10 +3081,23 @@ export class ExecuteTurnActionUseCase {
                   const effectFailed = isStatusEffectOnly && hasTails && !statusEffectApplied;
                   
                   let updatedOpponentState = opponentState.withActivePokemon(updatedOpponentActive);
+                  let updatedPlayerState = playerState;
+                  
+                  // Apply DISCARD_ENERGY effects from attack (if any)
+                  const discardEnergyResult = await this.applyDiscardEnergyEffects(
+                    attack,
+                    gameState,
+                    confusedPlayerId,
+                    updatedPlayerState,
+                    updatedOpponentState,
+                    attackCoinFlipState.results,
+                  );
+                  updatedPlayerState = discardEnergyResult.updatedPlayerState;
+                  updatedOpponentState = discardEnergyResult.updatedOpponentState;
                   
                   // Handle knockout
                   if (isKnockedOut) {
-                    const cardsToDiscard = opponentState.activePokemon.getAllCardsToDiscard();
+                    const cardsToDiscard = updatedOpponentState.activePokemon?.getAllCardsToDiscard() || [];
                     const discardPile = [...updatedOpponentState.discardPile, ...cardsToDiscard];
                     updatedOpponentState = updatedOpponentState
                       .withActivePokemon(null)
@@ -2866,7 +3108,7 @@ export class ExecuteTurnActionUseCase {
                   const finalGameState = gameState
                     .withPlayer1State(
                       confusedPlayerId === PlayerIdentifier.PLAYER1
-                        ? playerState
+                        ? updatedPlayerState
                         : updatedOpponentState,
                     )
                     .withPlayer2State(
@@ -2948,6 +3190,16 @@ export class ExecuteTurnActionUseCase {
                 // No coin flip required - execute attack immediately
                 let damage = parseInt(attack.damage || '0', 10);
                 
+                // Apply minus damage reduction (for attacks like "50-")
+                damage = this.calculateMinusDamageReduction(
+                  damage,
+                  attack,
+                  attack.text,
+                  attackerCard.name,
+                  playerState,
+                  opponentState,
+                );
+                
                 // Load defender card details
                 const defenderCard = await this.getCardByIdUseCase.execute(
                   opponentState.activePokemon.cardId,
@@ -2955,6 +3207,22 @@ export class ExecuteTurnActionUseCase {
                 
                 // Apply damage modifiers from attack effects (before weakness/resistance)
                 let finalDamage = damage;
+                
+                // Handle "+" damage attacks (energy-based, damage counter-based, etc.)
+                if (attack.damage && attack.damage.endsWith('+')) {
+                  const plusDamageBonus = await this.calculatePlusDamageBonus(
+                    attack,
+                    attackerCard.name,
+                    playerState,
+                    opponentState,
+                    attack.text,
+                    gameState,
+                    confusedPlayerId,
+                  );
+                  finalDamage += plusDamageBonus;
+                }
+                
+                // Apply structured damage modifiers from attack effects
                 if (attack.hasEffects()) {
                   const damageModifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
                   for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
@@ -2969,8 +3237,9 @@ export class ExecuteTurnActionUseCase {
                       finalDamage += modifierEffect.modifier;
                     }
                   }
-                  finalDamage = Math.max(0, finalDamage); // Damage can't be negative
                 }
+                
+                finalDamage = Math.max(0, finalDamage); // Damage can't be negative
                 
                 // Apply weakness if applicable (after damage modifiers)
                 if (defenderCard.weakness && attackerCard.pokemonType) {
@@ -3134,6 +3403,17 @@ export class ExecuteTurnActionUseCase {
                 const isKnockedOut = newHp === 0;
                 let updatedOpponentState = opponentState.withActivePokemon(updatedOpponentActive);
                 let updatedPlayerState = playerState;
+                
+                // Apply DISCARD_ENERGY effects from attack (if any)
+                const discardEnergyResult = await this.applyDiscardEnergyEffects(
+                  attack,
+                  gameState,
+                  confusedPlayerId,
+                  updatedPlayerState,
+                  updatedOpponentState,
+                );
+                updatedPlayerState = discardEnergyResult.updatedPlayerState;
+                updatedOpponentState = discardEnergyResult.updatedOpponentState;
                 
                 // Apply bench damage if needed
                 if (benchDamage > 0) {
@@ -4089,6 +4369,405 @@ export class ExecuteTurnActionUseCase {
     }
     
     return 0;
+  }
+
+  /**
+   * Parse minus damage reduction from attack text
+   * Example: "Does 50 damage minus 10 damage for each damage counter on Machoke"
+   * Returns: { reductionPerCounter: number, target: 'self' | 'defending' } | null
+   */
+  private parseMinusDamageReduction(
+    attackText: string,
+    attackerName: string,
+  ): { reductionPerCounter: number; target: 'self' | 'defending' } | null {
+    const text = attackText.toLowerCase();
+    const attackerNameLower = attackerName.toLowerCase();
+    
+    // Pattern: "minus X damage for each damage counter on [Pokemon]"
+    const minusMatch = text.match(/minus\s+(\d+)\s+damage\s+for\s+each\s+damage\s+counter\s+on\s+(\w+)/i);
+    if (minusMatch) {
+      const reductionPerCounter = parseInt(minusMatch[1], 10);
+      const targetPokemonName = minusMatch[2].toLowerCase();
+      
+      // Determine if target is self (attacker) or defending
+      const target = targetPokemonName === attackerNameLower ? 'self' : 'defending';
+      
+      return {
+        reductionPerCounter,
+        target,
+      };
+    }
+    
+    return null;
+  }
+
+  /**
+   * Calculate plus damage bonus for "+" damage attacks
+   * Handles various types: Water Energy-based (with cap), defending energy, damage counters, bench, coin flip, conditional
+   */
+  private async calculatePlusDamageBonus(
+    attack: Attack,
+    attackerCardName: string,
+    playerState: PlayerGameState,
+    opponentState: PlayerGameState,
+    attackText: string,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+  ): Promise<number> {
+    const text = attackText.toLowerCase();
+    
+    // 1. Water Energy-based attacks (with cap)
+    if (text.includes('water energy') && text.includes('but not used to pay')) {
+      return await this.calculateWaterEnergyBonus(attack, playerState, attackText);
+    }
+    
+    // 2. Defending Energy-based attacks (no cap)
+    if (text.includes('for each energy card attached to the defending pokémon')) {
+      return await this.calculateDefendingEnergyBonus(opponentState, attackText);
+    }
+    
+    // 3. Damage counter-based attacks (no cap)
+    if (text.includes('for each damage counter')) {
+      return this.calculateDamageCounterBonus(
+        attack,
+        attackText,
+        attackerCardName,
+        playerState,
+        opponentState,
+      );
+    }
+    
+    // 4. Bench-based attacks (no cap)
+    if (text.includes('for each of your benched pokémon')) {
+      return this.calculateBenchBonus(playerState, attackText);
+    }
+    
+    // 5. Coin flip-based attacks (handled separately in coin flip logic, return 0 here)
+    if (text.includes('flip a coin') && text.includes('if heads')) {
+      return 0; // Coin flip bonuses are handled in coin flip resolver
+    }
+    
+    // 6. Conditional attacks (handled separately, return 0 here)
+    if (text.includes('if ') && text.includes('this attack does')) {
+      return 0; // Conditional bonuses are handled via structured effects
+    }
+    
+    return 0;
+  }
+
+  /**
+   * Calculate Water Energy-based bonus damage with cap enforcement
+   */
+  private async calculateWaterEnergyBonus(
+    attack: Attack,
+    playerState: PlayerGameState,
+    attackText: string,
+  ): Promise<number> {
+    if (!attack.energyBonusCap) {
+      return 0; // No cap set, shouldn't happen for Water Energy attacks
+    }
+    
+    // Extract damage per energy (usually 10)
+    const text = attackText.toLowerCase();
+    const damagePerEnergyMatch = text.match(/plus\s+(\d+)\s+more\s+damage\s+for\s+each/i);
+    if (!damagePerEnergyMatch) {
+      return 0;
+    }
+    const damagePerEnergy = parseInt(damagePerEnergyMatch[1], 10);
+    
+    // Count Water Energy attached to attacker
+    if (!playerState.activePokemon) {
+      return 0;
+    }
+    
+    let waterEnergyCount = 0;
+    for (const energyId of playerState.activePokemon.attachedEnergy) {
+      try {
+        const energyCard = await this.getCardByIdUseCase.getCardEntity(energyId);
+        if (energyCard.energyType === EnergyType.WATER) {
+          waterEnergyCount++;
+        }
+      } catch {
+        // Skip if card lookup fails
+      }
+    }
+    
+    // Count Water Energy required for attack cost
+    const waterEnergyRequired = attack.getEnergyCountByType(EnergyType.WATER);
+    
+    // Calculate extra Water Energy (beyond attack cost)
+    const extraWaterEnergy = Math.max(0, waterEnergyCount - waterEnergyRequired);
+    
+    // Apply cap
+    const cappedExtraEnergy = Math.min(extraWaterEnergy, attack.energyBonusCap);
+    
+    // Calculate bonus damage
+    return cappedExtraEnergy * damagePerEnergy;
+  }
+
+  /**
+   * Calculate defending Energy-based bonus damage (no cap)
+   */
+  private async calculateDefendingEnergyBonus(
+    opponentState: PlayerGameState,
+    attackText: string,
+  ): Promise<number> {
+    // Extract damage per energy (usually 10)
+    const text = attackText.toLowerCase();
+    const damagePerEnergyMatch = text.match(/plus\s+(\d+)\s+more\s+damage\s+for\s+each/i);
+    if (!damagePerEnergyMatch) {
+      return 0;
+    }
+    const damagePerEnergy = parseInt(damagePerEnergyMatch[1], 10);
+    
+    // Count all Energy attached to defending Pokemon
+    if (!opponentState.activePokemon) {
+      return 0;
+    }
+    
+    const energyCount = opponentState.activePokemon.attachedEnergy.length;
+    
+    return energyCount * damagePerEnergy;
+  }
+
+  /**
+   * Calculate damage counter-based bonus damage (no cap)
+   */
+  private calculateDamageCounterBonus(
+    attack: Attack,
+    attackText: string,
+    attackerName: string,
+    playerState: PlayerGameState,
+    opponentState: PlayerGameState,
+  ): number {
+    const text = attackText.toLowerCase();
+    
+    // Extract damage per counter (usually 10)
+    const damagePerCounterMatch = text.match(/plus\s+(\d+)\s+more\s+damage\s+for\s+each\s+damage\s+counter/i);
+    if (!damagePerCounterMatch) {
+      return 0;
+    }
+    const damagePerCounter = parseInt(damagePerCounterMatch[1], 10);
+    
+    // Determine target (self or defending)
+    let targetPokemon: CardInstance | null = null;
+    if (text.includes(`on ${attackerName.toLowerCase()}`)) {
+      targetPokemon = playerState.activePokemon;
+    } else if (text.includes('on the defending pokémon')) {
+      targetPokemon = opponentState.activePokemon;
+    } else {
+      // Try to infer from context
+      targetPokemon = opponentState.activePokemon;
+    }
+    
+    if (!targetPokemon) {
+      return 0;
+    }
+    
+    // Calculate damage counters (each 10 HP = 1 damage counter)
+    const totalDamage = targetPokemon.getDamageCounters();
+    const damageCounters = Math.floor(totalDamage / 10);
+    
+    return damageCounters * damagePerCounter;
+  }
+
+  /**
+   * Calculate bench-based bonus damage (no cap)
+   */
+  private calculateBenchBonus(
+    playerState: PlayerGameState,
+    attackText: string,
+  ): number {
+    const text = attackText.toLowerCase();
+    
+    // Extract damage per benched Pokemon (usually 10)
+    const damagePerBenchMatch = text.match(/plus\s+(\d+)\s+more\s+damage\s+for\s+each/i);
+    if (!damagePerBenchMatch) {
+      return 0;
+    }
+    const damagePerBench = parseInt(damagePerBenchMatch[1], 10);
+    
+    // Count benched Pokemon
+    const benchCount = playerState.bench.length;
+    
+    return benchCount * damagePerBench;
+  }
+
+  /**
+   * Apply minus damage reduction based on damage counters
+   * For attacks like "Does 50 damage minus 10 damage for each damage counter on Machoke"
+   */
+  private calculateMinusDamageReduction(
+    baseDamage: number,
+    attack: Attack,
+    attackText: string,
+    attackerName: string,
+    playerState: PlayerGameState,
+    opponentState: PlayerGameState,
+  ): number {
+    // Check if attack has "-" damage pattern
+    if (!attack.damage || !attack.damage.endsWith('-')) {
+      return baseDamage;
+    }
+    
+    // Parse minus damage reduction info
+    const minusInfo = this.parseMinusDamageReduction(attackText, attackerName);
+    if (!minusInfo) {
+      return baseDamage; // Couldn't parse, return base damage
+    }
+    
+    // Get target Pokemon
+    const targetPokemon = minusInfo.target === 'self' 
+      ? playerState.activePokemon 
+      : opponentState.activePokemon;
+    
+    if (!targetPokemon) {
+      return baseDamage;
+    }
+    
+    // Calculate damage counters (each 10 HP = 1 damage counter)
+    const totalDamage = targetPokemon.getDamageCounters(); // Returns maxHp - currentHp
+    const damageCounters = Math.floor(totalDamage / 10);
+    
+    // Calculate reduction
+    const reduction = damageCounters * minusInfo.reductionPerCounter;
+    
+    // Apply reduction (ensure damage doesn't go below 0)
+    return Math.max(0, baseDamage - reduction);
+  }
+
+  /**
+   * Select energy cards to discard based on effect requirements
+   * Returns array of energy card IDs to discard
+   */
+  private async selectEnergyToDiscard(
+    pokemon: CardInstance,
+    amount: number | 'all',
+    energyType?: EnergyType,
+  ): Promise<string[]> {
+    let availableEnergy = pokemon.attachedEnergy;
+    
+    // Filter by energy type if specified
+    if (energyType) {
+      const matchingEnergy: string[] = [];
+      for (const energyId of availableEnergy) {
+        try {
+          const energyCard = await this.getCardByIdUseCase.getCardEntity(energyId);
+          if (energyCard.energyType === energyType) {
+            matchingEnergy.push(energyId);
+          }
+        } catch {
+          // Skip if card lookup fails
+        }
+      }
+      availableEnergy = matchingEnergy;
+    }
+    
+    // Select energy to discard
+    if (amount === 'all') {
+      return [...availableEnergy];
+    } else {
+      // Return first N energy cards
+      return availableEnergy.slice(0, amount);
+    }
+  }
+
+  /**
+   * Apply DISCARD_ENERGY effects from attack
+   * Returns updated player and opponent states
+   */
+  private async applyDiscardEnergyEffects(
+    attack: Attack,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    playerState: PlayerGameState,
+    opponentState: PlayerGameState,
+    coinFlipResults?: any[],
+  ): Promise<{ updatedPlayerState: PlayerGameState; updatedOpponentState: PlayerGameState }> {
+    let updatedPlayerState = playerState;
+    let updatedOpponentState = opponentState;
+
+    if (attack.hasEffects()) {
+      // Filter out SELF-targeted DISCARD_ENERGY effects - these are handled as costs before attack executes
+      const discardEnergyEffects = attack.getEffectsByType(AttackEffectType.DISCARD_ENERGY).filter(
+        (effect) => (effect as DiscardEnergyEffect).target !== TargetType.SELF
+      );
+      
+      for (const discardEffect of discardEnergyEffects as DiscardEnergyEffect[]) {
+        const conditionsMet = await this.evaluateEffectConditions(
+          discardEffect.requiredConditions || [],
+          gameState,
+          playerIdentifier,
+          playerState,
+          opponentState,
+          coinFlipResults,
+        );
+        
+        if (conditionsMet) {
+          if (discardEffect.target === TargetType.DEFENDING && updatedOpponentState.activePokemon) {
+            // Discard energy from defender
+            const energyToDiscard = await this.selectEnergyToDiscard(
+              updatedOpponentState.activePokemon,
+              discardEffect.amount,
+              discardEffect.energyType,
+            );
+            
+            if (energyToDiscard.length > 0) {
+              const updatedAttachedEnergy = updatedOpponentState.activePokemon.attachedEnergy.filter(
+                (energyId) => !energyToDiscard.includes(energyId),
+              );
+              const updatedDefender = updatedOpponentState.activePokemon.withAttachedEnergy(updatedAttachedEnergy);
+              const updatedDiscardPile = [...updatedOpponentState.discardPile, ...energyToDiscard];
+              updatedOpponentState = updatedOpponentState
+                .withActivePokemon(updatedDefender)
+                .withDiscardPile(updatedDiscardPile);
+            }
+          }
+        }
+      }
+    }
+
+    return { updatedPlayerState, updatedOpponentState };
+  }
+
+  /**
+   * Validate that selected energy matches the attack effect requirement
+   * Validates against structured attack effect data, not parsed text
+   */
+  private async validateEnergySelection(
+    selectedEnergyIds: string[],
+    discardEffect: DiscardEnergyEffect,
+    pokemon: CardInstance,
+  ): Promise<string | null> {
+    // Check that all selected energy IDs are actually attached
+    for (const energyId of selectedEnergyIds) {
+      if (!pokemon.attachedEnergy.includes(energyId)) {
+        return `Energy card ${energyId} is not attached to this Pokemon`;
+      }
+    }
+
+    // Check amount
+    if (discardEffect.amount !== 'all') {
+      if (selectedEnergyIds.length !== discardEffect.amount) {
+        return `Must select exactly ${discardEffect.amount} energy card(s), but ${selectedEnergyIds.length} were selected`;
+      }
+    }
+
+    // Check energy type if specified in effect
+    if (discardEffect.energyType) {
+      for (const energyId of selectedEnergyIds) {
+        try {
+          const energyCard = await this.getCardByIdUseCase.getCardEntity(energyId);
+          if (energyCard.energyType !== discardEffect.energyType) {
+            return `Selected energy card ${energyId} is not ${discardEffect.energyType} Energy`;
+          }
+        } catch {
+          return `Could not validate energy card ${energyId}`;
+        }
+      }
+    }
+
+    return null;
   }
 }
 

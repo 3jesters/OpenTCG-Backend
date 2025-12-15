@@ -4,11 +4,13 @@ import { CardDetailDto } from '../dto/card-detail.dto';
 import { AbilityDto } from '../dto/ability.dto';
 import { AbilityEffectDto } from '../dto/ability-effect.dto';
 import { AttackDto } from '../dto/attack.dto';
+import { AttackEffectDto } from '../dto/attack-effect.dto';
 import { WeaknessDto } from '../dto/weakness.dto';
 import { ResistanceDto } from '../dto/resistance.dto';
 import { TrainerEffectDto } from '../dto/trainer-effect.dto';
-import { Ability, Attack, Weakness, Resistance, TrainerEffect, AnyAbilityEffect } from '../../domain/value-objects';
+import { Ability, Attack, Weakness, Resistance, TrainerEffect, AnyAbilityEffect, AttackEffect } from '../../domain/value-objects';
 import { AbilityEffectType } from '../../domain/enums/ability-effect-type.enum';
+import { AttackEffectType } from '../../domain/enums/attack-effect-type.enum';
 
 /**
  * Card Mapper
@@ -214,7 +216,76 @@ export class CardMapper {
       energyCost: attack.energyCost,
       damage: attack.damage,
       text: attack.text,
+      effects: attack.effects ? attack.effects.map((effect) => this.mapAttackEffect(effect)) : undefined,
+      energyBonusCap: attack.energyBonusCap,
     };
+  }
+
+  /**
+   * Map AttackEffect to AttackEffectDto
+   */
+  private static mapAttackEffect(effect: AttackEffect): AttackEffectDto {
+    const dto: AttackEffectDto = {
+      effectType: effect.effectType,
+    };
+
+    // Common properties
+    if ('target' in effect && effect.target !== undefined) {
+      dto.target = effect.target;
+    }
+
+    // Effect-specific properties
+    switch (effect.effectType) {
+      case AttackEffectType.DISCARD_ENERGY:
+        dto.amount = effect.amount;
+        if (effect.energyType !== undefined) {
+          dto.energyType = effect.energyType;
+        }
+        break;
+
+      case AttackEffectType.STATUS_CONDITION:
+        dto.statusCondition = effect.statusCondition;
+        break;
+
+      case AttackEffectType.DAMAGE_MODIFIER:
+        dto.modifier = effect.modifier;
+        break;
+
+      case AttackEffectType.HEAL:
+        dto.healAmount = effect.amount;
+        break;
+
+      case AttackEffectType.PREVENT_DAMAGE:
+        dto.duration = effect.duration;
+        if (effect.amount !== undefined) {
+          dto.amount = effect.amount;
+        }
+        break;
+
+      case AttackEffectType.RECOIL_DAMAGE:
+        dto.recoilAmount = effect.amount;
+        break;
+
+      case AttackEffectType.ENERGY_ACCELERATION:
+        dto.source = effect.source;
+        dto.count = effect.count;
+        if (effect.energyType !== undefined) {
+          dto.energyType = effect.energyType;
+        }
+        if (effect.selector !== undefined) {
+          dto.selector = effect.selector;
+        }
+        break;
+
+      case AttackEffectType.SWITCH_POKEMON:
+        dto.selector = effect.selector;
+        if (effect.with !== undefined) {
+          dto.with = effect.with;
+        }
+        break;
+    }
+
+    return dto;
   }
 
   /**

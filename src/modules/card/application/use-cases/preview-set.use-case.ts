@@ -17,6 +17,10 @@ import { CardType, Rarity } from '../../domain/enums';
 import { GetCardsResponseDto } from '../../presentation/dto/get-cards-response.dto';
 import { CardMapper } from '../../presentation/mappers/card.mapper';
 import { v4 as uuidv4 } from 'uuid';
+import { AttackEffectImportDto } from '../dto/attack-effect-import.dto';
+import { AttackEffect, AttackEffectFactory } from '../../domain/value-objects/attack-effect.value-object';
+import { AttackEffectType } from '../../domain/enums/attack-effect-type.enum';
+import { TargetType } from '../../domain/enums/target-type.enum';
 
 /**
  * Preview Set Use Case
@@ -336,13 +340,19 @@ export class PreviewSetUseCase {
       // Set attacks
       if (dto.attacks && dto.attacks.length > 0) {
         for (const attackDto of dto.attacks) {
+          // Convert attack effects from DTO to domain objects
+          const effects = attackDto.effects
+            ? attackDto.effects.map((effectDto) => this.convertAttackEffect(effectDto))
+            : undefined;
+
           const attack = new Attack(
             attackDto.name,
             attackDto.energyCost,
             attackDto.damage,
             attackDto.text,
             undefined,
-            undefined,
+            effects,
+            attackDto.energyBonusCap,
           );
           card.addAttack(attack);
         }
@@ -417,6 +427,81 @@ export class PreviewSetUseCase {
       .replace(/♀/g, '') // Remove female symbol
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
+  }
+
+  /**
+   * Convert AttackEffectImportDto to AttackEffect domain object
+   */
+  private convertAttackEffect(effectDto: AttackEffectImportDto): AttackEffect {
+    // For now, skip conditions conversion (can be added later if needed)
+    const conditions = undefined;
+
+    switch (effectDto.effectType) {
+      case AttackEffectType.DISCARD_ENERGY:
+        // Use target or targetType (legacy support)
+        const target = effectDto.target || (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
+        if (!target) {
+          throw new Error('DISCARD_ENERGY effect requires target');
+        }
+        // Use amount or value (legacy support)
+        const amount = effectDto.amount !== undefined ? effectDto.amount : (effectDto.value as number | 'all' || 1);
+        return AttackEffectFactory.discardEnergy(
+          target as TargetType.SELF | TargetType.DEFENDING,
+          amount,
+          effectDto.energyType,
+          conditions,
+        );
+
+      case AttackEffectType.STATUS_CONDITION:
+        if (!effectDto.statusCondition) {
+          throw new Error('STATUS_CONDITION effect requires statusCondition');
+        }
+        return AttackEffectFactory.statusCondition(
+          effectDto.statusCondition as 'PARALYZED' | 'POISONED' | 'BURNED' | 'ASLEEP' | 'CONFUSED',
+          conditions,
+        );
+
+      case AttackEffectType.DAMAGE_MODIFIER:
+        const modifier = effectDto.modifier !== undefined ? effectDto.modifier : parseInt(effectDto.damageModifier || '0', 10);
+        return AttackEffectFactory.damageModifier(modifier, conditions);
+
+      case AttackEffectType.HEAL:
+        const healAmount = effectDto.healAmount !== undefined ? effectDto.healAmount : (effectDto.value as number);
+        if (healAmount === undefined) {
+          throw new Error('HEAL effect requires healAmount or value');
+        }
+        const healTarget = effectDto.target || (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
+        if (!healTarget) {
+          throw new Error('HEAL effect requires target');
+        }
+        return AttackEffectFactory.heal(healTarget as TargetType.SELF | TargetType.DEFENDING, healAmount, conditions);
+
+      case AttackEffectType.PREVENT_DAMAGE:
+        const preventTarget = effectDto.target || (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
+        if (!preventTarget) {
+          throw new Error('PREVENT_DAMAGE effect requires target');
+        }
+        const preventAmount = effectDto.amount !== undefined ? effectDto.amount : (effectDto.value as number | 'all');
+        if (!effectDto.duration) {
+          throw new Error('PREVENT_DAMAGE effect requires duration');
+        }
+        return AttackEffectFactory.preventDamage(
+          preventTarget as TargetType.SELF | TargetType.DEFENDING,
+          effectDto.duration as 'next_turn' | 'this_turn',
+          preventAmount,
+          conditions,
+        );
+
+      case AttackEffectType.RECOIL_DAMAGE:
+        const recoilAmount = effectDto.value as number;
+        if (recoilAmount === undefined) {
+          throw new Error('RECOIL_DAMAGE effect requires value');
+        }
+        return AttackEffectFactory.recoilDamage(recoilAmount, conditions);
+
+      default:
+        throw new Error(`Unsupported attack effect type: ${effectDto.effectType}`);
+    }
   }
 }
 

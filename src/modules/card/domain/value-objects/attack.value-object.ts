@@ -18,6 +18,7 @@ export class Attack {
     public readonly text: string, // Human-readable effect description
     public readonly preconditions?: AttackPrecondition[], // Conditions before attack (e.g., coin flips)
     public readonly effects?: AttackEffect[], // Structured effects
+    public readonly energyBonusCap?: number, // Maximum number of extra energy that can contribute to bonus damage (for "+" damage attacks)
   ) {
     this.validate();
   }
@@ -112,7 +113,8 @@ export class Attack {
       this.name === other.name &&
       JSON.stringify(this.energyCost) === JSON.stringify(other.energyCost) &&
       this.damage === other.damage &&
-      this.text === other.text
+      this.text === other.text &&
+      this.energyBonusCap === other.energyBonusCap
     );
   }
 }

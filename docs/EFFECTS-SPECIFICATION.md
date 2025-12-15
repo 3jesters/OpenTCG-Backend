@@ -173,24 +173,39 @@ This document specifies all effects that need to be supported in the game, based
 
 ### PLUS_DAMAGE (Energy-Based)
 
-**Card Examples**: 12 cards found
+**Card Examples**: 30 cards found across Base Set, Fossil Set, and Jungle Set
 - Blastoise - Hydro Pump: "Does 40 damage plus 10 more damage for each Water Energy attached to Blastoise but not used to pay for this attack's Energy cost."
 - Mewtwo - Psychic: "Does 10 damage plus 10 more damage for each Energy card attached to the Defending Pokémon."
-- Poliwrath - Water Gun: Similar to Blastoise
+- Poliwrath - Water Gun: "Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack's Energy cost."
 
 **Mechanics**:
 - Base damage is calculated first
 - Additional damage is calculated based on:
   - Attacker's attached energy (not used for attack cost)
   - Defender's attached energy
-  - Other conditions (damage counters, etc.)
+  - Other conditions (damage counters, bench count, etc.)
 - Formula: `finalDamage = baseDamage + (energyCount * damagePerEnergy)`
+
+**Energy Cap Enforcement**:
+- **Water Energy-based attacks** have a cap on bonus damage
+- Only the first 2 extra Water Energy (beyond attack cost) contribute to bonus damage
+- Example: Poliwrath's Water Gun requires 2 Water + 1 Colorless
+  - If Poliwrath has 8 Water Energy attached: Only 2 extra count → +20 bonus (max)
+  - If Poliwrath has 4 Water Energy attached: 2 extra count → +20 bonus
+  - If Poliwrath has 3 Water Energy attached: 1 extra counts → +10 bonus
+  - Formula with cap: `bonusDamage = Math.min(extraEnergyCount, energyBonusCap) * damagePerEnergy`
+- Cards with energy caps: Blastoise, Poliwrath, Poliwag, Lapras, Omastar, Seadra, Omanyte, Vaporeon (all Water Gun/Hydro Pump attacks)
+- Cards without caps: Defending Energy-based (Mewtwo, Venomoth), Damage Counter-based (Mewtwo Meditate, Mr. Mime, Dodrio, Tauros, Cubone), Bench-based (Wigglytuff, Kangaskhan), Coin Flip-based, Conditional attacks
 
 **Implementation Requirements**:
 1. In attack damage calculation (ATTACK and GENERATE_COIN_FLIP handlers):
    - Parse attack text or use structured effects to find DAMAGE_MODIFIER effects
+   - For Water Energy-based attacks, check if `energyBonusCap` is set on the attack
+   - Count Water Energy attached to attacker (excluding energy used for attack cost)
+   - Apply cap: `cappedCount = Math.min(extraEnergyCount, energyBonusCap)`
+   - Calculate bonus: `bonusDamage = cappedCount * damagePerEnergy`
    - Evaluate conditions (e.g., count energy cards)
-   - Apply modifier: `damage += (energyCount * modifier)`
+   - Apply modifier: `damage += bonusDamage`
 2. Apply modifiers BEFORE weakness/resistance calculations
 3. Support multiple modifiers (additive)
 
@@ -198,6 +213,39 @@ This document specifies all effects that need to be supported in the game, based
 - Energy used for attack cost: Don't count in "not used to pay" calculations
 - Multiple energy types: Count all matching energy types
 - Special energy: May provide multiple energy types
+- Energy cap: Only applies to Water Energy-based attacks (9 cards total)
+
+---
+
+### MINUS_DAMAGE (Damage Reduction)
+
+**Card Examples**: Found in Base Set
+- Machoke - Karate Chop: "Does 50 damage minus 10 damage for each damage counter on Machoke."
+
+**Mechanics**:
+- Base damage is calculated first
+- Damage is reduced based on damage counters on the attacker or defender
+- Formula: `finalDamage = Math.max(0, baseDamage - (damageCounters * reductionPerCounter))`
+- Damage cannot go below 0 (minimum damage is 0)
+
+**Implementation Requirements**:
+1. In attack damage calculation (all damage calculation paths):
+   - Detect "-" damage pattern in `attack.damage` (e.g., "50-")
+   - Parse attack text to extract:
+     - Reduction per counter (e.g., 10)
+     - Target Pokemon (self/attacker or defending Pokemon)
+   - Get damage counters from target Pokemon:
+     - `getDamageCounters()` returns total HP damage (maxHp - currentHp)
+     - Each 10 HP = 1 damage counter: `damageCounters = Math.floor(totalHpDamage / 10)`
+   - Calculate reduction: `reduction = damageCounters * reductionPerCounter`
+   - Apply reduction: `finalDamage = Math.max(0, baseDamage - reduction)`
+2. Apply reduction BEFORE "+" damage bonuses and weakness/resistance calculations
+3. Ensure damage never goes below 0
+
+**Edge Cases**:
+- Damage counters calculation: Each 10 HP damage = 1 damage counter
+- Minimum damage: Always clamped to 0 (cannot be negative)
+- Target determination: Parse attack text to determine if reduction is based on attacker's or defender's damage counters
 
 ---
 

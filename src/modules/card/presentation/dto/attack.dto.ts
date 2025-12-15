@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EnergyType } from '../../domain/enums';
+import { AttackEffectDto } from './attack-effect.dto';
 
 /**
  * Attack DTO
@@ -32,5 +33,19 @@ export class AttackDto {
       'Flip a coin. If heads, the Defending Pokémon is now Confused.',
   })
   text: string;
+
+  @ApiProperty({
+    description: 'Structured attack effects',
+    type: [AttackEffectDto],
+    required: false,
+  })
+  effects?: AttackEffectDto[];
+
+  @ApiProperty({
+    description: 'Maximum number of extra energy that can contribute to bonus damage (for "+" damage attacks)',
+    required: false,
+    example: 2,
+  })
+  energyBonusCap?: number;
 }
 

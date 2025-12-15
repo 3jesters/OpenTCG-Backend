@@ -320,7 +320,8 @@
           "name": "Water Gun",
           "energyCost": ["WATER", "WATER"],
           "damage": "10+",
-          "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Lapras but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Lapras but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         },
         {
           "name": "Confuse Ray",
@@ -793,7 +794,8 @@
           "name": "Water Gun",
           "energyCost": ["WATER", "WATER"],
           "damage": "10+",
-          "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Lapras but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Lapras but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         },
         {
           "name": "Confuse Ray",
@@ -1040,7 +1042,15 @@
           "name": "Destiny Bond",
           "energyCost": ["PSYCHIC", "PSYCHIC"],
           "damage": "0",
-          "text": "Discard 1 Psychic Energy card attached to Gastly in order to use this attack. If, during your opponent's next turn, an attack Knocks Out Gastly, Knock Out the attacking Pokémon."
+          "text": "Discard 1 Psychic Energy card attached to Gastly in order to use this attack. If, during your opponent's next turn, an attack Knocks Out Gastly, Knock Out the attacking Pokémon.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "PSYCHIC"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -1201,7 +1211,15 @@
           "name": "Flamethrower",
           "energyCost": ["FIRE", "FIRE", "COLORLESS"],
           "damage": "50",
-          "text": "Discard 1 Fire Energy card attached to Magmar in order to use this attack."
+          "text": "Discard 1 Fire Energy card attached to Magmar in order to use this attack.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1,
+              "energyType": "FIRE"
+            }
+          ]
         }
       ],
       "weakness": {
@@ -1227,7 +1245,8 @@
           "name": "Water Gun",
           "energyCost": ["WATER", "COLORLESS"],
           "damage": "20+",
-          "text": "Does 20 damage plus 10 more damage for each Water Energy attached to Omastar but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 20 damage plus 10 more damage for each Water Energy attached to Omastar but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         },
         {
           "name": "Spike Cannon",
@@ -1295,7 +1314,8 @@
           "name": "Water Gun",
           "energyCost": ["WATER", "COLORLESS"],
           "damage": "20+",
-          "text": "Does 20 damage plus 10 more damage for each Water Energy attached to Seadra but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 20 damage plus 10 more damage for each Water Energy attached to Seadra but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         },
         {
           "name": "Agility",
@@ -1599,7 +1619,8 @@
           "name": "Water Gun",
           "energyCost": ["WATER"],
           "damage": "10+",
-          "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Omanyte but not used to pay for this attack's Energy cost."
+          "energyBonusCap": 2,
+          "text": "Does 10 damage plus 10 more damage for each Water Energy attached to Omanyte but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count."
         },
         {
           "name": "Withdraw",
@@ -1698,7 +1719,14 @@
           "name": "Scavenge",
           "energyCost": ["COLORLESS", "COLORLESS"],
           "damage": "0",
-          "text": "Discard 1 Energy card attached to Slowpoke in order to use this attack. Put a Trainer card from your discard pile into your hand."
+          "text": "Discard 1 Energy card attached to Slowpoke in order to use this attack. Put a Trainer card from your discard pile into your hand.",
+          "effects": [
+            {
+              "effectType": "DISCARD_ENERGY",
+              "target": "SELF",
+              "amount": 1
+            }
+          ]
         }
       ],
       "weakness": {
