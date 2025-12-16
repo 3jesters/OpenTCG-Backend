@@ -803,7 +803,7 @@ export class TrainerEffectExecutorService {
       benchPokemon.currentHp,
       benchPokemon.maxHp,
       benchPokemon.attachedEnergy,
-      benchPokemon.statusEffect,
+      benchPokemon.statusEffects,
       benchPokemon.evolutionChain,
       benchPokemon.poisonDamageAmount,
       benchPokemon.evolvedAt,
@@ -816,7 +816,7 @@ export class TrainerEffectExecutorService {
       activePokemon.currentHp,
       activePokemon.maxHp,
       activePokemon.attachedEnergy,
-      activePokemon.statusEffect,
+      activePokemon.statusEffects,
       activePokemon.evolutionChain,
       activePokemon.poisonDamageAmount,
       activePokemon.evolvedAt,
@@ -865,7 +865,7 @@ export class TrainerEffectExecutorService {
       benchPokemon.currentHp,
       benchPokemon.maxHp,
       benchPokemon.attachedEnergy,
-      benchPokemon.statusEffect,
+      benchPokemon.statusEffects,
       benchPokemon.evolutionChain,
       benchPokemon.poisonDamageAmount,
       benchPokemon.evolvedAt,
@@ -878,7 +878,7 @@ export class TrainerEffectExecutorService {
       activePokemon.currentHp,
       activePokemon.maxHp,
       activePokemon.attachedEnergy,
-      activePokemon.statusEffect,
+      activePokemon.statusEffects,
       activePokemon.evolutionChain,
       activePokemon.poisonDamageAmount,
       activePokemon.evolvedAt,
@@ -954,7 +954,7 @@ export class TrainerEffectExecutorService {
       targetPokemon.currentHp,
       targetPokemon.maxHp,
       targetPokemon.attachedEnergy,
-      StatusEffect.NONE,
+      [], // Clear all status effects
       targetPokemon.evolutionChain,
       undefined, // Clear poison damage amount when status is cured
       targetPokemon.evolvedAt, // Preserve evolvedAt
@@ -1125,7 +1125,7 @@ export class TrainerEffectExecutorService {
           pokemon.currentHp,
           pokemon.maxHp,
           pokemon.attachedEnergy,
-          pokemon.statusEffect,
+          pokemon.statusEffects,
           pokemon.evolutionChain,
           pokemon.poisonDamageAmount,
         );
@@ -1137,7 +1137,7 @@ export class TrainerEffectExecutorService {
         newActive.currentHp,
         newActive.maxHp,
         newActive.attachedEnergy,
-        newActive.statusEffect,
+        newActive.statusEffects,
         newActive.evolutionChain,
         newActive.poisonDamageAmount,
         newActive.evolvedAt,
@@ -1163,7 +1163,7 @@ export class TrainerEffectExecutorService {
           pokemon.currentHp,
           pokemon.maxHp,
           pokemon.attachedEnergy,
-          pokemon.statusEffect,
+          pokemon.statusEffects,
           pokemon.evolutionChain,
           pokemon.poisonDamageAmount,
         );
@@ -1234,7 +1234,7 @@ export class TrainerEffectExecutorService {
           pokemon.currentHp,
           pokemon.maxHp,
           pokemon.attachedEnergy,
-          pokemon.statusEffect,
+          pokemon.statusEffects,
           pokemon.evolutionChain,
           pokemon.poisonDamageAmount,
           pokemon.evolvedAt,
@@ -1247,7 +1247,7 @@ export class TrainerEffectExecutorService {
         newActive.currentHp,
         newActive.maxHp,
         newActive.attachedEnergy,
-        newActive.statusEffect,
+        newActive.statusEffects,
         newActive.evolutionChain,
         newActive.poisonDamageAmount,
         newActive.evolvedAt,
@@ -1273,7 +1273,7 @@ export class TrainerEffectExecutorService {
           pokemon.currentHp,
           pokemon.maxHp,
           pokemon.attachedEnergy,
-          pokemon.statusEffect,
+          pokemon.statusEffects,
           pokemon.evolutionChain,
           pokemon.poisonDamageAmount,
           pokemon.evolvedAt,
@@ -1345,7 +1345,8 @@ export class TrainerEffectExecutorService {
       ...targetPokemon.evolutionChain,
     ];
 
-    // Create evolved Pokémon (keep same instance ID, position, HP, energy, status)
+    // Create evolved Pokémon (keep same instance ID, position, HP, energy, but clear status effects)
+    // Evolution cures all status effects (sleep, confused, poison, paralyzed, burned)
     const evolvedPokemon = new CardInstance(
       targetPokemon.instanceId,
       actionData.evolutionCardId,
@@ -1353,9 +1354,9 @@ export class TrainerEffectExecutorService {
       targetPokemon.currentHp,
       targetPokemon.maxHp, // Will need to update maxHp from card data, but keeping for now
       targetPokemon.attachedEnergy,
-      targetPokemon.statusEffect,
+      [], // Clear all status effects on evolution (empty array)
       evolutionChain, // Add evolution chain
-      targetPokemon.poisonDamageAmount, // Preserve poison damage amount
+      undefined, // Clear poison damage amount (status effect is cleared)
     );
 
     // Update state
@@ -1463,7 +1464,7 @@ export class TrainerEffectExecutorService {
       defaultHp,
       defaultHp,
       [],
-      StatusEffect.NONE,
+      [], // Clear all status effects
       [], // evolutionChain
       undefined, // poisonDamageAmount
       undefined, // evolvedAt (new Pokemon, not evolved)

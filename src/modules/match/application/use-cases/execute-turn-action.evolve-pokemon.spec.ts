@@ -253,7 +253,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -320,7 +320,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -380,7 +380,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -442,7 +442,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -502,7 +502,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -562,7 +562,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -624,7 +624,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -678,7 +678,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -732,7 +732,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         40,
         40,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -788,7 +788,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -843,7 +843,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -898,7 +898,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         120,
         120,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -953,7 +953,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1015,7 +1015,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1080,7 +1080,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1150,7 +1150,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1213,7 +1213,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         1,
         1,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1272,7 +1272,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1335,7 +1335,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1443,7 +1443,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1454,7 +1454,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         40,
         40,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1546,7 +1546,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1659,7 +1659,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1784,7 +1784,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         50,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
       );
@@ -1883,7 +1883,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [],
         undefined,
         5, // evolvedAt = 5
@@ -1954,7 +1954,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [],
         undefined,
         4, // evolvedAt = 4 (previous turn)
@@ -2031,7 +2031,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [],
         undefined,
         5, // evolvedAt = 5
@@ -2101,7 +2101,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
       const charmeleon2 = new CardInstance(
@@ -2111,7 +2111,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
@@ -2235,7 +2235,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         80,
         80,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 

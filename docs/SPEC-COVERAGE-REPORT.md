@@ -502,21 +502,3 @@ This report should be updated whenever:
 - Gameplay actions beyond basic flow are not tested
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

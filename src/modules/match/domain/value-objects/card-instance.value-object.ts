@@ -13,7 +13,7 @@ export class CardInstance {
     public readonly currentHp: number, // Current HP (can be less than max)
     public readonly maxHp: number, // Maximum HP from card
     public readonly attachedEnergy: string[], // Array of energy card IDs attached
-    public readonly statusEffect: StatusEffect, // Current status condition
+    public readonly statusEffects: StatusEffect[] = [], // Array of status conditions (can have multiple: CONFUSED + POISONED, etc.)
     public readonly evolutionChain: string[] = [], // Array of card IDs that this Pokemon evolved from (for reference)
     public readonly poisonDamageAmount?: number, // Poison damage amount (10 or 20), only set if POISONED
     public readonly evolvedAt?: number, // Turn number when this Pokemon was evolved (undefined if never evolved or evolved in previous turn)
@@ -37,16 +37,61 @@ export class CardInstance {
     if (this.currentHp > this.maxHp) {
       throw new Error('Current HP cannot exceed max HP');
     }
+    // Validate statusEffects array
+    if (!Array.isArray(this.statusEffects)) {
+      throw new Error('statusEffects must be an array');
+    }
+    // Remove NONE from statusEffects array (NONE is not a real status)
+    if (this.statusEffects.includes(StatusEffect.NONE)) {
+      throw new Error('NONE cannot be in statusEffects array');
+    }
+    // Ensure no duplicates
+    const uniqueStatuses = new Set(this.statusEffects);
+    if (uniqueStatuses.size !== this.statusEffects.length) {
+      throw new Error('statusEffects array cannot contain duplicates');
+    }
+    // Validate poisonDamageAmount
     if (this.poisonDamageAmount !== undefined) {
       if (this.poisonDamageAmount !== 10 && this.poisonDamageAmount !== 20) {
         throw new Error('Poison damage amount must be 10 or 20');
       }
-      // If poisonDamageAmount is set, statusEffect should be POISONED
-      if (this.statusEffect !== StatusEffect.POISONED) {
-        throw new Error('poisonDamageAmount can only be set when statusEffect is POISONED');
+      // If poisonDamageAmount is set, statusEffects should include POISONED
+      if (!this.statusEffects.includes(StatusEffect.POISONED)) {
+        throw new Error('poisonDamageAmount can only be set when POISONED is in statusEffects');
       }
     }
-    // If statusEffect is POISONED, poisonDamageAmount should be set (but we allow undefined for backward compatibility)
+  }
+
+  /**
+   * Check if Pokemon has a specific status effect
+   */
+  hasStatusEffect(status: StatusEffect): boolean {
+    return this.statusEffects.includes(status);
+      }
+
+  /**
+   * Get primary status effect (for backward compatibility)
+   * Returns the first status effect, or NONE if no status effects
+   * Priority: ASLEEP > PARALYZED > CONFUSED > POISONED > BURNED
+   */
+  getPrimaryStatusEffect(): StatusEffect {
+    if (this.statusEffects.length === 0) {
+      return StatusEffect.NONE;
+    }
+    // Return highest priority status effect
+    const priority = [
+      StatusEffect.ASLEEP,
+      StatusEffect.PARALYZED,
+      StatusEffect.CONFUSED,
+      StatusEffect.POISONED,
+      StatusEffect.BURNED,
+    ];
+    for (const status of priority) {
+      if (this.statusEffects.includes(status)) {
+        return status;
+      }
+    }
+    return this.statusEffects[0]; // Fallback to first status
   }
 
   /**
@@ -87,7 +132,7 @@ export class CardInstance {
       newHp,
       this.maxHp,
       this.attachedEnergy,
-      this.statusEffect,
+      this.statusEffects,
       this.evolutionChain,
       this.poisonDamageAmount,
       this.evolvedAt,
@@ -105,7 +150,7 @@ export class CardInstance {
       this.currentHp,
       this.maxHp,
       energyCardIds,
-      this.statusEffect,
+      this.statusEffects,
       this.evolutionChain,
       this.poisonDamageAmount,
       this.evolvedAt,
@@ -113,9 +158,22 @@ export class CardInstance {
   }
 
   /**
-   * Create a new CardInstance with updated status effect
+   * Create a new CardInstance with added status effect
+   * Adds the status effect to the existing array (does not replace)
    */
-  withStatusEffect(status: StatusEffect, poisonDamageAmount?: number): CardInstance {
+  withStatusEffectAdded(status: StatusEffect, poisonDamageAmount?: number): CardInstance {
+    if (status === StatusEffect.NONE) {
+      return this; // Cannot add NONE
+    }
+    // If status already exists, don't add duplicate
+    if (this.statusEffects.includes(status)) {
+      return this;
+    }
+    const newStatusEffects = [...this.statusEffects, status];
+    // Update poisonDamageAmount if adding POISONED and amount is provided
+    const newPoisonDamageAmount = status === StatusEffect.POISONED && poisonDamageAmount !== undefined
+      ? poisonDamageAmount
+      : this.poisonDamageAmount;
     return new CardInstance(
       this.instanceId,
       this.cardId,
@@ -123,9 +181,77 @@ export class CardInstance {
       this.currentHp,
       this.maxHp,
       this.attachedEnergy,
-      status,
+      newStatusEffects,
       this.evolutionChain,
-      poisonDamageAmount, // Set poison damage amount when applying POISONED status
+      newPoisonDamageAmount,
+      this.evolvedAt,
+    );
+  }
+
+  /**
+   * Create a new CardInstance with removed status effect
+   */
+  withStatusEffectRemoved(status: StatusEffect): CardInstance {
+    if (!this.statusEffects.includes(status)) {
+      return this; // Status not present, no change
+    }
+    const newStatusEffects = this.statusEffects.filter(s => s !== status);
+    // Clear poisonDamageAmount if removing POISONED
+    const newPoisonDamageAmount = status === StatusEffect.POISONED
+      ? undefined
+      : this.poisonDamageAmount;
+    return new CardInstance(
+      this.instanceId,
+      this.cardId,
+      this.position,
+      this.currentHp,
+      this.maxHp,
+      this.attachedEnergy,
+      newStatusEffects,
+      this.evolutionChain,
+      newPoisonDamageAmount,
+      this.evolvedAt,
+    );
+  }
+
+  /**
+   * Create a new CardInstance with all status effects cleared
+   */
+  withStatusEffectsCleared(): CardInstance {
+    return new CardInstance(
+      this.instanceId,
+      this.cardId,
+      this.position,
+      this.currentHp,
+      this.maxHp,
+      this.attachedEnergy,
+      [], // Clear all status effects
+      this.evolutionChain,
+      undefined, // Clear poison damage amount
+      this.evolvedAt,
+    );
+  }
+
+  /**
+   * Create a new CardInstance with updated status effect (backward compatibility)
+   * Replaces all status effects with a single status effect
+   * @deprecated Use withStatusEffectAdded/Removed instead
+   */
+  withStatusEffect(status: StatusEffect, poisonDamageAmount?: number): CardInstance {
+    if (status === StatusEffect.NONE) {
+      return this.withStatusEffectsCleared();
+    }
+    const newStatusEffects = [status];
+    return new CardInstance(
+      this.instanceId,
+      this.cardId,
+      this.position,
+      this.currentHp,
+      this.maxHp,
+      this.attachedEnergy,
+      newStatusEffects,
+      this.evolutionChain,
+      poisonDamageAmount,
       this.evolvedAt,
     );
   }
@@ -141,7 +267,7 @@ export class CardInstance {
       this.currentHp,
       this.maxHp,
       this.attachedEnergy,
-      this.statusEffect,
+      this.statusEffects,
       this.evolutionChain,
       this.poisonDamageAmount,
       this.evolvedAt,
@@ -159,7 +285,7 @@ export class CardInstance {
       this.currentHp,
       this.maxHp,
       this.attachedEnergy,
-      this.statusEffect,
+      this.statusEffects,
       this.evolutionChain,
       this.poisonDamageAmount,
       turnNumber,

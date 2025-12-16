@@ -94,7 +94,8 @@ export interface CardInstanceJson {
   currentHp: number;
   maxHp: number;
   attachedEnergy: string[];
-  statusEffect: StatusEffect;
+  statusEffect?: StatusEffect; // Deprecated: use statusEffects instead (for backward compatibility)
+  statusEffects?: StatusEffect[]; // Array of status conditions (can have multiple)
   damageCounters?: number; // Optional for backward compatibility (calculated from HP if not present)
   evolutionChain?: string[]; // Optional for backward compatibility
   poisonDamageAmount?: number; // Optional, poison damage amount (10 or 20)
@@ -343,7 +344,7 @@ export class MatchMapper {
       currentHp: card.currentHp,
       maxHp: card.maxHp,
       attachedEnergy: card.attachedEnergy,
-      statusEffect: card.statusEffect,
+      statusEffect: card.getPrimaryStatusEffect(), // Backward compatibility
       damageCounters: card.getDamageCounters(), // Calculate from HP for backward compatibility
       evolutionChain: card.evolutionChain || [],
       poisonDamageAmount: card.poisonDamageAmount,
@@ -370,6 +371,13 @@ export class MatchMapper {
       }
     }
     
+    // Support both old format (statusEffect) and new format (statusEffects)
+    const statusEffects = json.statusEffects !== undefined
+      ? json.statusEffects
+      : (json.statusEffect && json.statusEffect !== StatusEffect.NONE)
+        ? [json.statusEffect]
+        : [];
+    
     return new CardInstance(
       json.instanceId,
       json.cardId,
@@ -377,7 +385,7 @@ export class MatchMapper {
       json.currentHp,
       json.maxHp,
       json.attachedEnergy,
-      json.statusEffect,
+      statusEffects,
       json.evolutionChain || [],
       json.poisonDamageAmount,
       json.evolvedAt, // Default to undefined for backward compatibility

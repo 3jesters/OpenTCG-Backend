@@ -11,7 +11,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
@@ -21,7 +21,7 @@ describe('CardInstance Value Object', () => {
       expect(card.currentHp).toBe(50);
       expect(card.maxHp).toBe(60);
       expect(card.attachedEnergy).toEqual([]);
-      expect(card.statusEffect).toBe(StatusEffect.NONE);
+      expect(card.statusEffects).toEqual([]);
       expect(card.getDamageCounters()).toBe(10); // 60 - 50 = 10
     });
 
@@ -34,7 +34,7 @@ describe('CardInstance Value Object', () => {
           50,
           60,
           [],
-          StatusEffect.NONE,
+          [],
         );
       }).toThrow('Instance ID is required');
     });
@@ -48,7 +48,7 @@ describe('CardInstance Value Object', () => {
           50,
           60,
           [],
-          StatusEffect.NONE,
+          [],
           [],
         );
       }).toThrow('Card ID is required');
@@ -63,7 +63,7 @@ describe('CardInstance Value Object', () => {
           -10,
           60,
           [],
-          StatusEffect.NONE,
+          [],
           [],
         );
       }).toThrow('Current HP cannot be negative');
@@ -78,7 +78,7 @@ describe('CardInstance Value Object', () => {
           50,
           0,
           [],
-          StatusEffect.NONE,
+          [],
           [],
         );
       }).toThrow('Max HP must be greater than 0');
@@ -93,7 +93,7 @@ describe('CardInstance Value Object', () => {
           70,
           60,
           [],
-          StatusEffect.NONE,
+          [],
           [],
         );
       }).toThrow('Current HP cannot exceed max HP');
@@ -108,7 +108,7 @@ describe('CardInstance Value Object', () => {
           50,
           60,
           [],
-          StatusEffect.POISONED,
+          [StatusEffect.POISONED],
           [],
           15, // Invalid: must be 10 or 20
         );
@@ -125,7 +125,7 @@ describe('CardInstance Value Object', () => {
         0,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
@@ -140,7 +140,7 @@ describe('CardInstance Value Object', () => {
         0, // currentHp = 0 means damageCounters = 60 (maxHp - currentHp)
         60,
         [],
-        StatusEffect.NONE,
+        [],
       );
 
       expect(card.isKnockedOut()).toBe(true);
@@ -154,7 +154,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
@@ -171,7 +171,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
@@ -192,7 +192,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
@@ -212,14 +212,14 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
       const updated = card.withStatusEffect(StatusEffect.POISONED);
 
-      expect(updated.statusEffect).toBe(StatusEffect.POISONED);
-      expect(card.statusEffect).toBe(StatusEffect.NONE); // Original unchanged
+      expect(updated.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
+      expect(card.statusEffects).toEqual([]); // Original unchanged
     });
   });
 
@@ -232,7 +232,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
@@ -250,7 +250,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
 
@@ -272,7 +272,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
       const card2 = new CardInstance(
@@ -282,7 +282,7 @@ describe('CardInstance Value Object', () => {
         30,
         40,
         [],
-        StatusEffect.POISONED,
+        [StatusEffect.POISONED],
         [],
         20,
       );
@@ -298,7 +298,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
       );
       const card2 = new CardInstance(
@@ -308,7 +308,7 @@ describe('CardInstance Value Object', () => {
         50,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         [],
         undefined,
         10,

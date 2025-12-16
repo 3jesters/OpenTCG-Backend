@@ -128,7 +128,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -230,7 +230,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -339,7 +339,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -448,7 +448,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -496,7 +496,7 @@ describe('AbilityEffectExecutorService', () => {
           120,
           120,
           [fireEnergy],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -507,7 +507,7 @@ describe('AbilityEffectExecutorService', () => {
           50,
           50,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -583,7 +583,7 @@ describe('AbilityEffectExecutorService', () => {
           80,
           80,
           [lightningEnergy], // Energy attached to Electrode
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -594,7 +594,7 @@ describe('AbilityEffectExecutorService', () => {
           40,
           40,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -671,7 +671,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           [grassEnergy],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -682,7 +682,7 @@ describe('AbilityEffectExecutorService', () => {
           40,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -752,7 +752,7 @@ describe('AbilityEffectExecutorService', () => {
           100, // currentHp = maxHp - damageCounters = 100 - 0 = 100
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -763,7 +763,7 @@ describe('AbilityEffectExecutorService', () => {
           80, // currentHp = maxHp - damageCounters = 100 - 20 = 80
           100,
           [],
-          StatusEffect.NONE,
+          [],
         );
 
         const opponentBench = new CardInstance(
@@ -773,7 +773,7 @@ describe('AbilityEffectExecutorService', () => {
           100, // currentHp = maxHp - damageCounters = 100 - 0 = 100
           100,
           [],
-          StatusEffect.NONE,
+          [],
         );
 
         const gameState = createGameState(
@@ -829,7 +829,7 @@ describe('AbilityEffectExecutorService', () => {
           100, // currentHp = maxHp - damageCounters = 100 - 0 = 100
           100,
           [],
-          StatusEffect.NONE,
+          [],
         );
 
         const benchPokemon = new CardInstance(
@@ -839,7 +839,7 @@ describe('AbilityEffectExecutorService', () => {
           80, // currentHp = maxHp - damageCounters = 100 - 20 = 80
           100,
           [],
-          StatusEffect.NONE,
+          [],
         );
 
         const gameState = createGameState(alakazam, [benchPokemon]);
@@ -890,7 +890,7 @@ describe('AbilityEffectExecutorService', () => {
           70, // currentHp = maxHp - damageCounters = 100 - 30 = 70
           100,
           [],
-          StatusEffect.NONE,
+          [],
         );
 
         const opponentActive = new CardInstance(
@@ -900,7 +900,7 @@ describe('AbilityEffectExecutorService', () => {
           100, // currentHp = maxHp - damageCounters = 100 - 0 = 100
           100,
           [],
-          StatusEffect.NONE,
+          [],
         );
         // opponentActive has 0 damage counters (set in constructor above)
 
@@ -956,7 +956,7 @@ describe('AbilityEffectExecutorService', () => {
           90,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1014,7 +1014,7 @@ describe('AbilityEffectExecutorService', () => {
           60,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1061,7 +1061,7 @@ describe('AbilityEffectExecutorService', () => {
           60,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1114,7 +1114,7 @@ describe('AbilityEffectExecutorService', () => {
           60,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1125,7 +1125,7 @@ describe('AbilityEffectExecutorService', () => {
           40,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1171,7 +1171,7 @@ describe('AbilityEffectExecutorService', () => {
           60,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1219,7 +1219,7 @@ describe('AbilityEffectExecutorService', () => {
           60,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1275,7 +1275,7 @@ describe('AbilityEffectExecutorService', () => {
           60,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1286,7 +1286,7 @@ describe('AbilityEffectExecutorService', () => {
           40,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1312,8 +1312,8 @@ describe('AbilityEffectExecutorService', () => {
           PlayerIdentifier.PLAYER1,
         );
 
-        expect(result.opponentState.activePokemon?.statusEffect).toBe(
-          StatusEffect.CONFUSED,
+        expect(result.opponentState.activePokemon?.statusEffects).toEqual(
+          [StatusEffect.CONFUSED],
         );
       });
     });
@@ -1347,7 +1347,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1423,7 +1423,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1492,7 +1492,7 @@ describe('AbilityEffectExecutorService', () => {
           120,
           120,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1573,7 +1573,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           ['pokemon-base-set-v1.0-grass-energy--98'],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1584,7 +1584,7 @@ describe('AbilityEffectExecutorService', () => {
           40,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1671,7 +1671,7 @@ describe('AbilityEffectExecutorService', () => {
           100,
           100,
           ['pokemon-base-set-v1.0-fire-energy--99'],
-          StatusEffect.NONE,
+          [],
           0,
         );
 
@@ -1682,7 +1682,7 @@ describe('AbilityEffectExecutorService', () => {
           40,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         );
 

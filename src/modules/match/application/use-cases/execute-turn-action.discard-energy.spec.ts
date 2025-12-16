@@ -299,7 +299,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         80, // currentHp
         80, // maxHp
         fireEnergyIds, // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -315,7 +315,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -418,7 +418,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         60,
         60,
         energyIds,
-        StatusEffect.NONE,
+        [],
         [],
         undefined,
         undefined,
@@ -433,7 +433,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         100,
         100,
         [],
-        StatusEffect.NONE,
+        [],
         [],
         undefined,
         undefined,
@@ -529,7 +529,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         60,
         60,
         energyIds,
-        StatusEffect.NONE,
+        [],
         [],
         undefined,
         undefined,
@@ -544,7 +544,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         100,
         100,
         [],
-        StatusEffect.NONE,
+        [],
         [],
         undefined,
         undefined,

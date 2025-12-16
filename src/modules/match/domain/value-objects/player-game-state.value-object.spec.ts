@@ -14,7 +14,7 @@ describe('PlayerGameState Value Object', () => {
       50,
       60,
       [],
-      StatusEffect.NONE,
+      [],
       10,
     );
   };

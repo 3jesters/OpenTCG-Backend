@@ -1,0 +1,824 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { ExecuteTurnActionUseCase } from './execute-turn-action.use-case';
+import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { Card } from '../../../card/domain/entities/card.entity';
+import { Rarity } from '../../../card/domain/enums/rarity.enum';
+import { CardType } from '../../../card/domain/enums/card-type.enum';
+import { PokemonType } from '../../../card/domain/enums/pokemon-type.enum';
+import { EvolutionStage } from '../../../card/domain/enums/evolution-stage.enum';
+import { AttackEffectType } from '../../../card/domain/enums/attack-effect-type.enum';
+import { TargetType } from '../../../card/domain/enums/target-type.enum';
+import { StatusCondition } from '../../../card/domain/enums/status-condition.enum';
+import { ConditionType } from '../../../card/domain/enums/condition-type.enum';
+import { Match } from '../../domain/entities/match.entity';
+import { MatchState } from '../../domain/enums/match-state.enum';
+import { GameState } from '../../domain/value-objects/game-state.value-object';
+import { PlayerGameState } from '../../domain/value-objects/player-game-state.value-object';
+import { CardInstance } from '../../domain/value-objects/card-instance.value-object';
+import { StatusEffect, PokemonPosition } from '../../domain/enums';
+import { TurnPhase } from '../../domain/enums/turn-phase.enum';
+import { PlayerIdentifier } from '../../domain/enums/player-identifier.enum';
+import { Attack } from '../../../card/domain/value-objects/attack.value-object';
+import { AttackEffectFactory } from '../../../card/domain/value-objects/attack-effect.value-object';
+import { ConditionFactory } from '../../../card/domain/value-objects/condition.value-object';
+import { IMatchRepository } from '../../domain/repositories/match.repository.interface';
+import { MatchStateMachineService } from '../../domain/services/match-state-machine.service';
+import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
+import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
+import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
+import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
+import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
+import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
+import { TrainerEffectExecutorService } from '../../domain/services/trainer-effect-executor.service';
+import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
+import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
+import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
+import { CardMapper } from '../../../card/presentation/mappers/card.mapper';
+import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.value-object';
+
+describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
+  let useCase: ExecuteTurnActionUseCase;
+  let mockGetCardByIdUseCase: jest.Mocked<GetCardByIdUseCase>;
+  let mockMatchRepository: jest.Mocked<IMatchRepository>;
+  let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
+  let mockCoinFlipResolver: jest.Mocked<CoinFlipResolverService>;
+
+  beforeEach(async () => {
+    mockGetCardByIdUseCase = {
+      execute: jest.fn(),
+      getCardEntity: jest.fn(),
+    } as any;
+
+    mockMatchRepository = {
+      findById: jest.fn(),
+      save: jest.fn(),
+      findByTournamentId: jest.fn(),
+      findByPlayerId: jest.fn(),
+    } as any;
+
+    mockStateMachineService = {
+      validateAction: jest.fn().mockReturnValue({ isValid: true }),
+      transition: jest.fn(),
+      getCurrentState: jest.fn(),
+      checkWinConditions: jest.fn().mockReturnValue({ hasWinner: false, winner: null }),
+    } as any;
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ExecuteTurnActionUseCase,
+        {
+          provide: IMatchRepository,
+          useValue: mockMatchRepository,
+        },
+        {
+          provide: MatchStateMachineService,
+          useValue: mockStateMachineService,
+        },
+        {
+          provide: DrawInitialCardsUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: SetPrizeCardsUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: PerformCoinTossUseCase,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: GetCardByIdUseCase,
+          useValue: mockGetCardByIdUseCase,
+        },
+        {
+          provide: CoinFlipResolverService,
+          useValue: {
+            generateCoinFlip: jest.fn(),
+            generateMultipleCoinFlips: jest.fn(),
+          } as any,
+        },
+        {
+          provide: AttackCoinFlipParserService,
+          useValue: {
+            parseCoinFlipFromAttack: jest.fn().mockReturnValue(null),
+          },
+        },
+        {
+          provide: AttackEnergyValidatorService,
+          useValue: {
+            validateEnergyRequirements: jest.fn().mockReturnValue({ isValid: true }),
+          },
+        },
+        {
+          provide: TrainerEffectExecutorService,
+          useValue: {},
+        },
+        {
+          provide: TrainerEffectValidatorService,
+          useValue: {},
+        },
+        {
+          provide: AbilityEffectExecutorService,
+          useValue: {},
+        },
+        {
+          provide: AbilityEffectValidatorService,
+          useValue: {},
+        },
+      ],
+    }).compile();
+
+    useCase = module.get<ExecuteTurnActionUseCase>(ExecuteTurnActionUseCase);
+    mockCoinFlipResolver = module.get(CoinFlipResolverService);
+  });
+
+  // Helper to create Pokemon cards
+  const createPokemonCard = (
+    cardId: string,
+    name: string,
+    hp: number,
+    attacks: Attack[] = [],
+  ): Card => {
+    const card = Card.createPokemonCard(
+      'instance-1',
+      cardId,
+      '001',
+      name,
+      'base-set',
+      '1',
+      Rarity.COMMON,
+      'Test Pokemon',
+      'Artist',
+      '',
+    );
+    card.setStage(EvolutionStage.BASIC);
+    card.setHp(hp);
+    card.setPokemonType(PokemonType.FIRE);
+    // Add attacks using the Card's addAttack method
+    attacks.forEach(attack => {
+      card.addAttack(attack);
+    });
+    return card;
+  };
+
+  // Helper to create a match with game state
+  const createMatchWithGameState = (
+    player1Active?: CardInstance,
+    player1Bench: CardInstance[] = [],
+    player2Active?: CardInstance,
+    player2Bench: CardInstance[] = [],
+    player1Hand: string[] = [],
+  ): Match => {
+    const player1State = new PlayerGameState(
+      [],
+      player1Hand,
+      player1Active || null,
+      player1Bench,
+      [],
+      [],
+      false,
+    );
+
+    const player2State = new PlayerGameState(
+      [],
+      [],
+      player2Active || null,
+      player2Bench,
+      [],
+      [],
+      false,
+    );
+
+    const gameState = new GameState(
+      player1State,
+      player2State,
+      1,
+      TurnPhase.MAIN_PHASE,
+      PlayerIdentifier.PLAYER1,
+      null,
+      [],
+      null,
+      new Map(),
+    );
+
+    const match = new Match('match-1', 'tournament-1');
+    match.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+    match.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+    // Ensure match has players assigned
+    if (!match.player1Id || !match.player2Id) {
+      throw new Error('Match players not assigned correctly');
+    }
+    Object.defineProperty(match, '_state', {
+      value: MatchState.PLAYER_TURN,
+      writable: true,
+      configurable: true,
+    });
+    match.updateGameState(gameState);
+
+    return match;
+  };
+
+  describe('Multiple Status Effects Coexistence', () => {
+    it('should allow Pokemon to have CONFUSED and POISONED simultaneously', async () => {
+      // Arrange: Create Pokemon with attack that applies CONFUSED
+      const confuseAttack = new Attack(
+        'Confuse Ray',
+        [PokemonType.FIRE],
+        '20',
+        'Flip a coin. If heads, the Defending Pokémon is now Confused.',
+        undefined,
+        [
+          AttackEffectFactory.statusCondition(
+            StatusCondition.CONFUSED,
+            [
+              ConditionFactory.coinFlipSuccess(),
+            ],
+          ),
+        ],
+      );
+
+      const poisonAttack = new Attack(
+        'Poison Sting',
+        [PokemonType.FIRE],
+        '10',
+        'The Defending Pokémon is now Poisoned.',
+        undefined,
+        [
+          AttackEffectFactory.statusCondition(StatusCondition.POISONED),
+        ],
+      );
+
+      const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [confuseAttack]);
+      const poisonerCard = createPokemonCard('poisoner-id', 'Poisoner', 100, [poisonAttack]);
+      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+
+      // Create energy card mocks
+      const createEnergyCard = (energyType: string): Card => {
+        const card = Card.createEnergyCard(
+          `instance-energy-${energyType}`,
+          `energy-${energyType}`,
+          '1',
+          `${energyType} Energy`,
+          'base-set',
+          '1',
+          Rarity.COMMON,
+          'Basic Energy',
+          'Artist',
+          '',
+        );
+        card.setEnergyType(energyType as any);
+        return card;
+      };
+
+      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
+        if (cardId === 'attacker-id') return CardMapper.toCardDetailDto(attackerCard);
+        if (cardId === 'poisoner-id') return CardMapper.toCardDetailDto(poisonerCard);
+        if (cardId === 'defender-id') return CardMapper.toCardDetailDto(defenderCard);
+        if (cardId === 'energy-fire-1') return CardMapper.toCardDetailDto(createEnergyCard('fire'));
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
+        if (cardId === 'attacker-id') return attackerCard;
+        if (cardId === 'poisoner-id') return poisonerCard;
+        if (cardId === 'defender-id') return defenderCard;
+        if (cardId === 'energy-fire-1') {
+          const energyCard = createEnergyCard('FIRE');
+          return energyCard;
+        }
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      const attacker = new CardInstance(
+        'attacker-instance',
+        'attacker-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [],
+        [],
+        undefined,
+      );
+
+      const defender = new CardInstance(
+        'defender-instance',
+        'defender-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [],
+        [],
+        undefined,
+      );
+
+      const match = createMatchWithGameState(attacker, [], defender, []);
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockImplementation(async (m) => m);
+
+      // Act 1: Apply CONFUSED status (with coin flip heads)
+      // Mock generateCoinFlip to return CoinFlipResult (synchronous method)
+      mockCoinFlipResolver.generateCoinFlip.mockReturnValue(
+        new CoinFlipResult(0, 'heads', 12345),
+      );
+
+      const result1 = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: 'ATTACK',
+        actionData: { attackIndex: 0 },
+      });
+
+      // Verify CONFUSED was applied
+      const defenderAfterConfuse = result1.gameState?.player2State.activePokemon;
+      expect(defenderAfterConfuse?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(true);
+      expect(defenderAfterConfuse?.hasStatusEffect(StatusEffect.POISONED)).toBe(false);
+
+      // Update match state - ensure phase is MAIN_PHASE for next attack
+      // Use the game state from result1 which has the defender with CONFUSED status
+      const updatedGameState1 = result1.gameState!.withPhase(TurnPhase.MAIN_PHASE);
+      const updatedMatch1 = new Match('match-1', 'tournament-1');
+      updatedMatch1.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      updatedMatch1.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      Object.defineProperty(updatedMatch1, '_state', {
+        value: MatchState.PLAYER_TURN,
+        writable: true,
+        configurable: true,
+      });
+      updatedMatch1.updateGameState(updatedGameState1);
+      mockMatchRepository.save.mockImplementation(async (m) => m);
+      mockMatchRepository.findById.mockResolvedValue(updatedMatch1);
+
+      // Act 2: Apply POISONED status (no coin flip needed)
+      const poisoner = new CardInstance(
+        'poisoner-instance',
+        'poisoner-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [],
+        [],
+        undefined,
+      );
+
+      // Preserve defender's status effects from first attack
+      const defenderAfterConfuse2 = updatedMatch1.gameState!.player2State.activePokemon;
+      const updatedGameState2 = updatedMatch1.gameState!.withPlayer1State(
+        updatedMatch1.gameState!.player1State.withActivePokemon(poisoner),
+      ).withPlayer2State(
+        updatedMatch1.gameState!.player2State.withActivePokemon(defenderAfterConfuse2!),
+      ).withPhase(TurnPhase.MAIN_PHASE);
+      const updatedMatch2 = new Match('match-1', 'tournament-1');
+      updatedMatch2.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      updatedMatch2.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      Object.defineProperty(updatedMatch2, '_state', {
+        value: MatchState.PLAYER_TURN,
+        writable: true,
+        configurable: true,
+      });
+      updatedMatch2.updateGameState(updatedGameState2);
+      mockMatchRepository.findById.mockResolvedValue(updatedMatch2);
+
+      const result2 = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: 'ATTACK',
+        actionData: { attackIndex: 0 },
+      });
+
+      // Verify both CONFUSED and POISONED are present
+      const defenderAfterBoth = result2.gameState?.player2State.activePokemon;
+      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(true);
+      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
+      expect(defenderAfterBoth?.statusEffects.length).toBe(2);
+      expect(defenderAfterBoth?.statusEffects).toContain(StatusEffect.CONFUSED);
+      expect(defenderAfterBoth?.statusEffects).toContain(StatusEffect.POISONED);
+      expect(defenderAfterBoth?.poisonDamageAmount).toBe(10); // Default poison damage
+    });
+
+    it('should allow Pokemon to have POISONED and BURNED simultaneously', async () => {
+      // Arrange: Create attacks that apply POISONED and BURNED
+      const poisonAttack = new Attack(
+        'Poison Sting',
+        [PokemonType.FIRE],
+        '10',
+        'The Defending Pokémon is now Poisoned.',
+        undefined,
+        [
+          AttackEffectFactory.statusCondition(StatusCondition.POISONED),
+        ],
+      );
+
+      const burnAttack = new Attack(
+        'Fire Blast',
+        [PokemonType.FIRE],
+        '30',
+        'The Defending Pokémon is now Burned.',
+        undefined,
+        [
+          AttackEffectFactory.statusCondition(StatusCondition.BURNED),
+        ],
+      );
+
+      const poisonerCard = createPokemonCard('poisoner-id', 'Poisoner', 100, [poisonAttack]);
+      const burnerCard = createPokemonCard('burner-id', 'Burner', 100, [burnAttack]);
+      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+
+      // Create energy card helper
+      const createEnergyCardHelper = (energyType: string): Card => {
+        const card = Card.createEnergyCard(
+          `instance-energy-${energyType}`,
+          `energy-${energyType}`,
+          '1',
+          `${energyType} Energy`,
+          'base-set',
+          '1',
+          Rarity.COMMON,
+          'Basic Energy',
+          'Artist',
+          '',
+        );
+        card.setEnergyType(energyType as any);
+        return card;
+      };
+
+      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
+        if (cardId === 'poisoner-id') return CardMapper.toCardDetailDto(poisonerCard);
+        if (cardId === 'burner-id') return CardMapper.toCardDetailDto(burnerCard);
+        if (cardId === 'defender-id') return CardMapper.toCardDetailDto(defenderCard);
+        if (cardId === 'energy-fire-1') {
+          const energyCard = createEnergyCardHelper('FIRE');
+          return CardMapper.toCardDetailDto(energyCard);
+        }
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
+        if (cardId === 'poisoner-id') return poisonerCard;
+        if (cardId === 'burner-id') return burnerCard;
+        if (cardId === 'defender-id') return defenderCard;
+        if (cardId === 'energy-fire-1') {
+          const energyCard = createEnergyCardHelper('FIRE');
+          return energyCard;
+        }
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      const poisoner = new CardInstance(
+        'poisoner-instance',
+        'poisoner-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [],
+        [],
+        undefined,
+      );
+
+      const defender = new CardInstance(
+        'defender-instance',
+        'defender-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [],
+        [],
+        undefined,
+      );
+
+      const match = createMatchWithGameState(poisoner, [], defender, []);
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockImplementation(async (m) => m);
+
+      // Act 1: Apply POISONED
+      const result1 = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: 'ATTACK',
+        actionData: { attackIndex: 0 },
+      });
+
+      expect(result1).toBeDefined();
+      expect(result1.gameState).toBeDefined();
+      expect(result1.gameState?.player2State.activePokemon?.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
+      
+      // Update match state for second attack - ensure phase is MAIN_PHASE
+      const updatedGameState1 = result1.gameState!.withPhase(TurnPhase.MAIN_PHASE);
+      const updatedMatch1 = new Match('match-1', 'tournament-1');
+      updatedMatch1.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      updatedMatch1.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      Object.defineProperty(updatedMatch1, '_state', {
+        value: MatchState.PLAYER_TURN,
+        writable: true,
+        configurable: true,
+      });
+      updatedMatch1.updateGameState(updatedGameState1);
+      mockMatchRepository.findById.mockResolvedValue(updatedMatch1);
+
+      // Act 2: Apply BURNED (switch to burner Pokemon)
+      const burner = new CardInstance(
+        'burner-instance',
+        'burner-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        ['energy-fire-1'], // Attach energy for attack
+        [],
+        [],
+        undefined,
+      );
+
+      // Preserve defender's status effects from first attack
+      const defenderAfterPoison = updatedMatch1.gameState!.player2State.activePokemon;
+      const updatedGameState2 = updatedMatch1.gameState!.withPlayer1State(
+        updatedMatch1.gameState!.player1State.withActivePokemon(burner),
+      ).withPlayer2State(
+        updatedMatch1.gameState!.player2State.withActivePokemon(defenderAfterPoison!),
+      ).withPhase(TurnPhase.MAIN_PHASE);
+      const updatedMatch2 = new Match('match-1', 'tournament-1');
+      updatedMatch2.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      updatedMatch2.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      Object.defineProperty(updatedMatch2, '_state', {
+        value: MatchState.PLAYER_TURN,
+        writable: true,
+        configurable: true,
+      });
+      updatedMatch2.updateGameState(updatedGameState2);
+      mockMatchRepository.findById.mockResolvedValue(updatedMatch2);
+
+      const result2 = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: 'ATTACK',
+        actionData: { attackIndex: 0 },
+      });
+
+      // Verify both POISONED and BURNED are present
+      const defenderAfterBoth = result2.gameState?.player2State.activePokemon;
+      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
+      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.BURNED)).toBe(true);
+      expect(defenderAfterBoth?.statusEffects.length).toBe(2);
+      expect(defenderAfterBoth?.poisonDamageAmount).toBe(10);
+    });
+
+    it('should apply damage from both POISONED and BURNED between turns', async () => {
+      // Arrange: Pokemon with both POISONED and BURNED
+      const defender = new CardInstance(
+        'defender-instance',
+        'defender-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [StatusEffect.POISONED, StatusEffect.BURNED],
+        [],
+        10, // Poison damage amount
+        undefined,
+      );
+
+      const attacker = new CardInstance(
+        'attacker-instance',
+        'attacker-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [],
+        [],
+        undefined,
+      );
+
+      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+      const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, []);
+
+      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
+        if (cardId === 'defender-id') {
+          const dto = CardMapper.toCardDetailDto(defenderCard);
+          return { ...dto, hp: 100 };
+        }
+        if (cardId === 'attacker-id') {
+          const dto = CardMapper.toCardDetailDto(attackerCard);
+          return { ...dto, hp: 100 };
+        }
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
+        if (cardId === 'defender-id') return defenderCard;
+        if (cardId === 'attacker-id') return attackerCard;
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      const match = createMatchWithGameState(attacker, [], defender, []);
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockImplementation(async (m) => m);
+
+      // Act: End turn (triggers between-turns processing)
+      const result = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: 'END_TURN',
+        actionData: {},
+      });
+
+      // Verify damage from both status effects was applied
+      // POISONED: 10 damage, BURNED: 20 damage = 30 total
+      const defenderAfterTurn = result.gameState?.player2State.activePokemon;
+      expect(defenderAfterTurn?.currentHp).toBe(70); // 100 - 30 = 70
+      expect(defenderAfterTurn?.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
+      expect(defenderAfterTurn?.hasStatusEffect(StatusEffect.BURNED)).toBe(true);
+    });
+
+    it('should block attack when Pokemon has both ASLEEP and CONFUSED (ASLEEP takes priority)', async () => {
+      // Arrange: Pokemon with both ASLEEP and CONFUSED
+      const attacker = new CardInstance(
+        'attacker-instance',
+        'attacker-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [StatusEffect.ASLEEP, StatusEffect.CONFUSED],
+        [],
+        undefined,
+      );
+
+      const defender = new CardInstance(
+        'defender-instance',
+        'defender-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [],
+        [],
+        undefined,
+      );
+
+      const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [
+        new Attack('Tackle', [PokemonType.FIRE], '20', 'Deal 20 damage.', undefined, []),
+      ]);
+      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+
+      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
+        if (cardId === 'attacker-id') return CardMapper.toCardDetailDto(attackerCard);
+        if (cardId === 'defender-id') return CardMapper.toCardDetailDto(defenderCard);
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
+        if (cardId === 'attacker-id') return attackerCard;
+        if (cardId === 'defender-id') return defenderCard;
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      const match = createMatchWithGameState(attacker, [], defender, []);
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockImplementation(async (m) => m);
+
+      // Act & Assert: Should reject attack due to ASLEEP (even though CONFUSED is also present)
+      await expect(
+        useCase.execute({
+          matchId: 'match-1',
+          playerId: 'test-player-1',
+          actionType: 'ATTACK',
+          actionData: { attackIndex: 0 },
+        }),
+      ).rejects.toThrow('Cannot attack while Asleep');
+    });
+
+    it('should block attack when Pokemon has both PARALYZED and CONFUSED (PARALYZED takes priority)', async () => {
+      // Arrange: Pokemon with both PARALYZED and CONFUSED
+      const attacker = new CardInstance(
+        'attacker-instance',
+        'attacker-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [StatusEffect.PARALYZED, StatusEffect.CONFUSED],
+        [],
+        undefined,
+      );
+
+      const defender = new CardInstance(
+        'defender-instance',
+        'defender-id',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+        [],
+        [],
+        [],
+        undefined,
+      );
+
+      const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [
+        new Attack('Tackle', [PokemonType.FIRE], '20', 'Deal 20 damage.', undefined, []),
+      ]);
+      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+
+      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
+        if (cardId === 'attacker-id') return CardMapper.toCardDetailDto(attackerCard);
+        if (cardId === 'defender-id') return CardMapper.toCardDetailDto(defenderCard);
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
+        if (cardId === 'attacker-id') return attackerCard;
+        if (cardId === 'defender-id') return defenderCard;
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      const match = createMatchWithGameState(attacker, [], defender, []);
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockImplementation(async (m) => m);
+
+      // Act & Assert: Should reject attack due to PARALYZED
+      await expect(
+        useCase.execute({
+          matchId: 'match-1',
+          playerId: 'test-player-1',
+          actionType: 'ATTACK',
+          actionData: { attackIndex: 0 },
+        }),
+      ).rejects.toThrow('Cannot attack while Paralyzed');
+    });
+
+    it('should clear all status effects when Pokemon evolves', async () => {
+      // Arrange: Pokemon with multiple status effects and some damage
+      const charmander = new CardInstance(
+        'charmander-instance',
+        'charmander-id',
+        PokemonPosition.ACTIVE,
+        40, // currentHp (10 damage from 50 maxHp)
+        50, // maxHp
+        [],
+        [StatusEffect.POISONED, StatusEffect.CONFUSED],
+        [],
+        10,
+        undefined,
+      );
+
+      const charmeleonCard = createPokemonCard('charmeleon-id', 'Charmeleon', 80, []);
+      charmeleonCard.setStage(EvolutionStage.STAGE_1);
+      const evolution = {
+        id: '000',
+        stage: EvolutionStage.STAGE_1,
+        evolvesFrom: 'charmander-id',
+        name: 'Charmander',
+      };
+      charmeleonCard.setEvolvesFrom(evolution as any);
+
+      const charmanderCard = createPokemonCard('charmander-id', 'Charmander', 50, []);
+      charmanderCard.setStage(EvolutionStage.BASIC);
+
+      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
+        if (cardId === 'charmander-id') return CardMapper.toCardDetailDto(charmanderCard);
+        if (cardId === 'charmeleon-id') {
+          const dto = CardMapper.toCardDetailDto(charmeleonCard);
+          return { ...dto, hp: 80 };
+        }
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
+        if (cardId === 'charmander-id') return charmanderCard;
+        if (cardId === 'charmeleon-id') return charmeleonCard;
+        throw new Error(`Card not found: ${cardId}`);
+      });
+
+      const match = createMatchWithGameState(charmander, [], null, [], ['charmeleon-id']);
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockImplementation(async (m) => m);
+
+      // Act: Evolve Pokemon
+      const result = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: 'EVOLVE_POKEMON',
+        actionData: {
+          evolutionCardId: 'charmeleon-id',
+          target: 'ACTIVE',
+        },
+      });
+
+      // Verify all status effects are cleared
+      const evolvedPokemon = result.gameState?.player1State.activePokemon;
+      expect(evolvedPokemon?.statusEffects).toEqual([]);
+      expect(evolvedPokemon?.hasStatusEffect(StatusEffect.POISONED)).toBe(false);
+      expect(evolvedPokemon?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(false);
+      expect(evolvedPokemon?.poisonDamageAmount).toBeUndefined();
+      // Verify damage counters are preserved: 50 - 40 = 10 damage
+      // Evolved: 80 maxHp - 10 damage = 70 currentHp
+      expect(evolvedPokemon?.currentHp).toBe(70); // Damage preserved (10 damage from 80 maxHp)
+      expect(evolvedPokemon?.maxHp).toBe(80); // New max HP from evolution
+    });
+  });
+});
+
+

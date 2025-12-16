@@ -505,15 +505,15 @@ const pollInterval = setInterval(async () => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ playerId: 'test-player-1' })
   });
-  
+
   const state = await stateResponse.json();
-  
+
   // Check if it's now your turn
   if (state.currentPlayer === 'PLAYER1' && state.state === 'PLAYER_TURN') {
     clearInterval(pollInterval);
     // It's your turn - enable actions
   }
-  
+
   // Check for opponent actions via lastAction
   if (state.lastAction && state.lastAction.playerId === 'PLAYER2') {
     console.log('Opponent performed:', state.lastAction.actionType);
@@ -542,6 +542,228 @@ Use this to:
 - Show opponent's actions in the UI
 - Update opponent's visible state (hand count, deck count, etc.)
 - Detect when opponent ends their turn
+
+---
+
+## Attack Damage Information
+
+### Getting Final Attack Damage
+
+When an attack is executed, the server returns the **total damage dealt** in the `lastAction.actionData.damage` field. This damage amount includes:
+
+- ✅ Base attack damage
+- ✅ "+" damage bonuses (energy-based, damage counter-based, etc.)
+- ✅ Damage modifiers from attack effects
+- ✅ Weakness multipliers (×2)
+- ✅ Resistance reductions (-20, -30, etc.)
+- ✅ Damage prevention effects (if any)
+- ✅ Damage reduction effects from trainer cards/abilities
+
+**Important:** The damage amount does **NOT** include:
+- ❌ Poison damage (applied between turns)
+- ❌ Burn damage (applied between turns)
+- ❌ Self-damage (applied separately to the attacker)
+- ❌ Bench damage (applied separately to bench Pokemon)
+
+### Example: Attack Action Response
+
+```json
+{
+  "lastAction": {
+    "actionId": "action-uuid",
+    "playerId": "PLAYER1",
+    "actionType": "ATTACK",
+    "timestamp": "2025-11-30T12:50:52.553Z",
+    "actionData": {
+      "attackIndex": 0,
+      "damage": 100,
+      "isKnockedOut": false
+    }
+  }
+}
+```
+
+**Reading the Damage:**
+- `actionData.damage`: **100** - This is the total damage dealt to the defending Pokemon, including all modifiers
+- `actionData.isKnockedOut`: **false** - Whether the defending Pokemon was knocked out
+
+### Displaying Damage to Players
+
+When displaying attack results to players:
+
+```typescript
+function displayAttackResult(lastAction: ActionSummary) {
+  if (lastAction.actionType === 'ATTACK') {
+    const damage = lastAction.actionData.damage;
+    const isKnockedOut = lastAction.actionData.isKnockedOut;
+
+    // Show damage amount
+    showNotification(`Attack dealt ${damage} damage!`);
+
+    if (isKnockedOut) {
+      showNotification('Pokemon was knocked out!');
+    }
+  }
+}
+```
+
+### Follow-up Damage (Poison, Burn)
+
+Poison and burn damage are **NOT** included in the attack damage amount. They are applied separately between turns and will appear as HP changes in subsequent state updates:
+
+```typescript
+// Attack deals 50 damage
+// lastAction.actionData.damage = 50
+
+// Between turns, poison deals 10 damage
+// Next state update shows opponent's Pokemon HP decreased by 10
+// This is separate from the attack damage
+```
+
+To detect poison/burn damage, compare HP values between state updates when no attack occurred.
+
+---
+
+## Attack Effects: Coin Flip After Damage
+
+Some attacks deal damage first, then flip a coin to determine if a status effect applies (e.g., Caterpie's "String Shot" paralyzes on heads).
+
+### Detection
+
+Check `lastAction.actionData` for `coinFlipResults` array:
+
+```typescript
+if (lastAction.actionType === 'ATTACK' && lastAction.actionData.coinFlipResults) {
+  const coinFlipResults = lastAction.actionData.coinFlipResults;
+  const statusEffectApplied = lastAction.actionData.statusEffectApplied;
+  const statusEffect = lastAction.actionData.statusEffect;
+
+  // Show coin flip results
+  displayCoinFlipResults(coinFlipResults);
+
+  // Show status effect result
+  if (statusEffectApplied) {
+    showNotification(`Status effect applied: ${statusEffect}`);
+  } else {
+    showNotification('Coin flip failed - no status effect');
+  }
+}
+```
+
+### Example Response
+
+```json
+{
+  "lastAction": {
+    "actionId": "action-uuid",
+    "playerId": "PLAYER1",
+    "actionType": "ATTACK",
+    "timestamp": "2025-12-15T14:11:52.210Z",
+    "actionData": {
+      "attackIndex": 0,
+      "damage": 10,
+      "isKnockedOut": false,
+      "coinFlipResults": [
+        {
+          "flipIndex": 0,
+          "result": "HEADS"
+        }
+      ],
+      "statusEffectApplied": true,
+      "statusEffect": "PARALYZED"
+    }
+  }
+}
+```
+
+### Response Fields
+
+- `coinFlipResults`: Array of coin flip results (only present if coin flip was performed)
+  - `flipIndex`: Index of the flip (0-based)
+  - `result`: `"HEADS"` or `"TAILS"`
+- `statusEffectApplied`: Boolean indicating if the status effect was successfully applied
+- `statusEffect`: String indicating which status effect was applied (e.g., `"PARALYZED"`, `"POISONED"`, `"CONFUSED"`, `"ASLEEP"`, `"BURNED"`)
+
+**Note:** If `coinFlipResults` is not present in `actionData`, the attack does not have a coin flip effect for status conditions.
+
+### UI Flow
+
+1. Attack executes → Damage is dealt
+2. Show damage animation
+3. Check for `coinFlipResults` in `actionData`
+4. If present:
+   - Show coin flip animation/results
+   - If `statusEffectApplied === true`: Show status effect applied notification
+   - If `statusEffectApplied === false`: Show "Coin flip failed - no status effect" message
+5. Update Pokemon status indicator
+
+### Example Implementation
+
+```typescript
+function handleAttackAction(lastAction: ActionSummary) {
+  if (lastAction.actionType !== 'ATTACK') {
+    return;
+  }
+
+  const actionData = lastAction.actionData;
+
+  // Show damage dealt
+  showDamageAnimation(actionData.damage);
+
+  // Check for coin flip effects
+  if (actionData.coinFlipResults) {
+    // Show coin flip animation
+    showCoinFlipAnimation(actionData.coinFlipResults);
+
+    // Show status effect result
+    if (actionData.statusEffectApplied) {
+      showNotification(
+        `Coin flip succeeded! ${actionData.statusEffect} applied to defending Pokemon.`
+      );
+      updatePokemonStatus(defendingPokemon, actionData.statusEffect);
+    } else {
+      showNotification('Coin flip failed - no status effect applied.');
+    }
+  }
+
+  // Update HP display
+  updateHpDisplay(defendingPokemon, actionData.damage);
+}
+```
+
+### Confusion Attacks
+
+For attacks executed while confused, the `actionData` may contain both:
+- `coinFlipResults`: Confusion coin flip results (heads = attack proceeds)
+- `attackCoinFlipResults`: Attack status effect coin flip results (if applicable)
+
+```json
+{
+  "actionData": {
+    "attackIndex": 0,
+    "damage": 20,
+    "isKnockedOut": false,
+    "coinFlipResults": [
+      {
+        "flipIndex": 0,
+        "result": "HEADS"
+      }
+    ],
+    "attackCoinFlipResults": [
+      {
+        "flipIndex": 0,
+        "result": "TAILS"
+      }
+    ],
+    "statusEffectApplied": false,
+    "statusEffect": null
+  }
+}
+```
+
+In this case:
+- `coinFlipResults` shows the confusion coin flip (attack proceeded because it was heads)
+- `attackCoinFlipResults` shows the attack's status effect coin flip (failed because it was tails)
 
 ---
 
@@ -681,19 +903,19 @@ function canAttachEnergy(energyCardId: string, target: string): boolean {
   if (!playerState.hand.includes(energyCardId)) {
     return false;
   }
-  
+
   // Check if target is valid
   if (target === 'ACTIVE' && !playerState.activePokemon) {
     return false;
   }
-  
+
   if (target.startsWith('BENCH_')) {
     const benchIndex = parseInt(target.replace('BENCH_', ''));
     if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
       return false;
     }
   }
-  
+
   return true;
 }
 ```

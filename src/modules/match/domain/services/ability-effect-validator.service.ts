@@ -63,12 +63,15 @@ export class AbilityEffectValidatorService {
     // Check if Pokemon has blocking status conditions
     // Many abilities specify "can't be used if [Pokemon] is Asleep, Confused, or Paralyzed"
     if (
-      pokemon.statusEffect === StatusEffect.ASLEEP ||
-      pokemon.statusEffect === StatusEffect.CONFUSED ||
-      pokemon.statusEffect === StatusEffect.PARALYZED
+      pokemon.hasStatusEffect(StatusEffect.ASLEEP) ||
+      pokemon.hasStatusEffect(StatusEffect.CONFUSED) ||
+      pokemon.hasStatusEffect(StatusEffect.PARALYZED)
     ) {
+      const blockingStatuses = pokemon.statusEffects.filter(s => 
+        s === StatusEffect.ASLEEP || s === StatusEffect.CONFUSED || s === StatusEffect.PARALYZED
+      );
       errors.push(
-        `Ability "${ability.name}" cannot be used because Pokemon is ${pokemon.statusEffect}`,
+        `Ability "${ability.name}" cannot be used because Pokemon is ${blockingStatuses.join(', ')}`,
       );
       // Return early - no need to validate actionData if ability can't be used
       return { isValid: false, errors };

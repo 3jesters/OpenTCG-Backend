@@ -349,7 +349,8 @@ class PokemonInPlayDto {
   currentHp: number;
   maxHp: number;
   attachedEnergy: CardId[];
-  statusEffect: string;
+  statusEffect?: string; // Deprecated: use statusEffects instead (for backward compatibility)
+  statusEffects?: string[]; // Array of status conditions (can have multiple: CONFUSED + POISONED, etc.)
   damageCounters: number;
   poisonDamageAmount?: number; // Optional, poison damage amount (10 or 20)
 
@@ -378,7 +379,8 @@ class PokemonInPlayDto {
       currentHp: card.currentHp,
       maxHp: correctMaxHp,
       attachedEnergy: card.attachedEnergy,
-      statusEffect: card.statusEffect,
+      statusEffects: card.statusEffects, // Array of status effects
+      statusEffect: card.getPrimaryStatusEffect(), // Backward compatibility: primary status effect
       damageCounters: card.getDamageCounters(), // Calculate from HP
       poisonDamageAmount: card.poisonDamageAmount,
     };

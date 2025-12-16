@@ -32,6 +32,8 @@ import { Attack } from '../../../card/domain/value-objects/attack.value-object';
 import { CardDetailDto } from '../../../card/presentation/dto/card-detail.dto';
 import { PokemonPosition } from '../../domain/enums/pokemon-position.enum';
 import { StatusEffect } from '../../domain/enums/status-effect.enum';
+import { Weakness } from '../../../card/domain/value-objects/weakness.value-object';
+import { Resistance } from '../../../card/domain/value-objects/resistance.value-object';
 
 describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
   let useCase: ExecuteTurnActionUseCase;
@@ -79,6 +81,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
     name: string,
     hp: number,
     attacks: Attack[],
+    pokemonType: PokemonType = PokemonType.WATER,
+    weakness?: { type: EnergyType; modifier: string },
+    resistance?: { type: EnergyType; modifier: string },
   ): CardDetailDto => {
     return {
       cardId,
@@ -88,7 +93,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
       cardNumber: '1',
       setName: 'base-set',
       cardType: CardType.POKEMON,
-      pokemonType: PokemonType.WATER,
+      pokemonType,
       rarity: Rarity.COMMON,
       hp,
       stage: EvolutionStage.BASIC,
@@ -99,6 +104,8 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         text: attack.text,
         energyBonusCap: attack.energyBonusCap,
       })),
+      weakness: weakness ? { type: weakness.type, modifier: weakness.modifier } : undefined,
+      resistance: resistance ? { type: resistance.type, modifier: resistance.modifier } : undefined,
       artist: 'Artist',
       imageUrl: '',
     };
@@ -301,7 +308,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         90, // currentHp
         90, // maxHp
         energyCardIds, // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -317,7 +324,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -412,7 +419,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         90, // currentHp
         90, // maxHp
         ['energy-water-1', 'energy-water-2', 'energy-water-3', 'energy-water-4'], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -427,7 +434,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -435,15 +442,36 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
 
       const match = createMatchWithGameState(poliwrathInstance, [], [], opponentInstance);
 
-      mockGetCardByIdUseCase.execute
-        .mockResolvedValueOnce(poliwrathDto)
-        .mockResolvedValueOnce(opponentDto);
+      mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
+        if (cardId === 'poliwrath') {
+          return Promise.resolve(poliwrathDto);
+        }
+        if (cardId === 'opponent') {
+          return Promise.resolve(opponentDto);
+        }
+        if (cardId.startsWith('energy-water')) {
+          return Promise.resolve({
+            cardId,
+            instanceId: `instance-${cardId}`,
+            name: 'Water Energy',
+            pokemonNumber: '',
+            cardNumber: '1',
+            setName: 'base-set',
+            cardType: CardType.ENERGY,
+            energyType: EnergyType.WATER,
+            rarity: Rarity.COMMON,
+            artist: 'Artist',
+            imageUrl: '',
+          } as CardDetailDto);
+        }
+        return Promise.resolve(null);
+      });
       mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
         if (cardId === 'poliwrath') {
           return Promise.resolve(poliwrathCard);
         }
         if (cardId.startsWith('energy-water')) {
-          return Promise.resolve(createEnergyCardDto(EnergyType.WATER));
+          return Promise.resolve(createEnergyCard(EnergyType.WATER));
         }
         return Promise.resolve(null);
       });
@@ -496,7 +524,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         90, // currentHp
         90, // maxHp
         ['energy-water-1', 'energy-water-2', 'energy-water-3'], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -511,7 +539,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -519,15 +547,36 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
 
       const match = createMatchWithGameState(poliwrathInstance, [], [], opponentInstance);
 
-      mockGetCardByIdUseCase.execute
-        .mockResolvedValueOnce(poliwrathDto)
-        .mockResolvedValueOnce(opponentDto);
+      mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
+        if (cardId === 'poliwrath') {
+          return Promise.resolve(poliwrathDto);
+        }
+        if (cardId === 'opponent') {
+          return Promise.resolve(opponentDto);
+        }
+        if (cardId.startsWith('energy-water')) {
+          return Promise.resolve({
+            cardId,
+            instanceId: `instance-${cardId}`,
+            name: 'Water Energy',
+            pokemonNumber: '',
+            cardNumber: '1',
+            setName: 'base-set',
+            cardType: CardType.ENERGY,
+            energyType: EnergyType.WATER,
+            rarity: Rarity.COMMON,
+            artist: 'Artist',
+            imageUrl: '',
+          } as CardDetailDto);
+        }
+        return Promise.resolve(null);
+      });
       mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
         if (cardId === 'poliwrath') {
           return Promise.resolve(poliwrathCard);
         }
         if (cardId.startsWith('energy-water')) {
-          return Promise.resolve(createEnergyCardDto(EnergyType.WATER));
+          return Promise.resolve(createEnergyCard(EnergyType.WATER));
         }
         return Promise.resolve(null);
       });
@@ -580,7 +629,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         50, // currentHp (30 HP damage = 3 damage counters)
         80, // maxHp
         ['energy-fighting-1', 'energy-colorless-1'], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -595,7 +644,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -685,7 +734,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         80, // currentHp (Full HP)
         80, // maxHp
         ['energy-fighting-1', 'energy-colorless-1'], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -700,7 +749,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -790,7 +839,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         0, // currentHp (80 HP damage = 8 damage counters)
         80, // maxHp
         ['energy-fighting-1', 'energy-colorless-1'], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -805,7 +854,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -895,7 +944,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         30, // currentHp (50 HP damage = 5 damage counters)
         80, // maxHp
         ['energy-fighting-1', 'energy-colorless-1'], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -910,7 +959,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        StatusEffect.NONE,
+        [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
         undefined, // evolvedAt
@@ -978,6 +1027,442 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
       const attackAction = actionHistory[actionHistory.length - 1];
       // 50 base - (5 damage counters * 10) = 0 damage
       expect(attackAction.actionData.damage).toBe(0);
+    });
+  });
+
+  describe('Weakness and Resistance', () => {
+    it('should apply weakness (×2) when attacker type matches defender weakness', async () => {
+      // Create Poliwrath (WATER type) attacking Charmeleon (FIRE type, weak to WATER)
+      const waterGunAttack = new Attack(
+        'Water Gun',
+        [EnergyType.WATER, EnergyType.WATER, EnergyType.COLORLESS],
+        '30',
+        'Does 30 damage.',
+      );
+
+      const poliwrathCard = createPokemonCard('poliwrath', 'Poliwrath', 90);
+      poliwrathCard.addAttack(waterGunAttack);
+      poliwrathCard.setPokemonType(PokemonType.WATER);
+      const poliwrathDto = createCardDetailDto(
+        'poliwrath',
+        'Poliwrath',
+        90,
+        [waterGunAttack],
+        PokemonType.WATER,
+      );
+
+      const poliwrathInstance = new CardInstance(
+        'poliwrath-instance',
+        'poliwrath',
+        PokemonPosition.ACTIVE,
+        90,
+        90,
+        ['energy-water-1', 'energy-water-2', 'energy-colorless-1'],
+        [],
+        [],
+        undefined,
+        undefined,
+      );
+
+      // Create Charmeleon (FIRE type) with weakness to WATER
+      const charmeleonCard = Card.createPokemonCard(
+        'instance-charmeleon',
+        'charmeleon',
+        '005',
+        'Charmeleon',
+        'base-set',
+        '5',
+        Rarity.COMMON,
+        'Test Pokemon',
+        'Artist',
+        '',
+      );
+      charmeleonCard.setStage(EvolutionStage.STAGE1);
+      charmeleonCard.setHp(80);
+      charmeleonCard.setPokemonType(PokemonType.FIRE);
+      charmeleonCard.setWeakness(new Weakness(EnergyType.WATER, '×2'));
+
+      const charmeleonDto = createCardDetailDto(
+        'charmeleon',
+        'Charmeleon',
+        80,
+        [],
+        PokemonType.FIRE,
+        { type: EnergyType.WATER, modifier: '×2' },
+      );
+
+      const charmeleonInstance = new CardInstance(
+        'charmeleon-instance',
+        'charmeleon',
+        PokemonPosition.ACTIVE,
+        80,
+        80,
+        [],
+        [],
+        [],
+        undefined,
+        undefined,
+      );
+
+      const match = createMatchWithGameState(poliwrathInstance, [], [], charmeleonInstance);
+
+      mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
+        if (cardId === 'poliwrath') {
+          return Promise.resolve(poliwrathDto);
+        }
+        if (cardId === 'charmeleon') {
+          return Promise.resolve(charmeleonDto);
+        }
+        if (cardId.startsWith('energy-')) {
+          const energyType = cardId.includes('water')
+            ? EnergyType.WATER
+            : EnergyType.COLORLESS;
+          return Promise.resolve({
+            cardId,
+            instanceId: `instance-${cardId}`,
+            name: `${energyType} Energy`,
+            pokemonNumber: '',
+            cardNumber: '1',
+            setName: 'base-set',
+            cardType: CardType.ENERGY,
+            energyType,
+            rarity: Rarity.COMMON,
+            artist: 'Artist',
+            imageUrl: '',
+          } as CardDetailDto);
+        }
+        return Promise.resolve(null);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
+        if (cardId === 'poliwrath') {
+          return Promise.resolve(poliwrathCard);
+        }
+        if (cardId === 'charmeleon') {
+          return Promise.resolve(charmeleonCard);
+        }
+        if (cardId.startsWith('energy-')) {
+          const energyType = cardId.includes('water')
+            ? EnergyType.WATER
+            : EnergyType.COLORLESS;
+          return Promise.resolve(createEnergyCard(energyType));
+        }
+        return Promise.resolve(null);
+      });
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockResolvedValue(match);
+
+      const result = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.ATTACK,
+        actionData: {
+          attackIndex: 0,
+        },
+      });
+
+      const actionHistory = result.gameState.actionHistory;
+      expect(actionHistory.length).toBeGreaterThan(0);
+      const attackAction = actionHistory[actionHistory.length - 1];
+      // 30 base damage * 2 (weakness) = 60 damage
+      expect(attackAction.actionData.damage).toBe(60);
+    });
+
+    it('should apply resistance (-20) when attacker type matches defender resistance', async () => {
+      // Create Pikachu (ELECTRIC type) attacking Onix (FIGHTING type, resistant to ELECTRIC)
+      const thunderShockAttack = new Attack(
+        'Thunder Shock',
+        [EnergyType.ELECTRIC],
+        '20',
+        'Does 20 damage.',
+      );
+
+      const pikachuCard = Card.createPokemonCard(
+        'instance-pikachu',
+        'pikachu',
+        '025',
+        'Pikachu',
+        'base-set',
+        '25',
+        Rarity.COMMON,
+        'Test Pokemon',
+        'Artist',
+        '',
+      );
+      pikachuCard.setStage(EvolutionStage.BASIC);
+      pikachuCard.setHp(60);
+      pikachuCard.setPokemonType(PokemonType.ELECTRIC);
+      pikachuCard.addAttack(thunderShockAttack);
+      const pikachuDto = createCardDetailDto(
+        'pikachu',
+        'Pikachu',
+        60,
+        [thunderShockAttack],
+        PokemonType.ELECTRIC,
+      );
+
+      const pikachuInstance = new CardInstance(
+        'pikachu-instance',
+        'pikachu',
+        PokemonPosition.ACTIVE,
+        60,
+        60,
+        ['energy-electric-1'],
+        [],
+        [],
+        undefined,
+        undefined,
+      );
+
+      // Create Onix (FIGHTING type) with resistance to ELECTRIC
+      const onixCard = Card.createPokemonCard(
+        'instance-onix',
+        'onix',
+        '095',
+        'Onix',
+        'base-set',
+        '95',
+        Rarity.COMMON,
+        'Test Pokemon',
+        'Artist',
+        '',
+      );
+      onixCard.setStage(EvolutionStage.BASIC);
+      onixCard.setHp(90);
+      onixCard.setPokemonType(PokemonType.FIGHTING);
+      onixCard.setResistance(new Resistance(EnergyType.ELECTRIC, '-20'));
+
+      const onixDto = createCardDetailDto(
+        'onix',
+        'Onix',
+        90,
+        [],
+        PokemonType.FIGHTING,
+        undefined,
+        { type: EnergyType.ELECTRIC, modifier: '-20' },
+      );
+
+      const onixInstance = new CardInstance(
+        'onix-instance',
+        'onix',
+        PokemonPosition.ACTIVE,
+        90,
+        90,
+        [],
+        [],
+        [],
+        undefined,
+        undefined,
+      );
+
+      const match = createMatchWithGameState(pikachuInstance, [], [], onixInstance);
+
+      mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
+        if (cardId === 'pikachu') {
+          return Promise.resolve(pikachuDto);
+        }
+        if (cardId === 'onix') {
+          return Promise.resolve(onixDto);
+        }
+        if (cardId.startsWith('energy-electric')) {
+          return Promise.resolve({
+            cardId,
+            instanceId: `instance-${cardId}`,
+            name: 'Electric Energy',
+            pokemonNumber: '',
+            cardNumber: '1',
+            setName: 'base-set',
+            cardType: CardType.ENERGY,
+            energyType: EnergyType.ELECTRIC,
+            rarity: Rarity.COMMON,
+            artist: 'Artist',
+            imageUrl: '',
+          } as CardDetailDto);
+        }
+        return Promise.resolve(null);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
+        if (cardId === 'pikachu') {
+          return Promise.resolve(pikachuCard);
+        }
+        if (cardId === 'onix') {
+          return Promise.resolve(onixCard);
+        }
+        if (cardId.startsWith('energy-electric')) {
+          return Promise.resolve(createEnergyCard(EnergyType.ELECTRIC));
+        }
+        return Promise.resolve(null);
+      });
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockResolvedValue(match);
+
+      const result = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.ATTACK,
+        actionData: {
+          attackIndex: 0,
+        },
+      });
+
+      const actionHistory = result.gameState.actionHistory;
+      expect(actionHistory.length).toBeGreaterThan(0);
+      const attackAction = actionHistory[actionHistory.length - 1];
+      // 20 base damage - 20 (resistance) = 0 damage (clamped to 0)
+      expect(attackAction.actionData.damage).toBe(0);
+    });
+
+    it('should apply both "+" damage bonus and weakness correctly', async () => {
+      // Create Poliwrath (WATER type) with Water Gun (30+) attacking Charmeleon (FIRE type, weak to WATER)
+      const waterGunAttack = new Attack(
+        'Water Gun',
+        [EnergyType.WATER, EnergyType.WATER, EnergyType.COLORLESS],
+        '30+',
+        'Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack\'s Energy cost. Extra Water Energy after the 2nd doesn\'t count.',
+        undefined,
+        undefined,
+        2, // energyBonusCap
+      );
+
+      const poliwrathCard = createPokemonCard('poliwrath', 'Poliwrath', 90);
+      poliwrathCard.addAttack(waterGunAttack);
+      poliwrathCard.setPokemonType(PokemonType.WATER);
+      const poliwrathDto = createCardDetailDto(
+        'poliwrath',
+        'Poliwrath',
+        90,
+        [waterGunAttack],
+        PokemonType.WATER,
+      );
+
+      // Poliwrath with 5 Water Energy (2 required + 3 extra, but cap limits to 2)
+      const poliwrathInstance = new CardInstance(
+        'poliwrath-instance',
+        'poliwrath',
+        PokemonPosition.ACTIVE,
+        90,
+        90,
+        [
+          'energy-water-1',
+          'energy-water-2',
+          'energy-water-3',
+          'energy-water-4',
+          'energy-water-5',
+          'energy-colorless-1',
+        ],
+        [],
+        [],
+        undefined,
+        undefined,
+      );
+
+      // Create Charmeleon (FIRE type) with weakness to WATER
+      const charmeleonCard = Card.createPokemonCard(
+        'instance-charmeleon',
+        'charmeleon',
+        '005',
+        'Charmeleon',
+        'base-set',
+        '5',
+        Rarity.COMMON,
+        'Test Pokemon',
+        'Artist',
+        '',
+      );
+      charmeleonCard.setStage(EvolutionStage.STAGE1);
+      charmeleonCard.setHp(80);
+      charmeleonCard.setPokemonType(PokemonType.FIRE);
+      charmeleonCard.setWeakness(new Weakness(EnergyType.WATER, '×2'));
+
+      const charmeleonDto = createCardDetailDto(
+        'charmeleon',
+        'Charmeleon',
+        80,
+        [],
+        PokemonType.FIRE,
+        { type: EnergyType.WATER, modifier: '×2' },
+      );
+
+      const charmeleonInstance = new CardInstance(
+        'charmeleon-instance',
+        'charmeleon',
+        PokemonPosition.ACTIVE,
+        80,
+        80,
+        [],
+        [],
+        [],
+        undefined,
+        undefined,
+      );
+
+      const match = createMatchWithGameState(poliwrathInstance, [], [], charmeleonInstance);
+
+      mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
+        if (cardId === 'poliwrath') {
+          return Promise.resolve(poliwrathDto);
+        }
+        if (cardId === 'charmeleon') {
+          return Promise.resolve(charmeleonDto);
+        }
+        if (cardId.startsWith('energy-')) {
+          const energyType = cardId.includes('water')
+            ? EnergyType.WATER
+            : EnergyType.COLORLESS;
+          return Promise.resolve({
+            cardId,
+            instanceId: `instance-${cardId}`,
+            name: `${energyType} Energy`,
+            pokemonNumber: '',
+            cardNumber: '1',
+            setName: 'base-set',
+            cardType: CardType.ENERGY,
+            energyType,
+            rarity: Rarity.COMMON,
+            artist: 'Artist',
+            imageUrl: '',
+          } as CardDetailDto);
+        }
+        return Promise.resolve(null);
+      });
+
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
+        if (cardId === 'poliwrath') {
+          return Promise.resolve(poliwrathCard);
+        }
+        if (cardId === 'charmeleon') {
+          return Promise.resolve(charmeleonCard);
+        }
+        if (cardId.startsWith('energy-')) {
+          const energyType = cardId.includes('water')
+            ? EnergyType.WATER
+            : EnergyType.COLORLESS;
+          return Promise.resolve(createEnergyCard(energyType));
+        }
+        return Promise.resolve(null);
+      });
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockResolvedValue(match);
+
+      const result = await useCase.execute({
+        matchId: 'match-1',
+        playerId: 'player1',
+        actionType: PlayerActionType.ATTACK,
+        actionData: {
+          attackIndex: 0,
+        },
+      });
+
+      const actionHistory = result.gameState.actionHistory;
+      expect(actionHistory.length).toBeGreaterThan(0);
+      const attackAction = actionHistory[actionHistory.length - 1];
+      // 30 base + (2 extra energy * 10, capped) = 50 damage
+      // Then apply weakness: 50 * 2 = 100 damage
+      expect(attackAction.actionData.damage).toBe(100);
     });
   });
 });

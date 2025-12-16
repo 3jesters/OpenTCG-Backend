@@ -1890,12 +1890,25 @@
       "rarity": "COMMON",
       "attacks": [
         {
-          "name": "Gnaw",
+          "name": "String Shot",
           "energyCost": [
             "COLORLESS"
           ],
           "damage": "10",
-          "text": "Gnaw does 10 damage to the Defending Pokémon."
+          "text": "String Shot does 10 damage to the Defending Pokémon. Flip a coin. If heads, the Defending Pokémon is now Paralyzed.",
+          "effects": [
+            {
+              "effectType": "STATUS_CONDITION",
+              "target": "DEFENDING",
+              "statusCondition": "PARALYZED",
+              "requiredConditions": [
+                {
+                  "type": "COIN_FLIP_SUCCESS",
+                  "count": 1
+                }
+              ]
+            }
+          ]
         }
       ],
       "weakness": {

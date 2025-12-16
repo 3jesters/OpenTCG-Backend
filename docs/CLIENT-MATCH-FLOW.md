@@ -315,7 +315,7 @@ enum PlayerActionType {
       - Check availableActions
       - POST /api/v1/matches/:id/actions (execute action)
       - Repeat until END_TURN
-   
+
    b. Opponent's Turn:
       - GET /api/v1/matches/:id/state (poll every 1-2 seconds)
       - Detect state changes
@@ -384,15 +384,15 @@ The `availableActions` array tells you what you can do:
 if (matchState.currentPlayer === myPlayerId) {
   // It's my turn
   const actions = matchState.availableActions;
-  
+
   if (actions.includes('ATTACH_ENERGY')) {
     // I can attach energy
   }
-  
+
   if (actions.includes('PLAY_TRAINER')) {
     // I can play a trainer card
   }
-  
+
   if (actions.includes('ATTACK')) {
     // I can attack
   }
@@ -422,12 +422,12 @@ async function executeAction(
       }),
     }
   );
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message);
   }
-  
+
   return await response.json();
 }
 ```
@@ -475,10 +475,10 @@ async function pollMatchState(
   onStateChange: (state: MatchStateResponse) => void
 ) {
   let previousState: MatchStateResponse | null = null;
-  
+
   const poll = async () => {
     const currentState = await getMatchState(matchId, playerId);
-    
+
     // Detect changes
     if (previousState) {
       const changes = detectStateChanges(previousState, currentState);
@@ -488,9 +488,9 @@ async function pollMatchState(
         showStateChanges(changes);
       }
     }
-    
+
     previousState = currentState;
-    
+
     // Continue polling if match is active
     if (
       currentState.state === 'PLAYER_TURN' ||
@@ -499,7 +499,7 @@ async function pollMatchState(
       setTimeout(poll, 1500); // Poll every 1.5 seconds
     }
   };
-  
+
   poll();
 }
 ```
@@ -520,7 +520,7 @@ function detectStateChanges(
   current: MatchStateResponse
 ): StateChange[] {
   const changes: StateChange[] = [];
-  
+
   // Check if opponent took an action
   if (
     current.lastAction &&
@@ -536,7 +536,7 @@ function detectStateChanges(
       },
     });
   }
-  
+
   // Check opponent's active Pokemon HP changes
   if (
     previous.opponentState.activePokemon &&
@@ -544,9 +544,32 @@ function detectStateChanges(
   ) {
     const prevHp = previous.opponentState.activePokemon.currentHp;
     const currHp = current.opponentState.activePokemon.currentHp;
-    
+
     if (prevHp !== currHp) {
       const diff = currHp - prevHp;
+
+      // Check if this HP change is from an attack (use attack damage from lastAction)
+      let damageSource = 'unknown';
+      if (current.lastAction?.actionType === 'ATTACK' && current.lastAction.actionData.damage) {
+        // Attack damage is already calculated with all modifiers (weakness, resistance, etc.)
+        damageSource = 'attack';
+        // Use the attack damage amount from actionData instead of calculating from HP difference
+        // This ensures we show the correct damage including all modifiers
+        changes.push({
+          type: 'hp_change',
+          description: `Opponent's active Pokemon took ${current.lastAction.actionData.damage} damage from attack`,
+          details: {
+            instanceId: current.opponentState.activePokemon.instanceId,
+            previousHp: prevHp,
+            currentHp: currHp,
+            difference: diff,
+            attackDamage: current.lastAction.actionData.damage,
+            source: 'attack',
+          },
+        });
+      } else {
+        // HP change from other sources (poison, burn, healing, etc.)
+        damageSource = diff > 0 ? 'healing' : 'status_effect';
       changes.push({
         type: 'hp_change',
         description: `Opponent's active Pokemon ${diff > 0 ? 'healed' : 'took'} ${Math.abs(diff)} damage`,
@@ -555,15 +578,17 @@ function detectStateChanges(
           previousHp: prevHp,
           currentHp: currHp,
           difference: diff,
+            source: damageSource,
         },
       });
+      }
     }
   }
-  
+
   // Check opponent's bench changes
   const prevBenchCount = previous.opponentState.benchCount;
   const currBenchCount = current.opponentState.benchCount;
-  
+
   if (prevBenchCount !== currBenchCount) {
     changes.push({
       type: 'card_movement',
@@ -574,7 +599,7 @@ function detectStateChanges(
       },
     });
   }
-  
+
   // Check status effect changes
   if (
     previous.opponentState.activePokemon &&
@@ -582,7 +607,7 @@ function detectStateChanges(
   ) {
     const prevStatus = previous.opponentState.activePokemon.statusEffect;
     const currStatus = current.opponentState.activePokemon.statusEffect;
-    
+
     if (prevStatus !== currStatus) {
       changes.push({
         type: 'status_change',
@@ -594,7 +619,7 @@ function detectStateChanges(
       });
     }
   }
-  
+
   // Check turn changes
   if (previous.currentPlayer !== current.currentPlayer) {
     changes.push({
@@ -607,7 +632,7 @@ function detectStateChanges(
       },
     });
   }
-  
+
   return changes;
 }
 
@@ -676,10 +701,10 @@ When `currentPlayer` changes to your player identifier, stop polling and enable 
 if (currentState.currentPlayer === myPlayerId) {
   // Stop polling
   clearInterval(pollInterval);
-  
+
   // Enable action buttons
   enableActionButtons();
-  
+
   // Show available actions
   displayAvailableActions(currentState.availableActions);
 }
@@ -726,6 +751,8 @@ Since the server doesn't provide explicit "effect descriptions", you must compar
 - `lastAction.actionId`: New action ID means a new action was taken
 - `lastAction.actionType`: Type of action
 - `lastAction.actionData`: Action-specific data
+  - **For ATTACK actions**: `actionData.damage` contains the **total damage dealt** including all modifiers (weakness, resistance, trainer cards, etc.)
+  - **Important**: Attack damage does NOT include poison/burn damage (those are applied between turns)
 
 ### Example: Detecting Trainer Card Effects
 
@@ -739,6 +766,140 @@ Since the server doesn't provide explicit "effect descriptions", you must compar
 // - It healed their active Pokemon by 20 HP
 // - Display: "Opponent played Potion, healing their active Pokemon by 20 HP"
 ```
+
+### Poison Damage Between Turns
+
+Poison damage is applied automatically between turns and detected via HP changes.
+
+#### Detection
+
+Compare HP values between state updates when no attack occurred:
+
+```typescript
+function detectPoisonDamage(
+  previousState: MatchStateResponse,
+  currentState: MatchStateResponse
+): {
+  type: 'poison_damage';
+  damage: number;
+  instanceId: string;
+  statusEffect: 'POISONED';
+} | null {
+  // Check if it's not an attack action
+  if (currentState.lastAction?.actionType === 'ATTACK') {
+    return null; // Attack damage, not poison
+  }
+
+  // Check active Pokemon HP changes
+  const prevHp = previousState.opponentState.activePokemon?.currentHp;
+  const currHp = currentState.opponentState.activePokemon?.currentHp;
+
+  if (prevHp !== undefined && currHp !== undefined && prevHp > currHp) {
+    const damage = prevHp - currHp;
+
+    // Check if Pokemon is poisoned
+    if (currentState.opponentState.activePokemon?.statusEffect === 'POISONED') {
+      return {
+        type: 'poison_damage',
+        damage: damage,
+        instanceId: currentState.opponentState.activePokemon.instanceId,
+        statusEffect: 'POISONED',
+      };
+    }
+  }
+
+  // Check bench Pokemon HP changes
+  if (previousState.opponentState.bench && currentState.opponentState.bench) {
+    for (let i = 0; i < currentState.opponentState.bench.length; i++) {
+      const prevBench = previousState.opponentState.bench[i];
+      const currBench = currentState.opponentState.bench[i];
+
+      if (prevBench && currBench && prevBench.instanceId === currBench.instanceId) {
+        const prevHp = prevBench.currentHp;
+        const currHp = currBench.currentHp;
+
+        if (prevHp > currHp && currBench.statusEffect === 'POISONED') {
+          return {
+            type: 'poison_damage',
+            damage: prevHp - currHp,
+            instanceId: currBench.instanceId,
+            statusEffect: 'POISONED',
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+```
+
+#### When Poison is Applied
+
+- After each player's turn ends
+- During `BETWEEN_TURNS` state processing
+- Before next player's turn begins
+- Applied to both active and bench Pokemon (if poisoned)
+
+#### Display
+
+```typescript
+const poisonInfo = detectPoisonDamage(previousState, currentState);
+if (poisonInfo) {
+  showNotification(
+    `Poison dealt ${poisonInfo.damage} damage to ${getPokemonName(poisonInfo.instanceId)}!`
+  );
+  animatePoisonDamage(poisonInfo.instanceId, poisonInfo.damage);
+  updateHpDisplay(poisonInfo.instanceId);
+}
+```
+
+#### Poison Amounts
+
+- **Normal poison**: 10 damage per turn
+- **Toxic (Nidoking)**: 20 damage per turn
+- Check `pokemon.poisonDamageAmount` field for specific amount
+
+#### Integration with State Change Detection
+
+Update your `detectStateChanges` function to include poison detection:
+
+```typescript
+function detectStateChanges(
+  previous: MatchStateResponse,
+  current: MatchStateResponse
+): StateChange[] {
+  const changes: StateChange[] = [];
+
+  // ... existing detection code ...
+
+  // Check for poison damage (only if not an attack)
+  if (current.lastAction?.actionType !== 'ATTACK') {
+    const poisonInfo = detectPoisonDamage(previous, current);
+    if (poisonInfo) {
+      changes.push({
+        type: 'hp_change',
+        description: `Poison dealt ${poisonInfo.damage} damage to ${getPokemonName(poisonInfo.instanceId)}`,
+        details: {
+          instanceId: poisonInfo.instanceId,
+          damage: poisonInfo.damage,
+          source: 'poison',
+          statusEffect: 'POISONED',
+        },
+      });
+    }
+  }
+
+  return changes;
+}
+```
+
+**Important Notes:**
+- Poison damage is **NOT** included in attack `actionData.damage`
+- Poison damage appears as HP changes between state updates
+- Poison damage occurs during `BETWEEN_TURNS` state
+- Both active and bench Pokemon can take poison damage
+- Check `statusEffect === 'POISONED'` to confirm it's poison damage (not other HP changes)
 
 ---
 
@@ -756,44 +917,44 @@ Since the server doesn't provide explicit "effect descriptions", you must compar
 class MatchStatePoller {
   private pollInterval: NodeJS.Timeout | null = null;
   private previousState: MatchStateResponse | null = null;
-  
+
   constructor(
     private matchId: string,
     private playerId: string,
     private onStateChange: (state: MatchStateResponse, changes: StateChange[]) => void
   ) {}
-  
+
   start() {
     this.poll();
   }
-  
+
   stop() {
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
       this.pollInterval = null;
     }
   }
-  
+
   private async poll() {
     try {
       const currentState = await getMatchState(this.matchId, this.playerId);
-      
+
       // Detect changes
       let changes: StateChange[] = [];
       if (this.previousState) {
         changes = detectStateChanges(this.previousState, currentState);
       }
-      
+
       // Notify of state change
       if (changes.length > 0 || !this.previousState) {
         this.onStateChange(currentState, changes);
       }
-      
+
       this.previousState = currentState;
-      
+
       // Determine polling interval based on state
       const interval = this.getPollingInterval(currentState);
-      
+
       // Continue polling if match is active
       if (this.shouldContinuePolling(currentState)) {
         this.pollInterval = setTimeout(() => this.poll(), interval);
@@ -806,7 +967,7 @@ class MatchStatePoller {
       this.pollInterval = setTimeout(() => this.poll(), 5000);
     }
   }
-  
+
   private getPollingInterval(state: MatchStateResponse): number {
     if (state.state === 'PLAYER_TURN' || state.state === 'BETWEEN_TURNS') {
       return 1500; // 1.5 seconds for active gameplay
@@ -820,7 +981,7 @@ class MatchStatePoller {
     }
     return 10000; // 10 seconds for other states
   }
-  
+
   private shouldContinuePolling(state: MatchStateResponse): boolean {
     return state.state !== 'MATCH_ENDED' && state.state !== 'CANCELLED';
   }
@@ -880,13 +1041,13 @@ export function useMatchState(
   const [stateChanges, setStateChanges] = useState<StateChange[]>([]);
   const previousStateRef = useRef<MatchStateResponse | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Poll for state updates
   useEffect(() => {
     const poll = async () => {
       try {
         const currentState = await getMatchState(matchId, playerId);
-        
+
         // Detect changes
         if (previousStateRef.current) {
           const changes = detectStateChanges(
@@ -895,7 +1056,7 @@ export function useMatchState(
           );
           setStateChanges(changes);
         }
-        
+
         setMatchState(currentState);
         previousStateRef.current = currentState;
         setError(null);
@@ -905,10 +1066,10 @@ export function useMatchState(
         setLoading(false);
       }
     };
-    
+
     // Initial poll
     poll();
-    
+
     // Set up polling interval
     const interval = setInterval(() => {
       if (
@@ -918,16 +1079,16 @@ export function useMatchState(
         poll();
       }
     }, 1500);
-    
+
     pollIntervalRef.current = interval;
-    
+
     return () => {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
       }
     };
   }, [matchId, playerId, matchState?.state]);
-  
+
   const executeAction = async (
     actionType: PlayerActionType,
     actionData: Record<string, unknown>
@@ -942,11 +1103,11 @@ export function useMatchState(
       throw err;
     }
   };
-  
+
   const isMyTurn =
     matchState?.currentPlayer !== null &&
     matchState?.currentPlayer === getPlayerIdentifier(playerId);
-  
+
   return {
     matchState,
     loading,
@@ -970,18 +1131,18 @@ export function useMatchState(matchId: string, playerId: string) {
   const stateChanges = ref<StateChange[]>([]);
   const previousState = ref<MatchStateResponse | null>(null);
   let pollInterval: NodeJS.Timeout | null = null;
-  
+
   const poll = async () => {
     try {
       const currentState = await getMatchState(matchId, playerId);
-      
+
       if (previousState.value) {
         stateChanges.value = detectStateChanges(
           previousState.value,
           currentState
         );
       }
-      
+
       matchState.value = currentState;
       previousState.value = currentState;
       error.value = null;
@@ -991,7 +1152,7 @@ export function useMatchState(matchId: string, playerId: string) {
       loading.value = false;
     }
   };
-  
+
   const executeAction = async (
     actionType: PlayerActionType,
     actionData: Record<string, unknown>
@@ -1006,7 +1167,7 @@ export function useMatchState(matchId: string, playerId: string) {
       throw err;
     }
   };
-  
+
   onMounted(() => {
     poll();
     pollInterval = setInterval(() => {
@@ -1018,20 +1179,20 @@ export function useMatchState(matchId: string, playerId: string) {
       }
     }, 1500);
   });
-  
+
   onUnmounted(() => {
     if (pollInterval) {
       clearInterval(pollInterval);
     }
   });
-  
+
   const isMyTurn = computed(() => {
     return (
       matchState.value?.currentPlayer !== null &&
       matchState.value?.currentPlayer === getPlayerIdentifier(playerId)
     );
   });
-  
+
   return {
     matchState,
     loading,

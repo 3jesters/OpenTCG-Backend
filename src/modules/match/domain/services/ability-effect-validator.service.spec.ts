@@ -79,8 +79,9 @@ describe('AbilityEffectValidatorService', () => {
 
     const createPokemon = (
       cardId: string,
-      statusEffect: StatusEffect = StatusEffect.NONE,
+      statusEffect: StatusEffect = [],
     ): CardInstance => {
+      const statusEffects = statusEffect === StatusEffect.NONE ? [] : [statusEffect];
       return new CardInstance(
         'instance-1', // instanceId
         cardId, // cardId
@@ -88,7 +89,7 @@ describe('AbilityEffectValidatorService', () => {
         100, // currentHp
         100, // maxHp
         [], // attachedEnergy
-        statusEffect, // statusEffect
+        statusEffects, // statusEffects array
         [], // evolutionChain
         undefined, // poisonDamageAmount (only set if POISONED)
       );
@@ -184,7 +185,7 @@ describe('AbilityEffectValidatorService', () => {
         const gameState = createGameState(pokemon);
         
         // Verify pokemon status is set correctly
-        expect(pokemon.statusEffect).toBe(StatusEffect.ASLEEP);
+        expect(pokemon.hasStatusEffect(StatusEffect.ASLEEP)).toBe(true);
         
         const actionData: AbilityActionData = {
           cardId,
@@ -1225,7 +1226,7 @@ describe('AbilityEffectValidatorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           false,
         );
         const gameState = createGameState(charizard, [], []);
@@ -1295,7 +1296,7 @@ describe('AbilityEffectValidatorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           false,
         );
         const gameState = createGameState(venusaur, [], []);
@@ -1442,7 +1443,7 @@ describe('AbilityEffectValidatorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           false,
         );
         const gameState = createGameState(null, [anyPokemon], []);
@@ -1512,7 +1513,7 @@ describe('AbilityEffectValidatorService', () => {
           100,
           100,
           [],
-          StatusEffect.NONE,
+          [],
           false,
         );
         const gameState = createGameState(null, [anyPokemon], []);

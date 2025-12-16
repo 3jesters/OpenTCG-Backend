@@ -48,7 +48,7 @@ describe('TrainerEffectExecutorService', () => {
         player1Hp,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         player1Damage,
       );
 
@@ -107,7 +107,7 @@ describe('TrainerEffectExecutorService', () => {
         60,
         60,
         [],
-        StatusEffect.NONE,
+        [],
         0,
       );
 
@@ -118,7 +118,7 @@ describe('TrainerEffectExecutorService', () => {
         40,
         50,
         [],
-        StatusEffect.NONE,
+        [],
         10,
       );
 
@@ -199,7 +199,7 @@ describe('TrainerEffectExecutorService', () => {
         10, // 10 HP remaining
         40, // 40 max HP
         [],
-        StatusEffect.NONE,
+        [],
         0, // damageCounters is 0 but should be 30 (out of sync!)
       );
 
@@ -263,7 +263,7 @@ describe('TrainerEffectExecutorService', () => {
         40, // 40 HP remaining
         60, // 60 max HP (20 damage)
         [],
-        StatusEffect.NONE,
+        [],
         0, // damageCounters is 0 but should be 20
       );
 
@@ -398,7 +398,7 @@ describe('TrainerEffectExecutorService', () => {
         50,
         50,
         ['fire-energy-1', 'fire-energy-2'],
-        StatusEffect.NONE,
+        [],
         0,
       );
 
@@ -962,7 +962,7 @@ describe('TrainerEffectExecutorService', () => {
           60,
           60,
           [],
-          StatusEffect.NONE,
+          [],
           0,
         ),
       );
