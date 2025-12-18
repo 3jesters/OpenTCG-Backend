@@ -73,6 +73,16 @@ export class FileSystemCardRepository implements ICardRepository {
     return allCards.find((card) => card.cardId === cardId) || null;
   }
 
+  async findByCardIds(cardIds: string[]): Promise<Card[]> {
+    if (cardIds.length === 0) {
+      return [];
+    }
+
+    const allCards = await this.findAll();
+    const cardIdSet = new Set(cardIds);
+    return allCards.filter((card) => cardIdSet.has(card.cardId));
+  }
+
   async findBySetNameAndCardNumber(
     setName: string,
     cardNumber: string,

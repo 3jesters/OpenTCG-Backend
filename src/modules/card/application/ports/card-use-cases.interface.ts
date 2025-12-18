@@ -9,6 +9,7 @@ import { Card } from '../../domain/entities/card.entity';
 export interface IGetCardByIdUseCase {
   execute(cardId: string): Promise<CardDetailDto>;
   getCardEntity(cardId: string): Promise<Card>;
+  getCardsByIds(cardIds: string[]): Promise<Map<string, Card>>;
 }
 
 export const IGetCardByIdUseCase = Symbol('IGetCardByIdUseCase');

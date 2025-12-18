@@ -50,9 +50,58 @@ export class TypeOrmMatchRepository implements IMatchRepository {
 
   /**
    * Save a match (create or update)
+   * Optimized to use UPDATE for existing matches to avoid duplicate SELECT queries
    */
   async save(match: Match): Promise<Match> {
     const entity = MatchOrmMapper.toOrm(match);
+    
+    // If match has an ID, use update() to avoid SELECT query that save() would do
+    // This eliminates the duplicate query when updating an existing match
+    if (match.id) {
+      // Convert entity to plain object for update() method
+      // Exclude id as it's used in the WHERE clause
+      const updateData = {
+        tournamentId: entity.tournamentId,
+        player1Id: entity.player1Id,
+        player2Id: entity.player2Id,
+        player1DeckId: entity.player1DeckId,
+        player2DeckId: entity.player2DeckId,
+        state: entity.state,
+        currentPlayer: entity.currentPlayer,
+        firstPlayer: entity.firstPlayer,
+        player1HasDrawnValidHand: entity.player1HasDrawnValidHand,
+        player2HasDrawnValidHand: entity.player2HasDrawnValidHand,
+        player1HasSetPrizeCards: entity.player1HasSetPrizeCards,
+        player2HasSetPrizeCards: entity.player2HasSetPrizeCards,
+        player1ReadyToStart: entity.player1ReadyToStart,
+        player2ReadyToStart: entity.player2ReadyToStart,
+        player1HasConfirmedFirstPlayer: entity.player1HasConfirmedFirstPlayer,
+        player2HasConfirmedFirstPlayer: entity.player2HasConfirmedFirstPlayer,
+        player1HasApprovedMatch: entity.player1HasApprovedMatch,
+        player2HasApprovedMatch: entity.player2HasApprovedMatch,
+        startedAt: entity.startedAt,
+        endedAt: entity.endedAt,
+        winnerId: entity.winnerId,
+        result: entity.result,
+        winCondition: entity.winCondition,
+        cancellationReason: entity.cancellationReason,
+        gameState: entity.gameState,
+      };
+      
+      // Type assertion needed because TypeORM's update() has strict typing for JSONB columns
+      // The data is correct at runtime, but TypeScript can't verify nested JSON structures
+      await this.matchEntityRepository.update(
+        match.id,
+        updateData as any,
+      );
+      // Reload the entity to get updated timestamps and return fresh data
+      const updated = await this.matchEntityRepository.findOne({
+        where: { id: match.id },
+      });
+      return updated ? MatchOrmMapper.toDomain(updated) : match;
+    }
+    
+    // For new matches (no ID), use save() which will INSERT
     const saved = await this.matchEntityRepository.save(entity);
     return MatchOrmMapper.toDomain(saved);
   }

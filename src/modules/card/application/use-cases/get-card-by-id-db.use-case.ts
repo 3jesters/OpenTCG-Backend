@@ -1,5 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { ICardRepository } from '../../domain/repositories';
+import { Card } from '../../domain/entities';
 import { CardDetailDto } from '../../presentation/dto/card-detail.dto';
 import { CardMapper } from '../../presentation/mappers/card.mapper';
 
@@ -37,6 +38,26 @@ export class GetCardByIdDbUseCase {
     }
 
     return card;
+  }
+
+  /**
+   * Get multiple cards by their cardIds (for batch loading)
+   * Returns a Map keyed by cardId for O(1) lookup
+   * Cards not found in database are omitted from the map
+   */
+  async getCardsByIds(cardIds: string[]): Promise<Map<string, Card>> {
+    if (cardIds.length === 0) {
+      return new Map();
+    }
+
+    const cards = await this.cardRepository.findByCardIds(cardIds);
+    const cardsMap = new Map<string, Card>();
+    
+    for (const card of cards) {
+      cardsMap.set(card.cardId, card);
+    }
+
+    return cardsMap;
   }
 }
 

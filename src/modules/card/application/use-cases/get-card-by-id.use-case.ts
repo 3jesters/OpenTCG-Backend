@@ -113,6 +113,31 @@ export class GetCardByIdUseCase {
   }
 
   /**
+   * Get multiple cards by their cardIds (for batch loading)
+   * Returns a Map keyed by cardId for O(1) lookup
+   * Cards not found are omitted from the map
+   * Note: File-based implementation does individual lookups (acceptable for dev/test)
+   */
+  async getCardsByIds(cardIds: string[]): Promise<Map<string, Card>> {
+    const cardsMap = new Map<string, Card>();
+    
+    // For file-based implementation, do individual lookups
+    // This is acceptable for dev/test environments
+    await Promise.all(
+      cardIds.map(async (cardId) => {
+        try {
+          const card = await this.getCardEntity(cardId);
+          cardsMap.set(card.cardId, card);
+        } catch (error) {
+          // Card not found, skip it
+        }
+      }),
+    );
+
+    return cardsMap;
+  }
+
+  /**
    * Normalize card ID by removing consecutive dashes and trimming
    * This handles cases where card IDs might have double dashes or formatting inconsistencies
    */

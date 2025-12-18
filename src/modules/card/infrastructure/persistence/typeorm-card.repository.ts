@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Card } from '../../domain/entities';
 import { ICardRepository } from '../../domain/repositories';
 import { CardOrmEntity } from './entities';
@@ -29,6 +29,17 @@ export class TypeOrmCardRepository implements ICardRepository {
       where: { cardId },
     });
     return entity ? CardOrmMapper.toDomain(entity) : null;
+  }
+
+  async findByCardIds(cardIds: string[]): Promise<Card[]> {
+    if (cardIds.length === 0) {
+      return [];
+    }
+
+    const entities = await this.cardEntityRepository.find({
+      where: { cardId: In(cardIds) },
+    });
+    return entities.map(CardOrmMapper.toDomain);
   }
 
   async findBySetNameAndCardNumber(
