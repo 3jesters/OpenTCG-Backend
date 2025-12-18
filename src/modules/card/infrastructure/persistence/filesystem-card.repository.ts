@@ -43,8 +43,16 @@ export class FileSystemCardRepository implements ICardRepository {
       
       // Handle both old format (array) and new format (object with metadata)
       const cardsData = Array.isArray(json) ? json : json.cards || [];
+      const metadata = Array.isArray(json) ? null : json.metadata || null;
       
-      return cardsData.map((cardData: any) => this.jsonToCard(cardData));
+      // Extract metadata for cardId generation
+      const author = metadata?.author || 'pokemon';
+      const version = metadata?.version || '1.0';
+      const metadataSetName = metadata?.setName || setName;
+      
+      return cardsData.map((cardData: any) => 
+        this.jsonToCard(cardData, author, metadataSetName, version)
+      );
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         return [];
@@ -70,7 +78,8 @@ export class FileSystemCardRepository implements ICardRepository {
 
   async findByCardId(cardId: string): Promise<Card | null> {
     const allCards = await this.findAll();
-    return allCards.find((card) => card.cardId === cardId) || null;
+    const normalizedSearchId = this.normalizeCardId(cardId);
+    return allCards.find((card) => this.normalizeCardId(card.cardId) === normalizedSearchId) || null;
   }
 
   async findByCardIds(cardIds: string[]): Promise<Card[]> {
@@ -79,8 +88,8 @@ export class FileSystemCardRepository implements ICardRepository {
     }
 
     const allCards = await this.findAll();
-    const cardIdSet = new Set(cardIds);
-    return allCards.filter((card) => cardIdSet.has(card.cardId));
+    const normalizedSearchIds = new Set(cardIds.map(id => this.normalizeCardId(id)));
+    return allCards.filter((card) => normalizedSearchIds.has(this.normalizeCardId(card.cardId)));
   }
 
   async findBySetNameAndCardNumber(
@@ -202,16 +211,28 @@ export class FileSystemCardRepository implements ICardRepository {
 
   /**
    * Convert JSON to Card domain entity (simplified)
+   * Generates cardId if missing using the same logic as PreviewCardUseCase
    */
-  private jsonToCard(json: any): Card {
+  private jsonToCard(
+    json: any,
+    author?: string,
+    setName?: string,
+    version?: string,
+  ): Card {
+    // Generate cardId if missing (cards in JSON files don't have cardId stored)
+    let cardId = json.cardId;
+    if (!cardId && author && setName && version && json.name && json.cardNumber) {
+      cardId = this.generateCardId(author, setName, version, json.name, json.cardNumber);
+    }
+
     // This is a simplified version that focuses on data storage
     // Full domain reconstruction happens in the mapper
     const card = new Card(
       json.instanceId || uuidv4(),
-      json.cardId,
+      cardId || '', // Fallback to empty string if cardId still can't be generated
       json.pokemonNumber || '000',
       json.name,
-      json.setName,
+      json.setName || setName || '',
       json.cardNumber,
       json.rarity,
       json.cardType,
@@ -222,6 +243,52 @@ export class FileSystemCardRepository implements ICardRepository {
 
     // Set additional fields as needed
     return card;
+  }
+
+  /**
+   * Generate cardId using the same logic as PreviewCardUseCase
+   * Format: {author}-{setName}-v{version}-{cardName}-{cardNumber}
+   */
+  private generateCardId(
+    author: string,
+    setName: string,
+    version: string,
+    cardName: string,
+    cardNumber: string,
+  ): string {
+    const authorKebab = this.toKebabCase(author);
+    const setNameKebab = this.toKebabCase(setName);
+    const cardNameKebab = this.toKebabCase(cardName);
+
+    // Build card ID and normalize to remove any double dashes
+    const cardId = `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${cardNumber}`;
+    // Remove any consecutive dashes that might have been created
+    return cardId.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  /**
+   * Convert string to kebab-case (same logic as PreviewCardUseCase)
+   */
+  private toKebabCase(str: string): string {
+    return str
+      .toLowerCase()
+      .normalize('NFD') // Decompose characters (é becomes e + ́)
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents)
+      .replace(/♂/g, '') // Remove male symbol
+      .replace(/♀/g, '') // Remove female symbol
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  /**
+   * Normalize card ID by removing consecutive dashes and trimming
+   * This handles cases where card IDs might have double dashes or formatting inconsistencies
+   * (same logic as GetCardByIdUseCase.normalizeCardId)
+   */
+  private normalizeCardId(cardId: string): string {
+    if (!cardId) return cardId;
+    // Replace consecutive dashes with single dash, then trim leading/trailing dashes
+    return cardId.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
   }
 
   /**

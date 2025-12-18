@@ -44,6 +44,9 @@ export class GetCardByIdDbUseCase {
    * Get multiple cards by their cardIds (for batch loading)
    * Returns a Map keyed by cardId for O(1) lookup
    * Cards not found in database are omitted from the map
+   * 
+   * IMPORTANT: Uses the original search cardId as the map key (not the found card's cardId)
+   * to handle cases where deck cardIds have different formatting (e.g., double dashes)
    */
   async getCardsByIds(cardIds: string[]): Promise<Map<string, Card>> {
     if (cardIds.length === 0) {
@@ -53,11 +56,39 @@ export class GetCardByIdDbUseCase {
     const cards = await this.cardRepository.findByCardIds(cardIds);
     const cardsMap = new Map<string, Card>();
     
+    // Create a map from normalized cardId to original search cardIds
+    // This handles cases where multiple search cardIds normalize to the same value
+    const normalizedToOriginal = new Map<string, string[]>();
+    for (const originalId of cardIds) {
+      const normalized = this.normalizeCardId(originalId);
+      if (!normalizedToOriginal.has(normalized)) {
+        normalizedToOriginal.set(normalized, []);
+      }
+      normalizedToOriginal.get(normalized)!.push(originalId);
+    }
+    
+    // Match found cards back to their original search cardIds
     for (const card of cards) {
-      cardsMap.set(card.cardId, card);
+      const normalizedCardId = this.normalizeCardId(card.cardId);
+      const originalIds = normalizedToOriginal.get(normalizedCardId);
+      if (originalIds) {
+        // Use the first matching original cardId as the key
+        // (in practice, there should only be one)
+        cardsMap.set(originalIds[0], card);
+      }
     }
 
     return cardsMap;
+  }
+
+  /**
+   * Normalize card ID by removing consecutive dashes and trimming
+   * This handles cases where card IDs might have double dashes or formatting inconsistencies
+   */
+  private normalizeCardId(cardId: string): string {
+    if (!cardId) return cardId;
+    // Replace consecutive dashes with single dash, then trim leading/trailing dashes
+    return cardId.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
   }
 }
 

@@ -117,6 +117,9 @@ export class GetCardByIdUseCase {
    * Returns a Map keyed by cardId for O(1) lookup
    * Cards not found are omitted from the map
    * Note: File-based implementation does individual lookups (acceptable for dev/test)
+   * 
+   * IMPORTANT: Uses the original search cardId as the map key (not the found card's cardId)
+   * to handle cases where deck cardIds have different formatting (e.g., double dashes)
    */
   async getCardsByIds(cardIds: string[]): Promise<Map<string, Card>> {
     const cardsMap = new Map<string, Card>();
@@ -127,7 +130,9 @@ export class GetCardByIdUseCase {
       cardIds.map(async (cardId) => {
         try {
           const card = await this.getCardEntity(cardId);
-          cardsMap.set(card.cardId, card);
+          // Use the original search cardId as the key, not the found card's cardId
+          // This ensures the map key matches what the deck uses (e.g., with double dashes)
+          cardsMap.set(cardId, card);
         } catch (error) {
           // Card not found, skip it
         }
