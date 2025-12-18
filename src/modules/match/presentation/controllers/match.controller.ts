@@ -9,7 +9,6 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
-  Inject,
 } from '@nestjs/common';
 import {
   CreateMatchUseCase,
@@ -21,7 +20,6 @@ import {
   ListMatchesUseCase,
   CancelMatchUseCase,
 } from '../../application/use-cases';
-import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import {
   CreateMatchRequestDto,
   JoinMatchRequestDto,
@@ -64,8 +62,6 @@ export class MatchController {
     private readonly listMatchesUseCase: ListMatchesUseCase,
     private readonly cancelMatchUseCase: CancelMatchUseCase,
     private readonly stateMachineService: MatchStateMachineService,
-    @Inject(IGetCardByIdUseCase)
-    private readonly getCardByIdUseCase: IGetCardByIdUseCase,
   ) {}
 
   /**
