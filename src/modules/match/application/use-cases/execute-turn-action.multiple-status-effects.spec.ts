@@ -47,6 +47,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
       getCardEntity: jest.fn(),
+      getCardsByIds: jest.fn().mockResolvedValue(new Map()),
     } as any;
 
     mockMatchRepository = {

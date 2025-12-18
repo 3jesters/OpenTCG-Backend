@@ -174,7 +174,6 @@ export class MatchController {
       match,
       requestDto.playerId,
       availableActions,
-      this.getCardByIdUseCase,
     );
   }
 
@@ -251,7 +250,6 @@ export class MatchController {
       match,
       requestDto.playerId,
       filteredActions,
-      this.getCardByIdUseCase,
     );
   }
 

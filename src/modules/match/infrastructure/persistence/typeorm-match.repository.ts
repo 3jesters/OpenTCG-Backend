@@ -60,6 +60,7 @@ export class TypeOrmMatchRepository implements IMatchRepository {
     if (match.id) {
       // Convert entity to plain object for update() method
       // Exclude id as it's used in the WHERE clause
+      // Include updatedAt from domain entity (already set correctly by domain logic)
       const updateData = {
         tournamentId: entity.tournamentId,
         player1Id: entity.player1Id,
@@ -79,6 +80,7 @@ export class TypeOrmMatchRepository implements IMatchRepository {
         player2HasConfirmedFirstPlayer: entity.player2HasConfirmedFirstPlayer,
         player1HasApprovedMatch: entity.player1HasApprovedMatch,
         player2HasApprovedMatch: entity.player2HasApprovedMatch,
+        updatedAt: entity.updatedAt,
         startedAt: entity.startedAt,
         endedAt: entity.endedAt,
         winnerId: entity.winnerId,
@@ -94,11 +96,10 @@ export class TypeOrmMatchRepository implements IMatchRepository {
         match.id,
         updateData as any,
       );
-      // Reload the entity to get updated timestamps and return fresh data
-      const updated = await this.matchEntityRepository.findOne({
-        where: { id: match.id },
-      });
-      return updated ? MatchOrmMapper.toDomain(updated) : match;
+      // Skip reload - return the domain entity directly since it already has correct updatedAt
+      // This eliminates the SELECT query after UPDATE
+      // The domain entity's updatedAt is already set correctly by domain logic
+      return match;
     }
     
     // For new matches (no ID), use save() which will INSERT

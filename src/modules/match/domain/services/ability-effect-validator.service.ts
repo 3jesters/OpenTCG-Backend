@@ -9,6 +9,7 @@ import { AbilityActionData } from '../types/ability-action-data.types';
 import { CardInstance } from '../value-objects/card-instance.value-object';
 import { AbilityEffectType } from '../../../card/domain/enums/ability-effect-type.enum';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { Card } from '../../../card/domain/entities';
 import { EnergySource } from '../../../card/domain/enums/energy-source.enum';
 import { EnergyType } from '../../../card/domain/enums/energy-type.enum';
 import { PokemonType } from '../../../card/domain/enums/pokemon-type.enum';
@@ -36,6 +37,23 @@ export class AbilityEffectValidatorService {
   ) {}
 
   /**
+   * Get card entity from batch-loaded map or fetch individually
+   */
+  private async getCardEntity(
+    cardId: string,
+    cardsMap?: Map<string, Card>,
+  ): Promise<Card> {
+    if (cardsMap) {
+      const card = cardsMap.get(cardId);
+      if (card) {
+        return card;
+      }
+    }
+    // Fallback to individual query if not in map
+    return await this.getCardByIdUseCase.getCardEntity(cardId);
+  }
+
+  /**
    * Validate ability can be used and actionData structure
    */
   async validateAbilityUsage(
@@ -44,6 +62,7 @@ export class AbilityEffectValidatorService {
     pokemon: CardInstance,
     gameState: GameState,
     playerIdentifier: PlayerIdentifier,
+    cardsMap?: Map<string, Card>,
   ): Promise<AbilityValidationResult> {
     const errors: string[] = [];
 
@@ -94,6 +113,7 @@ export class AbilityEffectValidatorService {
       actionData,
       gameState,
       playerIdentifier,
+      cardsMap,
     );
     errors.push(...effectErrors);
 
@@ -111,6 +131,7 @@ export class AbilityEffectValidatorService {
     actionData: AbilityActionData,
     gameState: GameState,
     playerIdentifier: PlayerIdentifier,
+    cardsMap?: Map<string, Card>,
   ): Promise<string[]> {
     const errors: string[] = [];
     const playerState = gameState.getPlayerState(playerIdentifier);
@@ -133,6 +154,7 @@ export class AbilityEffectValidatorService {
         opponentState,
         gameState,
         playerIdentifier,
+        cardsMap,
       );
       errors.push(...effectErrors);
     }
@@ -150,6 +172,7 @@ export class AbilityEffectValidatorService {
     opponentState: any,
     gameState: GameState,
     playerIdentifier: PlayerIdentifier,
+    cardsMap?: Map<string, Card>,
   ): Promise<string[]> {
     const errors: string[] = [];
 
@@ -230,8 +253,7 @@ export class AbilityEffectValidatorService {
             if (effect.energyType) {
               for (const cardId of actionData.selectedCardIds) {
                 try {
-                  const card =
-                    await this.getCardByIdUseCase.getCardEntity(cardId);
+                  const card = await this.getCardEntity(cardId, cardsMap);
                   if (card.cardType !== CardType.ENERGY) {
                     errors.push(
                       `Selected card ${cardId} is not an Energy card`,
@@ -265,8 +287,7 @@ export class AbilityEffectValidatorService {
             if (effect.energyType) {
               for (const cardId of actionData.selectedCardIds) {
                 try {
-                  const card =
-                    await this.getCardByIdUseCase.getCardEntity(cardId);
+                  const card = await this.getCardEntity(cardId, cardsMap);
                   if (card.cardType !== CardType.ENERGY) {
                     errors.push(
                       `Selected card ${cardId} is not an Energy card`,
@@ -314,8 +335,9 @@ export class AbilityEffectValidatorService {
             }
 
             if (targetPokemonInstance) {
-              const targetCard = await this.getCardByIdUseCase.getCardEntity(
+              const targetCard = await this.getCardEntity(
                 targetPokemonInstance.cardId,
+                cardsMap,
               );
               if (targetCard.cardType !== CardType.POKEMON) {
                 errors.push(`Target ${targetPosition} is not a Pokemon`);

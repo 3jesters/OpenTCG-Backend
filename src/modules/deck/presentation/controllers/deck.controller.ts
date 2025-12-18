@@ -30,6 +30,8 @@ import {
 } from '../dto';
 import { CreateDeckDto, UpdateDeckDto } from '../../application/dto';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { CardMapper } from '../../../card/presentation/mappers/card.mapper';
+import { CardDetailDto } from '../../../card/presentation/dto/card-detail.dto';
 
 /**
  * Deck Controller
@@ -106,22 +108,19 @@ export class DeckController {
   async findOne(@Param('id') id: string): Promise<DeckResponseDto> {
     const deck = await this.getDeckByIdUseCase.execute(id);
 
-    // Fetch full card details for all unique cards in the deck
+    // Fetch full card details for all unique cards in the deck using batch query
     const uniqueCardIds = [...new Set(deck.cards.map((c) => c.cardId))];
-    const cardDetailsMap = new Map<string, any>();
+    const cardDetailsMap = new Map<string, CardDetailDto>();
 
-    // Fetch all card details in parallel
-    await Promise.all(
-      uniqueCardIds.map(async (cardId) => {
-        try {
-          const cardDetail = await this.getCardByIdUseCase.execute(cardId);
-          cardDetailsMap.set(cardId, cardDetail);
-        } catch (error) {
-          // If card not found, skip it (card will be returned without details)
-          console.error(`Failed to fetch card ${cardId}:`, error.message);
-        }
-      }),
-    );
+    if (uniqueCardIds.length > 0) {
+      // Batch fetch all cards in a single query
+      const cardsMap = await this.getCardByIdUseCase.getCardsByIds(uniqueCardIds);
+      
+      // Convert Card entities to CardDetailDto
+      for (const [cardId, card] of cardsMap.entries()) {
+        cardDetailsMap.set(cardId, CardMapper.toCardDetailDto(card));
+      }
+    }
 
     // Create deck response with card details
     const dto = DeckResponseDto.fromDomain(deck);

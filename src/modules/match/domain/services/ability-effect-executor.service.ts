@@ -11,6 +11,7 @@ import { StatusEffect } from '../enums/status-effect.enum';
 import { PokemonPosition } from '../enums/pokemon-position.enum';
 import type { AnyAbilityEffect } from '../../../card/domain/value-objects/ability-effect.value-object';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { Card } from '../../../card/domain/entities';
 import { EnergySource } from '../../../card/domain/enums/energy-source.enum';
 import { CardType } from '../../../card/domain/enums/card-type.enum';
 import { Destination } from '../../../card/domain/enums/destination.enum';
@@ -36,6 +37,23 @@ export class AbilityEffectExecutorService {
   ) {}
 
   /**
+   * Get card entity from batch-loaded map or fetch individually
+   */
+  private async getCardEntity(
+    cardId: string,
+    cardsMap?: Map<string, Card>,
+  ): Promise<Card> {
+    if (cardsMap) {
+      const card = cardsMap.get(cardId);
+      if (card) {
+        return card;
+      }
+    }
+    // Fallback to individual query if not in map
+    return await this.getCardByIdUseCase.getCardEntity(cardId);
+  }
+
+  /**
    * Execute ability effects
    */
   async executeEffects(
@@ -43,6 +61,7 @@ export class AbilityEffectExecutorService {
     actionData: AbilityActionData,
     gameState: GameState,
     playerIdentifier: PlayerIdentifier,
+    cardsMap?: Map<string, Card>,
   ): Promise<ExecuteAbilityEffectsResult> {
     const playerState = gameState.getPlayerState(playerIdentifier);
     const opponentState = gameState.getOpponentState(playerIdentifier);
@@ -64,6 +83,7 @@ export class AbilityEffectExecutorService {
         playerIdentifier,
         updatedPlayerState,
         updatedOpponentState,
+        cardsMap,
       );
 
       updatedPlayerState = result.playerState;
@@ -124,6 +144,7 @@ export class AbilityEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
     currentPlayerState: PlayerGameState,
     currentOpponentState: PlayerGameState,
+    cardsMap?: Map<string, Card>,
   ): Promise<ExecuteAbilityEffectsResult> {
     switch (effect.effectType) {
       case AbilityEffectType.HEAL:
@@ -169,6 +190,7 @@ export class AbilityEffectExecutorService {
           currentPlayerState,
           currentOpponentState,
           playerIdentifier,
+          cardsMap,
         );
 
       case AbilityEffectType.SWITCH_POKEMON:
@@ -196,6 +218,7 @@ export class AbilityEffectExecutorService {
           currentPlayerState,
           currentOpponentState,
           playerIdentifier,
+          cardsMap,
         );
 
       case AbilityEffectType.STATUS_CONDITION:
@@ -509,6 +532,7 @@ export class AbilityEffectExecutorService {
     playerState: PlayerGameState,
     opponentState: PlayerGameState,
     playerIdentifier: PlayerIdentifier,
+    cardsMap?: Map<string, Card>,
   ): Promise<ExecuteAbilityEffectsResult> {
     const energyActionData = actionData as any; // EnergyAccelerationAbilityActionData
     const count = effect.count || 1;
@@ -563,8 +587,9 @@ export class AbilityEffectExecutorService {
 
     // Validate target Pokemon type restriction
     if (effect.targetPokemonType) {
-      const targetCard = await this.getCardByIdUseCase.getCardEntity(
+      const targetCard = await this.getCardEntity(
         targetPokemon.cardId,
+        cardsMap,
       );
       if (targetCard.cardType !== CardType.POKEMON) {
         throw new BadRequestException(
@@ -623,7 +648,7 @@ export class AbilityEffectExecutorService {
       if (effect.energyType) {
         // Validate all selected cards match the energy type
         for (const cardId of energyCards) {
-          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          const card = await this.getCardEntity(cardId, cardsMap);
           if (card.cardType !== CardType.ENERGY) {
             throw new BadRequestException(
               `Selected card ${cardId} is not an Energy card`,
@@ -639,7 +664,7 @@ export class AbilityEffectExecutorService {
         // Count how many matching energy cards are in hand (for error message if needed)
         let matchingCount = 0;
         for (const cardId of playerState.hand) {
-          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          const card = await this.getCardEntity(cardId, cardsMap);
           if (
             card.cardType === CardType.ENERGY &&
             card.energyType === effect.energyType
@@ -657,7 +682,7 @@ export class AbilityEffectExecutorService {
       } else {
         // No energy type restriction - just validate they're energy cards
         for (const cardId of energyCards) {
-          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          const card = await this.getCardEntity(cardId, cardsMap);
           if (card.cardType !== CardType.ENERGY) {
             throw new BadRequestException(
               `Selected card ${cardId} is not an Energy card`,
@@ -711,7 +736,7 @@ export class AbilityEffectExecutorService {
       if (effect.energyType) {
         // Validate all selected cards match the energy type
         for (const cardId of energyCards) {
-          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          const card = await this.getCardEntity(cardId, cardsMap);
           if (card.cardType !== CardType.ENERGY) {
             throw new BadRequestException(
               `Selected card ${cardId} is not an Energy card`,
@@ -727,7 +752,7 @@ export class AbilityEffectExecutorService {
         // Count how many matching energy cards are in discard pile (for error message if needed)
         let matchingCount = 0;
         for (const cardId of playerState.discardPile) {
-          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          const card = await this.getCardEntity(cardId, cardsMap);
           if (
             card.cardType === CardType.ENERGY &&
             card.energyType === effect.energyType
@@ -745,7 +770,7 @@ export class AbilityEffectExecutorService {
       } else {
         // No energy type restriction - just validate they're energy cards
         for (const cardId of energyCards) {
-          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          const card = await this.getCardEntity(cardId, cardsMap);
           if (card.cardType !== CardType.ENERGY) {
             throw new BadRequestException(
               `Selected card ${cardId} is not an Energy card`,
@@ -787,8 +812,9 @@ export class AbilityEffectExecutorService {
 
       // Validate source Pokemon type restriction
       if (effect.sourcePokemonType) {
-        const sourceCard = await this.getCardByIdUseCase.getCardEntity(
+        const sourceCard = await this.getCardEntity(
           sourcePokemon.cardId,
+          cardsMap,
         );
         if (sourceCard.cardType !== CardType.POKEMON) {
           throw new BadRequestException('Source is not a Pokemon');
@@ -823,7 +849,7 @@ export class AbilityEffectExecutorService {
       // Validate energy type restrictions
       if (effect.energyType) {
         for (const cardId of energyCards) {
-          const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+          const card = await this.getCardEntity(cardId, cardsMap);
           if (card.cardType !== CardType.ENERGY) {
             throw new BadRequestException(
               `Selected card ${cardId} is not an Energy card`,
@@ -1033,6 +1059,7 @@ export class AbilityEffectExecutorService {
     playerState: PlayerGameState,
     opponentState: PlayerGameState,
     playerIdentifier: PlayerIdentifier,
+    cardsMap?: Map<string, Card>,
   ): ExecuteAbilityEffectsResult {
     const attachActionData = actionData as any; // AttachFromDiscardAbilityActionData
     if (

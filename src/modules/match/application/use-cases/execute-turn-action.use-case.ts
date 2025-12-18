@@ -46,6 +46,7 @@ import { AbilityActionData } from '../../domain/types/ability-action-data.types'
 import { PokemonPosition } from '../../domain/enums';
 import { v4 as uuidv4 } from 'uuid';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { Card } from '../../../card/domain/entities';
 import { Attack } from '../../../card/domain/value-objects/attack.value-object';
 import { AbilityActivationType } from '../../../card/domain/enums/ability-activation-type.enum';
 import { AttackEffectType } from '../../../card/domain/enums/attack-effect-type.enum';
@@ -74,6 +75,7 @@ import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.valu
 @Injectable()
 export class ExecuteTurnActionUseCase {
   private readonly logger = new Logger(ExecuteTurnActionUseCase.name);
+  private cardsMap: Map<string, Card> = new Map();
 
   constructor(
     @Inject(IMatchRepository)
@@ -157,6 +159,140 @@ export class ExecuteTurnActionUseCase {
     );
   }
 
+  /**
+   * Get card entity from batch-loaded map or fetch individually
+   */
+  private async getCardEntity(cardId: string): Promise<Card> {
+    const card = this.cardsMap.get(cardId);
+    if (card) {
+      return card;
+    }
+    // Fallback to individual query if not in map
+    return await this.getCardByIdUseCase.getCardEntity(cardId);
+  }
+
+  /**
+   * Get card DTO from batch-loaded map or fetch individually
+   * For most cases, we can use Card entity properties directly
+   */
+  private async getCardDto(cardId: string): Promise<CardDetailDto> {
+    const card = this.cardsMap.get(cardId);
+    if (card) {
+      // Try to use Card entity properties - most DTO properties match Card entity
+      // Fallback to individual query if we need DTO-specific properties
+      // For now, we'll still fetch DTO for compatibility, but this could be optimized
+    }
+    return await this.getCardByIdUseCase.execute(cardId);
+  }
+
+  /**
+   * Collect all cardIds that might be needed from actionData and gameState
+   */
+  private collectCardIds(
+    dto: ExecuteActionDto,
+    gameState: GameState | null,
+    playerIdentifier: PlayerIdentifier,
+  ): Set<string> {
+    const cardIds = new Set<string>();
+
+    // Collect cardIds from actionData
+    const actionData = dto.actionData as any;
+    if (actionData?.cardId) {
+      cardIds.add(actionData.cardId);
+    }
+    if (actionData?.attackerCardId) {
+      cardIds.add(actionData.attackerCardId);
+    }
+    if (actionData?.defenderCardId) {
+      cardIds.add(actionData.defenderCardId);
+    }
+    if (actionData?.evolutionCardId) {
+      cardIds.add(actionData.evolutionCardId);
+    }
+    if (actionData?.currentPokemonCardId) {
+      cardIds.add(actionData.currentPokemonCardId);
+    }
+    if (actionData?.energyId) {
+      cardIds.add(actionData.energyId);
+    }
+    if (Array.isArray(actionData?.energyIds)) {
+      actionData.energyIds.forEach((id: string) => cardIds.add(id));
+    }
+    if (Array.isArray(actionData?.cardIds)) {
+      actionData.cardIds.forEach((id: string) => cardIds.add(id));
+    }
+
+    // Collect cardIds from gameState (all Pokemon in play, attached energy, hand, deck, discard)
+    if (gameState) {
+      const playerState = gameState.getPlayerState(playerIdentifier);
+      const opponentState = gameState.getOpponentState(playerIdentifier);
+
+      // Player's Pokemon
+      if (playerState.activePokemon) {
+        cardIds.add(playerState.activePokemon.cardId);
+        // Attached energy
+        if (playerState.activePokemon.attachedEnergy) {
+          playerState.activePokemon.attachedEnergy.forEach((id) =>
+            cardIds.add(id),
+          );
+        }
+      }
+      playerState.bench.forEach((pokemon) => {
+        cardIds.add(pokemon.cardId);
+        if (pokemon.attachedEnergy) {
+          pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+        }
+      });
+
+      // Player's hand, deck, discard pile (for trainer/ability effects)
+      if (playerState.hand) {
+        playerState.hand.forEach((id) => cardIds.add(id));
+      }
+      if (playerState.deck) {
+        playerState.deck.forEach((id) => cardIds.add(id));
+      }
+      if (playerState.discardPile) {
+        playerState.discardPile.forEach((id) => cardIds.add(id));
+      }
+      if (playerState.prizeCards) {
+        playerState.prizeCards.forEach((id) => cardIds.add(id));
+      }
+
+      // Opponent's Pokemon
+      if (opponentState.activePokemon) {
+        cardIds.add(opponentState.activePokemon.cardId);
+        // Attached energy
+        if (opponentState.activePokemon.attachedEnergy) {
+          opponentState.activePokemon.attachedEnergy.forEach((id) =>
+            cardIds.add(id),
+          );
+        }
+      }
+      opponentState.bench.forEach((pokemon) => {
+        cardIds.add(pokemon.cardId);
+        if (pokemon.attachedEnergy) {
+          pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+        }
+      });
+
+      // Opponent's hand, deck, discard pile (for trainer/ability effects)
+      if (opponentState.hand) {
+        opponentState.hand.forEach((id) => cardIds.add(id));
+      }
+      if (opponentState.deck) {
+        opponentState.deck.forEach((id) => cardIds.add(id));
+      }
+      if (opponentState.discardPile) {
+        opponentState.discardPile.forEach((id) => cardIds.add(id));
+      }
+      if (opponentState.prizeCards) {
+        opponentState.prizeCards.forEach((id) => cardIds.add(id));
+      }
+    }
+
+    return cardIds;
+  }
+
   async execute(dto: ExecuteActionDto): Promise<Match> {
     // Find match
     const match = await this.matchRepository.findById(dto.matchId);
@@ -184,6 +320,17 @@ export class ExecuteTurnActionUseCase {
         `Invalid action: ${validation.error || 'Unknown error'}`,
       );
     }
+
+    // Collect all cardIds that might be needed and batch fetch them
+    const cardIds = this.collectCardIds(
+      dto,
+      match.gameState,
+      playerIdentifier,
+    );
+    this.cardsMap =
+      cardIds.size > 0
+        ? await this.getCardByIdUseCase.getCardsByIds(Array.from(cardIds))
+        : new Map<string, Card>();
 
     // Handle concede
     if (dto.actionType === PlayerActionType.CONCEDE) {
@@ -468,7 +615,7 @@ export class ExecuteTurnActionUseCase {
       // Validate that only Basic Pokemon can be played directly
       // Exception: Trainer cards with PUT_INTO_PLAY effect (source: HAND, target: SELF) can be played as Basic Pokemon
       // Examples: Clefairy Doll, Mysterious Fossil
-      const cardEntity = await this.getCardByIdUseCase.getCardEntity(cardId);
+      const cardEntity = await this.getCardEntity(cardId);
 
       // Check if it's a special trainer card that can be played as Basic Pokemon
       const isSpecialTrainerCard =
@@ -844,7 +991,7 @@ export class ExecuteTurnActionUseCase {
         }
 
         // Validate that only Basic Pokemon can be played directly
-        const cardEntity = await this.getCardByIdUseCase.getCardEntity(cardId);
+        const cardEntity = await this.getCardEntity(cardId);
         if (cardEntity.cardType !== CardType.POKEMON) {
           throw new BadRequestException(
             'Only Pokemon cards can be played to the bench',
@@ -1249,16 +1396,20 @@ export class ExecuteTurnActionUseCase {
         // This is needed to prevent selecting the same card when discarding
         const playedCardIndex = playerState.hand.indexOf(cardId);
 
-        // Load card details to determine trainer effect
-        const cardDetail = await this.getCardByIdUseCase.execute(cardId);
+        // Get card from batch-loaded map to determine trainer effect
+        let card = this.cardsMap.get(cardId);
+        if (!card) {
+          // Fallback to individual query if not in map
+          card = await this.getCardByIdUseCase.getCardEntity(cardId);
+        }
 
-        if (cardDetail.cardType !== 'TRAINER') {
+        if (card.cardType !== CardType.TRAINER) {
           throw new BadRequestException('Card must be a trainer card');
         }
 
         if (
-          !cardDetail.trainerEffects ||
-          cardDetail.trainerEffects.length === 0
+          !card.trainerEffects ||
+          card.trainerEffects.length === 0
         ) {
           throw new BadRequestException(
             'Trainer card must have trainerEffects',
@@ -1267,7 +1418,7 @@ export class ExecuteTurnActionUseCase {
 
         // Validate that if trainer requires discarding from hand,
         // the selected card is not the same trainer card that was just played
-        const hasDiscardHandEffect = cardDetail.trainerEffects.some(
+        const hasDiscardHandEffect = card.trainerEffects.some(
           (effect) => effect.effectType === 'DISCARD_HAND',
         );
 
@@ -1320,7 +1471,7 @@ export class ExecuteTurnActionUseCase {
 
         // Validate actionData based on trainer effects
         const validation = this.trainerEffectValidator.validateActionData(
-          cardDetail.trainerEffects,
+          card.trainerEffects,
           actionData,
           gameState,
           playerIdentifier,
@@ -1334,10 +1485,11 @@ export class ExecuteTurnActionUseCase {
 
         // Execute trainer effects using metadata-driven executor
         const result = await this.trainerEffectExecutor.executeEffects(
-          cardDetail.trainerEffects,
+          card.trainerEffects,
           actionData,
           gameState,
           playerIdentifier,
+          this.cardsMap,
         );
 
         // Remove trainer card from hand and add to discard pile
@@ -1566,7 +1718,7 @@ export class ExecuteTurnActionUseCase {
         }
 
         // Load attacker card entity to get Attack objects with effects
-        const attackerCardEntity = await this.getCardByIdUseCase.getCardEntity(
+        const attackerCardEntity = await this.getCardEntity(
           playerState.activePokemon.cardId,
         );
         if (
@@ -1578,31 +1730,34 @@ export class ExecuteTurnActionUseCase {
 
         const attack = attackerCardEntity.attacks[attackIndex];
 
-        // Load attacker card DTO for type checks
-        const attackerCard = await this.getCardByIdUseCase.execute(
-          playerState.activePokemon.cardId,
-        );
+        // Get attacker card from batch-loaded map for type checks
+        let attackerCard = this.cardsMap.get(playerState.activePokemon.cardId);
+        if (!attackerCard) {
+          // Fallback to individual query if not in map
+          attackerCard = await this.getCardByIdUseCase.getCardEntity(
+            playerState.activePokemon.cardId,
+          );
+        }
 
         // Validate energy requirements for attack
         const attachedEnergyCardIds =
           playerState.activePokemon.attachedEnergy || [];
-        const attachedEnergyCardDtos = await Promise.all(
-          attachedEnergyCardIds.map((cardId) =>
-            this.getCardByIdUseCase.execute(cardId),
-          ),
-        );
+        // Use batch-loaded cards from map
+        const attachedEnergyCards = attachedEnergyCardIds
+          .map((cardId) => this.cardsMap.get(cardId))
+          .filter((card): card is Card => card !== undefined);
 
-        // Convert DTOs to energy card data format (CardDetailDto doesn't have energyProvision yet)
-        const attachedEnergyCards = attachedEnergyCardDtos.map((dto) => ({
-          cardType: dto.cardType,
-          energyType: dto.energyType,
-          energyProvision: undefined, // TODO: Add energyProvision to CardDetailDto if needed for special energy
+        // Convert Card entities to energy card data format
+        const energyCardData = attachedEnergyCards.map((card) => ({
+          cardType: card.cardType,
+          energyType: card.energyType,
+          energyProvision: card.energyProvision,
         }));
 
         const energyValidation =
           this.attackEnergyValidator.validateEnergyRequirements(
             attack,
-            attachedEnergyCards,
+            energyCardData,
           );
 
         if (!energyValidation.isValid) {
@@ -1752,10 +1907,16 @@ export class ExecuteTurnActionUseCase {
           currentOpponentState,
         );
 
-        // Load defender card details for weakness/resistance
-        const defenderCard = await this.getCardByIdUseCase.execute(
+        // Get defender card from batch-loaded map for weakness/resistance
+        let defenderCard = this.cardsMap.get(
           currentOpponentState.activePokemon.cardId,
         );
+        if (!defenderCard) {
+          // Fallback to individual query if not in map
+          defenderCard = await this.getCardByIdUseCase.getCardEntity(
+            currentOpponentState.activePokemon.cardId,
+          );
+        }
 
         // Apply damage modifiers from attack effects (before weakness/resistance)
         let finalDamage = damage;
@@ -2371,7 +2532,7 @@ export class ExecuteTurnActionUseCase {
 
             // Load attacker card entity to get Attack objects with effects
             const attackerCardEntity =
-              await this.getCardByIdUseCase.getCardEntity(
+              await this.getCardEntity(
                 playerState.activePokemon.cardId,
               );
             if (
@@ -2427,10 +2588,16 @@ export class ExecuteTurnActionUseCase {
               );
             }
 
-            // Load attacker card DTO for type/weakness checks
-            const attackerCard = await this.getCardByIdUseCase.execute(
+            // Get attacker card from batch-loaded map for type/weakness checks
+            let attackerCard = this.cardsMap.get(
               playerState.activePokemon.cardId,
             );
+            if (!attackerCard) {
+              // Fallback to individual query if not in map
+              attackerCard = await this.getCardByIdUseCase.getCardEntity(
+                playerState.activePokemon.cardId,
+              );
+            }
 
             // Check if attack should proceed using the correct configuration
             const shouldProceed = this.coinFlipResolver.shouldAttackProceed(
@@ -2460,9 +2627,15 @@ export class ExecuteTurnActionUseCase {
               );
 
               // Load defender card for weakness/resistance
-              const defenderCard = await this.getCardByIdUseCase.execute(
+              let defenderCard = this.cardsMap.get(
                 opponentState.activePokemon.cardId,
               );
+              if (!defenderCard) {
+                // Fallback to individual query if not in map
+                defenderCard = await this.getCardByIdUseCase.getCardEntity(
+                  opponentState.activePokemon.cardId,
+                );
+              }
 
               // Apply damage modifiers from attack effects (before weakness/resistance)
               let finalDamage = damage;
@@ -2776,10 +2949,16 @@ export class ExecuteTurnActionUseCase {
                 DamageCalculationType.STATUS_EFFECT_ONLY
               ) {
                 // For STATUS_EFFECT_ONLY, damage always applies, only effect fails
-                // Load attacker card for name/type checks
-                const attackerCard = await this.getCardByIdUseCase.execute(
+                // Get attacker card from batch-loaded map for name/type checks
+                let attackerCard = this.cardsMap.get(
                   playerState.activePokemon.cardId,
                 );
+                if (!attackerCard) {
+                  // Fallback to individual query if not in map
+                  attackerCard = await this.getCardByIdUseCase.getCardEntity(
+                    playerState.activePokemon.cardId,
+                  );
+                }
 
                 let baseDamage = parseInt(attack.damage || '0', 10);
 
@@ -2793,10 +2972,16 @@ export class ExecuteTurnActionUseCase {
                   opponentState,
                 );
 
-                // Load defender card for weakness/resistance
-                const defenderCard = await this.getCardByIdUseCase.execute(
+                // Get defender card from batch-loaded map for weakness/resistance
+                let defenderCard = this.cardsMap.get(
                   opponentState.activePokemon.cardId,
                 );
+                if (!defenderCard) {
+                  // Fallback to individual query if not in map
+                  defenderCard = await this.getCardByIdUseCase.getCardEntity(
+                    opponentState.activePokemon.cardId,
+                  );
+                }
 
                 // Apply damage modifiers from attack effects (before weakness/resistance)
                 let finalDamage = baseDamage;
@@ -3244,7 +3429,7 @@ export class ExecuteTurnActionUseCase {
 
               // Load attacker card entity
               const attackerCardEntity =
-                await this.getCardByIdUseCase.getCardEntity(
+                await this.getCardEntity(
                   playerState.activePokemon.cardId,
                 );
               if (
@@ -3260,10 +3445,16 @@ export class ExecuteTurnActionUseCase {
               const attack =
                 attackerCardEntity.attacks[updatedCoinFlipState.attackIndex];
 
-              // Load attacker card DTO for type checks
-              const attackerCard = await this.getCardByIdUseCase.execute(
+              // Get attacker card from batch-loaded map for type checks
+              let attackerCard = this.cardsMap.get(
                 playerState.activePokemon.cardId,
               );
+              if (!attackerCard) {
+                // Fallback to individual query if not in map
+                attackerCard = await this.getCardByIdUseCase.getCardEntity(
+                  playerState.activePokemon.cardId,
+                );
+              }
 
               // Validate energy requirements
               const attachedEnergyCardIds =
@@ -3393,10 +3584,16 @@ export class ExecuteTurnActionUseCase {
                     baseDamageValue,
                   );
 
-                  // Load defender card
-                  const defenderCard = await this.getCardByIdUseCase.execute(
+                  // Get defender card from batch-loaded map
+                  let defenderCard = this.cardsMap.get(
                     opponentState.activePokemon.cardId,
                   );
+                  if (!defenderCard) {
+                    // Fallback to individual query if not in map
+                    defenderCard = await this.getCardByIdUseCase.getCardEntity(
+                      opponentState.activePokemon.cardId,
+                    );
+                  }
 
                   // Apply damage modifiers from attack effects (before weakness/resistance)
                   let finalDamage = damage;
@@ -3756,10 +3953,16 @@ export class ExecuteTurnActionUseCase {
                   opponentState,
                 );
 
-                // Load defender card details
-                const defenderCard = await this.getCardByIdUseCase.execute(
+                // Get defender card from batch-loaded map
+                let defenderCard = this.cardsMap.get(
                   opponentState.activePokemon.cardId,
                 );
+                if (!defenderCard) {
+                  // Fallback to individual query if not in map
+                  defenderCard = await this.getCardByIdUseCase.getCardEntity(
+                    opponentState.activePokemon.cardId,
+                  );
+                }
 
                 // Apply damage modifiers from attack effects (before weakness/resistance)
                 let finalDamage = damage;
@@ -4424,7 +4627,7 @@ export class ExecuteTurnActionUseCase {
         }
 
         // Get card domain entity (needed for ability with effects)
-        const cardEntity = await this.getCardByIdUseCase.getCardEntity(
+        const cardEntity = await this.getCardEntity(
           actionData.cardId,
         );
 
@@ -4484,6 +4687,7 @@ export class ExecuteTurnActionUseCase {
             pokemon,
             gameState,
             playerIdentifier,
+            this.cardsMap,
           );
 
         if (!validation.isValid) {
@@ -4498,6 +4702,7 @@ export class ExecuteTurnActionUseCase {
           actionData,
           gameState,
           playerIdentifier,
+          this.cardsMap,
         );
 
         // Update game state
@@ -4731,9 +4936,9 @@ export class ExecuteTurnActionUseCase {
   ): Promise<void> {
     // Get both card entities
     const currentPokemonCard =
-      await this.getCardByIdUseCase.getCardEntity(currentPokemonCardId);
+      await this.getCardEntity(currentPokemonCardId);
     const evolutionCard =
-      await this.getCardByIdUseCase.getCardEntity(evolutionCardId);
+      await this.getCardEntity(evolutionCardId);
 
     // Validate that both are Pokemon cards
     if (currentPokemonCard.cardType !== CardType.POKEMON) {
@@ -4824,6 +5029,13 @@ export class ExecuteTurnActionUseCase {
    * Returns the actual HP value from the card, or a default value if not found
    */
   private async getCardHp(cardId: string): Promise<number> {
+    // Try to get from batch-loaded cardsMap first
+    const card = this.cardsMap.get(cardId);
+    if (card && card.hp !== undefined) {
+      return card.hp;
+    }
+
+    // Fallback to individual query if not in map
     try {
       const cardDetail = await this.getCardByIdUseCase.execute(cardId);
       // Return actual HP if available, otherwise default to 100
@@ -4953,7 +5165,7 @@ export class ExecuteTurnActionUseCase {
           for (const energyId of playerState.activePokemon.attachedEnergy) {
             try {
               const energyCard =
-                await this.getCardByIdUseCase.getCardEntity(energyId);
+                await this.getCardEntity(energyId);
               if (energyCard.energyType === condition.value.energyType) {
                 return true;
               }
@@ -5340,7 +5552,7 @@ export class ExecuteTurnActionUseCase {
     for (const energyId of playerState.activePokemon.attachedEnergy) {
       try {
         const energyCard =
-          await this.getCardByIdUseCase.getCardEntity(energyId);
+          await this.getCardEntity(energyId);
         if (energyCard.energyType === EnergyType.WATER) {
           waterEnergyCount++;
         }
@@ -5520,7 +5732,7 @@ export class ExecuteTurnActionUseCase {
       for (const energyId of availableEnergy) {
         try {
           const energyCard =
-            await this.getCardByIdUseCase.getCardEntity(energyId);
+            await this.getCardEntity(energyId);
           if (energyCard.energyType === energyType) {
             matchingEnergy.push(energyId);
           }
@@ -5642,7 +5854,7 @@ export class ExecuteTurnActionUseCase {
       for (const energyId of selectedEnergyIds) {
         try {
           const energyCard =
-            await this.getCardByIdUseCase.getCardEntity(energyId);
+            await this.getCardEntity(energyId);
           if (energyCard.energyType !== discardEffect.energyType) {
             return `Selected energy card ${energyId} is not ${discardEffect.energyType} Energy`;
           }

@@ -142,6 +142,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
       getCardEntity: jest.fn(),
+      getCardsByIds: jest.fn().mockResolvedValue(new Map()),
     } as any;
 
     mockDrawInitialCardsUseCase = {} as any;

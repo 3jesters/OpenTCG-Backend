@@ -149,6 +149,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
           useValue: {
             execute: jest.fn(),
             getCardEntity: jest.fn(),
+            getCardsByIds: jest.fn().mockResolvedValue(new Map()),
           },
         },
         {

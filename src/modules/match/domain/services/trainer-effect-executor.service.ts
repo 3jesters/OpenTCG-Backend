@@ -7,6 +7,7 @@ import { PlayerGameState } from '../value-objects/player-game-state.value-object
 import { PlayerIdentifier } from '../enums/player-identifier.enum';
 import { PlayerActionType } from '../enums/player-action-type.enum';
 import { CardInstance } from '../value-objects/card-instance.value-object';
+import { Card } from '../../../card/domain/entities';
 import {
   TrainerActionData,
   HealActionData,
@@ -55,6 +56,7 @@ export class TrainerEffectExecutorService {
     actionData: TrainerActionData,
     gameState: GameState,
     playerIdentifier: PlayerIdentifier,
+    cardsMap?: Map<string, Card>,
   ): Promise<ExecuteEffectsResult> {
     if (!trainerEffects || trainerEffects.length === 0) {
       throw new BadRequestException('Trainer card must have trainerEffects');
@@ -84,6 +86,7 @@ export class TrainerEffectExecutorService {
         playerIdentifier,
         updatedPlayerState,
         updatedOpponentState,
+        cardsMap,
       );
 
       updatedPlayerState = result.playerState;
@@ -148,6 +151,7 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
     currentPlayerState: PlayerGameState,
     currentOpponentState: PlayerGameState,
+    cardsMap?: Map<string, Card>,
   ): Promise<ExecuteEffectsResult> {
     switch (effect.effectType) {
       case TrainerEffectType.HEAL:

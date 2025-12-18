@@ -190,6 +190,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
       getCardEntity: jest.fn(),
+      getCardsByIds: jest.fn().mockResolvedValue(new Map()),
     } as any;
 
     mockDrawInitialCardsUseCase = {} as any;
@@ -364,10 +365,29 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
           if (cardId === 'charmeleon') {
             return Promise.resolve(charmeleonCard);
           }
+          if (cardId === 'opponent') {
+            return Promise.resolve(opponentCard);
+          }
           if (cardId.startsWith('energy-fire')) {
             return Promise.resolve(createEnergyCard(EnergyType.FIRE));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'charmeleon') {
+              cardsMap.set(cardId, charmeleonCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-fire')) {
+              cardsMap.set(cardId, createEnergyCard(EnergyType.FIRE));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -492,6 +512,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
       mockGetCardByIdUseCase.getCardEntity.mockImplementation(
         (cardId: string) => {
           if (cardId === 'pokemon') return Promise.resolve(pokemonCard);
+          if (cardId === 'opponent') return Promise.resolve(opponentCard);
           if (cardId.startsWith('energy-')) {
             const energyType = cardId.includes('fire')
               ? EnergyType.FIRE
@@ -501,6 +522,27 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
             return Promise.resolve(createEnergyCard(energyType));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'pokemon') {
+              cardsMap.set(cardId, pokemonCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-')) {
+              const energyType = cardId.includes('fire')
+                ? EnergyType.FIRE
+                : cardId.includes('water')
+                  ? EnergyType.WATER
+                  : EnergyType.COLORLESS;
+              cardsMap.set(cardId, createEnergyCard(energyType));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -622,6 +664,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
       mockGetCardByIdUseCase.getCardEntity.mockImplementation(
         (cardId: string) => {
           if (cardId === 'pokemon') return Promise.resolve(pokemonCard);
+          if (cardId === 'opponent') return Promise.resolve(opponentCard);
           if (cardId.startsWith('energy-')) {
             const energyType = cardId.includes('fire')
               ? EnergyType.FIRE
@@ -629,6 +672,25 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
             return Promise.resolve(createEnergyCard(energyType));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'pokemon') {
+              cardsMap.set(cardId, pokemonCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-')) {
+              const energyType = cardId.includes('fire')
+                ? EnergyType.FIRE
+                : EnergyType.WATER;
+              cardsMap.set(cardId, createEnergyCard(energyType));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 

@@ -198,6 +198,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
       getCardEntity: jest.fn(),
+      getCardsByIds: jest.fn().mockResolvedValue(new Map()),
     } as any;
 
     mockDrawInitialCardsUseCase = {} as any;
@@ -375,10 +376,29 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           if (cardId === 'poliwrath') {
             return Promise.resolve(poliwrathCard);
           }
+          if (cardId === 'opponent') {
+            return Promise.resolve(opponentCard);
+          }
           if (cardId.startsWith('energy-water')) {
             return Promise.resolve(createEnergyCard(EnergyType.WATER));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'poliwrath') {
+              cardsMap.set(cardId, poliwrathCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-water')) {
+              cardsMap.set(cardId, createEnergyCard(EnergyType.WATER));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -496,10 +516,29 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           if (cardId === 'poliwrath') {
             return Promise.resolve(poliwrathCard);
           }
+          if (cardId === 'opponent') {
+            return Promise.resolve(opponentCard);
+          }
           if (cardId.startsWith('energy-water')) {
             return Promise.resolve(createEnergyCard(EnergyType.WATER));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'poliwrath') {
+              cardsMap.set(cardId, poliwrathCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-water')) {
+              cardsMap.set(cardId, createEnergyCard(EnergyType.WATER));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -610,10 +649,29 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           if (cardId === 'poliwrath') {
             return Promise.resolve(poliwrathCard);
           }
+          if (cardId === 'opponent') {
+            return Promise.resolve(opponentCard);
+          }
           if (cardId.startsWith('energy-water')) {
             return Promise.resolve(createEnergyCard(EnergyType.WATER));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'poliwrath') {
+              cardsMap.set(cardId, poliwrathCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-water')) {
+              cardsMap.set(cardId, createEnergyCard(EnergyType.WATER));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -727,6 +785,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           if (cardId === 'machoke') {
             return Promise.resolve(machokeCard);
           }
+          if (cardId === 'opponent') {
+            return Promise.resolve(opponentCard);
+          }
           if (cardId.startsWith('energy-')) {
             const energyType = cardId.includes('fighting')
               ? EnergyType.FIGHTING
@@ -734,6 +795,25 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
             return Promise.resolve(createEnergyCard(energyType));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'machoke') {
+              cardsMap.set(cardId, machokeCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-')) {
+              const energyType = cardId.includes('fighting')
+                ? EnergyType.FIGHTING
+                : EnergyType.COLORLESS;
+              cardsMap.set(cardId, createEnergyCard(energyType));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -845,6 +925,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           if (cardId === 'machoke') {
             return Promise.resolve(machokeCard);
           }
+          if (cardId === 'opponent') {
+            return Promise.resolve(opponentCard);
+          }
           if (cardId.startsWith('energy-')) {
             const energyType = cardId.includes('fighting')
               ? EnergyType.FIGHTING
@@ -852,6 +935,25 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
             return Promise.resolve(createEnergyCard(energyType));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'machoke') {
+              cardsMap.set(cardId, machokeCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-')) {
+              const energyType = cardId.includes('fighting')
+                ? EnergyType.FIGHTING
+                : EnergyType.COLORLESS;
+              cardsMap.set(cardId, createEnergyCard(energyType));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -963,6 +1065,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           if (cardId === 'machoke') {
             return Promise.resolve(machokeCard);
           }
+          if (cardId === 'opponent') {
+            return Promise.resolve(opponentCard);
+          }
           if (cardId.startsWith('energy-')) {
             const energyType = cardId.includes('fighting')
               ? EnergyType.FIGHTING
@@ -970,6 +1075,25 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
             return Promise.resolve(createEnergyCard(energyType));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'machoke') {
+              cardsMap.set(cardId, machokeCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-')) {
+              const energyType = cardId.includes('fighting')
+                ? EnergyType.FIGHTING
+                : EnergyType.COLORLESS;
+              cardsMap.set(cardId, createEnergyCard(energyType));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -1081,6 +1205,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           if (cardId === 'machoke') {
             return Promise.resolve(machokeCard);
           }
+          if (cardId === 'opponent') {
+            return Promise.resolve(opponentCard);
+          }
           if (cardId.startsWith('energy-')) {
             const energyType = cardId.includes('fighting')
               ? EnergyType.FIGHTING
@@ -1088,6 +1215,25 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
             return Promise.resolve(createEnergyCard(energyType));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'machoke') {
+              cardsMap.set(cardId, machokeCard);
+            } else if (cardId === 'opponent') {
+              cardsMap.set(cardId, opponentCard);
+            } else if (cardId.startsWith('energy-')) {
+              const energyType = cardId.includes('fighting')
+                ? EnergyType.FIGHTING
+                : EnergyType.COLORLESS;
+              cardsMap.set(cardId, createEnergyCard(energyType));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 
@@ -1395,6 +1541,22 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
             return Promise.resolve(createEnergyCard(EnergyType.ELECTRIC));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'pikachu') {
+              cardsMap.set(cardId, pikachuCard);
+            } else if (cardId === 'onix') {
+              cardsMap.set(cardId, onixCard);
+            } else if (cardId.startsWith('energy-electric')) {
+              cardsMap.set(cardId, createEnergyCard(EnergyType.ELECTRIC));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 

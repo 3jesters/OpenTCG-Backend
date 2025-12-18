@@ -12,8 +12,6 @@ import {
   CoinFlipState,
 } from '../../domain/value-objects';
 import { CardId } from '../../../../shared/types/card.types';
-import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
-import { Card } from '../../../card/domain/entities';
 
 /**
  * Match State Response DTO
@@ -51,7 +49,6 @@ export class MatchStateResponseDto {
     match: Match,
     playerId: string,
     availableActions: PlayerActionType[] = [],
-    getCardByIdUseCase?: IGetCardByIdUseCase,
   ): Promise<MatchStateResponseDto> {
     const playerIdentifier = match.getPlayerIdentifier(playerId);
     if (!playerIdentifier) {
@@ -150,27 +147,6 @@ export class MatchStateResponseDto {
     const requiresActivePokemonSelectionValue =
       requiresActivePokemonSelection || false;
 
-    // Collect all unique cardIds from Pokemon in play for batch loading
-    const cardIds = new Set<string>();
-    if (playerState) {
-      if (playerState.activePokemon) {
-        cardIds.add(playerState.activePokemon.cardId);
-      }
-      playerState.bench.forEach((card) => cardIds.add(card.cardId));
-    }
-    if (opponentState) {
-      if (opponentState.activePokemon) {
-        cardIds.add(opponentState.activePokemon.cardId);
-      }
-      opponentState.bench.forEach((card) => cardIds.add(card.cardId));
-    }
-
-    // Batch fetch all cards in one query
-    const cardsMap =
-      getCardByIdUseCase && cardIds.size > 0
-        ? await getCardByIdUseCase.getCardsByIds(Array.from(cardIds))
-        : new Map<string, Card>();
-
     return {
       matchId: match.id,
       state: match.state,
@@ -181,7 +157,6 @@ export class MatchStateResponseDto {
         ? await PlayerStateDto.fromDomain(
             playerState,
             match.state,
-            cardsMap,
           )
         : PlayerStateDto.empty(),
       opponentState: opponentState
@@ -191,7 +166,6 @@ export class MatchStateResponseDto {
             playerState,
             playerHasDrawnValidHand,
             opponentHasDrawnValidHand,
-            cardsMap,
           )
         : OpponentStateDto.empty(),
       availableActions: availableActions.map((action) => action.toString()),
@@ -246,7 +220,6 @@ class PlayerStateDto {
   static async fromDomain(
     state: PlayerGameState,
     matchState: MatchState,
-    cardsMap?: Map<string, Card>,
   ): Promise<PlayerStateDto> {
     // Hide prize card IDs during SET_PRIZE_CARDS phase (only show count)
     const prizeCards =
@@ -261,12 +234,11 @@ class PlayerStateDto {
       activePokemon: state.activePokemon
         ? await PokemonInPlayDto.fromDomain(
             state.activePokemon,
-            cardsMap,
           )
         : null,
       bench: await Promise.all(
         state.bench.map((card) =>
-          PokemonInPlayDto.fromDomain(card, cardsMap),
+          PokemonInPlayDto.fromDomain(card),
         ),
       ),
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
@@ -315,7 +287,6 @@ class OpponentStateDto {
     playerState: PlayerGameState | null,
     playerHasDrawnValidHand: boolean,
     opponentHasDrawnValidHand: boolean,
-    cardsMap?: Map<string, Card>,
   ): Promise<OpponentStateDto> {
     const dto: OpponentStateDto = {
       handCount: state.getHandCount(),
@@ -325,12 +296,11 @@ class OpponentStateDto {
       activePokemon: state.activePokemon
         ? await PokemonInPlayDto.fromDomain(
             state.activePokemon,
-            cardsMap,
           )
         : null,
       bench: await Promise.all(
         state.bench.map((card) =>
-          PokemonInPlayDto.fromDomain(card, cardsMap),
+          PokemonInPlayDto.fromDomain(card),
         ),
       ),
       benchCount: state.bench.length,
@@ -404,25 +374,14 @@ class PokemonInPlayDto {
 
   static async fromDomain(
     card: CardInstance,
-    cardsMap?: Map<string, Card>,
   ): Promise<PokemonInPlayDto> {
-    // Always fetch the correct maxHp from card data to fix any incorrect stored values
-    let correctMaxHp = card.maxHp;
-    if (cardsMap) {
-      const cardEntity = cardsMap.get(card.cardId);
-      if (cardEntity && cardEntity.hp !== undefined) {
-        correctMaxHp = cardEntity.hp;
-      }
-      // If card not found in map, use stored maxHp as fallback
-      // This can happen in test environments or if card data is missing
-    }
-
+    // Use maxHp directly from CardInstance - it's already stored correctly when Pokemon is put into play
     return {
       instanceId: card.instanceId,
       cardId: card.cardId,
       position: card.position,
       currentHp: card.currentHp,
-      maxHp: correctMaxHp,
+      maxHp: card.maxHp,
       attachedEnergy: card.attachedEnergy,
       statusEffects: card.statusEffects, // Array of status effects
       statusEffect: card.getPrimaryStatusEffect(), // Backward compatibility: primary status effect
