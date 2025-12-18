@@ -77,7 +77,9 @@ describe('Tournament Entity', () => {
       tournament.banSet('base-set');
       tournament.banSet('base-set');
 
-      expect(tournament.bannedSets.filter((s) => s === 'base-set')).toHaveLength(1);
+      expect(
+        tournament.bannedSets.filter((s) => s === 'base-set'),
+      ).toHaveLength(1);
     });
   });
 
@@ -86,14 +88,18 @@ describe('Tournament Entity', () => {
       tournament.banCardInSet('base-set', 'alakazam-base-1');
 
       expect(tournament.isCardBanned('base-set', 'alakazam-base-1')).toBe(true);
-      expect(tournament.isCardBanned('base-set', 'blastoise-base-2')).toBe(false);
+      expect(tournament.isCardBanned('base-set', 'blastoise-base-2')).toBe(
+        false,
+      );
     });
 
     it('should unban a specific card', () => {
       tournament.banCardInSet('base-set', 'alakazam-base-1');
       tournament.unbanCardInSet('base-set', 'alakazam-base-1');
 
-      expect(tournament.isCardBanned('base-set', 'alakazam-base-1')).toBe(false);
+      expect(tournament.isCardBanned('base-set', 'alakazam-base-1')).toBe(
+        false,
+      );
     });
 
     it('should consider all cards banned if set is banned', () => {
@@ -108,7 +114,9 @@ describe('Tournament Entity', () => {
       tournament.banCardInSet('base-set', 'alakazam-base-1');
 
       const bannedCards = tournament.setBannedCards['base-set'];
-      expect(bannedCards.filter((c) => c === 'alakazam-base-1')).toHaveLength(1);
+      expect(bannedCards.filter((c) => c === 'alakazam-base-1')).toHaveLength(
+        1,
+      );
     });
   });
 
@@ -126,22 +134,32 @@ describe('Tournament Entity', () => {
     it('should restrict a card', () => {
       tournament.restrictCard('base-set', 'alakazam-base-1', 1);
 
-      expect(tournament.isCardRestricted('base-set', 'alakazam-base-1')).toBe(true);
-      expect(tournament.getMaxCopiesForCard('base-set', 'alakazam-base-1')).toBe(1);
+      expect(tournament.isCardRestricted('base-set', 'alakazam-base-1')).toBe(
+        true,
+      );
+      expect(
+        tournament.getMaxCopiesForCard('base-set', 'alakazam-base-1'),
+      ).toBe(1);
     });
 
     it('should unrestrict a card', () => {
       tournament.restrictCard('base-set', 'alakazam-base-1', 1);
       tournament.unrestrictCard('base-set', 'alakazam-base-1');
 
-      expect(tournament.isCardRestricted('base-set', 'alakazam-base-1')).toBe(false);
-      expect(tournament.getMaxCopiesForCard('base-set', 'alakazam-base-1')).toBe(4);
+      expect(tournament.isCardRestricted('base-set', 'alakazam-base-1')).toBe(
+        false,
+      );
+      expect(
+        tournament.getMaxCopiesForCard('base-set', 'alakazam-base-1'),
+      ).toBe(4);
     });
 
     it('should return 0 copies for banned cards', () => {
       tournament.banCardInSet('base-set', 'alakazam-base-1');
 
-      expect(tournament.getMaxCopiesForCard('base-set', 'alakazam-base-1')).toBe(0);
+      expect(
+        tournament.getMaxCopiesForCard('base-set', 'alakazam-base-1'),
+      ).toBe(0);
     });
   });
 
@@ -152,7 +170,9 @@ describe('Tournament Entity', () => {
     });
 
     it('should throw error if name is empty', () => {
-      expect(() => tournament.setName('')).toThrow('Tournament name cannot be empty');
+      expect(() => tournament.setName('')).toThrow(
+        'Tournament name cannot be empty',
+      );
     });
 
     it('should set status', () => {
@@ -218,7 +238,9 @@ describe('Tournament Entity', () => {
       tournament.addSavedDeck('deck-1');
       tournament.addSavedDeck('deck-1');
 
-      expect(tournament.savedDecks.filter((d) => d === 'deck-1')).toHaveLength(1);
+      expect(tournament.savedDecks.filter((d) => d === 'deck-1')).toHaveLength(
+        1,
+      );
     });
   });
 
@@ -229,9 +251,10 @@ describe('Tournament Entity', () => {
       // Wait a bit to ensure time difference
       setTimeout(() => {
         tournament.setName('New Name');
-        expect(tournament.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+        expect(tournament.updatedAt.getTime()).toBeGreaterThan(
+          originalUpdatedAt.getTime(),
+        );
       }, 10);
     });
   });
 });
-

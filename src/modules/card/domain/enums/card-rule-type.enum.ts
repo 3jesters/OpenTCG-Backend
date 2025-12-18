@@ -1,7 +1,7 @@
 /**
  * Card Rule Type Enum
  * Defines types of special rules that apply to cards
- * 
+ *
  * Card rules are always-on modifications to game state or restrictions on actions,
  * different from abilities which are active effects.
  */
@@ -176,4 +176,3 @@ export enum CardRuleType {
    */
   ENERGY_TYPE_CHANGE = 'ENERGY_TYPE_CHANGE',
 }
-

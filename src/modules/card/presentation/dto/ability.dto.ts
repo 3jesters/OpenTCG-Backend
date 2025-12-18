@@ -32,7 +32,8 @@ export class AbilityDto {
   activationType: AbilityActivationType;
 
   @ApiProperty({
-    description: 'Game event that triggers the ability (for triggered abilities)',
+    description:
+      'Game event that triggers the ability (for triggered abilities)',
     enum: GameEventType,
     required: false,
   })
@@ -53,4 +54,3 @@ export class AbilityDto {
   })
   effects?: AbilityEffectDto[];
 }
-

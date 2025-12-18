@@ -88,12 +88,20 @@ export class TrainerEffectValidatorService {
         break;
 
       case TrainerEffectType.RETRIEVE_ENERGY:
-        if (!('selectedCardIds' in actionData) || !Array.isArray(actionData.selectedCardIds)) {
-          errors.push('selectedCardIds is required for RETRIEVE_ENERGY effect (array, can be empty)');
+        if (
+          !('selectedCardIds' in actionData) ||
+          !Array.isArray(actionData.selectedCardIds)
+        ) {
+          errors.push(
+            'selectedCardIds is required for RETRIEVE_ENERGY effect (array, can be empty)',
+          );
         } else {
-          const maxRetrieve = typeof effect.value === 'number' ? effect.value : 2;
+          const maxRetrieve =
+            typeof effect.value === 'number' ? effect.value : 2;
           if (actionData.selectedCardIds.length > maxRetrieve) {
-            errors.push(`RETRIEVE_ENERGY can retrieve at most ${maxRetrieve} energy cards`);
+            errors.push(
+              `RETRIEVE_ENERGY can retrieve at most ${maxRetrieve} energy cards`,
+            );
           }
         }
         break;
@@ -126,14 +134,22 @@ export class TrainerEffectValidatorService {
         break;
 
       case TrainerEffectType.SEARCH_DECK:
-        if (!('selectedCardIds' in actionData) || !Array.isArray(actionData.selectedCardIds)) {
+        if (
+          !('selectedCardIds' in actionData) ||
+          !Array.isArray(actionData.selectedCardIds)
+        ) {
           errors.push('selectedCardIds is required for SEARCH_DECK effect');
         }
         break;
 
       case TrainerEffectType.RETRIEVE_FROM_DISCARD:
-        if (!('selectedCardIds' in actionData) || !Array.isArray(actionData.selectedCardIds)) {
-          errors.push('selectedCardIds is required for RETRIEVE_FROM_DISCARD effect');
+        if (
+          !('selectedCardIds' in actionData) ||
+          !Array.isArray(actionData.selectedCardIds)
+        ) {
+          errors.push(
+            'selectedCardIds is required for RETRIEVE_FROM_DISCARD effect',
+          );
         }
         break;
 
@@ -186,10 +202,16 @@ export class TrainerEffectValidatorService {
         break;
 
       case TrainerEffectType.TRADE_CARDS:
-        if (!('discardCardIds' in actionData) || !Array.isArray(actionData.discardCardIds)) {
+        if (
+          !('discardCardIds' in actionData) ||
+          !Array.isArray(actionData.discardCardIds)
+        ) {
           errors.push('discardCardIds is required for TRADE_CARDS effect');
         }
-        if (!('selectedCardIds' in actionData) || !Array.isArray(actionData.selectedCardIds)) {
+        if (
+          !('selectedCardIds' in actionData) ||
+          !Array.isArray(actionData.selectedCardIds)
+        ) {
           errors.push('selectedCardIds is required for TRADE_CARDS effect');
         }
         break;
@@ -208,4 +230,3 @@ export class TrainerEffectValidatorService {
     return errors;
   }
 }
-

@@ -34,9 +34,7 @@ export class Ability {
     }
 
     // Validate activation type
-    if (
-      !Object.values(AbilityActivationType).includes(this.activationType)
-    ) {
+    if (!Object.values(AbilityActivationType).includes(this.activationType)) {
       throw new Error(`Invalid activation type: ${this.activationType}`);
     }
 
@@ -56,9 +54,7 @@ export class Ability {
 
       // Only triggered abilities should have trigger events
       if (this.activationType !== AbilityActivationType.TRIGGERED) {
-        throw new Error(
-          'Only TRIGGERED abilities can have a trigger event',
-        );
+        throw new Error('Only TRIGGERED abilities can have a trigger event');
       }
     }
 
@@ -166,7 +162,8 @@ export class Ability {
       case AbilityActivationType.TRIGGERED:
         return `Activates ${this.getTriggerDescription()}`;
       case AbilityActivationType.ACTIVATED:
-        const limit = this.usageLimit === UsageLimit.ONCE_PER_TURN ? 'Once per turn' : '';
+        const limit =
+          this.usageLimit === UsageLimit.ONCE_PER_TURN ? 'Once per turn' : '';
         return limit ? `${limit} - Player activates` : 'Player activates';
       default:
         return 'Unknown';

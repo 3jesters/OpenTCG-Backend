@@ -15,4 +15,3 @@ export class ResistanceImportDto {
   })
   modifier: string;
 }
-

@@ -31,7 +31,7 @@ describe('Prize Selection After Knockout E2E', () => {
 
   beforeEach(async () => {
     // Files are cleaned up by jest-global-setup before test run
-    
+
     // Ensure matches directory exists
     const fs = require('fs');
     if (!fs.existsSync(matchesDirectory)) {
@@ -86,7 +86,10 @@ describe('Prize Selection After Knockout E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'], // 2 FIRE energy for Flame Tail attack
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ], // 2 FIRE energy for Flame Tail attack
             statusEffect: 'NONE',
             damageCounters: 0,
           },
@@ -154,8 +157,12 @@ describe('Prize Selection After Knockout E2E', () => {
 
     // Write initial match state
     const matchFilePath = join(matchesDirectory, `${MATCH_ID}.json`);
-    await writeFile(matchFilePath, JSON.stringify(initialMatchState, null, 2), 'utf-8');
-    
+    await writeFile(
+      matchFilePath,
+      JSON.stringify(initialMatchState, null, 2),
+      'utf-8',
+    );
+
     // Small delay to ensure file is written
     await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -169,10 +176,16 @@ describe('Prize Selection After Knockout E2E', () => {
           attackIndex: 1, // Flame Tail is the second attack (index 1) - does 30 damage, but Bulbasaur has weakness to Fire, so 60 damage
         },
       });
-    
+
     if (attackResponse.status !== 200) {
-      console.error('Attack failed:', JSON.stringify(attackResponse.body, null, 2));
-      console.error('Match file exists:', require('fs').existsSync(matchFilePath));
+      console.error(
+        'Attack failed:',
+        JSON.stringify(attackResponse.body, null, 2),
+      );
+      console.error(
+        'Match file exists:',
+        require('fs').existsSync(matchFilePath),
+      );
     }
     expect(attackResponse.status).toBe(200);
 
@@ -215,11 +228,21 @@ describe('Prize Selection After Knockout E2E', () => {
     expect(prizeSelectionResponse.body.state).toBe('PLAYER_TURN');
     expect(prizeSelectionResponse.body.playerState.prizeCardsRemaining).toBe(5);
     expect(prizeSelectionResponse.body.playerState.prizeCards).toHaveLength(5);
-    expect(prizeSelectionResponse.body.playerState.hand).toContain('prize-card-3');
-    expect(prizeSelectionResponse.body.playerState.prizeCards).not.toContain('prize-card-3');
-    expect(prizeSelectionResponse.body.lastAction.actionType).toBe('SELECT_PRIZE');
-    expect(prizeSelectionResponse.body.lastAction.actionData.prizeIndex).toBe(2);
-    expect(prizeSelectionResponse.body.lastAction.actionData.prizeCard).toBe('prize-card-3');
+    expect(prizeSelectionResponse.body.playerState.hand).toContain(
+      'prize-card-3',
+    );
+    expect(prizeSelectionResponse.body.playerState.prizeCards).not.toContain(
+      'prize-card-3',
+    );
+    expect(prizeSelectionResponse.body.lastAction.actionType).toBe(
+      'SELECT_PRIZE',
+    );
+    expect(prizeSelectionResponse.body.lastAction.actionData.prizeIndex).toBe(
+      2,
+    );
+    expect(prizeSelectionResponse.body.lastAction.actionData.prizeCard).toBe(
+      'prize-card-3',
+    );
 
     // Step 5: Verify phase transitioned to SELECT_ACTIVE_POKEMON (opponent needs to select active Pokemon)
     const stateAfterPrize = await request(server())
@@ -240,11 +263,17 @@ describe('Prize Selection After Knockout E2E', () => {
 
     // Phase should be SELECT_ACTIVE_POKEMON
     expect(opponentStateBeforeTurnEnd.body.phase).toBe('SELECT_ACTIVE_POKEMON');
-    expect(opponentStateBeforeTurnEnd.body.requiresActivePokemonSelection).toBe(true);
+    expect(opponentStateBeforeTurnEnd.body.requiresActivePokemonSelection).toBe(
+      true,
+    );
     // Opponent should be able to select active Pokemon after prize is selected
-    expect(opponentStateBeforeTurnEnd.body.availableActions).toContain('SET_ACTIVE_POKEMON');
+    expect(opponentStateBeforeTurnEnd.body.availableActions).toContain(
+      'SET_ACTIVE_POKEMON',
+    );
     // Player 2's active Pokemon should be null (knocked out), opponentState shows Player 1's active Pokemon
-    expect(opponentStateBeforeTurnEnd.body.playerState.activePokemon).toBeNull();
+    expect(
+      opponentStateBeforeTurnEnd.body.playerState.activePokemon,
+    ).toBeNull();
 
     // Step 7: Player 2 selects a new active Pokemon (Ivysaur from bench)
     const selectActiveResponse = await request(server())
@@ -323,12 +352,22 @@ describe('Prize Selection After Knockout E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'], // 2 FIRE energy for Flame Tail attack
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ], // 2 FIRE energy for Flame Tail attack
             statusEffect: 'NONE',
             damageCounters: 0,
           },
           bench: [],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: [],
           hasAttachedEnergyThisTurn: true,
         },
@@ -345,10 +384,17 @@ describe('Prize Selection After Knockout E2E', () => {
               currentHp: 60,
               attachedEnergy: [],
               statusEffect: 'NONE',
-            damageCounters: 0,
+              damageCounters: 0,
             },
           ],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: ['pokemon-base-set-v1.0-bulbasaur--46'],
           hasAttachedEnergyThisTurn: false,
         },
@@ -397,7 +443,9 @@ describe('Prize Selection After Knockout E2E', () => {
       })
       .expect(400);
 
-    expect(selectActiveBeforePrize.body.message).toContain('select a prize card first');
+    expect(selectActiveBeforePrize.body.message).toContain(
+      'select a prize card first',
+    );
 
     // Step 2: Player 1 selects a prize
     const prizeResponse = await request(server())
@@ -425,7 +473,9 @@ describe('Prize Selection After Knockout E2E', () => {
       })
       .expect(200);
 
-    expect(selectActiveAfterPrize.body.opponentState.activePokemon).not.toBeNull();
+    expect(
+      selectActiveAfterPrize.body.opponentState.activePokemon,
+    ).not.toBeNull();
   });
 
   it('should validate prize index when selecting prize', async () => {
@@ -618,7 +668,10 @@ describe('Prize Selection After Knockout E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'], // 2 FIRE energy for Flame Tail attack
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ], // 2 FIRE energy for Flame Tail attack
             statusEffect: 'NONE',
             damageCounters: 0,
           },
@@ -736,4 +789,3 @@ describe('Prize Selection After Knockout E2E', () => {
     expect(stateAfterPrize.body.availableActions).not.toContain('SELECT_PRIZE');
   });
 });
-

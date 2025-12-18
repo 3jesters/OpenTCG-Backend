@@ -15,4 +15,3 @@ export class ExecuteActionRequestDto {
   @IsObject()
   actionData: Record<string, unknown>;
 }
-

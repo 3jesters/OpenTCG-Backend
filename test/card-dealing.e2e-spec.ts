@@ -62,23 +62,31 @@ describe('Card Dealing E2E (real data)', () => {
     // - 47 cards remaining in deck (60 - 7 initial hand - 6 prize = 47)
     // - First player (from coin toss) may draw 1 card at start of turn = 7 cards, deck becomes 46
     // - Other player has 6 cards (didn't draw yet), deck is still 47
-    
+
     const isFirstPlayer = state.currentPlayer === 'PLAYER1';
-    const firstPlayerHandCount = isFirstPlayer ? state.playerState.handCount : state.opponentState.handCount;
-    const otherPlayerHandCount = isFirstPlayer ? state.opponentState.handCount : state.playerState.handCount;
-    const firstPlayerDeckCount = isFirstPlayer ? state.playerState.deckCount : state.opponentState.deckCount;
-    const otherPlayerDeckCount = isFirstPlayer ? state.opponentState.deckCount : state.playerState.deckCount;
+    const firstPlayerHandCount = isFirstPlayer
+      ? state.playerState.handCount
+      : state.opponentState.handCount;
+    const otherPlayerHandCount = isFirstPlayer
+      ? state.opponentState.handCount
+      : state.playerState.handCount;
+    const firstPlayerDeckCount = isFirstPlayer
+      ? state.playerState.deckCount
+      : state.opponentState.deckCount;
+    const otherPlayerDeckCount = isFirstPlayer
+      ? state.opponentState.deckCount
+      : state.playerState.deckCount;
 
     // First player should have 6 or 7 cards (6 after setup, 7 if they drew)
     expect(firstPlayerHandCount).toBeGreaterThanOrEqual(6);
     expect(firstPlayerHandCount).toBeLessThanOrEqual(7);
     // Other player should have 6 cards (7 - 1 active)
     expect(otherPlayerHandCount).toBe(6);
-    
+
     // Both should have 6 prize cards
     expect(state.playerState.prizeCardsRemaining).toBe(6);
     expect(state.opponentState.prizeCardsRemaining).toBe(6);
-    
+
     // First player's deck should be 46 or 47 (47 if no draw, 46 if drew)
     expect(firstPlayerDeckCount).toBeGreaterThanOrEqual(46);
     expect(firstPlayerDeckCount).toBeLessThanOrEqual(47);
@@ -86,7 +94,10 @@ describe('Card Dealing E2E (real data)', () => {
     expect(otherPlayerDeckCount).toBe(47);
   };
 
-  async function withShuffleSeed<T>(seed: number | undefined, fn: () => Promise<T>) {
+  async function withShuffleSeed<T>(
+    seed: number | undefined,
+    fn: () => Promise<T>,
+  ) {
     const previous = process.env.MATCH_SHUFFLE_SEED;
     if (seed === undefined) {
       delete process.env.MATCH_SHUFFLE_SEED;
@@ -203,7 +214,9 @@ describe('Card Dealing E2E (real data)', () => {
         .expect(200);
 
       // Helper function to find Basic Pokemon by trying to get card details
-      const findBasicPokemon = async (hand: string[]): Promise<string | null> => {
+      const findBasicPokemon = async (
+        hand: string[],
+      ): Promise<string | null> => {
         // Filter out energy and trainer cards
         const pokemonCandidates = hand.filter((cardId: string) => {
           return (
@@ -219,15 +232,13 @@ describe('Card Dealing E2E (real data)', () => {
         // Try each candidate by checking card details
         for (const cardId of pokemonCandidates) {
           try {
-            const cardResponse = await request(server())
-              .get(`/api/v1/cards/${cardId}`);
+            const cardResponse = await request(server()).get(
+              `/api/v1/cards/${cardId}`,
+            );
 
             if (cardResponse.status === 200) {
               const card = cardResponse.body;
-              if (
-                card.cardType === 'POKEMON' &&
-                card.stage === 'BASIC'
-              ) {
+              if (card.cardType === 'POKEMON' && card.stage === 'BASIC') {
                 return cardId;
               }
             }
@@ -275,7 +286,7 @@ describe('Card Dealing E2E (real data)', () => {
         .post(`/api/v1/matches/${matchId}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
-      
+
       // Prize cards should be set up when state transitions to SELECT_BENCH_POKEMON
       if (stateAfterActive.body.state === 'SELECT_BENCH_POKEMON') {
         expect(stateAfterActive.body.playerState.prizeCardsRemaining).toBe(6);
@@ -283,10 +294,14 @@ describe('Card Dealing E2E (real data)', () => {
       }
 
       if (!player1BasicPokemon) {
-        throw new Error(`Could not find Basic Pokemon in Player 1 hand. Hand: ${JSON.stringify(player1Hand)}`);
+        throw new Error(
+          `Could not find Basic Pokemon in Player 1 hand. Hand: ${JSON.stringify(player1Hand)}`,
+        );
       }
       if (!player2BasicPokemon) {
-        throw new Error(`Could not find Basic Pokemon in Player 2 hand. Hand: ${JSON.stringify(player2Hand)}`);
+        throw new Error(
+          `Could not find Basic Pokemon in Player 2 hand. Hand: ${JSON.stringify(player2Hand)}`,
+        );
       }
 
       // Complete initial setup for both players
@@ -348,7 +363,10 @@ describe('Card Dealing E2E (real data)', () => {
 
       // First player draws a card at start of turn (if in DRAW phase)
       if (stateAfterSetup.body.phase === 'DRAW') {
-        const firstPlayerId = stateAfterSetup.body.currentPlayer === 'PLAYER1' ? PLAYER1_ID : PLAYER2_ID;
+        const firstPlayerId =
+          stateAfterSetup.body.currentPlayer === 'PLAYER1'
+            ? PLAYER1_ID
+            : PLAYER2_ID;
         const drawResponse = await request(server())
           .post(`/api/v1/matches/${matchId}/actions`)
           .send({
@@ -356,10 +374,12 @@ describe('Card Dealing E2E (real data)', () => {
             actionType: 'DRAW_CARD',
             actionData: {},
           });
-        
+
         // Draw might fail if phase changed, that's okay
         if (drawResponse.status !== 200) {
-          console.warn(`Draw card failed: ${drawResponse.status} - ${JSON.stringify(drawResponse.body)}`);
+          console.warn(
+            `Draw card failed: ${drawResponse.status} - ${JSON.stringify(drawResponse.body)}`,
+          );
         }
       }
 
@@ -430,7 +450,7 @@ describe('Card Dealing E2E (real data)', () => {
   describe('Scenario 5: Deterministic shuffle', () => {
     // Increase timeout for this test as it creates two matches (doubles the setup time)
     jest.setTimeout(30000);
-    
+
     it('produces consistent card distribution when the same seed and decks are used', async () => {
       const first = await createAndStartMatch({
         matchId: MATCH_IDS.scenario5a,
@@ -449,50 +469,56 @@ describe('Card Dealing E2E (real data)', () => {
       // Note: Coin toss is based on match ID, so first player may differ
       // But the card distribution should be consistent (same deck counts, prize cards)
       // Hand counts may differ by 1 if first player is different
-      // 
+      //
       // Card accounting per player (60 cards total):
       // - 7 cards drawn initially
       // - 1 card used for active Pokemon (removed from hand, so hand becomes 6)
       // - 6 prize cards set up (removed from deck)
       // - First player draws 1 card at start of turn (hand becomes 7, deck -1)
-      // 
+      //
       // After complete setup:
       // - First player: hand (7) + deck (46) + prize (6) = 59
       // - Other player: hand (6) + deck (47) + prize (6) = 59
       // - Active Pokemon (1) is in play but not counted in hand/deck/prize
-      // 
+      //
       // However, if the first player hasn't drawn yet:
       // - First player: hand (6) + deck (47) + prize (6) = 59
       // - Other player: hand (6) + deck (47) + prize (6) = 59
-      // 
+      //
       // The actual behavior shows 58, which suggests:
       // - Either the first player draw didn't happen (but then it should be 59)
       // - Or there's a card missing somewhere (possibly the active Pokemon is being double-counted)
-      // 
+      //
       // After investigation, the actual value is 58, which means:
       // - hand + deck + prize = 58 (missing 1 card)
       // - This could be because the active Pokemon is not being properly excluded from the count
       // - Or the deck count is off by 1
-      // 
+      //
       // For deterministic shuffle test, we care about consistency, not exact count
       // Both matches should have the same total, regardless of whether it's 58 or 59
-      const firstTotalCards = first.playerState.handCount + first.playerState.deckCount + first.playerState.prizeCardsRemaining;
-      const secondTotalCards = second.playerState.handCount + second.playerState.deckCount + second.playerState.prizeCardsRemaining;
-      
+      const firstTotalCards =
+        first.playerState.handCount +
+        first.playerState.deckCount +
+        first.playerState.prizeCardsRemaining;
+      const secondTotalCards =
+        second.playerState.handCount +
+        second.playerState.deckCount +
+        second.playerState.prizeCardsRemaining;
+
       // Both matches should have the same total (consistency is what matters for deterministic shuffle)
       expect(firstTotalCards).toBe(secondTotalCards);
-      
+
       // Total cards per player: hand + deck + prize = 59
       // (60 cards total - 1 active Pokemon = 59 accounted for in hand/deck/prize)
       expect(firstTotalCards).toBe(59);
       expect(secondTotalCards).toBe(59);
-      
+
       // Prize cards should always be 6
       expect(first.playerState.prizeCardsRemaining).toBe(6);
       expect(second.playerState.prizeCardsRemaining).toBe(6);
       expect(first.opponentState.prizeCardsRemaining).toBe(6);
       expect(second.opponentState.prizeCardsRemaining).toBe(6);
-      
+
       verifyCardDistribution(first);
       verifyCardDistribution(second);
     });

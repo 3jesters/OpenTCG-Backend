@@ -1,4 +1,12 @@
-import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import { EnergyType } from '../../domain/enums/energy-type.enum';
 
 /**
@@ -26,4 +34,3 @@ export class EnergyProvisionImportDto {
   @IsString()
   additionalEffects?: string;
 }
-

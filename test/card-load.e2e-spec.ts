@@ -12,7 +12,7 @@ describe('Card Available Sets (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Add validation pipe as in production
     app.useGlobalPipes(
       new ValidationPipe({
@@ -39,7 +39,7 @@ describe('Card Available Sets (e2e)', () => {
           expect(Array.isArray(res.body.sets)).toBe(true);
           expect(res.body.total).toBeGreaterThan(0);
           expect(res.body.sets.length).toBe(res.body.total);
-          
+
           // Check set structure
           if (res.body.sets.length > 0) {
             const firstSet = res.body.sets[0];

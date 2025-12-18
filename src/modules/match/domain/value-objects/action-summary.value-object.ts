@@ -29,4 +29,3 @@ export class ActionSummary {
     return this.actionId === other.actionId;
   }
 }
-

@@ -9,6 +9,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import {
   CreateDeckUseCase,
@@ -28,7 +29,7 @@ import {
   DeckCardResponseDto,
 } from '../dto';
 import { CreateDeckDto, UpdateDeckDto } from '../../application/dto';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 
 /**
  * Deck Controller
@@ -43,7 +44,8 @@ export class DeckController {
     private readonly updateDeckUseCase: UpdateDeckUseCase,
     private readonly deleteDeckUseCase: DeleteDeckUseCase,
     private readonly validateDeckAgainstTournamentUseCase: ValidateDeckAgainstTournamentUseCase,
-    private readonly getCardByIdUseCase: GetCardByIdUseCase,
+    @Inject(IGetCardByIdUseCase)
+    private readonly getCardByIdUseCase: IGetCardByIdUseCase,
   ) {}
 
   /**
@@ -52,7 +54,9 @@ export class DeckController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() requestDto: CreateDeckRequestDto): Promise<DeckResponseDto> {
+  async create(
+    @Body() requestDto: CreateDeckRequestDto,
+  ): Promise<DeckResponseDto> {
     // Map request DTO to application DTO
     const dto: CreateDeckDto = {
       name: requestDto.name,
@@ -75,7 +79,9 @@ export class DeckController {
    */
   @Get()
   @HttpCode(HttpStatus.OK)
-  async findAll(@Query('tournamentId') tournamentId?: string): Promise<DeckListResponseDto> {
+  async findAll(
+    @Query('tournamentId') tournamentId?: string,
+  ): Promise<DeckListResponseDto> {
     const decks = await this.listDecksUseCase.execute(tournamentId);
     return DeckListResponseDto.fromDomain(decks);
   }
@@ -99,11 +105,11 @@ export class DeckController {
   @HttpCode(HttpStatus.OK)
   async findOne(@Param('id') id: string): Promise<DeckResponseDto> {
     const deck = await this.getDeckByIdUseCase.execute(id);
-    
+
     // Fetch full card details for all unique cards in the deck
     const uniqueCardIds = [...new Set(deck.cards.map((c) => c.cardId))];
     const cardDetailsMap = new Map<string, any>();
-    
+
     // Fetch all card details in parallel
     await Promise.all(
       uniqueCardIds.map(async (cardId) => {
@@ -181,4 +187,3 @@ export class DeckController {
     return ValidationResponseDto.fromDomain(result);
   }
 }
-

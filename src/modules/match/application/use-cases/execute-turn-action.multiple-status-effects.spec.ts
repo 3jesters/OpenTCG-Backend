@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecuteTurnActionUseCase } from './execute-turn-action.use-case';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { Card } from '../../../card/domain/entities/card.entity';
 import { Rarity } from '../../../card/domain/enums/rarity.enum';
 import { CardType } from '../../../card/domain/enums/card-type.enum';
@@ -38,7 +38,7 @@ import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.valu
 
 describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
   let useCase: ExecuteTurnActionUseCase;
-  let mockGetCardByIdUseCase: jest.Mocked<GetCardByIdUseCase>;
+  let mockGetCardByIdUseCase: jest.Mocked<IGetCardByIdUseCase>;
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
   let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
   let mockCoinFlipResolver: jest.Mocked<CoinFlipResolverService>;
@@ -60,7 +60,9 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       validateAction: jest.fn().mockReturnValue({ isValid: true }),
       transition: jest.fn(),
       getCurrentState: jest.fn(),
-      checkWinConditions: jest.fn().mockReturnValue({ hasWinner: false, winner: null }),
+      checkWinConditions: jest
+        .fn()
+        .mockReturnValue({ hasWinner: false, winner: null }),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -87,7 +89,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
           useValue: { execute: jest.fn() },
         },
         {
-          provide: GetCardByIdUseCase,
+          provide: IGetCardByIdUseCase,
           useValue: mockGetCardByIdUseCase,
         },
         {
@@ -106,7 +108,9 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         {
           provide: AttackEnergyValidatorService,
           useValue: {
-            validateEnergyRequirements: jest.fn().mockReturnValue({ isValid: true }),
+            validateEnergyRequirements: jest
+              .fn()
+              .mockReturnValue({ isValid: true }),
           },
         },
         {
@@ -155,7 +159,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
     card.setHp(hp);
     card.setPokemonType(PokemonType.FIRE);
     // Add attacks using the Card's addAttack method
-    attacks.forEach(attack => {
+    attacks.forEach((attack) => {
       card.addAttack(attack);
     });
     return card;
@@ -228,12 +232,9 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         'Flip a coin. If heads, the Defending Pokémon is now Confused.',
         undefined,
         [
-          AttackEffectFactory.statusCondition(
-            StatusCondition.CONFUSED,
-            [
-              ConditionFactory.coinFlipSuccess(),
-            ],
-          ),
+          AttackEffectFactory.statusCondition(StatusCondition.CONFUSED, [
+            ConditionFactory.coinFlipSuccess(),
+          ]),
         ],
       );
 
@@ -243,14 +244,21 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         '10',
         'The Defending Pokémon is now Poisoned.',
         undefined,
-        [
-          AttackEffectFactory.statusCondition(StatusCondition.POISONED),
-        ],
+        [AttackEffectFactory.statusCondition(StatusCondition.POISONED)],
       );
 
-      const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [confuseAttack]);
-      const poisonerCard = createPokemonCard('poisoner-id', 'Poisoner', 100, [poisonAttack]);
-      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+      const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [
+        confuseAttack,
+      ]);
+      const poisonerCard = createPokemonCard('poisoner-id', 'Poisoner', 100, [
+        poisonAttack,
+      ]);
+      const defenderCard = createPokemonCard(
+        'defender-id',
+        'Defender',
+        100,
+        [],
+      );
 
       // Create energy card mocks
       const createEnergyCard = (energyType: string): Card => {
@@ -270,24 +278,32 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         return card;
       };
 
-      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
-        if (cardId === 'attacker-id') return CardMapper.toCardDetailDto(attackerCard);
-        if (cardId === 'poisoner-id') return CardMapper.toCardDetailDto(poisonerCard);
-        if (cardId === 'defender-id') return CardMapper.toCardDetailDto(defenderCard);
-        if (cardId === 'energy-fire-1') return CardMapper.toCardDetailDto(createEnergyCard('fire'));
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.execute.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'attacker-id')
+            return CardMapper.toCardDetailDto(attackerCard);
+          if (cardId === 'poisoner-id')
+            return CardMapper.toCardDetailDto(poisonerCard);
+          if (cardId === 'defender-id')
+            return CardMapper.toCardDetailDto(defenderCard);
+          if (cardId === 'energy-fire-1')
+            return CardMapper.toCardDetailDto(createEnergyCard('fire'));
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
-        if (cardId === 'attacker-id') return attackerCard;
-        if (cardId === 'poisoner-id') return poisonerCard;
-        if (cardId === 'defender-id') return defenderCard;
-        if (cardId === 'energy-fire-1') {
-          const energyCard = createEnergyCard('FIRE');
-          return energyCard;
-        }
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'attacker-id') return attackerCard;
+          if (cardId === 'poisoner-id') return poisonerCard;
+          if (cardId === 'defender-id') return defenderCard;
+          if (cardId === 'energy-fire-1') {
+            const energyCard = createEnergyCard('FIRE');
+            return energyCard;
+          }
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
       const attacker = new CardInstance(
         'attacker-instance',
@@ -331,16 +347,31 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       });
 
       // Verify CONFUSED was applied
-      const defenderAfterConfuse = result1.gameState?.player2State.activePokemon;
-      expect(defenderAfterConfuse?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(true);
-      expect(defenderAfterConfuse?.hasStatusEffect(StatusEffect.POISONED)).toBe(false);
+      const defenderAfterConfuse =
+        result1.gameState?.player2State.activePokemon;
+      expect(defenderAfterConfuse?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(
+        true,
+      );
+      expect(defenderAfterConfuse?.hasStatusEffect(StatusEffect.POISONED)).toBe(
+        false,
+      );
 
       // Update match state - ensure phase is MAIN_PHASE for next attack
       // Use the game state from result1 which has the defender with CONFUSED status
-      const updatedGameState1 = result1.gameState!.withPhase(TurnPhase.MAIN_PHASE);
+      const updatedGameState1 = result1.gameState!.withPhase(
+        TurnPhase.MAIN_PHASE,
+      );
       const updatedMatch1 = new Match('match-1', 'tournament-1');
-      updatedMatch1.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
-      updatedMatch1.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      updatedMatch1.assignPlayer(
+        'test-player-1',
+        'deck-1',
+        PlayerIdentifier.PLAYER1,
+      );
+      updatedMatch1.assignPlayer(
+        'test-player-2',
+        'deck-2',
+        PlayerIdentifier.PLAYER2,
+      );
       Object.defineProperty(updatedMatch1, '_state', {
         value: MatchState.PLAYER_TURN,
         writable: true,
@@ -364,15 +395,29 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       );
 
       // Preserve defender's status effects from first attack
-      const defenderAfterConfuse2 = updatedMatch1.gameState!.player2State.activePokemon;
-      const updatedGameState2 = updatedMatch1.gameState!.withPlayer1State(
-        updatedMatch1.gameState!.player1State.withActivePokemon(poisoner),
-      ).withPlayer2State(
-        updatedMatch1.gameState!.player2State.withActivePokemon(defenderAfterConfuse2!),
-      ).withPhase(TurnPhase.MAIN_PHASE);
+      const defenderAfterConfuse2 =
+        updatedMatch1.gameState!.player2State.activePokemon;
+      const updatedGameState2 = updatedMatch1
+        .gameState!.withPlayer1State(
+          updatedMatch1.gameState!.player1State.withActivePokemon(poisoner),
+        )
+        .withPlayer2State(
+          updatedMatch1.gameState!.player2State.withActivePokemon(
+            defenderAfterConfuse2,
+          ),
+        )
+        .withPhase(TurnPhase.MAIN_PHASE);
       const updatedMatch2 = new Match('match-1', 'tournament-1');
-      updatedMatch2.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
-      updatedMatch2.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      updatedMatch2.assignPlayer(
+        'test-player-1',
+        'deck-1',
+        PlayerIdentifier.PLAYER1,
+      );
+      updatedMatch2.assignPlayer(
+        'test-player-2',
+        'deck-2',
+        PlayerIdentifier.PLAYER2,
+      );
       Object.defineProperty(updatedMatch2, '_state', {
         value: MatchState.PLAYER_TURN,
         writable: true,
@@ -390,8 +435,12 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
 
       // Verify both CONFUSED and POISONED are present
       const defenderAfterBoth = result2.gameState?.player2State.activePokemon;
-      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(true);
-      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
+      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(
+        true,
+      );
+      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.POISONED)).toBe(
+        true,
+      );
       expect(defenderAfterBoth?.statusEffects.length).toBe(2);
       expect(defenderAfterBoth?.statusEffects).toContain(StatusEffect.CONFUSED);
       expect(defenderAfterBoth?.statusEffects).toContain(StatusEffect.POISONED);
@@ -406,9 +455,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         '10',
         'The Defending Pokémon is now Poisoned.',
         undefined,
-        [
-          AttackEffectFactory.statusCondition(StatusCondition.POISONED),
-        ],
+        [AttackEffectFactory.statusCondition(StatusCondition.POISONED)],
       );
 
       const burnAttack = new Attack(
@@ -417,14 +464,21 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         '30',
         'The Defending Pokémon is now Burned.',
         undefined,
-        [
-          AttackEffectFactory.statusCondition(StatusCondition.BURNED),
-        ],
+        [AttackEffectFactory.statusCondition(StatusCondition.BURNED)],
       );
 
-      const poisonerCard = createPokemonCard('poisoner-id', 'Poisoner', 100, [poisonAttack]);
-      const burnerCard = createPokemonCard('burner-id', 'Burner', 100, [burnAttack]);
-      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+      const poisonerCard = createPokemonCard('poisoner-id', 'Poisoner', 100, [
+        poisonAttack,
+      ]);
+      const burnerCard = createPokemonCard('burner-id', 'Burner', 100, [
+        burnAttack,
+      ]);
+      const defenderCard = createPokemonCard(
+        'defender-id',
+        'Defender',
+        100,
+        [],
+      );
 
       // Create energy card helper
       const createEnergyCardHelper = (energyType: string): Card => {
@@ -444,27 +498,34 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         return card;
       };
 
-      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
-        if (cardId === 'poisoner-id') return CardMapper.toCardDetailDto(poisonerCard);
-        if (cardId === 'burner-id') return CardMapper.toCardDetailDto(burnerCard);
-        if (cardId === 'defender-id') return CardMapper.toCardDetailDto(defenderCard);
-        if (cardId === 'energy-fire-1') {
-          const energyCard = createEnergyCardHelper('FIRE');
-          return CardMapper.toCardDetailDto(energyCard);
-        }
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.execute.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'poisoner-id')
+            return CardMapper.toCardDetailDto(poisonerCard);
+          if (cardId === 'burner-id')
+            return CardMapper.toCardDetailDto(burnerCard);
+          if (cardId === 'defender-id')
+            return CardMapper.toCardDetailDto(defenderCard);
+          if (cardId === 'energy-fire-1') {
+            const energyCard = createEnergyCardHelper('FIRE');
+            return CardMapper.toCardDetailDto(energyCard);
+          }
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
-        if (cardId === 'poisoner-id') return poisonerCard;
-        if (cardId === 'burner-id') return burnerCard;
-        if (cardId === 'defender-id') return defenderCard;
-        if (cardId === 'energy-fire-1') {
-          const energyCard = createEnergyCardHelper('FIRE');
-          return energyCard;
-        }
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'poisoner-id') return poisonerCard;
+          if (cardId === 'burner-id') return burnerCard;
+          if (cardId === 'defender-id') return defenderCard;
+          if (cardId === 'energy-fire-1') {
+            const energyCard = createEnergyCardHelper('FIRE');
+            return energyCard;
+          }
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
       const poisoner = new CardInstance(
         'poisoner-instance',
@@ -504,13 +565,27 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
 
       expect(result1).toBeDefined();
       expect(result1.gameState).toBeDefined();
-      expect(result1.gameState?.player2State.activePokemon?.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
-      
+      expect(
+        result1.gameState?.player2State.activePokemon?.hasStatusEffect(
+          StatusEffect.POISONED,
+        ),
+      ).toBe(true);
+
       // Update match state for second attack - ensure phase is MAIN_PHASE
-      const updatedGameState1 = result1.gameState!.withPhase(TurnPhase.MAIN_PHASE);
+      const updatedGameState1 = result1.gameState!.withPhase(
+        TurnPhase.MAIN_PHASE,
+      );
       const updatedMatch1 = new Match('match-1', 'tournament-1');
-      updatedMatch1.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
-      updatedMatch1.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      updatedMatch1.assignPlayer(
+        'test-player-1',
+        'deck-1',
+        PlayerIdentifier.PLAYER1,
+      );
+      updatedMatch1.assignPlayer(
+        'test-player-2',
+        'deck-2',
+        PlayerIdentifier.PLAYER2,
+      );
       Object.defineProperty(updatedMatch1, '_state', {
         value: MatchState.PLAYER_TURN,
         writable: true,
@@ -533,15 +608,29 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       );
 
       // Preserve defender's status effects from first attack
-      const defenderAfterPoison = updatedMatch1.gameState!.player2State.activePokemon;
-      const updatedGameState2 = updatedMatch1.gameState!.withPlayer1State(
-        updatedMatch1.gameState!.player1State.withActivePokemon(burner),
-      ).withPlayer2State(
-        updatedMatch1.gameState!.player2State.withActivePokemon(defenderAfterPoison!),
-      ).withPhase(TurnPhase.MAIN_PHASE);
+      const defenderAfterPoison =
+        updatedMatch1.gameState!.player2State.activePokemon;
+      const updatedGameState2 = updatedMatch1
+        .gameState!.withPlayer1State(
+          updatedMatch1.gameState!.player1State.withActivePokemon(burner),
+        )
+        .withPlayer2State(
+          updatedMatch1.gameState!.player2State.withActivePokemon(
+            defenderAfterPoison,
+          ),
+        )
+        .withPhase(TurnPhase.MAIN_PHASE);
       const updatedMatch2 = new Match('match-1', 'tournament-1');
-      updatedMatch2.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
-      updatedMatch2.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      updatedMatch2.assignPlayer(
+        'test-player-1',
+        'deck-1',
+        PlayerIdentifier.PLAYER1,
+      );
+      updatedMatch2.assignPlayer(
+        'test-player-2',
+        'deck-2',
+        PlayerIdentifier.PLAYER2,
+      );
       Object.defineProperty(updatedMatch2, '_state', {
         value: MatchState.PLAYER_TURN,
         writable: true,
@@ -559,8 +648,12 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
 
       // Verify both POISONED and BURNED are present
       const defenderAfterBoth = result2.gameState?.player2State.activePokemon;
-      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
-      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.BURNED)).toBe(true);
+      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.POISONED)).toBe(
+        true,
+      );
+      expect(defenderAfterBoth?.hasStatusEffect(StatusEffect.BURNED)).toBe(
+        true,
+      );
       expect(defenderAfterBoth?.statusEffects.length).toBe(2);
       expect(defenderAfterBoth?.poisonDamageAmount).toBe(10);
     });
@@ -592,26 +685,40 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         undefined,
       );
 
-      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
-      const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, []);
+      const defenderCard = createPokemonCard(
+        'defender-id',
+        'Defender',
+        100,
+        [],
+      );
+      const attackerCard = createPokemonCard(
+        'attacker-id',
+        'Attacker',
+        100,
+        [],
+      );
 
-      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
-        if (cardId === 'defender-id') {
-          const dto = CardMapper.toCardDetailDto(defenderCard);
-          return { ...dto, hp: 100 };
-        }
-        if (cardId === 'attacker-id') {
-          const dto = CardMapper.toCardDetailDto(attackerCard);
-          return { ...dto, hp: 100 };
-        }
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.execute.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'defender-id') {
+            const dto = CardMapper.toCardDetailDto(defenderCard);
+            return { ...dto, hp: 100 };
+          }
+          if (cardId === 'attacker-id') {
+            const dto = CardMapper.toCardDetailDto(attackerCard);
+            return { ...dto, hp: 100 };
+          }
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
-        if (cardId === 'defender-id') return defenderCard;
-        if (cardId === 'attacker-id') return attackerCard;
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'defender-id') return defenderCard;
+          if (cardId === 'attacker-id') return attackerCard;
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
       const match = createMatchWithGameState(attacker, [], defender, []);
       mockMatchRepository.findById.mockResolvedValue(match);
@@ -629,8 +736,12 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       // POISONED: 10 damage, BURNED: 20 damage = 30 total
       const defenderAfterTurn = result.gameState?.player2State.activePokemon;
       expect(defenderAfterTurn?.currentHp).toBe(70); // 100 - 30 = 70
-      expect(defenderAfterTurn?.hasStatusEffect(StatusEffect.POISONED)).toBe(true);
-      expect(defenderAfterTurn?.hasStatusEffect(StatusEffect.BURNED)).toBe(true);
+      expect(defenderAfterTurn?.hasStatusEffect(StatusEffect.POISONED)).toBe(
+        true,
+      );
+      expect(defenderAfterTurn?.hasStatusEffect(StatusEffect.BURNED)).toBe(
+        true,
+      );
     });
 
     it('should block attack when Pokemon has both ASLEEP and CONFUSED (ASLEEP takes priority)', async () => {
@@ -660,21 +771,39 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       );
 
       const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [
-        new Attack('Tackle', [PokemonType.FIRE], '20', 'Deal 20 damage.', undefined, []),
+        new Attack(
+          'Tackle',
+          [PokemonType.FIRE],
+          '20',
+          'Deal 20 damage.',
+          undefined,
+          [],
+        ),
       ]);
-      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+      const defenderCard = createPokemonCard(
+        'defender-id',
+        'Defender',
+        100,
+        [],
+      );
 
-      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
-        if (cardId === 'attacker-id') return CardMapper.toCardDetailDto(attackerCard);
-        if (cardId === 'defender-id') return CardMapper.toCardDetailDto(defenderCard);
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.execute.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'attacker-id')
+            return CardMapper.toCardDetailDto(attackerCard);
+          if (cardId === 'defender-id')
+            return CardMapper.toCardDetailDto(defenderCard);
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
-        if (cardId === 'attacker-id') return attackerCard;
-        if (cardId === 'defender-id') return defenderCard;
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'attacker-id') return attackerCard;
+          if (cardId === 'defender-id') return defenderCard;
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
       const match = createMatchWithGameState(attacker, [], defender, []);
       mockMatchRepository.findById.mockResolvedValue(match);
@@ -718,21 +847,39 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       );
 
       const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [
-        new Attack('Tackle', [PokemonType.FIRE], '20', 'Deal 20 damage.', undefined, []),
+        new Attack(
+          'Tackle',
+          [PokemonType.FIRE],
+          '20',
+          'Deal 20 damage.',
+          undefined,
+          [],
+        ),
       ]);
-      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+      const defenderCard = createPokemonCard(
+        'defender-id',
+        'Defender',
+        100,
+        [],
+      );
 
-      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
-        if (cardId === 'attacker-id') return CardMapper.toCardDetailDto(attackerCard);
-        if (cardId === 'defender-id') return CardMapper.toCardDetailDto(defenderCard);
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.execute.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'attacker-id')
+            return CardMapper.toCardDetailDto(attackerCard);
+          if (cardId === 'defender-id')
+            return CardMapper.toCardDetailDto(defenderCard);
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
-        if (cardId === 'attacker-id') return attackerCard;
-        if (cardId === 'defender-id') return defenderCard;
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'attacker-id') return attackerCard;
+          if (cardId === 'defender-id') return defenderCard;
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
       const match = createMatchWithGameState(attacker, [], defender, []);
       mockMatchRepository.findById.mockResolvedValue(match);
@@ -764,7 +911,12 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         undefined,
       );
 
-      const charmeleonCard = createPokemonCard('charmeleon-id', 'Charmeleon', 80, []);
+      const charmeleonCard = createPokemonCard(
+        'charmeleon-id',
+        'Charmeleon',
+        80,
+        [],
+      );
       charmeleonCard.setStage(EvolutionStage.STAGE_1);
       const evolution = {
         id: '000',
@@ -774,25 +926,41 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       };
       charmeleonCard.setEvolvesFrom(evolution as any);
 
-      const charmanderCard = createPokemonCard('charmander-id', 'Charmander', 50, []);
+      const charmanderCard = createPokemonCard(
+        'charmander-id',
+        'Charmander',
+        50,
+        [],
+      );
       charmanderCard.setStage(EvolutionStage.BASIC);
 
-      mockGetCardByIdUseCase.execute.mockImplementation(async (cardId: string) => {
-        if (cardId === 'charmander-id') return CardMapper.toCardDetailDto(charmanderCard);
-        if (cardId === 'charmeleon-id') {
-          const dto = CardMapper.toCardDetailDto(charmeleonCard);
-          return { ...dto, hp: 80 };
-        }
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.execute.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'charmander-id')
+            return CardMapper.toCardDetailDto(charmanderCard);
+          if (cardId === 'charmeleon-id') {
+            const dto = CardMapper.toCardDetailDto(charmeleonCard);
+            return { ...dto, hp: 80 };
+          }
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation(async (cardId: string) => {
-        if (cardId === 'charmander-id') return charmanderCard;
-        if (cardId === 'charmeleon-id') return charmeleonCard;
-        throw new Error(`Card not found: ${cardId}`);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        async (cardId: string) => {
+          if (cardId === 'charmander-id') return charmanderCard;
+          if (cardId === 'charmeleon-id') return charmeleonCard;
+          throw new Error(`Card not found: ${cardId}`);
+        },
+      );
 
-      const match = createMatchWithGameState(charmander, [], null, [], ['charmeleon-id']);
+      const match = createMatchWithGameState(
+        charmander,
+        [],
+        null,
+        [],
+        ['charmeleon-id'],
+      );
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockImplementation(async (m) => m);
 
@@ -810,8 +978,12 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       // Verify all status effects are cleared
       const evolvedPokemon = result.gameState?.player1State.activePokemon;
       expect(evolvedPokemon?.statusEffects).toEqual([]);
-      expect(evolvedPokemon?.hasStatusEffect(StatusEffect.POISONED)).toBe(false);
-      expect(evolvedPokemon?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(false);
+      expect(evolvedPokemon?.hasStatusEffect(StatusEffect.POISONED)).toBe(
+        false,
+      );
+      expect(evolvedPokemon?.hasStatusEffect(StatusEffect.CONFUSED)).toBe(
+        false,
+      );
       expect(evolvedPokemon?.poisonDamageAmount).toBeUndefined();
       // Verify damage counters are preserved: 50 - 40 = 10 damage
       // Evolved: 80 maxHp - 10 damage = 70 currentHp
@@ -820,5 +992,3 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
     });
   });
 });
-
-

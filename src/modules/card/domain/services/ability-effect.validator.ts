@@ -154,10 +154,11 @@ export class AbilityEffectValidator {
       );
     }
 
-    if (!effect.duration || !Object.values(Duration).includes(effect.duration)) {
-      throw new Error(
-        'Duration must be a valid Duration enum value',
-      );
+    if (
+      !effect.duration ||
+      !Object.values(Duration).includes(effect.duration)
+    ) {
+      throw new Error('Duration must be a valid Duration enum value');
     }
 
     if (
@@ -209,7 +210,10 @@ export class AbilityEffectValidator {
     }
 
     // Validate source is a valid EnergySource enum value
-    if (!effect.source || !Object.values(EnergySource).includes(effect.source)) {
+    if (
+      !effect.source ||
+      !Object.values(EnergySource).includes(effect.source)
+    ) {
       throw new Error('Source must be a valid EnergySource enum value');
     }
 
@@ -218,23 +222,32 @@ export class AbilityEffectValidator {
     }
 
     // Validate Pokemon type restrictions (structure validation only - actual card validation happens at runtime)
-    if (effect.targetPokemonType && !Object.values(PokemonType).includes(effect.targetPokemonType)) {
-      throw new Error('targetPokemonType must be a valid PokemonType enum value');
+    if (
+      effect.targetPokemonType &&
+      !Object.values(PokemonType).includes(effect.targetPokemonType)
+    ) {
+      throw new Error(
+        'targetPokemonType must be a valid PokemonType enum value',
+      );
     }
 
-    if (effect.sourcePokemonType && !Object.values(PokemonType).includes(effect.sourcePokemonType)) {
-      throw new Error('sourcePokemonType must be a valid PokemonType enum value');
+    if (
+      effect.sourcePokemonType &&
+      !Object.values(PokemonType).includes(effect.sourcePokemonType)
+    ) {
+      throw new Error(
+        'sourcePokemonType must be a valid PokemonType enum value',
+      );
     }
 
     // Validate that sourcePokemonType is only used with SELF source
     if (effect.sourcePokemonType && effect.source !== EnergySource.SELF) {
-      throw new Error('sourcePokemonType can only be specified when source is SELF');
+      throw new Error(
+        'sourcePokemonType can only be specified when source is SELF',
+      );
     }
 
-    if (
-      effect.selector &&
-      !Object.values(Selector).includes(effect.selector)
-    ) {
+    if (effect.selector && !Object.values(Selector).includes(effect.selector)) {
       throw new Error('Selector must be a valid Selector enum value');
     }
   }
@@ -250,7 +263,10 @@ export class AbilityEffectValidator {
       throw new Error('Switch with must be: benched_yours');
     }
 
-    if (!effect.selector || !Object.values(Selector).includes(effect.selector)) {
+    if (
+      !effect.selector ||
+      !Object.values(Selector).includes(effect.selector)
+    ) {
       throw new Error('Selector must be a valid Selector enum value');
     }
   }
@@ -273,10 +289,7 @@ export class AbilityEffectValidator {
       throw new Error('Destination must be a valid Destination enum value');
     }
 
-    if (
-      effect.selector &&
-      !Object.values(Selector).includes(effect.selector)
-    ) {
+    if (effect.selector && !Object.values(Selector).includes(effect.selector)) {
       throw new Error('Selector must be a valid Selector enum value');
     }
   }
@@ -338,9 +351,7 @@ export class AbilityEffectValidator {
     }
   }
 
-  private static validateDiscardFromHand(
-    effect: DiscardFromHandEffect,
-  ): void {
+  private static validateDiscardFromHand(effect: DiscardFromHandEffect): void {
     if (
       effect.count !== 'all' &&
       (typeof effect.count !== 'number' || effect.count < 1)
@@ -348,7 +359,10 @@ export class AbilityEffectValidator {
       throw new Error('Count must be at least 1 or "all"');
     }
 
-    if (!effect.selector || !Object.values(Selector).includes(effect.selector)) {
+    if (
+      !effect.selector ||
+      !Object.values(Selector).includes(effect.selector)
+    ) {
       throw new Error('Selector must be a valid Selector enum value');
     }
   }
@@ -372,10 +386,7 @@ export class AbilityEffectValidator {
       throw new Error('Count must be at least 1');
     }
 
-    if (
-      effect.selector &&
-      !Object.values(Selector).includes(effect.selector)
-    ) {
+    if (effect.selector && !Object.values(Selector).includes(effect.selector)) {
       throw new Error('Selector must be a valid Selector enum value');
     }
   }
@@ -387,9 +398,11 @@ export class AbilityEffectValidator {
       throw new Error('Count must be at least 1');
     }
 
-    if (!effect.selector || !Object.values(Selector).includes(effect.selector)) {
+    if (
+      !effect.selector ||
+      !Object.values(Selector).includes(effect.selector)
+    ) {
       throw new Error('Selector must be a valid Selector enum value');
     }
   }
 }
-

@@ -1,4 +1,10 @@
-import { IsEnum, IsString, IsNumber, IsOptional, IsArray } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+} from 'class-validator';
 import { ConditionType } from '../../domain/enums/condition-type.enum';
 
 /**
@@ -30,4 +36,3 @@ export class ConditionImportDto {
   @IsString()
   targetType?: string;
 }
-

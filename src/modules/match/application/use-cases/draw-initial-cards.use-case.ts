@@ -1,15 +1,12 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
-  Match,
-  PlayerIdentifier,
-  MatchState,
-  TurnPhase,
-} from '../../domain';
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { Match, PlayerIdentifier, MatchState, TurnPhase } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
-import {
-  GameState,
-  PlayerGameState,
-} from '../../domain/value-objects';
+import { GameState, PlayerGameState } from '../../domain/value-objects';
 import { IDeckRepository } from '../../../deck/domain/repositories';
 import { DeckCard } from '../../../deck/domain/value-objects';
 import { ITournamentRepository } from '../../../tournament/domain';
@@ -32,7 +29,10 @@ export class DrawInitialCardsUseCase {
     private readonly startGameRulesValidator: StartGameRulesValidatorService,
   ) {}
 
-  async execute(matchId: string, playerId: string): Promise<{
+  async execute(
+    matchId: string,
+    playerId: string,
+  ): Promise<{
     match: Match;
     drawnCards: string[];
     isValid: boolean;
@@ -119,7 +119,7 @@ export class DrawInitialCardsUseCase {
       // Redraw: get current deck and hand
       const existingDeck = [...playerState.deck];
       const existingHand = [...playerState.hand];
-      
+
       // Put hand back into deck to get original deck state
       originalDeck = [...existingDeck, ...existingHand];
     }
@@ -143,14 +143,13 @@ export class DrawInitialCardsUseCase {
       // Reset to original deck before each shuffle attempt
       // This ensures same match/player/attempt always produces same shuffle
       currentDeck = [...originalDeck];
-      
+
       // Use deterministic seed: baseSeed + attempt number
       // IMPORTANT: Each attempt uses a different seed (baseSeed + 0, baseSeed + 1, etc.)
       // This ensures same match/player will always get the same sequence of shuffles
-      const attemptSeed = baseSeed !== undefined
-        ? baseSeed + attempts
-        : undefined;
-      
+      const attemptSeed =
+        baseSeed !== undefined ? baseSeed + attempts : undefined;
+
       // Shuffle deck with deterministic seed
       currentDeck = this.shuffleDeck(currentDeck, attemptSeed);
       currentHand = currentDeck.splice(0, 7);
@@ -172,10 +171,9 @@ export class DrawInitialCardsUseCase {
       // (shouldn't happen in practice if deck has valid cards)
       console.warn(
         `Max reshuffle attempts (${maxAttempts}) reached for ${playerIdentifier}. ` +
-        `Returning hand that may not satisfy all rules.`,
+          `Returning hand that may not satisfy all rules.`,
       );
     }
-
 
     // Update game state
     if (!gameState) {
@@ -191,7 +189,15 @@ export class DrawInitialCardsUseCase {
       );
 
       // Create empty opponent state
-      const opponentState = new PlayerGameState([], [], null, [], [], [], false);
+      const opponentState = new PlayerGameState(
+        [],
+        [],
+        null,
+        [],
+        [],
+        [],
+        false,
+      );
 
       // Create game state with proper player order
       // Use DRAW phase as placeholder during card drawing
@@ -267,18 +273,19 @@ export class DrawInitialCardsUseCase {
     if (isValid) {
       // Set the flag
       match.markPlayerDeckValid(playerIdentifier);
-      
+
       // CRITICAL: Verify flag is set immediately after marking
       // This ensures the match entity has the flag set before any save operation
-      const flagAfterMarking = playerIdentifier === PlayerIdentifier.PLAYER1
-        ? match.player1HasDrawnValidHand
-        : match.player2HasDrawnValidHand;
-      
+      const flagAfterMarking =
+        playerIdentifier === PlayerIdentifier.PLAYER1
+          ? match.player1HasDrawnValidHand
+          : match.player2HasDrawnValidHand;
+
       if (!flagAfterMarking) {
         throw new Error(
           `playerHasDrawnValidHand flag was not set correctly after markPlayerDeckValid. ` +
-          `Expected true for ${playerIdentifier}, but got ${flagAfterMarking}. ` +
-          `Match state: ${match.state}, Player1 flag: ${match.player1HasDrawnValidHand}, Player2 flag: ${match.player2HasDrawnValidHand}`,
+            `Expected true for ${playerIdentifier}, but got ${flagAfterMarking}. ` +
+            `Match state: ${match.state}, Player1 flag: ${match.player1HasDrawnValidHand}, Player2 flag: ${match.player2HasDrawnValidHand}`,
         );
       }
     }
@@ -286,15 +293,16 @@ export class DrawInitialCardsUseCase {
     // CRITICAL: Verify the flag is still set immediately before save
     // This ensures no other operation has reset the flag
     if (isValid) {
-      const flagBeforeSave = playerIdentifier === PlayerIdentifier.PLAYER1
-        ? match.player1HasDrawnValidHand
-        : match.player2HasDrawnValidHand;
-      
+      const flagBeforeSave =
+        playerIdentifier === PlayerIdentifier.PLAYER1
+          ? match.player1HasDrawnValidHand
+          : match.player2HasDrawnValidHand;
+
       if (!flagBeforeSave) {
         throw new Error(
           `playerHasDrawnValidHand flag was lost before save. ` +
-          `Expected true for ${playerIdentifier}, but got ${flagBeforeSave}. ` +
-          `This indicates the flag was reset between marking and saving.`,
+            `Expected true for ${playerIdentifier}, but got ${flagBeforeSave}. ` +
+            `This indicates the flag was reset between marking and saving.`,
         );
       }
     }
@@ -305,16 +313,17 @@ export class DrawInitialCardsUseCase {
     // CRITICAL: Verify flag is still set after save
     // The repository returns the same instance, so the flag should be preserved
     if (isValid) {
-      const flagAfterSave = playerIdentifier === PlayerIdentifier.PLAYER1
-        ? savedMatch.player1HasDrawnValidHand
-        : savedMatch.player2HasDrawnValidHand;
-      
+      const flagAfterSave =
+        playerIdentifier === PlayerIdentifier.PLAYER1
+          ? savedMatch.player1HasDrawnValidHand
+          : savedMatch.player2HasDrawnValidHand;
+
       if (!flagAfterSave) {
         throw new Error(
           `playerHasDrawnValidHand flag was lost after save. ` +
-          `Expected true for ${playerIdentifier}, but got ${flagAfterSave}. ` +
-          `This indicates the repository save operation is not preserving the flag. ` +
-          `Match state: ${savedMatch.state}, Player1 flag: ${savedMatch.player1HasDrawnValidHand}, Player2 flag: ${savedMatch.player2HasDrawnValidHand}`,
+            `Expected true for ${playerIdentifier}, but got ${flagAfterSave}. ` +
+            `This indicates the repository save operation is not preserving the flag. ` +
+            `Match state: ${savedMatch.state}, Player1 flag: ${savedMatch.player1HasDrawnValidHand}, Player2 flag: ${savedMatch.player2HasDrawnValidHand}`,
         );
       }
     }
@@ -350,8 +359,11 @@ export class DrawInitialCardsUseCase {
   ): number | undefined {
     // Use deterministic seed in test environment
     if (process.env.NODE_ENV === 'test') {
-      const baseSeed = matchId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const playerOffset = playerIdentifier === PlayerIdentifier.PLAYER1 ? 0 : 1000;
+      const baseSeed = matchId
+        .split('')
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const playerOffset =
+        playerIdentifier === PlayerIdentifier.PLAYER1 ? 0 : 1000;
       const redrawOffset = isRedraw ? 10000 : 0;
       return baseSeed + playerOffset + redrawOffset;
     }
@@ -360,9 +372,10 @@ export class DrawInitialCardsUseCase {
     const envSeed = process.env.MATCH_SHUFFLE_SEED
       ? Number(process.env.MATCH_SHUFFLE_SEED)
       : undefined;
-    
+
     if (envSeed !== undefined && !Number.isNaN(envSeed)) {
-      const playerOffset = playerIdentifier === PlayerIdentifier.PLAYER1 ? 0 : 1000;
+      const playerOffset =
+        playerIdentifier === PlayerIdentifier.PLAYER1 ? 0 : 1000;
       const redrawOffset = isRedraw ? 10000 : 0;
       return envSeed + playerOffset + redrawOffset;
     }
@@ -375,7 +388,7 @@ export class DrawInitialCardsUseCase {
    */
   private shuffleDeck(deck: string[], seed?: number): string[] {
     const shuffled = [...deck];
-    
+
     // Use seeded random if seed provided, otherwise use Math.random()
     let random: () => number;
     if (seed !== undefined) {
@@ -389,7 +402,7 @@ export class DrawInitialCardsUseCase {
     } else {
       random = Math.random;
     }
-    
+
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -397,4 +410,3 @@ export class DrawInitialCardsUseCase {
     return shuffled;
   }
 }
-

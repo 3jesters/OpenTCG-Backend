@@ -44,4 +44,3 @@ export class UpdateDeckUseCase {
     return await this.deckRepository.save(deck);
   }
 }
-

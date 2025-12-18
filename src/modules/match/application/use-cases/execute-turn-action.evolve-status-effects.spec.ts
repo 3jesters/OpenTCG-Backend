@@ -5,7 +5,7 @@ import { MatchStateMachineService } from '../../domain/services';
 import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
 import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
 import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
@@ -35,7 +35,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
   let useCase: ExecuteTurnActionUseCase;
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
   let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
-  let mockGetCardByIdUseCase: jest.Mocked<GetCardByIdUseCase>;
+  let mockGetCardByIdUseCase: jest.Mocked<IGetCardByIdUseCase>;
   let mockDrawInitialCardsUseCase: jest.Mocked<DrawInitialCardsUseCase>;
   let mockSetPrizeCardsUseCase: jest.Mocked<SetPrizeCardsUseCase>;
   let mockPerformCoinTossUseCase: jest.Mocked<PerformCoinTossUseCase>;
@@ -72,12 +72,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
     card.setPokemonType(PokemonType.FIRE);
 
     if (evolvesFrom && stage !== EvolutionStage.BASIC) {
-      const evolution = new Evolution(
-        '000',
-        stage,
-        evolvesFrom,
-        undefined,
-      );
+      const evolution = new Evolution('000', stage, evolvesFrom, undefined);
       card.setEvolvesFrom(evolution);
     }
 
@@ -100,15 +95,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       false,
     );
 
-    const player2State = new PlayerGameState(
-      [],
-      [],
-      null,
-      [],
-      [],
-      [],
-      false,
-    );
+    const player2State = new PlayerGameState([], [], null, [], [], [], false);
 
     const gameState = new GameState(
       player1State,
@@ -158,7 +145,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
           },
         },
         {
-          provide: GetCardByIdUseCase,
+          provide: IGetCardByIdUseCase,
           useValue: {
             execute: jest.fn(),
             getCardEntity: jest.fn(),
@@ -212,7 +199,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
     useCase = module.get<ExecuteTurnActionUseCase>(ExecuteTurnActionUseCase);
     mockMatchRepository = module.get(IMatchRepository);
     mockStateMachineService = module.get(MatchStateMachineService);
-    mockGetCardByIdUseCase = module.get(GetCardByIdUseCase);
+    mockGetCardByIdUseCase = module.get(IGetCardByIdUseCase);
     mockDrawInitialCardsUseCase = module.get(DrawInitialCardsUseCase);
     mockSetPrizeCardsUseCase = module.get(SetPrizeCardsUseCase);
     mockPerformCoinTossUseCase = module.get(PerformCoinTossUseCase);
@@ -255,11 +242,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         'Charmander',
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -289,12 +272,12 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       expect(evolvedPokemon?.statusEffects).toEqual([]);
       expect(evolvedPokemon?.poisonDamageAmount).toBeUndefined();
       expect(evolvedPokemon?.cardId).toBe('charmeleon-id');
-      
+
       // Damage should be preserved: 50 maxHp - 30 currentHp = 20 damage
       // Evolved: 80 maxHp - 20 damage = 60 currentHp
       expect(evolvedPokemon?.currentHp).toBe(60);
       expect(evolvedPokemon?.maxHp).toBe(80);
-      
+
       // Energy should be preserved
       expect(evolvedPokemon?.attachedEnergy).toEqual(['energy-fire-1']);
     });
@@ -327,11 +310,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         'Charmander',
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -360,14 +339,17 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       expect(evolvedPokemon).toBeDefined();
       expect(evolvedPokemon?.statusEffects).toEqual([]);
       expect(evolvedPokemon?.cardId).toBe('charmeleon-id');
-      
+
       // Damage should be preserved: 50 maxHp - 40 currentHp = 10 damage
       // Evolved: 80 maxHp - 10 damage = 70 currentHp
       expect(evolvedPokemon?.currentHp).toBe(70);
       expect(evolvedPokemon?.maxHp).toBe(80);
-      
+
       // Energy should be preserved
-      expect(evolvedPokemon?.attachedEnergy).toEqual(['energy-fire-1', 'energy-fire-2']);
+      expect(evolvedPokemon?.attachedEnergy).toEqual([
+        'energy-fire-1',
+        'energy-fire-2',
+      ]);
     });
 
     it('should clear ASLEEP status while preserving damage counters', async () => {
@@ -398,11 +380,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         'Charmander',
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -431,7 +409,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       expect(evolvedPokemon).toBeDefined();
       expect(evolvedPokemon?.statusEffects).toEqual([]);
       expect(evolvedPokemon?.cardId).toBe('charmeleon-id');
-      
+
       // Damage should be preserved: 50 maxHp - 25 currentHp = 25 damage
       // Evolved: 80 maxHp - 25 damage = 55 currentHp
       expect(evolvedPokemon?.currentHp).toBe(55);
@@ -466,11 +444,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         'Charmander',
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -499,7 +473,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       expect(evolvedPokemon).toBeDefined();
       expect(evolvedPokemon?.statusEffects).toEqual([]);
       expect(evolvedPokemon?.cardId).toBe('charmeleon-id');
-      
+
       // Damage should be preserved: 50 maxHp - 45 currentHp = 5 damage
       // Evolved: 80 maxHp - 5 damage = 75 currentHp
       expect(evolvedPokemon?.currentHp).toBe(75);
@@ -534,11 +508,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         'Charmander',
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -567,7 +537,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       expect(evolvedPokemon).toBeDefined();
       expect(evolvedPokemon?.statusEffects).toEqual([]);
       expect(evolvedPokemon?.cardId).toBe('charmeleon-id');
-      
+
       // Damage should be preserved: 50 maxHp - 35 currentHp = 15 damage
       // Evolved: 80 maxHp - 15 damage = 65 currentHp
       expect(evolvedPokemon?.currentHp).toBe(65);
@@ -637,7 +607,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       expect(evolvedPokemon?.statusEffects).toEqual([]);
       expect(evolvedPokemon?.poisonDamageAmount).toBeUndefined();
       expect(evolvedPokemon?.cardId).toBe('charmeleon-id');
-      
+
       // Damage should be preserved: 50 maxHp - 30 currentHp = 20 damage
       // Evolved: 80 maxHp - 20 damage = 60 currentHp
       expect(evolvedPokemon?.currentHp).toBe(60);
@@ -673,11 +643,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         'Charmander',
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -707,7 +673,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       expect(evolvedPokemon?.statusEffects).toEqual([]);
       expect(evolvedPokemon?.poisonDamageAmount).toBeUndefined();
       expect(evolvedPokemon?.cardId).toBe('charmeleon-id');
-      
+
       // No damage taken: 50 maxHp - 50 currentHp = 0 damage
       // Evolved: 80 maxHp - 0 damage = 80 currentHp (full HP)
       expect(evolvedPokemon?.currentHp).toBe(80);
@@ -743,11 +709,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         'Charmander',
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -777,7 +739,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       expect(evolvedPokemon?.statusEffects).toEqual([]);
       expect(evolvedPokemon?.poisonDamageAmount).toBeUndefined();
       expect(evolvedPokemon?.cardId).toBe('charmeleon-id');
-      
+
       // Damage should be preserved: 50 maxHp - 0 currentHp = 50 damage
       // Evolved: 80 maxHp - 50 damage = 30 currentHp (still alive!)
       expect(evolvedPokemon?.currentHp).toBe(30);

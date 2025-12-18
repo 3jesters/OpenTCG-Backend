@@ -53,11 +53,7 @@ export class Match {
   // Game State
   private _gameState: GameState | null;
 
-  constructor(
-    id: string,
-    tournamentId: string,
-    createdAt?: Date,
-  ) {
+  constructor(id: string, tournamentId: string, createdAt?: Date) {
     this._id = id;
     this._tournamentId = tournamentId;
     this._createdAt = createdAt || new Date();
@@ -232,7 +228,10 @@ export class Match {
     deckId: string,
     playerIdentifier: PlayerIdentifier,
   ): void {
-    if (this._state !== MatchState.CREATED && this._state !== MatchState.WAITING_FOR_PLAYERS) {
+    if (
+      this._state !== MatchState.CREATED &&
+      this._state !== MatchState.WAITING_FOR_PLAYERS
+    ) {
       throw new Error(
         `Cannot assign player in state ${this._state}. Must be CREATED or WAITING_FOR_PLAYERS`,
       );
@@ -347,11 +346,14 @@ export class Match {
     }
 
     // Use deterministic random based on match ID for consistency
-    const seed = this._id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seed = this._id
+      .split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const random = (seed * 9301 + 49297) % 233280;
-    const result = random / 233280 < 0.5 
-      ? PlayerIdentifier.PLAYER1 
-      : PlayerIdentifier.PLAYER2;
+    const result =
+      random / 233280 < 0.5
+        ? PlayerIdentifier.PLAYER1
+        : PlayerIdentifier.PLAYER2;
 
     this._firstPlayer = result;
     this._currentPlayer = result; // Set currentPlayer after coin toss determines first player
@@ -417,7 +419,10 @@ export class Match {
       );
     }
 
-    if (playerIdentifier !== PlayerIdentifier.PLAYER1 && playerIdentifier !== PlayerIdentifier.PLAYER2) {
+    if (
+      playerIdentifier !== PlayerIdentifier.PLAYER1 &&
+      playerIdentifier !== PlayerIdentifier.PLAYER2
+    ) {
       throw new Error('Invalid player identifier');
     }
 
@@ -506,7 +511,10 @@ export class Match {
       );
     }
 
-    if (!gameState.player1State.activePokemon || !gameState.player2State.activePokemon) {
+    if (
+      !gameState.player1State.activePokemon ||
+      !gameState.player2State.activePokemon
+    ) {
       throw new Error('Both players must have set active Pokemon');
     }
 
@@ -537,7 +545,7 @@ export class Match {
     // When BOTH players are ready, transition to FIRST_PLAYER_SELECTION state
     // Coin toss will happen when first player confirms in that state
     const bothReady = this._player1ReadyToStart && this._player2ReadyToStart;
-    
+
     if (bothReady) {
       // Transition to FIRST_PLAYER_SELECTION state
       this._state = MatchState.FIRST_PLAYER_SELECTION;
@@ -628,17 +636,23 @@ export class Match {
         !this._player1HasConfirmedFirstPlayer ||
         !this._player2HasConfirmedFirstPlayer
       ) {
-        throw new Error('Both players must confirm first player before completing setup');
+        throw new Error(
+          'Both players must confirm first player before completing setup',
+        );
       }
     }
 
     // Coin toss should have already been performed
     if (this._firstPlayer === null) {
-      throw new Error('Coin toss must be performed before completing initial setup');
+      throw new Error(
+        'Coin toss must be performed before completing initial setup',
+      );
     }
 
     if (this._firstPlayer === null || this._currentPlayer === null) {
-      throw new Error('First player and current player must be set by coin toss');
+      throw new Error(
+        'First player and current player must be set by coin toss',
+      );
     }
 
     // Update game state to DRAW phase for first turn
@@ -655,7 +669,10 @@ export class Match {
    * Valid states: PLAYER_TURN, BETWEEN_TURNS
    */
   updateGameState(gameState: GameState): void {
-    if (this._state !== MatchState.PLAYER_TURN && this._state !== MatchState.BETWEEN_TURNS) {
+    if (
+      this._state !== MatchState.PLAYER_TURN &&
+      this._state !== MatchState.BETWEEN_TURNS
+    ) {
       throw new Error(
         `Cannot update game state in state ${this._state}. Must be PLAYER_TURN or BETWEEN_TURNS`,
       );
@@ -707,7 +724,10 @@ export class Match {
     result: MatchResult,
     winCondition: WinCondition,
   ): void {
-    if (this._state === MatchState.MATCH_ENDED || this._state === MatchState.CANCELLED) {
+    if (
+      this._state === MatchState.MATCH_ENDED ||
+      this._state === MatchState.CANCELLED
+    ) {
       throw new Error(`Cannot end match in state ${this._state}`);
     }
 
@@ -872,8 +892,10 @@ export class Match {
     this._player2HasSetPrizeCards = player2HasSetPrizeCards ?? false;
     this._player1ReadyToStart = player1ReadyToStart ?? false;
     this._player2ReadyToStart = player2ReadyToStart ?? false;
-    this._player1HasConfirmedFirstPlayer = player1HasConfirmedFirstPlayer ?? false;
-    this._player2HasConfirmedFirstPlayer = player2HasConfirmedFirstPlayer ?? false;
+    this._player1HasConfirmedFirstPlayer =
+      player1HasConfirmedFirstPlayer ?? false;
+    this._player2HasConfirmedFirstPlayer =
+      player2HasConfirmedFirstPlayer ?? false;
     this._player1HasApprovedMatch = player1HasApprovedMatch ?? false;
     this._player2HasApprovedMatch = player2HasApprovedMatch ?? false;
     this._startedAt = startedAt;
@@ -963,4 +985,3 @@ export class Match {
     return match;
   }
 }
-

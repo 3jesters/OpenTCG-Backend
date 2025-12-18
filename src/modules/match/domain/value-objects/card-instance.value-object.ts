@@ -57,7 +57,9 @@ export class CardInstance {
       }
       // If poisonDamageAmount is set, statusEffects should include POISONED
       if (!this.statusEffects.includes(StatusEffect.POISONED)) {
-        throw new Error('poisonDamageAmount can only be set when POISONED is in statusEffects');
+        throw new Error(
+          'poisonDamageAmount can only be set when POISONED is in statusEffects',
+        );
       }
     }
   }
@@ -67,7 +69,7 @@ export class CardInstance {
    */
   hasStatusEffect(status: StatusEffect): boolean {
     return this.statusEffects.includes(status);
-      }
+  }
 
   /**
    * Get primary status effect (for backward compatibility)
@@ -114,11 +116,7 @@ export class CardInstance {
    * Returns: current card + all evolution chain cards + attached energy cards
    */
   getAllCardsToDiscard(): string[] {
-    return [
-      this.cardId,
-      ...this.evolutionChain,
-      ...this.attachedEnergy,
-    ];
+    return [this.cardId, ...this.evolutionChain, ...this.attachedEnergy];
   }
 
   /**
@@ -161,7 +159,10 @@ export class CardInstance {
    * Create a new CardInstance with added status effect
    * Adds the status effect to the existing array (does not replace)
    */
-  withStatusEffectAdded(status: StatusEffect, poisonDamageAmount?: number): CardInstance {
+  withStatusEffectAdded(
+    status: StatusEffect,
+    poisonDamageAmount?: number,
+  ): CardInstance {
     if (status === StatusEffect.NONE) {
       return this; // Cannot add NONE
     }
@@ -171,9 +172,10 @@ export class CardInstance {
     }
     const newStatusEffects = [...this.statusEffects, status];
     // Update poisonDamageAmount if adding POISONED and amount is provided
-    const newPoisonDamageAmount = status === StatusEffect.POISONED && poisonDamageAmount !== undefined
-      ? poisonDamageAmount
-      : this.poisonDamageAmount;
+    const newPoisonDamageAmount =
+      status === StatusEffect.POISONED && poisonDamageAmount !== undefined
+        ? poisonDamageAmount
+        : this.poisonDamageAmount;
     return new CardInstance(
       this.instanceId,
       this.cardId,
@@ -195,11 +197,10 @@ export class CardInstance {
     if (!this.statusEffects.includes(status)) {
       return this; // Status not present, no change
     }
-    const newStatusEffects = this.statusEffects.filter(s => s !== status);
+    const newStatusEffects = this.statusEffects.filter((s) => s !== status);
     // Clear poisonDamageAmount if removing POISONED
-    const newPoisonDamageAmount = status === StatusEffect.POISONED
-      ? undefined
-      : this.poisonDamageAmount;
+    const newPoisonDamageAmount =
+      status === StatusEffect.POISONED ? undefined : this.poisonDamageAmount;
     return new CardInstance(
       this.instanceId,
       this.cardId,
@@ -237,7 +238,10 @@ export class CardInstance {
    * Replaces all status effects with a single status effect
    * @deprecated Use withStatusEffectAdded/Removed instead
    */
-  withStatusEffect(status: StatusEffect, poisonDamageAmount?: number): CardInstance {
+  withStatusEffect(
+    status: StatusEffect,
+    poisonDamageAmount?: number,
+  ): CardInstance {
     if (status === StatusEffect.NONE) {
       return this.withStatusEffectsCleared();
     }
@@ -299,4 +303,3 @@ export class CardInstance {
     return this.instanceId === other.instanceId;
   }
 }
-

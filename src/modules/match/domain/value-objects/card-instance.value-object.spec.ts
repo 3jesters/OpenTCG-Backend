@@ -318,4 +318,3 @@ describe('CardInstance Value Object', () => {
     });
   });
 });
-

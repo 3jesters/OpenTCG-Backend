@@ -22,14 +22,16 @@ export class TrainerEffectDto {
   target: TargetType;
 
   @ApiProperty({
-    description: 'Numeric or string value for the effect (e.g., number of cards to draw, HP to heal)',
+    description:
+      'Numeric or string value for the effect (e.g., number of cards to draw, HP to heal)',
     required: false,
     example: 2,
   })
   value?: number | string;
 
   @ApiProperty({
-    description: 'Type of card to search/retrieve (for search/retrieve effects)',
+    description:
+      'Type of card to search/retrieve (for search/retrieve effects)',
     required: false,
     example: 'Energy',
   })
@@ -50,10 +52,10 @@ export class TrainerEffectDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Source location for effects that retrieve/move cards (e.g., "DISCARD", "OPPONENT_DISCARD", "HAND", "DECK")',
+    description:
+      'Source location for effects that retrieve/move cards (e.g., "DISCARD", "OPPONENT_DISCARD", "HAND", "DECK")',
     required: false,
     example: 'DISCARD',
   })
   source?: string;
 }
-

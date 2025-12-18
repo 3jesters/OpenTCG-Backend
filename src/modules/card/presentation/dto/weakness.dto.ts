@@ -19,4 +19,3 @@ export class WeaknessDto {
   })
   modifier: string;
 }
-

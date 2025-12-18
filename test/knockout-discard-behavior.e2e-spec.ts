@@ -151,7 +151,7 @@ describe('Knockout Discard Behavior E2E', () => {
     const discardPile = attackResponse.body.opponentState.discardPile;
     expect(discardPile).toContain(bulbasaurCardId);
     expect(discardPile).toContain(grassEnergyCardId);
-    
+
     // Count occurrences of grass energy in discard pile
     const grassEnergyCount = discardPile.filter(
       (id: string) => id === grassEnergyCardId,
@@ -295,7 +295,7 @@ describe('Knockout Discard Behavior E2E', () => {
     // Note: Selfdestruct does 40 damage to active Pokemon, so Bulbasaur is also knocked out
     const discardPile = attackResponse.body.opponentState.discardPile;
     const bulbasaurCardId = 'pokemon-base-set-v1.0-bulbasaur--46';
-    
+
     expect(discardPile).toContain(ivysaurCardId);
     expect(discardPile).toContain(bulbasaurCardId); // Active Pokemon also knocked out by 40 damage
     expect(discardPile).toContain(grassEnergyCardId);
@@ -452,7 +452,7 @@ describe('Knockout Discard Behavior E2E', () => {
     // Note: Selfdestruct does 40 damage to active Pokemon, so Bulbasaur is also knocked out
     const discardPile = attackResponse.body.opponentState.discardPile;
     const bulbasaurCardId = 'pokemon-base-set-v1.0-bulbasaur--46';
-    
+
     expect(discardPile).toContain(ivysaurCardId);
     expect(discardPile).toContain(weedleCardId);
     expect(discardPile).toContain(bulbasaurCardId); // Active Pokemon also knocked out by 40 damage
@@ -465,9 +465,15 @@ describe('Knockout Discard Behavior E2E', () => {
     expect(grassEnergyCount).toBe(3); // 1 from Ivysaur + 2 from Weedle (Bulbasaur has no energy)
 
     // Verify all Pokemon cards are in discard pile (exactly once each)
-    const bulbasaurCount = discardPile.filter((id: string) => id === bulbasaurCardId).length;
-    const ivysaurCount = discardPile.filter((id: string) => id === ivysaurCardId).length;
-    const weedleCount = discardPile.filter((id: string) => id === weedleCardId).length;
+    const bulbasaurCount = discardPile.filter(
+      (id: string) => id === bulbasaurCardId,
+    ).length;
+    const ivysaurCount = discardPile.filter(
+      (id: string) => id === ivysaurCardId,
+    ).length;
+    const weedleCount = discardPile.filter(
+      (id: string) => id === weedleCardId,
+    ).length;
     expect(bulbasaurCount).toBe(1);
     expect(ivysaurCount).toBe(1);
     expect(weedleCount).toBe(1);
@@ -873,4 +879,3 @@ describe('Knockout Discard Behavior E2E', () => {
     expect(discardPile.length).toBe(5);
   });
 });
-

@@ -21,4 +21,3 @@ export * from './duration.enum';
 export * from './selector.enum';
 export * from './destination.enum';
 export * from './status-condition.enum';
-

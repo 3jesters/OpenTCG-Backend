@@ -23,7 +23,13 @@ describe('GetSetByIdUseCase', () => {
 
   describe('execute', () => {
     it('should return set when found', async () => {
-      const baseSet = new Set('base-set', 'Base Set', 'pokemon', '1999-01-09', 102);
+      const baseSet = new Set(
+        'base-set',
+        'Base Set',
+        'pokemon',
+        '1999-01-09',
+        102,
+      );
       mockCache.getById.mockReturnValue(baseSet);
 
       const result = await useCase.execute('base-set');
@@ -46,4 +52,3 @@ describe('GetSetByIdUseCase', () => {
     });
   });
 });
-

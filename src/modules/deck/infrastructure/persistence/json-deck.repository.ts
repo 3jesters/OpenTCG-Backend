@@ -1,5 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { readFile, writeFile, readdir, unlink, mkdir, access } from 'fs/promises';
+import {
+  readFile,
+  writeFile,
+  readdir,
+  unlink,
+  mkdir,
+  access,
+} from 'fs/promises';
 import { join } from 'path';
 import { Deck, IDeckRepository } from '../../domain';
 import { DeckMapper } from './deck.mapper';
@@ -153,4 +160,3 @@ export class JsonDeckRepository implements IDeckRepository {
     return allDecks.filter((deck) => deck.createdBy === createdBy);
   }
 }
-

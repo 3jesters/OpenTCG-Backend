@@ -19,4 +19,3 @@ export enum MatchState {
   MATCH_ENDED = 'MATCH_ENDED',
   CANCELLED = 'CANCELLED',
 }
-

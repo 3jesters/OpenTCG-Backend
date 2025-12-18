@@ -6,7 +6,7 @@ import { MatchStateMachineService } from '../../domain/services';
 import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
 import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
 import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
@@ -37,7 +37,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
   let useCase: ExecuteTurnActionUseCase;
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
   let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
-  let mockGetCardByIdUseCase: jest.Mocked<GetCardByIdUseCase>;
+  let mockGetCardByIdUseCase: jest.Mocked<IGetCardByIdUseCase>;
   let mockDrawInitialCardsUseCase: jest.Mocked<DrawInitialCardsUseCase>;
   let mockSetPrizeCardsUseCase: jest.Mocked<SetPrizeCardsUseCase>;
   let mockPerformCoinTossUseCase: jest.Mocked<PerformCoinTossUseCase>;
@@ -74,12 +74,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
     card.setPokemonType(PokemonType.FIRE);
 
     if (evolvesFrom && stage !== EvolutionStage.BASIC) {
-      const evolution = new Evolution(
-        '000',
-        stage,
-        evolvesFrom,
-        undefined,
-      );
+      const evolution = new Evolution('000', stage, evolvesFrom, undefined);
       card.setEvolvesFrom(evolution);
     }
 
@@ -102,15 +97,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       false,
     );
 
-    const player2State = new PlayerGameState(
-      [],
-      [],
-      null,
-      [],
-      [],
-      [],
-      false,
-    );
+    const player2State = new PlayerGameState([], [], null, [], [], [], false);
 
     const gameState = new GameState(
       player1State,
@@ -180,7 +167,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
           useValue: mockStateMachineService,
         },
         {
-          provide: GetCardByIdUseCase,
+          provide: IGetCardByIdUseCase,
           useValue: mockGetCardByIdUseCase,
         },
         {
@@ -258,11 +245,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -325,11 +308,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmeleon,
-        [],
-        ['charizard-id'],
-      );
+      const match = createMatchWithGameState(charmeleon, [], ['charizard-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -447,11 +426,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -507,11 +482,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -567,11 +538,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -629,11 +596,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        vulpix,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(vulpix, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockGetCardByIdUseCase.getCardEntity
@@ -737,11 +700,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        dratini,
-        [],
-        ['charizard-id'],
-      );
+      const match = createMatchWithGameState(dratini, [], ['charizard-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockGetCardByIdUseCase.getCardEntity
@@ -793,11 +752,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charizard-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charizard-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockGetCardByIdUseCase.getCardEntity
@@ -1020,11 +975,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['evolution-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['evolution-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockGetCardByIdUseCase.getCardEntity
@@ -1085,11 +1036,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockGetCardByIdUseCase.getCardEntity
@@ -1155,11 +1102,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockGetCardByIdUseCase.getCardEntity
@@ -1218,11 +1161,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        trainer,
-        [],
-        ['charmeleon-id'],
-      );
+      const match = createMatchWithGameState(trainer, [], ['charmeleon-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockGetCardByIdUseCase.getCardEntity
@@ -1277,11 +1216,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         undefined, // poisonDamageAmount
       );
 
-      const match = createMatchWithGameState(
-        charmander,
-        [],
-        ['trainer-id'],
-      );
+      const match = createMatchWithGameState(charmander, [], ['trainer-id']);
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockGetCardByIdUseCase.getCardEntity
@@ -1370,17 +1305,18 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       const matchAfterFirstEvolution = await useCase.execute(firstEvolutionDto);
 
       // Verify that after first evolution, evolvedAt is set to current turn number
-      expect(matchAfterFirstEvolution.gameState?.player1State.activePokemon?.evolvedAt).toBe(
-        matchAfterFirstEvolution.gameState?.turnNumber,
-      );
-      expect(matchAfterFirstEvolution.gameState?.player1State.activePokemon?.cardId).toBe(
-        'charmeleon-id',
-      );
+      expect(
+        matchAfterFirstEvolution.gameState?.player1State.activePokemon
+          ?.evolvedAt,
+      ).toBe(matchAfterFirstEvolution.gameState?.turnNumber);
+      expect(
+        matchAfterFirstEvolution.gameState?.player1State.activePokemon?.cardId,
+      ).toBe('charmeleon-id');
 
       // Now try to evolve the same Pokemon again (Charmeleon -> Charizard)
       // The instanceId is the same ('instance-1'), so it should be blocked
       mockMatchRepository.findById.mockResolvedValue(matchAfterFirstEvolution);
-      
+
       // The validation should fail in validatePokemonNotEvolvedThisTurn before validateEvolution
       // But we still need to mock getCardEntity in case validation order changes
       // After first evolution, the Pokemon's cardId is now 'charmeleon-id'
@@ -1582,9 +1518,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
 
       // Verify that lastAction contains the evolution
       expect(matchAfterFirstEvolution.gameState?.lastAction).toBeDefined();
-      expect(
-        matchAfterFirstEvolution.gameState?.lastAction?.actionType,
-      ).toBe(PlayerActionType.EVOLVE_POKEMON);
+      expect(matchAfterFirstEvolution.gameState?.lastAction?.actionType).toBe(
+        PlayerActionType.EVOLVE_POKEMON,
+      );
       expect(
         (matchAfterFirstEvolution.gameState?.lastAction?.actionData as any)
           ?.instanceId,
@@ -1716,9 +1652,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
 
       // Verify that lastAction is now ATTACH_ENERGY, not EVOLVE_POKEMON
       expect(matchAfterEnergy.gameState?.lastAction).toBeDefined();
-      expect(
-        matchAfterEnergy.gameState?.lastAction?.actionType,
-      ).toBe(PlayerActionType.ATTACH_ENERGY);
+      expect(matchAfterEnergy.gameState?.lastAction?.actionType).toBe(
+        PlayerActionType.ATTACH_ENERGY,
+      );
 
       // Verify that actionHistory contains the evolution
       const evolutionAction = matchAfterEnergy.gameState?.actionHistory.find(
@@ -1832,9 +1768,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
 
       // Verify that lastAction is END_TURN
       expect(matchAfterEndTurn.gameState?.lastAction).toBeDefined();
-      expect(
-        matchAfterEndTurn.gameState?.lastAction?.actionType,
-      ).toBe(PlayerActionType.END_TURN);
+      expect(matchAfterEndTurn.gameState?.lastAction?.actionType).toBe(
+        PlayerActionType.END_TURN,
+      );
 
       // Step 3: In the new turn, try to evolve the same Pokemon again
       // This should succeed because END_TURN creates a boundary, so we stop checking at that point
@@ -1844,14 +1780,15 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
 
       // Actually, let's test a simpler scenario: evolve in turn 1, end turn, then in a later turn
       // evolve the evolved Pokemon. But since turns switch players, we'd need to simulate both players.
-      
+
       // For this test, let's verify that the END_TURN boundary works by checking that
       // the evolution action exists in history but is before END_TURN
-      const evolutionInHistory = matchAfterEndTurn.gameState?.actionHistory.find(
-        (action) =>
-          action.actionType === PlayerActionType.EVOLVE_POKEMON &&
-          (action.actionData as any)?.instanceId === 'instance-1',
-      );
+      const evolutionInHistory =
+        matchAfterEndTurn.gameState?.actionHistory.find(
+          (action) =>
+            action.actionType === PlayerActionType.EVOLVE_POKEMON &&
+            (action.actionData as any)?.instanceId === 'instance-1',
+        );
       expect(evolutionInHistory).toBeDefined();
 
       const endTurnInHistory = matchAfterEndTurn.gameState?.actionHistory.find(
@@ -1860,11 +1797,12 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       expect(endTurnInHistory).toBeDefined();
 
       // The evolution should be before END_TURN in the history
-      const evolutionIndex = matchAfterEndTurn.gameState?.actionHistory.findIndex(
-        (action) =>
-          action.actionType === PlayerActionType.EVOLVE_POKEMON &&
-          (action.actionData as any)?.instanceId === 'instance-1',
-      );
+      const evolutionIndex =
+        matchAfterEndTurn.gameState?.actionHistory.findIndex(
+          (action) =>
+            action.actionType === PlayerActionType.EVOLVE_POKEMON &&
+            (action.actionData as any)?.instanceId === 'instance-1',
+        );
       const endTurnIndex = matchAfterEndTurn.gameState?.actionHistory.findIndex(
         (action) => action.actionType === PlayerActionType.END_TURN,
       );
@@ -1905,11 +1843,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         'Charmeleon',
       );
 
-      const match = createMatchWithGameState(
-        charmeleon,
-        [],
-        ['charizard-id'],
-      );
+      const match = createMatchWithGameState(charmeleon, [], ['charizard-id']);
 
       const gameState = new GameState(
         match.gameState!.player1State,
@@ -1976,11 +1910,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         'Charmeleon',
       );
 
-      const match = createMatchWithGameState(
-        charmeleon,
-        [],
-        ['charizard-id'],
-      );
+      const match = createMatchWithGameState(charmeleon, [], ['charizard-id']);
 
       const gameState = new GameState(
         match.gameState!.player1State,
@@ -2018,7 +1948,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       const result = await useCase.execute(dto);
 
       // Assert
-      expect(result.gameState?.player1State.activePokemon?.cardId).toBe('charizard-id');
+      expect(result.gameState?.player1State.activePokemon?.cardId).toBe(
+        'charizard-id',
+      );
       expect(result.gameState?.player1State.activePokemon?.evolvedAt).toBe(5); // Updated to current turn
     });
 
@@ -2170,7 +2102,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       const result1 = await useCase.execute(dto1);
-      expect(result1.gameState?.player1State.bench[0]?.cardId).toBe('charizard-id');
+      expect(result1.gameState?.player1State.bench[0]?.cardId).toBe(
+        'charizard-id',
+      );
       expect(result1.gameState?.player1State.bench[0]?.evolvedAt).toBe(5);
 
       // Update match state for second evolution
@@ -2221,7 +2155,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       const result2 = await useCase.execute(dto2);
-      expect(result2.gameState?.player1State.bench[1]?.cardId).toBe('charizard-id');
+      expect(result2.gameState?.player1State.bench[1]?.cardId).toBe(
+        'charizard-id',
+      );
       expect(result2.gameState?.player1State.bench[1]?.evolvedAt).toBe(5);
       // This verifies that each instance is tracked independently
     });
@@ -2255,11 +2191,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         'Charmeleon',
       );
 
-      const match = createMatchWithGameState(
-        charmeleon,
-        [],
-        ['charizard-id'],
-      );
+      const match = createMatchWithGameState(charmeleon, [], ['charizard-id']);
 
       const gameState = new GameState(
         match.gameState!.player1State,
@@ -2297,8 +2229,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
 
       // Assert: Verify that evolved Pokemon has evolvedAt = 5
       expect(result.gameState?.player1State.activePokemon?.evolvedAt).toBe(5);
-      expect(result.gameState?.player1State.activePokemon?.cardId).toBe('charizard-id');
+      expect(result.gameState?.player1State.activePokemon?.cardId).toBe(
+        'charizard-id',
+      );
     });
   });
 });
-

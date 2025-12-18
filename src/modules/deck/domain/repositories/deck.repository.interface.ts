@@ -41,4 +41,3 @@ export interface IDeckRepository {
  * Symbol for dependency injection
  */
 export const IDeckRepository = Symbol('IDeckRepository');
-

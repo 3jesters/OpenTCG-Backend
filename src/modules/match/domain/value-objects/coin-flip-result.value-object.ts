@@ -17,4 +17,3 @@ export class CoinFlipResult {
     return this.result === 'tails';
   }
 }
-

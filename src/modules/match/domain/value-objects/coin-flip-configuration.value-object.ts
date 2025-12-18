@@ -54,27 +54,39 @@ export class CoinFlipConfiguration {
   }
 
   private validate(): void {
-    if (this.countType === CoinFlipCountType.FIXED && this.fixedCount === undefined) {
+    if (
+      this.countType === CoinFlipCountType.FIXED &&
+      this.fixedCount === undefined
+    ) {
       throw new Error('Fixed count is required when countType is FIXED');
     }
-    if (this.countType === CoinFlipCountType.FIXED && (this.fixedCount! < 1 || this.fixedCount! > 10)) {
+    if (
+      this.countType === CoinFlipCountType.FIXED &&
+      (this.fixedCount! < 1 || this.fixedCount! > 10)
+    ) {
       throw new Error('Fixed count must be between 1 and 10');
     }
-    if (this.countType === CoinFlipCountType.VARIABLE && this.variableSource === undefined) {
+    if (
+      this.countType === CoinFlipCountType.VARIABLE &&
+      this.variableSource === undefined
+    ) {
       throw new Error('Variable source is required when countType is VARIABLE');
     }
     if (
       this.variableSource === VariableCoinCountSource.ENERGY_TYPE_ATTACHED &&
       this.energyType === undefined
     ) {
-      throw new Error('Energy type is required when variableSource is ENERGY_TYPE_ATTACHED');
+      throw new Error(
+        'Energy type is required when variableSource is ENERGY_TYPE_ATTACHED',
+      );
     }
     if (
       this.damageCalculationType === DamageCalculationType.MULTIPLY_BY_HEADS &&
       this.damagePerHead === undefined
     ) {
-      throw new Error('Damage per head is required when damageCalculationType is MULTIPLY_BY_HEADS');
+      throw new Error(
+        'Damage per head is required when damageCalculationType is MULTIPLY_BY_HEADS',
+      );
     }
   }
 }
-

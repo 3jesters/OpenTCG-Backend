@@ -309,9 +309,7 @@ describe('AttackPreconditionValidator', () => {
         ),
       ];
 
-      expect(AttackPreconditionValidator.validateAll(preconditions)).toBe(
-        true,
-      );
+      expect(AttackPreconditionValidator.validateAll(preconditions)).toBe(true);
     });
 
     it('should throw error if not an array', () => {
@@ -341,4 +339,3 @@ describe('AttackPreconditionValidator', () => {
     });
   });
 });
-

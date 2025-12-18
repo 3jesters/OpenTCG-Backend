@@ -30,4 +30,3 @@ export enum ConditionType {
   SELF_HAS_BENCHED = 'SELF_HAS_BENCHED', // Player has benched Pokémon
   STADIUM_IN_PLAY = 'STADIUM_IN_PLAY', // A Stadium card is in play
 }
-

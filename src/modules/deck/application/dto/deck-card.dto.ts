@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsNumber,
-  Min,
-  IsInt,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, Min, IsInt } from 'class-validator';
 
 /**
  * DTO for a card in a deck
@@ -23,4 +17,3 @@ export class DeckCardDto {
   @Min(1)
   quantity: number;
 }
-

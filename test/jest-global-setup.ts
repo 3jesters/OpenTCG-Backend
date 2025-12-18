@@ -11,16 +11,16 @@ export default async function globalSetup() {
   try {
     // Read all files in the matches directory
     const files = await readdir(matchesDirectory);
-    
+
     // Filter files that match test match patterns
     // Patterns: spec-* (except spec-end-game-*), coin-flip-test-*, mock-test-*
     // Note: spec-end-game-* files are kept for inspection and not deleted
-    const testMatchFiles = files.filter((file) => 
-      file.endsWith('.json') && (
-        (file.startsWith('spec-') && !file.startsWith('spec-end-game-')) || 
-        file.startsWith('coin-flip-test-') || 
-        file.startsWith('mock-test-')
-      )
+    const testMatchFiles = files.filter(
+      (file) =>
+        file.endsWith('.json') &&
+        ((file.startsWith('spec-') && !file.startsWith('spec-end-game-')) ||
+          file.startsWith('coin-flip-test-') ||
+          file.startsWith('mock-test-')),
     );
 
     // Delete each test match file BEFORE running tests
@@ -38,7 +38,9 @@ export default async function globalSetup() {
     }
 
     if (testMatchFiles.length > 0) {
-      console.log(`Cleaned up ${testMatchFiles.length} test match(es) before test run`);
+      console.log(
+        `Cleaned up ${testMatchFiles.length} test match(es) before test run`,
+      );
     }
   } catch (error: any) {
     // If directory doesn't exist, that's fine - no matches to clean up
@@ -47,4 +49,3 @@ export default async function globalSetup() {
     }
   }
 }
-

@@ -149,7 +149,15 @@ describe('PlayerGameState Value Object', () => {
 
   describe('immutability', () => {
     it('should create new instance when updating deck', () => {
-      const state = new PlayerGameState(['card-1'], [], null, [], [], [], false);
+      const state = new PlayerGameState(
+        ['card-1'],
+        [],
+        null,
+        [],
+        [],
+        [],
+        false,
+      );
       const updated = state.withDeck(['card-2']);
 
       expect(updated.deck).toEqual(['card-2']);
@@ -157,7 +165,15 @@ describe('PlayerGameState Value Object', () => {
     });
 
     it('should create new instance when updating hand', () => {
-      const state = new PlayerGameState([], ['card-1'], null, [], [], [], false);
+      const state = new PlayerGameState(
+        [],
+        ['card-1'],
+        null,
+        [],
+        [],
+        [],
+        false,
+      );
       const updated = state.withHand(['card-2']);
 
       expect(updated.hand).toEqual(['card-2']);
@@ -165,4 +181,3 @@ describe('PlayerGameState Value Object', () => {
     });
   });
 });
-

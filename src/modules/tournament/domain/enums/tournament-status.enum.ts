@@ -8,4 +8,3 @@ export enum TournamentStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
-

@@ -285,7 +285,8 @@ describe('Trainer Card Validation E2E', () => {
       .expect(200);
 
     const initialHand = initialStateResponse.body.playerState.hand;
-    const initialDiscardPile = initialStateResponse.body.playerState.discardPile;
+    const initialDiscardPile =
+      initialStateResponse.body.playerState.discardPile;
     const energyRetrievalIndex = initialHand.indexOf(energyRetrievalCardId);
     const fireEnergyIndex = initialHand.indexOf(fireEnergyCardId);
     const initialFireEnergyCount = initialHand.filter(
@@ -341,7 +342,10 @@ describe('Trainer Card Validation E2E', () => {
 
     // Create a match with Potion in hand and Pokemon with damage
     const potionTestMatchId = 'spec-potion-test';
-    const potionMatchFilePath = join(matchesDirectory, `${potionTestMatchId}.json`);
+    const potionMatchFilePath = join(
+      matchesDirectory,
+      `${potionTestMatchId}.json`,
+    );
 
     const potionMatchState = {
       id: potionTestMatchId,
@@ -416,7 +420,10 @@ describe('Trainer Card Validation E2E', () => {
       },
     };
 
-    await writeFile(potionMatchFilePath, JSON.stringify(potionMatchState, null, 2));
+    await writeFile(
+      potionMatchFilePath,
+      JSON.stringify(potionMatchState, null, 2),
+    );
 
     // Get initial state
     const initialStateResponse = await request(server())
@@ -425,15 +432,19 @@ describe('Trainer Card Validation E2E', () => {
       .expect(200);
 
     const initialHand = initialStateResponse.body.playerState.hand;
-    const initialActiveHp = initialStateResponse.body.playerState.activePokemon?.currentHp;
-    const initialDamage = initialStateResponse.body.playerState.activePokemon?.damageCounters || 0;
+    const initialActiveHp =
+      initialStateResponse.body.playerState.activePokemon?.currentHp;
+    const initialDamage =
+      initialStateResponse.body.playerState.activePokemon?.damageCounters || 0;
 
     // Verify Potion is in hand
     expect(initialHand.includes(potionCardId)).toBe(true);
 
     // Verify Pokemon has some damage
     expect(initialDamage).toBeGreaterThan(0);
-    expect(initialActiveHp).toBeLessThan(initialStateResponse.body.playerState.activePokemon?.maxHp);
+    expect(initialActiveHp).toBeLessThan(
+      initialStateResponse.body.playerState.activePokemon?.maxHp,
+    );
 
     // Play Potion to heal active Pokemon
     const response = await request(server())
@@ -454,7 +465,8 @@ describe('Trainer Card Validation E2E', () => {
 
     // Verify Pokemon was healed (damage decreased by 20 HP / 2 damage counters)
     const updatedHp = response.body.playerState.activePokemon?.currentHp;
-    const updatedDamage = response.body.playerState.activePokemon?.damageCounters || 0;
+    const updatedDamage =
+      response.body.playerState.activePokemon?.damageCounters || 0;
     const maxHp = response.body.playerState.activePokemon?.maxHp || 50;
 
     expect(updatedHp).toBeGreaterThan(initialActiveHp);
@@ -551,9 +563,12 @@ describe('Trainer Card Validation E2E', () => {
       .send({ playerId: PLAYER2_ID })
       .expect(200);
 
-    const initialHp = initialStateResponse.body.playerState.activePokemon?.currentHp;
-    const initialMaxHp = initialStateResponse.body.playerState.activePokemon?.maxHp;
-    const initialDamageCounters = initialStateResponse.body.playerState.activePokemon?.damageCounters || 0;
+    const initialHp =
+      initialStateResponse.body.playerState.activePokemon?.currentHp;
+    const initialMaxHp =
+      initialStateResponse.body.playerState.activePokemon?.maxHp;
+    const initialDamageCounters =
+      initialStateResponse.body.playerState.activePokemon?.damageCounters || 0;
     const actualDamage = initialMaxHp - initialHp; // 40 - 10 = 30
 
     // Verify the bug scenario: damageCounters is out of sync
@@ -574,7 +589,8 @@ describe('Trainer Card Validation E2E', () => {
       .expect(200);
 
     const updatedHp = response.body.playerState.activePokemon?.currentHp;
-    const updatedDamageCounters = response.body.playerState.activePokemon?.damageCounters || 0;
+    const updatedDamageCounters =
+      response.body.playerState.activePokemon?.damageCounters || 0;
     const updatedMaxHp = response.body.playerState.activePokemon?.maxHp;
 
     // Should heal 20 HP: 10 HP -> 30 HP (NOT 40 HP!)
@@ -589,14 +605,19 @@ describe('Trainer Card Validation E2E', () => {
     expect(updatedDamageCounters).toBe(calculatedDamage);
 
     // Verify Potion is in discard pile
-    expect(response.body.playerState.discardPile.includes(potionCardId)).toBe(true);
+    expect(response.body.playerState.discardPile.includes(potionCardId)).toBe(
+      true,
+    );
   });
 
   it('should play Pokémon Flute to put Basic Pokémon from opponent discard pile onto opponent bench', async () => {
     // Create a match state where player1 has Pokémon Flute in hand
     // and player2 has a Basic Pokémon in discard pile
     const pokemonFluteMatchId = 'spec-pokemon-flute-test';
-    const pokemonFluteMatchFilePath = join(matchesDirectory, `${pokemonFluteMatchId}.json`);
+    const pokemonFluteMatchFilePath = join(
+      matchesDirectory,
+      `${pokemonFluteMatchId}.json`,
+    );
     const pokemonFluteCardId = 'pokemon-base-set-v1.0-pokemon-flute--89';
     const opponentPokemonCardId = 'pokemon-base-set-v1.0-charmander--46'; // Basic Pokémon
 
@@ -674,7 +695,10 @@ describe('Trainer Card Validation E2E', () => {
       },
     };
 
-    await writeFile(pokemonFluteMatchFilePath, JSON.stringify(initialMatchState, null, 2));
+    await writeFile(
+      pokemonFluteMatchFilePath,
+      JSON.stringify(initialMatchState, null, 2),
+    );
 
     // Get initial state (POST to /state endpoint loads the match)
     const initialStateResponse = await request(server())
@@ -682,12 +706,18 @@ describe('Trainer Card Validation E2E', () => {
       .send({ playerId: PLAYER1_ID })
       .expect(200);
 
-    expect(initialStateResponse.body.playerState.hand).toContain(pokemonFluteCardId);
-    expect(initialStateResponse.body.opponentState.discardPile).toContain(opponentPokemonCardId);
+    expect(initialStateResponse.body.playerState.hand).toContain(
+      pokemonFluteCardId,
+    );
+    expect(initialStateResponse.body.opponentState.discardPile).toContain(
+      opponentPokemonCardId,
+    );
     expect(initialStateResponse.body.opponentState.bench).toHaveLength(0);
 
     // Verify Pokémon Flute is in hand
-    expect(initialStateResponse.body.playerState.hand).toContain(pokemonFluteCardId);
+    expect(initialStateResponse.body.playerState.hand).toContain(
+      pokemonFluteCardId,
+    );
 
     // Play Pokémon Flute to put opponent's Pokémon from discard onto their bench
     const response = await request(server())
@@ -708,12 +738,15 @@ describe('Trainer Card Validation E2E', () => {
     expect(response.body.playerState.hand).not.toContain(pokemonFluteCardId);
 
     // Verify opponent's Pokémon is removed from discard pile
-    expect(response.body.opponentState.discardPile).not.toContain(opponentPokemonCardId);
+    expect(response.body.opponentState.discardPile).not.toContain(
+      opponentPokemonCardId,
+    );
 
     // Verify opponent's Pokémon is now on their bench
     expect(response.body.opponentState.bench).toHaveLength(1);
-    expect(response.body.opponentState.bench[0].cardId).toBe(opponentPokemonCardId);
+    expect(response.body.opponentState.bench[0].cardId).toBe(
+      opponentPokemonCardId,
+    );
     expect(response.body.opponentState.bench[0].position).toBe('BENCH_0');
   });
 });
-

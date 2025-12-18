@@ -54,4 +54,3 @@ export class SetController {
     return SetResponseDto.fromDomain(set);
   }
 }
-

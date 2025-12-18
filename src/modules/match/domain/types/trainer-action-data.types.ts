@@ -177,4 +177,3 @@ export type TrainerActionData =
   | PutIntoPlayActionData
   | AttachToPokemonActionData
   | TradeCardsActionData;
-

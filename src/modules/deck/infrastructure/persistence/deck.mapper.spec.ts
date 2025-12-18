@@ -21,7 +21,14 @@ describe('DeckMapper', () => {
     });
 
     it('should convert deck with tournament ID', () => {
-      const deck = new Deck('deck-1', 'My Deck', 'player-1', [], undefined, 'tournament-1');
+      const deck = new Deck(
+        'deck-1',
+        'My Deck',
+        'player-1',
+        [],
+        undefined,
+        'tournament-1',
+      );
 
       const json = DeckMapper.toJson(deck);
 
@@ -56,9 +63,7 @@ describe('DeckMapper', () => {
         createdAt: '2024-01-01T00:00:00.000Z',
         updatedAt: '2024-01-01T00:00:00.000Z',
         isValid: true,
-        cards: [
-          { cardId: 'card-1', setName: 'Base Set', quantity: 4 },
-        ],
+        cards: [{ cardId: 'card-1', setName: 'Base Set', quantity: 4 }],
       };
 
       const deck = DeckMapper.toDomain(json);
@@ -128,4 +133,3 @@ describe('DeckMapper', () => {
     });
   });
 });
-

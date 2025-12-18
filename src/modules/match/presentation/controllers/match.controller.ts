@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  Inject,
 } from '@nestjs/common';
 import {
   CreateMatchUseCase,
@@ -20,7 +21,7 @@ import {
   ListMatchesUseCase,
   CancelMatchUseCase,
 } from '../../application/use-cases';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import {
   CreateMatchRequestDto,
   JoinMatchRequestDto,
@@ -31,7 +32,11 @@ import {
   MatchStateResponseDto,
   MatchListResponseDto,
 } from '../dto';
-import { CreateMatchDto, JoinMatchDto, ExecuteActionDto } from '../../application/dto';
+import {
+  CreateMatchDto,
+  JoinMatchDto,
+  ExecuteActionDto,
+} from '../../application/dto';
 import {
   Match,
   PlayerIdentifier,
@@ -59,7 +64,8 @@ export class MatchController {
     private readonly listMatchesUseCase: ListMatchesUseCase,
     private readonly cancelMatchUseCase: CancelMatchUseCase,
     private readonly stateMachineService: MatchStateMachineService,
-    private readonly getCardByIdUseCase: GetCardByIdUseCase,
+    @Inject(IGetCardByIdUseCase)
+    private readonly getCardByIdUseCase: IGetCardByIdUseCase,
   ) {}
 
   /**
@@ -160,8 +166,10 @@ export class MatchController {
     @Param('matchId') matchId: string,
     @Body() requestDto: GetMatchStateRequestDto,
   ): Promise<MatchStateResponseDto> {
-    const { match, availableActions } =
-      await this.getMatchStateUseCase.execute(matchId, requestDto.playerId);
+    const { match, availableActions } = await this.getMatchStateUseCase.execute(
+      matchId,
+      requestDto.playerId,
+    );
     return await MatchStateResponseDto.fromDomain(
       match,
       requestDto.playerId,
@@ -212,8 +220,9 @@ export class MatchController {
               // Include lastAction in history if it exists and isn't already the last item
               ...(match.gameState.lastAction &&
               (match.gameState.actionHistory.length === 0 ||
-                match.gameState.actionHistory[match.gameState.actionHistory.length - 1].actionId !==
-                  match.gameState.lastAction.actionId)
+                match.gameState.actionHistory[
+                  match.gameState.actionHistory.length - 1
+                ].actionId !== match.gameState.lastAction.actionId)
                 ? [
                     {
                       actionType: match.gameState.lastAction.actionType,
@@ -260,11 +269,14 @@ export class MatchController {
         // Not player's turn - only show CONCEDE
         return [PlayerActionType.CONCEDE];
       }
-      
+
       // Add GENERATE_COIN_FLIP if coin flip is ready for ATTACK context (both players can approve)
       // STATUS_CHECK contexts (confusion/sleep) are handled automatically - coin flip state is created
       // automatically, client can call GENERATE_COIN_FLIP when coinFlipState exists, but it doesn't need to be in availableActions
-      if (match.gameState?.coinFlipState && match.gameState.coinFlipState.status === CoinFlipStatus.READY_TO_FLIP) {
+      if (
+        match.gameState?.coinFlipState &&
+        match.gameState.coinFlipState.status === CoinFlipStatus.READY_TO_FLIP
+      ) {
         const coinFlipContext = match.gameState.coinFlipState.context;
         if (coinFlipContext === CoinFlipContext.ATTACK) {
           if (!actions.includes(PlayerActionType.GENERATE_COIN_FLIP)) {
@@ -272,7 +284,7 @@ export class MatchController {
           }
         }
       }
-      
+
       // Filter out ATTACH_ENERGY if energy was already attached this turn
       const playerState = match.gameState?.getPlayerState(playerIdentifier);
       if (
@@ -283,7 +295,7 @@ export class MatchController {
           (action) => action !== PlayerActionType.ATTACH_ENERGY,
         );
       }
-      
+
       return actions; // Already filtered by state machine
     }
 
@@ -294,7 +306,7 @@ export class MatchController {
         playerIdentifier === PlayerIdentifier.PLAYER1
           ? match.player1HasDrawnValidHand
           : match.player2HasDrawnValidHand;
-      
+
       if (playerHasDrawnValidHand) {
         // Player already has valid initial hand, wait for opponent
         return [PlayerActionType.CONCEDE];
@@ -325,7 +337,7 @@ export class MatchController {
         playerIdentifier === PlayerIdentifier.PLAYER1
           ? match.player1ReadyToStart
           : match.player2ReadyToStart;
-      
+
       if (playerReady) {
         // Player is ready, wait for opponent
         return [PlayerActionType.CONCEDE];
@@ -375,4 +387,3 @@ export class MatchController {
     await this.cancelMatchUseCase.execute(matchId, playerId);
   }
 }
-

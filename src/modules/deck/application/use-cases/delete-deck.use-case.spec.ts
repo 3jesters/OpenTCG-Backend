@@ -39,4 +39,3 @@ describe('DeleteDeckUseCase', () => {
     expect(mockRepository.delete).not.toHaveBeenCalled();
   });
 });
-

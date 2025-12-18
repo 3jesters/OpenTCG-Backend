@@ -85,7 +85,7 @@ export interface EnergyRuleMetadata {
 /**
  * Card Rule Value Object
  * Represents special rules that modify card behavior
- * 
+ *
  * Card rules are always-on modifications or restrictions,
  * different from abilities which are active effects.
  */
@@ -129,7 +129,7 @@ export class CardRule {
     // Validate category-specific requirements
     switch (this.metadata.category) {
       case 'prize':
-        const prizeMetadata = this.metadata as PrizeRuleMetadata;
+        const prizeMetadata = this.metadata;
         // Allow 0 for NO_PRIZE_CARDS rule type
         if (
           this.ruleType !== CardRuleType.NO_PRIZE_CARDS &&
@@ -141,7 +141,7 @@ export class CardRule {
         break;
 
       case 'attack':
-        const attackMetadata = this.metadata as AttackRuleMetadata;
+        const attackMetadata = this.metadata;
         if (
           attackMetadata.costReduction !== undefined &&
           attackMetadata.costReduction < 0
@@ -151,7 +151,7 @@ export class CardRule {
         break;
 
       case 'damage':
-        const damageMetadata = this.metadata as DamageRuleMetadata;
+        const damageMetadata = this.metadata;
         if (
           damageMetadata.reductionAmount !== undefined &&
           damageMetadata.reductionAmount < 0
@@ -161,7 +161,7 @@ export class CardRule {
         break;
 
       case 'energy':
-        const energyMetadata = this.metadata as EnergyRuleMetadata;
+        const energyMetadata = this.metadata;
         if (
           energyMetadata.extraAttachments !== undefined &&
           energyMetadata.extraAttachments < 1
@@ -303,10 +303,7 @@ export class CardRuleFactory {
     );
   }
 
-  static damageReduction(
-    amount: number,
-    conditions?: Condition[],
-  ): CardRule {
+  static damageReduction(amount: number, conditions?: Condition[]): CardRule {
     return new CardRule(
       CardRuleType.DAMAGE_REDUCTION_RULE,
       `This Pokémon takes ${amount} less damage from attacks`,

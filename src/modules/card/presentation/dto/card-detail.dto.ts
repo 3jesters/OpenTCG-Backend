@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   CardType,
   PokemonType,
@@ -36,11 +36,11 @@ export class CardDetailDto {
   })
   name: string;
 
-  @ApiProperty({
-    description: 'Pokédex number',
+  @ApiPropertyOptional({
+    description: 'Pokédex number (only for Pokemon cards)',
     example: '065',
   })
-  pokemonNumber: string;
+  pokemonNumber?: string;
 
   @ApiProperty({
     description: 'Card number within the set',
@@ -90,13 +90,6 @@ export class CardDetailDto {
     example: EvolutionStage.STAGE_2,
   })
   stage?: EvolutionStage;
-
-  @ApiProperty({
-    description: 'Level (for older Pokémon cards)',
-    required: false,
-    example: 42,
-  })
-  level?: number;
 
   @ApiProperty({
     description: 'Name of Pokémon this evolves from',
@@ -189,4 +182,3 @@ export class CardDetailDto {
   })
   trainerEffects?: TrainerEffectDto[];
 }
-

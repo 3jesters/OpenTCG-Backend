@@ -17,7 +17,7 @@ import { EnergyType } from '../../../card/domain/enums/energy-type.enum';
 import { EnergySource } from '../../../card/domain/enums/energy-source.enum';
 import { TargetType } from '../../../card/domain/enums/target-type.enum';
 import { PokemonType } from '../../../card/domain/enums/pokemon-type.enum';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { Card } from '../../../card/domain/entities/card.entity';
 import { CardType } from '../../../card/domain/enums/card-type.enum';
 import { Rarity } from '../../../card/domain/enums/rarity.enum';
@@ -29,7 +29,7 @@ import { Duration } from '../../../card/domain/enums/duration.enum';
 describe('AbilityEffectExecutorService', () => {
   let service: AbilityEffectExecutorService;
 
-  let mockGetCardByIdUseCase: jest.Mocked<GetCardByIdUseCase>;
+  let mockGetCardByIdUseCase: jest.Mocked<IGetCardByIdUseCase>;
 
   beforeEach(async () => {
     mockGetCardByIdUseCase = {
@@ -41,7 +41,7 @@ describe('AbilityEffectExecutorService', () => {
       providers: [
         AbilityEffectExecutorService,
         {
-          provide: GetCardByIdUseCase,
+          provide: IGetCardByIdUseCase,
           useValue: mockGetCardByIdUseCase,
         },
       ],
@@ -103,7 +103,7 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-base-set-v1.0-blastoise--2';
       const ability = new Ability(
         'Rain Dance',
-        'As often as you like during your turn (before your attack), you may attach as many Water Energy cards as you like from your hand to 1 or more of your Water Pokémon. This power can\'t be used if Blastoise is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may attach as many Water Energy cards as you like from your hand to 1 or more of your Water Pokémon. This power can't be used if Blastoise is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -141,7 +141,9 @@ describe('AbilityEffectExecutorService', () => {
         );
 
         // Verify hand is set correctly
-        expect(gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand).toContain(waterEnergy1);
+        expect(
+          gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand,
+        ).toContain(waterEnergy1);
 
         const actionData: AbilityActionData = {
           cardId,
@@ -192,7 +194,9 @@ describe('AbilityEffectExecutorService', () => {
           PlayerIdentifier.PLAYER1,
         );
 
-        expect(result.playerState.activePokemon?.attachedEnergy).toHaveLength(1);
+        expect(result.playerState.activePokemon?.attachedEnergy).toHaveLength(
+          1,
+        );
         expect(result.playerState.activePokemon?.attachedEnergy).toContain(
           waterEnergy1,
         );
@@ -245,7 +249,9 @@ describe('AbilityEffectExecutorService', () => {
         );
 
         // Verify hand has 3 cards
-        expect(gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand).toHaveLength(3);
+        expect(
+          gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand,
+        ).toHaveLength(3);
 
         const actionData: AbilityActionData = {
           cardId,
@@ -285,16 +291,18 @@ describe('AbilityEffectExecutorService', () => {
 
         // Clear any previous mocks
         mockGetCardByIdUseCase.getCardEntity.mockClear();
-        
+
         // Mock implementation: return blastoiseCard for blastoise cardId, waterEnergyCard for energy cardId
-        mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-          if (cardId === 'pokemon-base-set-v1.0-blastoise--2') {
-            return Promise.resolve(blastoiseCard);
-          } else if (cardId === 'pokemon-base-set-v1.0-water-energy--103') {
-            return Promise.resolve(waterEnergyCard);
-          }
-          return Promise.reject(new Error(`Unexpected cardId: ${cardId}`));
-        });
+        mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+          (cardId: string) => {
+            if (cardId === 'pokemon-base-set-v1.0-blastoise--2') {
+              return Promise.resolve(blastoiseCard);
+            } else if (cardId === 'pokemon-base-set-v1.0-water-energy--103') {
+              return Promise.resolve(waterEnergyCard);
+            }
+            return Promise.reject(new Error(`Unexpected cardId: ${cardId}`));
+          },
+        );
 
         const result = await service.executeEffects(
           ability,
@@ -304,9 +312,15 @@ describe('AbilityEffectExecutorService', () => {
         );
 
         // Should attach exactly 2 cards
-        expect(result.playerState.activePokemon?.attachedEnergy).toHaveLength(2);
-        expect(result.playerState.activePokemon?.attachedEnergy).toContain(waterEnergy1);
-        expect(result.playerState.activePokemon?.attachedEnergy).toContain(waterEnergy2);
+        expect(result.playerState.activePokemon?.attachedEnergy).toHaveLength(
+          2,
+        );
+        expect(result.playerState.activePokemon?.attachedEnergy).toContain(
+          waterEnergy1,
+        );
+        expect(result.playerState.activePokemon?.attachedEnergy).toContain(
+          waterEnergy2,
+        );
 
         // Should remove exactly 2 cards from hand, leaving 1
         expect(result.playerState.hand).toHaveLength(1);
@@ -404,21 +418,28 @@ describe('AbilityEffectExecutorService', () => {
 
         // Clear any previous mocks
         mockGetCardByIdUseCase.getCardEntity.mockClear();
-        
+
         // Mock implementation: return appropriate card based on cardId
-        mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-          if (cardId === 'pokemon-base-set-v1.0-blastoise--2') {
-            return Promise.resolve(blastoiseCard);
-          } else if (cardId === 'pokemon-base-set-v1.0-water-energy--103') {
-            return Promise.resolve(waterEnergyCard);
-          } else if (cardId === 'pokemon-base-set-v1.0-fire-energy--99') {
-            return Promise.resolve(fireEnergyCard);
-          }
-          return Promise.reject(new Error(`Unexpected cardId: ${cardId}`));
-        });
+        mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+          (cardId: string) => {
+            if (cardId === 'pokemon-base-set-v1.0-blastoise--2') {
+              return Promise.resolve(blastoiseCard);
+            } else if (cardId === 'pokemon-base-set-v1.0-water-energy--103') {
+              return Promise.resolve(waterEnergyCard);
+            } else if (cardId === 'pokemon-base-set-v1.0-fire-energy--99') {
+              return Promise.resolve(fireEnergyCard);
+            }
+            return Promise.reject(new Error(`Unexpected cardId: ${cardId}`));
+          },
+        );
 
         await expect(
-          service.executeEffects(ability, actionData, gameState, PlayerIdentifier.PLAYER1),
+          service.executeEffects(
+            ability,
+            actionData,
+            gameState,
+            PlayerIdentifier.PLAYER1,
+          ),
         ).rejects.toThrow('Not enough WATER Energy cards in hand');
       });
 
@@ -454,7 +475,11 @@ describe('AbilityEffectExecutorService', () => {
 
         const waterEnergy1 = 'pokemon-base-set-v1.0-water-energy--103';
         const waterEnergy2 = 'pokemon-base-set-v1.0-water-energy--103';
-        const gameState = createGameState(blastoise, [], [waterEnergy1, waterEnergy2]);
+        const gameState = createGameState(
+          blastoise,
+          [],
+          [waterEnergy1, waterEnergy2],
+        );
 
         // Try to select 2 cards when count is 1
         const actionData: AbilityActionData = {
@@ -464,8 +489,15 @@ describe('AbilityEffectExecutorService', () => {
         };
 
         await expect(
-          service.executeEffects(ability, actionData, gameState, PlayerIdentifier.PLAYER1),
-        ).rejects.toThrow('Expected 1 energy card(s) to be selected, but got 2');
+          service.executeEffects(
+            ability,
+            actionData,
+            gameState,
+            PlayerIdentifier.PLAYER1,
+          ),
+        ).rejects.toThrow(
+          'Expected 1 energy card(s) to be selected, but got 2',
+        );
       });
     });
 
@@ -473,7 +505,7 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-base-set-v1.0-charizard--4';
       const ability = new Ability(
         'Energy Burn',
-        'As often as you like during your turn (before your attack), you may take 1 Fire Energy card attached to Charizard and attach it to 1 of your other Pokémon. This power can\'t be used if Charizard is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may take 1 Fire Energy card attached to Charizard and attach it to 1 of your other Pokémon. This power can't be used if Charizard is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -529,8 +561,9 @@ describe('AbilityEffectExecutorService', () => {
         fireEnergyCard.setEnergyType(EnergyType.FIRE);
 
         // Mock order: only energy card (sourcePokemonType not set)
-        mockGetCardByIdUseCase.getCardEntity
-          .mockResolvedValueOnce(fireEnergyCard); // Energy type validation
+        mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(
+          fireEnergyCard,
+        ); // Energy type validation
 
         const actionData: AbilityActionData = {
           cardId,
@@ -560,7 +593,7 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-base-set-v1.0-electrode--21';
       const ability = new Ability(
         'Buzzap',
-        'As often as you like during your turn (before your attack), you may take 1 Energy card attached to 1 of your Pokémon and attach it to Electrode. This power can\'t be used if Electrode is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may take 1 Energy card attached to 1 of your Pokémon and attach it to Electrode. This power can't be used if Electrode is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -640,7 +673,9 @@ describe('AbilityEffectExecutorService', () => {
           (p) => p.instanceId === 'instance-2',
         );
         expect(resultBenchPokemon).toBeDefined();
-        expect(resultBenchPokemon?.attachedEnergy).not.toContain(lightningEnergy);
+        expect(resultBenchPokemon?.attachedEnergy).not.toContain(
+          lightningEnergy,
+        );
       });
     });
 
@@ -648,7 +683,7 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-base-set-v1.0-venusaur--15';
       const ability = new Ability(
         'Energy Trans',
-        'As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can\'t be used if Venusaur is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can't be used if Venusaur is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -704,8 +739,9 @@ describe('AbilityEffectExecutorService', () => {
         grassEnergyCard.setEnergyType(EnergyType.GRASS);
 
         // Mock order: only energy card (sourcePokemonType and targetPokemonType not set)
-        mockGetCardByIdUseCase.getCardEntity
-          .mockResolvedValueOnce(grassEnergyCard); // Energy type validation
+        mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(
+          grassEnergyCard,
+        ); // Energy type validation
 
         const actionData: AbilityActionData = {
           cardId,
@@ -735,11 +771,9 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-fossil-v1.0-gengar--20';
       const ability = new Ability(
         'Curse',
-        'Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent\'s Pokémon to another (even if it would Knock Out the other Pokémon). This power can\'t be used if Gengar is Asleep, Confused, or Paralyzed.',
+        "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pokémon to another (even if it would Knock Out the other Pokémon). This power can't be used if Gengar is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [
-          AbilityEffectFactory.heal(TargetType.SELF, 10),
-        ],
+        [AbilityEffectFactory.heal(TargetType.SELF, 10)],
         undefined,
         UsageLimit.ONCE_PER_TURN,
       );
@@ -804,7 +838,9 @@ describe('AbilityEffectExecutorService', () => {
         // Gengar should be healed (damage reduced by 10, from 0 to 0)
         expect(result.playerState.activePokemon?.getDamageCounters()).toBe(0);
         // Opponent active damage unchanged (HEAL doesn't move damage, only heals target)
-        expect(result.opponentState.activePokemon?.getDamageCounters()).toBe(20);
+        expect(result.opponentState.activePokemon?.getDamageCounters()).toBe(
+          20,
+        );
       });
     });
 
@@ -812,11 +848,9 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-base-set-v1.0-alakazam--1';
       const ability = new Ability(
         'Damage Swap',
-        'As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pokémon to another as long as you don\'t Knock Out that Pokémon. This power can\'t be used if Alakazam is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pokémon to another as long as you don't Knock Out that Pokémon. This power can't be used if Alakazam is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [
-          AbilityEffectFactory.heal(TargetType.SELF, 10),
-        ],
+        [AbilityEffectFactory.heal(TargetType.SELF, 10)],
         undefined,
         UsageLimit.UNLIMITED,
       );
@@ -863,7 +897,8 @@ describe('AbilityEffectExecutorService', () => {
         expect(result.playerState.activePokemon?.getDamageCounters()).toBe(0);
         // Bench Pokemon damage unchanged (HEAL doesn't move damage, only heals target)
         expect(
-          result.playerState.bench.find((p) => p.instanceId === 'instance-2')
+          result.playerState.bench
+            .find((p) => p.instanceId === 'instance-2')
             ?.getDamageCounters(),
         ).toBe(20);
       });
@@ -873,11 +908,9 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-fossil-v1.0-slowbro--43';
       const ability = new Ability(
         'Strange Behavior',
-        'Once during your turn (before your attack), you may move 1 damage counter from Slowbro to 1 of your opponent\'s Pokémon. This power can\'t be used if Slowbro is Asleep, Confused, or Paralyzed.',
+        "Once during your turn (before your attack), you may move 1 damage counter from Slowbro to 1 of your opponent's Pokémon. This power can't be used if Slowbro is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [
-          AbilityEffectFactory.heal(TargetType.SELF, 10),
-        ],
+        [AbilityEffectFactory.heal(TargetType.SELF, 10)],
         undefined,
         UsageLimit.ONCE_PER_TURN,
       );
@@ -939,11 +972,9 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-fossil-v1.0-hypno--22';
       const ability = new Ability(
         'Prophecy',
-        'Once during your turn (before your attack), you may look at up to 3 cards from the top of either player\'s deck and rearrange them as you like. This power can\'t be used if Hypno is Asleep, Confused, or Paralyzed.',
+        "Once during your turn (before your attack), you may look at up to 3 cards from the top of either player's deck and rearrange them as you like. This power can't be used if Hypno is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [
-          AbilityEffectFactory.searchDeck(3, Destination.HAND),
-        ],
+        [AbilityEffectFactory.searchDeck(3, Destination.HAND)],
         undefined,
         UsageLimit.ONCE_PER_TURN,
       );
@@ -960,13 +991,7 @@ describe('AbilityEffectExecutorService', () => {
           0,
         );
 
-        const deckCards = [
-          'card-1',
-          'card-2',
-          'card-3',
-          'card-4',
-          'card-5',
-        ];
+        const deckCards = ['card-1', 'card-2', 'card-3', 'card-4', 'card-5'];
 
         const gameState = createGameState(hypno, [], [], deckCards);
 
@@ -1047,9 +1072,7 @@ describe('AbilityEffectExecutorService', () => {
           'Retrieve Power',
           'Retrieve 1 card from discard',
           AbilityActivationType.ACTIVATED,
-          [
-            AbilityEffectFactory.retrieveFromDiscard(1, Selector.CHOICE),
-          ],
+          [AbilityEffectFactory.retrieveFromDiscard(1, Selector.CHOICE)],
           undefined,
           UsageLimit.ONCE_PER_TURN,
         );
@@ -1066,13 +1089,7 @@ describe('AbilityEffectExecutorService', () => {
         );
 
         const discardCards = ['card-1', 'card-2'];
-        const gameState = createGameState(
-          pokemon,
-          [],
-          [],
-          [],
-          discardCards,
-        );
+        const gameState = createGameState(pokemon, [], [], [], discardCards);
 
         const actionData: AbilityActionData = {
           cardId,
@@ -1100,9 +1117,7 @@ describe('AbilityEffectExecutorService', () => {
           'Switch Power',
           'Switch Pokemon',
           AbilityActivationType.ACTIVATED,
-          [
-            AbilityEffectFactory.switchPokemon(Selector.CHOICE),
-          ],
+          [AbilityEffectFactory.switchPokemon(Selector.CHOICE)],
           undefined,
           UsageLimit.ONCE_PER_TURN,
         );
@@ -1157,9 +1172,7 @@ describe('AbilityEffectExecutorService', () => {
           'Discard Power',
           'Discard 2 cards',
           AbilityActivationType.ACTIVATED,
-          [
-            AbilityEffectFactory.discardFromHand(2, Selector.CHOICE),
-          ],
+          [AbilityEffectFactory.discardFromHand(2, Selector.CHOICE)],
           undefined,
           UsageLimit.ONCE_PER_TURN,
         );
@@ -1205,9 +1218,7 @@ describe('AbilityEffectExecutorService', () => {
           'Energy Retrieve',
           'Attach energy from discard',
           AbilityActivationType.ACTIVATED,
-          [
-            AbilityEffectFactory.attachFromDiscard(TargetType.SELF, 1),
-          ],
+          [AbilityEffectFactory.attachFromDiscard(TargetType.SELF, 1)],
           undefined,
           UsageLimit.ONCE_PER_TURN,
         );
@@ -1224,13 +1235,7 @@ describe('AbilityEffectExecutorService', () => {
         );
 
         const discardCards = ['pokemon-base-set-v1.0-fire-energy--99'];
-        const gameState = createGameState(
-          pokemon,
-          [],
-          [],
-          [],
-          discardCards,
-        );
+        const gameState = createGameState(pokemon, [], [], [], discardCards);
 
         const actionData: AbilityActionData = {
           cardId,
@@ -1245,9 +1250,9 @@ describe('AbilityEffectExecutorService', () => {
           PlayerIdentifier.PLAYER1,
         );
 
-        expect(
-          result.playerState.activePokemon?.attachedEnergy,
-        ).toContain('pokemon-base-set-v1.0-fire-energy--99');
+        expect(result.playerState.activePokemon?.attachedEnergy).toContain(
+          'pokemon-base-set-v1.0-fire-energy--99',
+        );
         expect(result.playerState.discardPile).not.toContain(
           'pokemon-base-set-v1.0-fire-energy--99',
         );
@@ -1262,7 +1267,10 @@ describe('AbilityEffectExecutorService', () => {
           'Apply status condition',
           AbilityActivationType.ACTIVATED,
           [
-            AbilityEffectFactory.statusCondition(StatusCondition.CONFUSED, TargetType.ACTIVE_OPPONENT),
+            AbilityEffectFactory.statusCondition(
+              StatusCondition.CONFUSED,
+              TargetType.ACTIVE_OPPONENT,
+            ),
           ],
           undefined,
           UsageLimit.ONCE_PER_TURN,
@@ -1312,9 +1320,9 @@ describe('AbilityEffectExecutorService', () => {
           PlayerIdentifier.PLAYER1,
         );
 
-        expect(result.opponentState.activePokemon?.statusEffects).toEqual(
-          [StatusEffect.CONFUSED],
-        );
+        expect(result.opponentState.activePokemon?.statusEffects).toEqual([
+          StatusEffect.CONFUSED,
+        ]);
       });
     });
 
@@ -1322,7 +1330,7 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-base-set-v1.0-blastoise--2';
       const ability = new Ability(
         'Rain Dance',
-        'As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon. This power can\'t be used if Blastoise is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon. This power can't be used if Blastoise is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -1389,10 +1397,12 @@ describe('AbilityEffectExecutorService', () => {
         mockGetCardByIdUseCase.getCardEntity
           .mockResolvedValueOnce(blastoiseCard) // Target Pokemon validation
           .mockResolvedValueOnce(waterEnergyCard); // Selected card validation
-        
+
         // Add mocks for count validation (checking all cards in hand)
         for (let i = 0; i < hand.length; i++) {
-          mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(waterEnergyCard);
+          mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(
+            waterEnergyCard,
+          );
         }
 
         const actionData: AbilityActionData = {
@@ -1429,9 +1439,11 @@ describe('AbilityEffectExecutorService', () => {
 
         const fireEnergy = 'pokemon-base-set-v1.0-fire-energy--99';
         const gameState = createGameState(blastoise, [], [fireEnergy]);
-        
+
         // Debug: Verify hand is set correctly
-        expect(gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand).toEqual([fireEnergy]);
+        expect(gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand).toEqual(
+          [fireEnergy],
+        );
 
         // Mock Card entities
         const blastoiseCard = Card.createPokemonCard(
@@ -1468,7 +1480,9 @@ describe('AbilityEffectExecutorService', () => {
           .mockResolvedValueOnce(fireEnergyCard);
 
         // Verify fireEnergy is in hand
-        expect(gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand).toContain(fireEnergy);
+        expect(
+          gameState.getPlayerState(PlayerIdentifier.PLAYER1).hand,
+        ).toContain(fireEnergy);
 
         const actionData: AbilityActionData = {
           cardId,
@@ -1480,7 +1494,12 @@ describe('AbilityEffectExecutorService', () => {
         // The executor validates hand first, then energy type
         // Since fireEnergy is in hand, it should fail at energy type validation
         await expect(
-          service.executeEffects(ability, actionData, gameState, PlayerIdentifier.PLAYER1),
+          service.executeEffects(
+            ability,
+            actionData,
+            gameState,
+            PlayerIdentifier.PLAYER1,
+          ),
         ).rejects.toThrow('Selected energy card');
       });
 
@@ -1542,7 +1561,12 @@ describe('AbilityEffectExecutorService', () => {
         };
 
         await expect(
-          service.executeEffects(ability, actionData, gameState, PlayerIdentifier.PLAYER1),
+          service.executeEffects(
+            ability,
+            actionData,
+            gameState,
+            PlayerIdentifier.PLAYER1,
+          ),
         ).rejects.toThrow('Target Pokemon must be WATER type');
       });
     });
@@ -1551,7 +1575,7 @@ describe('AbilityEffectExecutorService', () => {
       const cardId = 'pokemon-base-set-v1.0-venusaur--15';
       const ability = new Ability(
         'Energy Trans',
-        'As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can\'t be used if Venusaur is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can't be used if Venusaur is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -1637,8 +1661,9 @@ describe('AbilityEffectExecutorService', () => {
         grassEnergyCard.setEnergyType(EnergyType.GRASS);
 
         // Mock order: only energy card (sourcePokemonType and targetPokemonType not set)
-        mockGetCardByIdUseCase.getCardEntity
-          .mockResolvedValueOnce(grassEnergyCard); // Energy type validation
+        mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(
+          grassEnergyCard,
+        ); // Energy type validation
 
         const actionData: AbilityActionData = {
           cardId,
@@ -1736,8 +1761,9 @@ describe('AbilityEffectExecutorService', () => {
 
         // Mock order: only energy card (sourcePokemonType not set, so no source validation)
         // Energy type validation will fail because fireEnergy is not GRASS
-        mockGetCardByIdUseCase.getCardEntity
-          .mockResolvedValueOnce(fireEnergyCard); // Energy type validation (will fail here)
+        mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(
+          fireEnergyCard,
+        ); // Energy type validation (will fail here)
 
         const actionData: AbilityActionData = {
           cardId,
@@ -1747,7 +1773,12 @@ describe('AbilityEffectExecutorService', () => {
         };
 
         await expect(
-          service.executeEffects(ability, actionData, gameState, PlayerIdentifier.PLAYER1),
+          service.executeEffects(
+            ability,
+            actionData,
+            gameState,
+            PlayerIdentifier.PLAYER1,
+          ),
         ).rejects.toThrow('Selected energy card');
       });
     });

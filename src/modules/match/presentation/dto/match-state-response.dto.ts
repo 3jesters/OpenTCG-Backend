@@ -12,7 +12,7 @@ import {
   CoinFlipState,
 } from '../../domain/value-objects';
 import { CardId } from '../../../../shared/types/card.types';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 
 /**
  * Match State Response DTO
@@ -50,7 +50,7 @@ export class MatchStateResponseDto {
     match: Match,
     playerId: string,
     availableActions: PlayerActionType[] = [],
-    getCardByIdUseCase?: GetCardByIdUseCase,
+    getCardByIdUseCase?: IGetCardByIdUseCase,
   ): Promise<MatchStateResponseDto> {
     const playerIdentifier = match.getPlayerIdentifier(playerId);
     if (!playerIdentifier) {
@@ -70,10 +70,13 @@ export class MatchStateResponseDto {
       playerIdentifier === PlayerIdentifier.PLAYER1
         ? match.player1DeckId
         : match.player2DeckId;
-    
+
     // Hide opponent deck ID during MATCH_APPROVAL state until both players approve
     let opponentDeckId: string | null;
-    if (match.state === MatchState.MATCH_APPROVAL && !match.hasBothApprovals()) {
+    if (
+      match.state === MatchState.MATCH_APPROVAL &&
+      !match.hasBothApprovals()
+    ) {
       opponentDeckId = null;
     } else {
       opponentDeckId =
@@ -121,23 +124,30 @@ export class MatchStateResponseDto {
         : false;
 
     // Calculate requiresActivePokemonSelection and playersRequiringActiveSelection
-    const requiresActivePokemonSelection = 
+    const requiresActivePokemonSelection =
       gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON &&
       playerState?.activePokemon === null &&
       (playerState?.bench.length || 0) > 0;
-    
+
     const playersRequiringActiveSelection: PlayerIdentifier[] = [];
     if (gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON) {
-      if (gameState.player1State.activePokemon === null && gameState.player1State.bench.length > 0) {
+      if (
+        gameState.player1State.activePokemon === null &&
+        gameState.player1State.bench.length > 0
+      ) {
         playersRequiringActiveSelection.push(PlayerIdentifier.PLAYER1);
       }
-      if (gameState.player2State.activePokemon === null && gameState.player2State.bench.length > 0) {
+      if (
+        gameState.player2State.activePokemon === null &&
+        gameState.player2State.bench.length > 0
+      ) {
         playersRequiringActiveSelection.push(PlayerIdentifier.PLAYER2);
       }
     }
-    
+
     // Always set requiresActivePokemonSelection (false if not needed, true if needed)
-    const requiresActivePokemonSelectionValue = requiresActivePokemonSelection || false;
+    const requiresActivePokemonSelectionValue =
+      requiresActivePokemonSelection || false;
 
     return {
       matchId: match.id,
@@ -146,7 +156,11 @@ export class MatchStateResponseDto {
       turnNumber: gameState?.turnNumber || 0,
       phase: gameState?.phase || null,
       playerState: playerState
-        ? await PlayerStateDto.fromDomain(playerState, match.state, getCardByIdUseCase)
+        ? await PlayerStateDto.fromDomain(
+            playerState,
+            match.state,
+            getCardByIdUseCase,
+          )
         : PlayerStateDto.empty(),
       opponentState: opponentState
         ? await OpponentStateDto.fromDomain(
@@ -175,12 +189,14 @@ export class MatchStateResponseDto {
       coinFlipState: gameState?.coinFlipState
         ? CoinFlipStateDto.fromDomain(gameState.coinFlipState)
         : null,
-      requiresActivePokemonSelection: gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON 
-        ? requiresActivePokemonSelectionValue 
-        : undefined,
-      playersRequiringActiveSelection: playersRequiringActiveSelection.length > 0 
-        ? playersRequiringActiveSelection 
-        : undefined,
+      requiresActivePokemonSelection:
+        gameState?.phase === TurnPhase.SELECT_ACTIVE_POKEMON
+          ? requiresActivePokemonSelectionValue
+          : undefined,
+      playersRequiringActiveSelection:
+        playersRequiringActiveSelection.length > 0
+          ? playersRequiringActiveSelection
+          : undefined,
       winnerId: match.winnerId,
       result: match.result,
       winCondition: match.winCondition,
@@ -208,7 +224,7 @@ class PlayerStateDto {
   static async fromDomain(
     state: PlayerGameState,
     matchState: MatchState,
-    getCardByIdUseCase?: GetCardByIdUseCase,
+    getCardByIdUseCase?: IGetCardByIdUseCase,
   ): Promise<PlayerStateDto> {
     // Hide prize card IDs during SET_PRIZE_CARDS phase (only show count)
     const prizeCards =
@@ -221,10 +237,15 @@ class PlayerStateDto {
       discardCount: state.discardPile.length,
       discardPile: state.discardPile, // Include discard pile contents
       activePokemon: state.activePokemon
-        ? await PokemonInPlayDto.fromDomain(state.activePokemon, getCardByIdUseCase)
+        ? await PokemonInPlayDto.fromDomain(
+            state.activePokemon,
+            getCardByIdUseCase,
+          )
         : null,
       bench: await Promise.all(
-        state.bench.map((card) => PokemonInPlayDto.fromDomain(card, getCardByIdUseCase)),
+        state.bench.map((card) =>
+          PokemonInPlayDto.fromDomain(card, getCardByIdUseCase),
+        ),
       ),
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
       prizeCards, // Hide prize card IDs during SET_PRIZE_CARDS phase
@@ -272,7 +293,7 @@ class OpponentStateDto {
     playerState: PlayerGameState | null,
     playerHasDrawnValidHand: boolean,
     opponentHasDrawnValidHand: boolean,
-    getCardByIdUseCase?: GetCardByIdUseCase,
+    getCardByIdUseCase?: IGetCardByIdUseCase,
   ): Promise<OpponentStateDto> {
     const dto: OpponentStateDto = {
       handCount: state.getHandCount(),
@@ -280,10 +301,15 @@ class OpponentStateDto {
       discardCount: state.discardPile.length,
       discardPile: state.discardPile, // Include discard pile contents
       activePokemon: state.activePokemon
-        ? await PokemonInPlayDto.fromDomain(state.activePokemon, getCardByIdUseCase)
+        ? await PokemonInPlayDto.fromDomain(
+            state.activePokemon,
+            getCardByIdUseCase,
+          )
         : null,
       bench: await Promise.all(
-        state.bench.map((card) => PokemonInPlayDto.fromDomain(card, getCardByIdUseCase)),
+        state.bench.map((card) =>
+          PokemonInPlayDto.fromDomain(card, getCardByIdUseCase),
+        ),
       ),
       benchCount: state.bench.length,
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
@@ -356,7 +382,7 @@ class PokemonInPlayDto {
 
   static async fromDomain(
     card: CardInstance,
-    getCardByIdUseCase?: GetCardByIdUseCase,
+    getCardByIdUseCase?: IGetCardByIdUseCase,
   ): Promise<PokemonInPlayDto> {
     // Always fetch the correct maxHp from card data to fix any incorrect stored values
     let correctMaxHp = card.maxHp;
@@ -415,7 +441,11 @@ class CoinFlipStateDto {
   status: string;
   context: string;
   configuration: any;
-  results: Array<{ flipIndex: number; result: 'heads' | 'tails'; seed: number }>;
+  results: Array<{
+    flipIndex: number;
+    result: 'heads' | 'tails';
+    seed: number;
+  }>;
   attackIndex?: number;
   pokemonInstanceId?: string;
   statusEffect?: string;
@@ -448,4 +478,3 @@ class CoinFlipStateDto {
     };
   }
 }
-

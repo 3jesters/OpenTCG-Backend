@@ -41,4 +41,3 @@ export interface IMatchRepository {
  * Symbol for dependency injection
  */
 export const IMatchRepository = Symbol('IMatchRepository');
-

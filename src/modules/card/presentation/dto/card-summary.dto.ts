@@ -71,4 +71,3 @@ export class CardSummaryDto {
   })
   imageUrl: string;
 }
-

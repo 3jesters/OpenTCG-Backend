@@ -29,4 +29,3 @@ export class Resistance {
     return this.type === other.type && this.modifier === other.modifier;
   }
 }
-

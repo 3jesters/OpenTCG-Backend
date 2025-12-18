@@ -23,4 +23,3 @@ export class GetDeckByIdUseCase {
     return deck;
   }
 }
-

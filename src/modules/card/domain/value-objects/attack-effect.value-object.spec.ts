@@ -23,7 +23,7 @@ describe('AttackEffect Value Objects', () => {
         const effect = AttackEffectFactory.discardEnergy(
           'defending',
           1,
-          EnergyType.FIRE
+          EnergyType.FIRE,
         );
         expect(effect.energyType).toBe(EnergyType.FIRE);
       });
@@ -34,7 +34,7 @@ describe('AttackEffect Value Objects', () => {
           'self',
           1,
           undefined,
-          conditions
+          conditions,
         );
         expect(effect.requiredConditions).toEqual(conditions);
       });
@@ -49,7 +49,13 @@ describe('AttackEffect Value Objects', () => {
       });
 
       it('should create effects for all status conditions', () => {
-        const statuses = ['PARALYZED', 'POISONED', 'BURNED', 'ASLEEP', 'CONFUSED'] as const;
+        const statuses = [
+          'PARALYZED',
+          'POISONED',
+          'BURNED',
+          'ASLEEP',
+          'CONFUSED',
+        ] as const;
         statuses.forEach((status) => {
           const effect = AttackEffectFactory.statusCondition(status);
           expect(effect.statusCondition).toBe(status);
@@ -58,7 +64,10 @@ describe('AttackEffect Value Objects', () => {
 
       it('should create with conditions', () => {
         const conditions = [ConditionFactory.coinFlipSuccess()];
-        const effect = AttackEffectFactory.statusCondition('POISONED', conditions);
+        const effect = AttackEffectFactory.statusCondition(
+          'POISONED',
+          conditions,
+        );
         expect(effect.requiredConditions).toEqual(conditions);
       });
     });
@@ -106,12 +115,20 @@ describe('AttackEffect Value Objects', () => {
       });
 
       it('should create with specific amount', () => {
-        const effect = AttackEffectFactory.preventDamage('self', 'this_turn', 20);
+        const effect = AttackEffectFactory.preventDamage(
+          'self',
+          'this_turn',
+          20,
+        );
         expect(effect.amount).toBe(20);
       });
 
       it('should create with all damage prevention', () => {
-        const effect = AttackEffectFactory.preventDamage('defending', 'next_turn', 'all');
+        const effect = AttackEffectFactory.preventDamage(
+          'defending',
+          'next_turn',
+          'all',
+        );
         expect(effect.amount).toBe('all');
       });
     });
@@ -127,7 +144,11 @@ describe('AttackEffect Value Objects', () => {
 
     describe('energyAcceleration', () => {
       it('should create energy acceleration from deck', () => {
-        const effect = AttackEffectFactory.energyAcceleration('self', 'deck', 1);
+        const effect = AttackEffectFactory.energyAcceleration(
+          'self',
+          'deck',
+          1,
+        );
         expect(effect.effectType).toBe(AttackEffectType.ENERGY_ACCELERATION);
         expect(effect.target).toBe('self');
         expect(effect.source).toBe('deck');
@@ -139,7 +160,7 @@ describe('AttackEffect Value Objects', () => {
           'benched',
           'discard',
           2,
-          EnergyType.GRASS
+          EnergyType.GRASS,
         );
         expect(effect.energyType).toBe(EnergyType.GRASS);
       });
@@ -150,7 +171,7 @@ describe('AttackEffect Value Objects', () => {
           'hand',
           1,
           undefined,
-          'choice'
+          'choice',
         );
         expect(effect.selector).toBe('choice');
       });
@@ -178,7 +199,10 @@ describe('AttackEffect Value Objects', () => {
         ConditionFactory.coinFlipSuccess(),
         ConditionFactory.selfHasDamage(),
       ];
-      const effect = AttackEffectFactory.statusCondition('PARALYZED', conditions);
+      const effect = AttackEffectFactory.statusCondition(
+        'PARALYZED',
+        conditions,
+      );
       expect(effect.requiredConditions).toHaveLength(2);
     });
 
@@ -190,4 +214,3 @@ describe('AttackEffect Value Objects', () => {
     });
   });
 });
-

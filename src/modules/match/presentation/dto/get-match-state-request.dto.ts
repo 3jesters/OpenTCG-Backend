@@ -8,4 +8,3 @@ export class GetMatchStateRequestDto {
   @IsString()
   playerId: string;
 }
-

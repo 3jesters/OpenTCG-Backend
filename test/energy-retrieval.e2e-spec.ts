@@ -156,7 +156,8 @@ describe('Energy Retrieval E2E', () => {
       .expect(200);
 
     const initialHand = initialStateResponse.body.playerState.hand;
-    const initialDiscardPile = initialStateResponse.body.playerState.discardPile;
+    const initialDiscardPile =
+      initialStateResponse.body.playerState.discardPile;
     const initialHandSize = initialHand.length;
     const initialDiscardSize = initialDiscardPile.length;
 
@@ -204,7 +205,7 @@ describe('Energy Retrieval E2E', () => {
     const grassEnergyInDiscard = updatedDiscardPile.filter(
       (id: string) => id === grassEnergyCardId1,
     ).length;
-    
+
     // Should have 2 fewer grass energy cards in discard (the 2 we retrieved)
     const initialGrassEnergyCount = initialDiscardPile.filter(
       (id: string) => id === grassEnergyCardId1,
@@ -320,7 +321,10 @@ describe('Energy Retrieval E2E', () => {
       },
     };
 
-    const matchFilePathForRequest = join(matchesDirectory, `${matchIdForRequest}.json`);
+    const matchFilePathForRequest = join(
+      matchesDirectory,
+      `${matchIdForRequest}.json`,
+    );
     await writeFile(
       matchFilePathForRequest,
       JSON.stringify(initialMatchState, null, 2),
@@ -337,14 +341,18 @@ describe('Energy Retrieval E2E', () => {
       .expect(200);
 
     const initialHand = initialStateResponse.body.playerState.hand;
-    const initialDiscardPile = initialStateResponse.body.playerState.discardPile;
+    const initialDiscardPile =
+      initialStateResponse.body.playerState.discardPile;
     const initialHandSize = initialHand.length;
     const initialDiscardSize = initialDiscardPile.length;
 
     // Verify initial state
     expect(initialHand.includes(energyRetrievalCardId)).toBe(true);
     expect(initialHand.includes(pokemonBreederCardId)).toBe(true);
-    expect(initialDiscardPile.filter((id: string) => id === grassEnergyCardId).length).toBe(3);
+    expect(
+      initialDiscardPile.filter((id: string) => id === grassEnergyCardId)
+        .length,
+    ).toBe(3);
 
     // Play Energy Retrieval: discard Pokemon Breeder, retrieve 2 identical grass energy from discard
     // Note: selectedCardIds contains the same ID twice to retrieve 2 copies
@@ -402,4 +410,3 @@ describe('Energy Retrieval E2E', () => {
     expect(updatedDiscardPile.length).toBe(initialDiscardSize);
   });
 });
-

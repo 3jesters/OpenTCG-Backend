@@ -1,12 +1,12 @@
 /**
  * Legacy Ability Type Enum
  * Represents the original Pokémon TCG ability mechanics that have been unified into "Ability"
- * 
+ *
  * Historical Timeline:
  * - Pokémon Power (Base Set - Neo, 1999-2003)
  * - Poké-Body & Poké-Power (EX era, 2003-2010)
  * - Ability (Black & White onwards, 2011-present)
- * 
+ *
  * This enum is used for:
  * - Importing legacy cards
  * - Display purposes (showing original mechanic name)
@@ -34,4 +34,3 @@ export enum LegacyAbilityType {
    */
   POKE_POWER = 'POKE_POWER',
 }
-

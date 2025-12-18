@@ -5,7 +5,7 @@ import { MatchStateMachineService } from '../../domain/services';
 import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
 import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
 import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
@@ -104,8 +104,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         text: attack.text,
         energyBonusCap: attack.energyBonusCap,
       })),
-      weakness: weakness ? { type: weakness.type, modifier: weakness.modifier } : undefined,
-      resistance: resistance ? { type: resistance.type, modifier: resistance.modifier } : undefined,
+      weakness: weakness
+        ? { type: weakness.type, modifier: weakness.modifier }
+        : undefined,
+      resistance: resistance
+        ? { type: resistance.type, modifier: resistance.modifier }
+        : undefined,
       artist: 'Artist',
       imageUrl: '',
     };
@@ -223,7 +227,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           useValue: mockStateMachineService,
         },
         {
-          provide: GetCardByIdUseCase,
+          provide: IGetCardByIdUseCase,
           useValue: mockGetCardByIdUseCase,
         },
         {
@@ -279,7 +283,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         'Water Gun',
         [EnergyType.WATER, EnergyType.WATER, EnergyType.COLORLESS],
         '30+',
-        'Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack\'s Energy cost. Extra Water Energy after the 2nd doesn\'t count.',
+        "Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count.",
         undefined,
         undefined,
         2, // energyBonusCap
@@ -288,7 +292,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
       const poliwrathCard = createPokemonCard('poliwrath', 'Poliwrath', 90);
       poliwrathCard.addAttack(waterGunAttack);
 
-      const poliwrathDto = createCardDetailDto('poliwrath', 'Poliwrath', 90, [waterGunAttack]);
+      const poliwrathDto = createCardDetailDto('poliwrath', 'Poliwrath', 90, [
+        waterGunAttack,
+      ]);
 
       // Create Poliwrath instance with 8 Water Energy attached (6 extra beyond the 2 required)
       const energyCardIds = [
@@ -330,7 +336,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined, // evolvedAt
       );
 
-      const match = createMatchWithGameState(poliwrathInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        poliwrathInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       // Mock card lookups - need to mock execute for attacker, defender, and all energy cards
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
@@ -357,17 +368,19 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         }
         return Promise.resolve(null);
       });
-      
+
       // Mock card entity lookups
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'poliwrath') {
-          return Promise.resolve(poliwrathCard);
-        }
-        if (cardId.startsWith('energy-water')) {
-          return Promise.resolve(createEnergyCard(EnergyType.WATER));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'poliwrath') {
+            return Promise.resolve(poliwrathCard);
+          }
+          if (cardId.startsWith('energy-water')) {
+            return Promise.resolve(createEnergyCard(EnergyType.WATER));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -401,7 +414,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         'Water Gun',
         [EnergyType.WATER, EnergyType.WATER, EnergyType.COLORLESS],
         '30+',
-        'Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack\'s Energy cost. Extra Water Energy after the 2nd doesn\'t count.',
+        "Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count.",
         undefined,
         undefined,
         2,
@@ -409,7 +422,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
 
       const poliwrathCard = createPokemonCard('poliwrath', 'Poliwrath', 90);
       poliwrathCard.addAttack(waterGunAttack);
-      const poliwrathDto = createCardDetailDto('poliwrath', 'Poliwrath', 90, [waterGunAttack]);
+      const poliwrathDto = createCardDetailDto('poliwrath', 'Poliwrath', 90, [
+        waterGunAttack,
+      ]);
 
       // Create Poliwrath with exactly 4 Water Energy (2 required + 2 extra)
       const poliwrathInstance = new CardInstance(
@@ -418,7 +433,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         PokemonPosition.ACTIVE,
         90, // currentHp
         90, // maxHp
-        ['energy-water-1', 'energy-water-2', 'energy-water-3', 'energy-water-4'], // attachedEnergy
+        [
+          'energy-water-1',
+          'energy-water-2',
+          'energy-water-3',
+          'energy-water-4',
+        ], // attachedEnergy
         [],
         [], // evolutionChain
         undefined, // poisonDamageAmount
@@ -440,7 +460,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined, // evolvedAt
       );
 
-      const match = createMatchWithGameState(poliwrathInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        poliwrathInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'poliwrath') {
@@ -466,15 +491,17 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         }
         return Promise.resolve(null);
       });
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'poliwrath') {
-          return Promise.resolve(poliwrathCard);
-        }
-        if (cardId.startsWith('energy-water')) {
-          return Promise.resolve(createEnergyCard(EnergyType.WATER));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'poliwrath') {
+            return Promise.resolve(poliwrathCard);
+          }
+          if (cardId.startsWith('energy-water')) {
+            return Promise.resolve(createEnergyCard(EnergyType.WATER));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -506,7 +533,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         'Water Gun',
         [EnergyType.WATER, EnergyType.WATER, EnergyType.COLORLESS],
         '30+',
-        'Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack\'s Energy cost. Extra Water Energy after the 2nd doesn\'t count.',
+        "Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count.",
         undefined,
         undefined,
         2,
@@ -514,7 +541,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
 
       const poliwrathCard = createPokemonCard('poliwrath', 'Poliwrath', 90);
       poliwrathCard.addAttack(waterGunAttack);
-      const poliwrathDto = createCardDetailDto('poliwrath', 'Poliwrath', 90, [waterGunAttack]);
+      const poliwrathDto = createCardDetailDto('poliwrath', 'Poliwrath', 90, [
+        waterGunAttack,
+      ]);
 
       // Create Poliwrath with 3 Water Energy (2 required + 1 extra)
       const poliwrathInstance = new CardInstance(
@@ -545,7 +574,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined, // evolvedAt
       );
 
-      const match = createMatchWithGameState(poliwrathInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        poliwrathInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'poliwrath') {
@@ -571,15 +605,17 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         }
         return Promise.resolve(null);
       });
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'poliwrath') {
-          return Promise.resolve(poliwrathCard);
-        }
-        if (cardId.startsWith('energy-water')) {
-          return Promise.resolve(createEnergyCard(EnergyType.WATER));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'poliwrath') {
+            return Promise.resolve(poliwrathCard);
+          }
+          if (cardId.startsWith('energy-water')) {
+            return Promise.resolve(createEnergyCard(EnergyType.WATER));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -619,7 +655,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
 
       const machokeCard = createPokemonCard('machoke', 'Machoke', 80);
       machokeCard.addAttack(karateChopAttack);
-      const machokeDto = createCardDetailDto('machoke', 'Machoke', 80, [karateChopAttack]);
+      const machokeDto = createCardDetailDto('machoke', 'Machoke', 80, [
+        karateChopAttack,
+      ]);
 
       // Create Machoke with 30 HP damage (3 damage counters)
       const machokeInstance = new CardInstance(
@@ -650,7 +688,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined, // evolvedAt
       );
 
-      const match = createMatchWithGameState(machokeInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        machokeInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'machoke') {
@@ -660,7 +703,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           return Promise.resolve(opponentDto);
         }
         if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fighting') ? EnergyType.FIGHTING : EnergyType.COLORLESS;
+          const energyType = cardId.includes('fighting')
+            ? EnergyType.FIGHTING
+            : EnergyType.COLORLESS;
           return Promise.resolve({
             cardId,
             instanceId: `instance-${cardId}`,
@@ -677,16 +722,20 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         }
         return Promise.resolve(null);
       });
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'machoke') {
-          return Promise.resolve(machokeCard);
-        }
-        if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fighting') ? EnergyType.FIGHTING : EnergyType.COLORLESS;
-          return Promise.resolve(createEnergyCard(energyType));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'machoke') {
+            return Promise.resolve(machokeCard);
+          }
+          if (cardId.startsWith('energy-')) {
+            const energyType = cardId.includes('fighting')
+              ? EnergyType.FIGHTING
+              : EnergyType.COLORLESS;
+            return Promise.resolve(createEnergyCard(energyType));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -724,7 +773,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
 
       const machokeCard = createPokemonCard('machoke', 'Machoke', 80);
       machokeCard.addAttack(karateChopAttack);
-      const machokeDto = createCardDetailDto('machoke', 'Machoke', 80, [karateChopAttack]);
+      const machokeDto = createCardDetailDto('machoke', 'Machoke', 80, [
+        karateChopAttack,
+      ]);
 
       // Create Machoke with full HP (0 damage counters)
       const machokeInstance = new CardInstance(
@@ -755,7 +806,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined, // evolvedAt
       );
 
-      const match = createMatchWithGameState(machokeInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        machokeInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'machoke') {
@@ -765,7 +821,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           return Promise.resolve(opponentDto);
         }
         if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fighting') ? EnergyType.FIGHTING : EnergyType.COLORLESS;
+          const energyType = cardId.includes('fighting')
+            ? EnergyType.FIGHTING
+            : EnergyType.COLORLESS;
           return Promise.resolve({
             cardId,
             instanceId: `instance-${cardId}`,
@@ -782,16 +840,20 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         }
         return Promise.resolve(null);
       });
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'machoke') {
-          return Promise.resolve(machokeCard);
-        }
-        if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fighting') ? EnergyType.FIGHTING : EnergyType.COLORLESS;
-          return Promise.resolve(createEnergyCard(energyType));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'machoke') {
+            return Promise.resolve(machokeCard);
+          }
+          if (cardId.startsWith('energy-')) {
+            const energyType = cardId.includes('fighting')
+              ? EnergyType.FIGHTING
+              : EnergyType.COLORLESS;
+            return Promise.resolve(createEnergyCard(energyType));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -829,7 +891,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
 
       const machokeCard = createPokemonCard('machoke', 'Machoke', 80);
       machokeCard.addAttack(karateChopAttack);
-      const machokeDto = createCardDetailDto('machoke', 'Machoke', 80, [karateChopAttack]);
+      const machokeDto = createCardDetailDto('machoke', 'Machoke', 80, [
+        karateChopAttack,
+      ]);
 
       // Create Machoke with 80 HP damage (8 damage counters, more than needed to reduce to 0)
       const machokeInstance = new CardInstance(
@@ -860,7 +924,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined, // evolvedAt
       );
 
-      const match = createMatchWithGameState(machokeInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        machokeInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'machoke') {
@@ -870,7 +939,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           return Promise.resolve(opponentDto);
         }
         if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fighting') ? EnergyType.FIGHTING : EnergyType.COLORLESS;
+          const energyType = cardId.includes('fighting')
+            ? EnergyType.FIGHTING
+            : EnergyType.COLORLESS;
           return Promise.resolve({
             cardId,
             instanceId: `instance-${cardId}`,
@@ -887,16 +958,20 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         }
         return Promise.resolve(null);
       });
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'machoke') {
-          return Promise.resolve(machokeCard);
-        }
-        if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fighting') ? EnergyType.FIGHTING : EnergyType.COLORLESS;
-          return Promise.resolve(createEnergyCard(energyType));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'machoke') {
+            return Promise.resolve(machokeCard);
+          }
+          if (cardId.startsWith('energy-')) {
+            const energyType = cardId.includes('fighting')
+              ? EnergyType.FIGHTING
+              : EnergyType.COLORLESS;
+            return Promise.resolve(createEnergyCard(energyType));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -934,7 +1009,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
 
       const machokeCard = createPokemonCard('machoke', 'Machoke', 80);
       machokeCard.addAttack(karateChopAttack);
-      const machokeDto = createCardDetailDto('machoke', 'Machoke', 80, [karateChopAttack]);
+      const machokeDto = createCardDetailDto('machoke', 'Machoke', 80, [
+        karateChopAttack,
+      ]);
 
       // Create Machoke with 50 HP damage (5 damage counters)
       const machokeInstance = new CardInstance(
@@ -965,7 +1042,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined, // evolvedAt
       );
 
-      const match = createMatchWithGameState(machokeInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        machokeInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'machoke') {
@@ -975,7 +1057,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           return Promise.resolve(opponentDto);
         }
         if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fighting') ? EnergyType.FIGHTING : EnergyType.COLORLESS;
+          const energyType = cardId.includes('fighting')
+            ? EnergyType.FIGHTING
+            : EnergyType.COLORLESS;
           return Promise.resolve({
             cardId,
             instanceId: `instance-${cardId}`,
@@ -992,16 +1076,20 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         }
         return Promise.resolve(null);
       });
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'machoke') {
-          return Promise.resolve(machokeCard);
-        }
-        if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fighting') ? EnergyType.FIGHTING : EnergyType.COLORLESS;
-          return Promise.resolve(createEnergyCard(energyType));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'machoke') {
+            return Promise.resolve(machokeCard);
+          }
+          if (cardId.startsWith('energy-')) {
+            const energyType = cardId.includes('fighting')
+              ? EnergyType.FIGHTING
+              : EnergyType.COLORLESS;
+            return Promise.resolve(createEnergyCard(energyType));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -1104,7 +1192,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined,
       );
 
-      const match = createMatchWithGameState(poliwrathInstance, [], [], charmeleonInstance);
+      const match = createMatchWithGameState(
+        poliwrathInstance,
+        [],
+        [],
+        charmeleonInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'poliwrath') {
@@ -1134,21 +1227,23 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         return Promise.resolve(null);
       });
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'poliwrath') {
-          return Promise.resolve(poliwrathCard);
-        }
-        if (cardId === 'charmeleon') {
-          return Promise.resolve(charmeleonCard);
-        }
-        if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('water')
-            ? EnergyType.WATER
-            : EnergyType.COLORLESS;
-          return Promise.resolve(createEnergyCard(energyType));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'poliwrath') {
+            return Promise.resolve(poliwrathCard);
+          }
+          if (cardId === 'charmeleon') {
+            return Promise.resolve(charmeleonCard);
+          }
+          if (cardId.startsWith('energy-')) {
+            const energyType = cardId.includes('water')
+              ? EnergyType.WATER
+              : EnergyType.COLORLESS;
+            return Promise.resolve(createEnergyCard(energyType));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -1256,7 +1351,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined,
       );
 
-      const match = createMatchWithGameState(pikachuInstance, [], [], onixInstance);
+      const match = createMatchWithGameState(
+        pikachuInstance,
+        [],
+        [],
+        onixInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'pikachu') {
@@ -1283,18 +1383,20 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         return Promise.resolve(null);
       });
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'pikachu') {
-          return Promise.resolve(pikachuCard);
-        }
-        if (cardId === 'onix') {
-          return Promise.resolve(onixCard);
-        }
-        if (cardId.startsWith('energy-electric')) {
-          return Promise.resolve(createEnergyCard(EnergyType.ELECTRIC));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'pikachu') {
+            return Promise.resolve(pikachuCard);
+          }
+          if (cardId === 'onix') {
+            return Promise.resolve(onixCard);
+          }
+          if (cardId.startsWith('energy-electric')) {
+            return Promise.resolve(createEnergyCard(EnergyType.ELECTRIC));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -1321,7 +1423,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         'Water Gun',
         [EnergyType.WATER, EnergyType.WATER, EnergyType.COLORLESS],
         '30+',
-        'Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack\'s Energy cost. Extra Water Energy after the 2nd doesn\'t count.',
+        "Does 30 damage plus 10 more damage for each Water Energy attached to Poliwrath but not used to pay for this attack's Energy cost. Extra Water Energy after the 2nd doesn't count.",
         undefined,
         undefined,
         2, // energyBonusCap
@@ -1399,7 +1501,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         undefined,
       );
 
-      const match = createMatchWithGameState(poliwrathInstance, [], [], charmeleonInstance);
+      const match = createMatchWithGameState(
+        poliwrathInstance,
+        [],
+        [],
+        charmeleonInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'poliwrath') {
@@ -1429,21 +1536,23 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         return Promise.resolve(null);
       });
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'poliwrath') {
-          return Promise.resolve(poliwrathCard);
-        }
-        if (cardId === 'charmeleon') {
-          return Promise.resolve(charmeleonCard);
-        }
-        if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('water')
-            ? EnergyType.WATER
-            : EnergyType.COLORLESS;
-          return Promise.resolve(createEnergyCard(energyType));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'poliwrath') {
+            return Promise.resolve(poliwrathCard);
+          }
+          if (cardId === 'charmeleon') {
+            return Promise.resolve(charmeleonCard);
+          }
+          if (cardId.startsWith('energy-')) {
+            const energyType = cardId.includes('water')
+              ? EnergyType.WATER
+              : EnergyType.COLORLESS;
+            return Promise.resolve(createEnergyCard(energyType));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);

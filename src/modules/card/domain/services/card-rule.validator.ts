@@ -86,31 +86,33 @@ export class CardRuleValidator {
     // Validate based on category
     switch (metadata.category) {
       case 'movement':
-        this.validateMovementMetadata(metadata as MovementRuleMetadata);
+        this.validateMovementMetadata(metadata);
         break;
       case 'attack':
-        this.validateAttackMetadata(metadata as AttackRuleMetadata);
+        this.validateAttackMetadata(metadata);
         break;
       case 'damage':
-        this.validateDamageMetadata(metadata as DamageRuleMetadata);
+        this.validateDamageMetadata(metadata);
         break;
       case 'status':
-        this.validateStatusMetadata(metadata as StatusRuleMetadata);
+        this.validateStatusMetadata(metadata);
         break;
       case 'prize':
-        this.validatePrizeMetadata(metadata as PrizeRuleMetadata);
+        this.validatePrizeMetadata(metadata);
         break;
       case 'evolution':
-        this.validateEvolutionMetadata(metadata as EvolutionRuleMetadata);
+        this.validateEvolutionMetadata(metadata);
         break;
       case 'play':
-        this.validatePlayMetadata(metadata as PlayRuleMetadata);
+        this.validatePlayMetadata(metadata);
         break;
       case 'energy':
-        this.validateEnergyMetadata(metadata as EnergyRuleMetadata);
+        this.validateEnergyMetadata(metadata);
         break;
       default:
-        throw new Error(`Unknown metadata category: ${(metadata as any).category}`);
+        throw new Error(
+          `Unknown metadata category: ${(metadata as any).category}`,
+        );
     }
   }
 
@@ -129,33 +131,21 @@ export class CardRuleValidator {
       throw new Error('Switch target must be "benched" or "random"');
     }
 
-    if (
-      metadata.allowedActions &&
-      !Array.isArray(metadata.allowedActions)
-    ) {
+    if (metadata.allowedActions && !Array.isArray(metadata.allowedActions)) {
       throw new Error('Allowed actions must be an array');
     }
   }
 
   private static validateAttackMetadata(metadata: AttackRuleMetadata): void {
-    if (
-      metadata.costReduction !== undefined &&
-      metadata.costReduction < 0
-    ) {
+    if (metadata.costReduction !== undefined && metadata.costReduction < 0) {
       throw new Error('Cost reduction cannot be negative');
     }
 
-    if (
-      metadata.costIncrease !== undefined &&
-      metadata.costIncrease < 0
-    ) {
+    if (metadata.costIncrease !== undefined && metadata.costIncrease < 0) {
       throw new Error('Cost increase cannot be negative');
     }
 
-    if (
-      metadata.affectedAttacks &&
-      !Array.isArray(metadata.affectedAttacks)
-    ) {
+    if (metadata.affectedAttacks && !Array.isArray(metadata.affectedAttacks)) {
       throw new Error('Affected attacks must be an array');
     }
   }
@@ -168,10 +158,7 @@ export class CardRuleValidator {
       throw new Error('Reduction amount cannot be negative');
     }
 
-    if (
-      metadata.increaseAmount !== undefined &&
-      metadata.increaseAmount < 0
-    ) {
+    if (metadata.increaseAmount !== undefined && metadata.increaseAmount < 0) {
       throw new Error('Increase amount cannot be negative');
     }
 
@@ -181,17 +168,11 @@ export class CardRuleValidator {
   }
 
   private static validateStatusMetadata(metadata: StatusRuleMetadata): void {
-    if (
-      metadata.immuneStatus &&
-      !Array.isArray(metadata.immuneStatus)
-    ) {
+    if (metadata.immuneStatus && !Array.isArray(metadata.immuneStatus)) {
       throw new Error('Immune status must be an array');
     }
 
-    if (
-      metadata.effectTypes &&
-      !Array.isArray(metadata.effectTypes)
-    ) {
+    if (metadata.effectTypes && !Array.isArray(metadata.effectTypes)) {
       throw new Error('Effect types must be an array');
     }
   }
@@ -253,10 +234,7 @@ export class CardRuleValidator {
   }
 
   private static validateEnergyMetadata(metadata: EnergyRuleMetadata): void {
-    if (
-      metadata.costReduction !== undefined &&
-      metadata.costReduction < 0
-    ) {
+    if (metadata.costReduction !== undefined && metadata.costReduction < 0) {
       throw new Error('Cost reduction cannot be negative');
     }
 
@@ -268,4 +246,3 @@ export class CardRuleValidator {
     }
   }
 }
-

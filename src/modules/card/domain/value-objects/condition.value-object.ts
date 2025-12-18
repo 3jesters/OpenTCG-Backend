@@ -94,7 +94,12 @@ export class ConditionFactory {
    * Create a self has specific status condition
    */
   static selfHasStatus(
-    statusCondition: 'PARALYZED' | 'POISONED' | 'BURNED' | 'ASLEEP' | 'CONFUSED',
+    statusCondition:
+      | 'PARALYZED'
+      | 'POISONED'
+      | 'BURNED'
+      | 'ASLEEP'
+      | 'CONFUSED',
     description?: string,
   ): Condition {
     return {
@@ -118,7 +123,12 @@ export class ConditionFactory {
    * Create an opponent has specific status condition
    */
   static opponentHasStatus(
-    statusCondition: 'PARALYZED' | 'POISONED' | 'BURNED' | 'ASLEEP' | 'CONFUSED',
+    statusCondition:
+      | 'PARALYZED'
+      | 'POISONED'
+      | 'BURNED'
+      | 'ASLEEP'
+      | 'CONFUSED',
     description?: string,
   ): Condition {
     return {
@@ -295,4 +305,3 @@ export class ConditionHelper {
     return typesRequiringValue.includes(conditionType);
   }
 }
-

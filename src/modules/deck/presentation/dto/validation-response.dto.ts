@@ -17,4 +17,3 @@ export class ValidationResponseDto {
     return dto;
   }
 }
-

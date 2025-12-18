@@ -10,4 +10,3 @@ export enum EvolutionStage {
   BREAK = 'BREAK',
   LEGEND = 'LEGEND',
 }
-

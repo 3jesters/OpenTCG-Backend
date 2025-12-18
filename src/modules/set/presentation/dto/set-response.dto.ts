@@ -32,4 +32,3 @@ export class SetResponseDto {
     return sets.map((set) => this.fromDomain(set));
   }
 }
-

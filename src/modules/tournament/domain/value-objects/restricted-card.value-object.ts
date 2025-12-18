@@ -38,4 +38,3 @@ export class RestrictedCard {
     return `${this.setName}:${this.cardId} (max ${this.maxCopies})`;
   }
 }
-

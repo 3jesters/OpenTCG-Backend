@@ -16,7 +16,10 @@ export class ValidateDeckAgainstTournamentUseCase {
     private readonly tournamentRepository: ITournamentRepository,
   ) {}
 
-  async execute(deckId: string, tournamentId: string): Promise<ValidationResult> {
+  async execute(
+    deckId: string,
+    tournamentId: string,
+  ): Promise<ValidationResult> {
     // Load deck
     const deck = await this.deckRepository.findById(deckId);
     if (!deck) {
@@ -26,7 +29,9 @@ export class ValidateDeckAgainstTournamentUseCase {
     // Load tournament
     const tournament = await this.tournamentRepository.findById(tournamentId);
     if (!tournament) {
-      throw new NotFoundException(`Tournament with ID ${tournamentId} not found`);
+      throw new NotFoundException(
+        `Tournament with ID ${tournamentId} not found`,
+      );
     }
 
     const errors: string[] = [];
@@ -78,9 +83,7 @@ export class ValidateDeckAgainstTournamentUseCase {
       // Check if specific card is banned in its set
       const bannedCardsInSet = setBannedCards[deckCard.setName] || [];
       if (bannedCardsInSet.includes(deckCard.cardId)) {
-        errors.push(
-          `Card ${deckCard.cardId} is banned in this tournament`,
-        );
+        errors.push(`Card ${deckCard.cardId} is banned in this tournament`);
       }
 
       // Check card quantity limits
@@ -90,7 +93,7 @@ export class ValidateDeckAgainstTournamentUseCase {
         deckCard.setName,
         deckCard.cardId,
       );
-      
+
       if (!isBasicEnergy) {
         if (deckCard.quantity > maxCopies) {
           errors.push(
@@ -134,4 +137,3 @@ export class ValidateDeckAgainstTournamentUseCase {
     }
   }
 }
-

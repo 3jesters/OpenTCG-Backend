@@ -11,4 +11,3 @@ export enum PokemonType {
   DRAGON = 'DRAGON',
   COLORLESS = 'COLORLESS',
 }
-

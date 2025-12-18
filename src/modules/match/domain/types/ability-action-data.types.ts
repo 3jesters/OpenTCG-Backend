@@ -39,14 +39,16 @@ export interface SearchDeckAbilityActionData extends BaseAbilityActionData {
 /**
  * Action data for RETRIEVE_FROM_DISCARD effect
  */
-export interface RetrieveFromDiscardAbilityActionData extends BaseAbilityActionData {
+export interface RetrieveFromDiscardAbilityActionData
+  extends BaseAbilityActionData {
   selectedCardIds: string[]; // Required: Cards selected from discard pile
 }
 
 /**
  * Action data for ENERGY_ACCELERATION effect
  */
-export interface EnergyAccelerationAbilityActionData extends BaseAbilityActionData {
+export interface EnergyAccelerationAbilityActionData
+  extends BaseAbilityActionData {
   targetPokemon?: PokemonPosition; // Optional: Target Pokemon position for attaching energy
   selectedCardIds?: string[]; // Optional: Energy cards selected (if source is hand/discard)
 }
@@ -61,14 +63,16 @@ export interface SwitchPokemonAbilityActionData extends BaseAbilityActionData {
 /**
  * Action data for DISCARD_FROM_HAND effect
  */
-export interface DiscardFromHandAbilityActionData extends BaseAbilityActionData {
+export interface DiscardFromHandAbilityActionData
+  extends BaseAbilityActionData {
   handCardIds: string[]; // Required: Cards to discard from hand
 }
 
 /**
  * Action data for ATTACH_FROM_DISCARD effect
  */
-export interface AttachFromDiscardAbilityActionData extends BaseAbilityActionData {
+export interface AttachFromDiscardAbilityActionData
+  extends BaseAbilityActionData {
   targetPokemon?: string; // Optional: Target Pokemon position
   selectedCardIds: string[]; // Required: Energy cards selected from discard
 }
@@ -76,7 +80,8 @@ export interface AttachFromDiscardAbilityActionData extends BaseAbilityActionDat
 /**
  * Action data for STATUS_CONDITION effect
  */
-export interface StatusConditionAbilityActionData extends BaseAbilityActionData {
+export interface StatusConditionAbilityActionData
+  extends BaseAbilityActionData {
   targetPokemon: PokemonPosition; // Required: Target Pokemon position (opponent's Pokemon)
 }
 

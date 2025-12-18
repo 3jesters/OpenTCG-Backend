@@ -8,4 +8,3 @@ export class CreateMatchDto {
   player1Id?: string;
   player1DeckId?: string;
 }
-

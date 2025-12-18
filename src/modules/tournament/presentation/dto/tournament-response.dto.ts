@@ -34,7 +34,8 @@ export class DeckRulesResponseDto {
       maxCopiesPerCard: deckRules.maxCopiesPerCard,
       minBasicPokemon: deckRules.minBasicPokemon,
       restrictedCards: deckRules.restrictedCards.map(
-        (rc: any) => new RestrictedCardResponseDto(rc.setName, rc.cardId, rc.maxCopies),
+        (rc: any) =>
+          new RestrictedCardResponseDto(rc.setName, rc.cardId, rc.maxCopies),
       ),
     };
   }
@@ -87,4 +88,3 @@ export class TournamentResponseDto {
     };
   }
 }
-

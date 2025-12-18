@@ -3,4 +3,3 @@ export enum CardType {
   TRAINER = 'TRAINER',
   ENERGY = 'ENERGY',
 }
-

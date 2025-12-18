@@ -137,7 +137,12 @@ export class AttackEffectFactory {
    * Create a status condition effect
    */
   static statusCondition(
-    statusCondition: 'PARALYZED' | 'POISONED' | 'BURNED' | 'ASLEEP' | 'CONFUSED',
+    statusCondition:
+      | 'PARALYZED'
+      | 'POISONED'
+      | 'BURNED'
+      | 'ASLEEP'
+      | 'CONFUSED',
     requiredConditions?: Condition[],
   ): StatusConditionEffect {
     return {
@@ -249,4 +254,3 @@ export class AttackEffectFactory {
     };
   }
 }
-

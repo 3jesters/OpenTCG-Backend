@@ -172,9 +172,7 @@ describe('Card Entity - Card Rules', () => {
       sorted[0] = CardRuleFactory.cannotRetreat();
 
       // Original should be unchanged
-      expect(card.cardRules![0].ruleType).not.toBe(
-        CardRuleType.CANNOT_RETREAT,
-      );
+      expect(card.cardRules![0].ruleType).not.toBe(CardRuleType.CANNOT_RETREAT);
     });
   });
 
@@ -338,9 +336,9 @@ describe('Card Entity - Card Rules', () => {
 
       expect(specialPokemon.hasRules()).toBe(true);
       expect(specialPokemon.cardRules).toHaveLength(3);
-      expect(
-        specialPokemon.hasRuleType(CardRuleType.EXTRA_PRIZE_CARDS),
-      ).toBe(true);
+      expect(specialPokemon.hasRuleType(CardRuleType.EXTRA_PRIZE_CARDS)).toBe(
+        true,
+      );
       expect(specialPokemon.hasRuleType(CardRuleType.STATUS_IMMUNITY)).toBe(
         true,
       );
@@ -370,4 +368,3 @@ describe('Card Entity - Card Rules', () => {
     });
   });
 });
-

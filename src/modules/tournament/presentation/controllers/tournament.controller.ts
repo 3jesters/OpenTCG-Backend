@@ -39,7 +39,9 @@ export class TournamentController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() dto: CreateTournamentDto): Promise<TournamentResponseDto> {
+  async create(
+    @Body() dto: CreateTournamentDto,
+  ): Promise<TournamentResponseDto> {
     const tournament = await this.createTournamentUseCase.execute(dto);
     return TournamentResponseDto.fromDomain(tournament);
   }
@@ -90,4 +92,3 @@ export class TournamentController {
     await this.deleteTournamentUseCase.execute(id);
   }
 }
-

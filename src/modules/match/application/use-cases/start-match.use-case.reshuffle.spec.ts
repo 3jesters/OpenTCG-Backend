@@ -3,11 +3,7 @@ import { IMatchRepository } from '../../domain/repositories';
 import { IDeckRepository } from '../../../deck/domain/repositories';
 import { ITournamentRepository } from '../../../tournament/domain';
 import { StartGameRulesValidatorService } from '../../domain/services';
-import {
-  Match,
-  MatchState,
-  PlayerIdentifier,
-} from '../../domain';
+import { Match, MatchState, PlayerIdentifier } from '../../domain';
 import { Deck, DeckCard } from '../../../deck/domain';
 import { Tournament, DeckRules } from '../../../tournament/domain';
 import {
@@ -554,4 +550,3 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
     });
   });
 });
-

@@ -29,4 +29,3 @@ export class Weakness {
     return this.type === other.type && this.modifier === other.modifier;
   }
 }
-

@@ -130,4 +130,3 @@ describe('AttackPrecondition Value Objects', () => {
     });
   });
 });
-

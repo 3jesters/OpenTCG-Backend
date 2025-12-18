@@ -15,7 +15,7 @@ describe('Match Spec Cleanup (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -75,4 +75,3 @@ describe('Match Spec Cleanup (e2e)', () => {
     expect(response.body.player1Id).toBe('test-player-2');
   });
 });
-

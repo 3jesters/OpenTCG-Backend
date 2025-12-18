@@ -51,4 +51,3 @@ export class CreateSetUseCase {
     return set;
   }
 }
-

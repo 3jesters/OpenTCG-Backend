@@ -1,9 +1,4 @@
-import {
-  IsString,
-  IsOptional,
-  IsArray,
-  ValidateNested,
-} from 'class-validator';
+import { IsString, IsOptional, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { DeckCardRequestDto } from './create-deck-request.dto';
 
@@ -26,4 +21,3 @@ export class UpdateDeckRequestDto {
   @IsOptional()
   cards?: DeckCardRequestDto[];
 }
-

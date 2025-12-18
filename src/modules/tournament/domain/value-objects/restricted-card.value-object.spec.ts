@@ -59,4 +59,3 @@ describe('RestrictedCard Value Object', () => {
     });
   });
 });
-

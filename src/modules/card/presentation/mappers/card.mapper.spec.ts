@@ -15,7 +15,13 @@ import {
 import { AbilityEffectFactory } from '../../domain/value-objects/ability-effect.value-object';
 import { CardSummaryDto } from '../dto/card-summary.dto';
 import { CardDetailDto } from '../dto/card-detail.dto';
-import { Attack, Ability, Weakness, Resistance, TrainerEffect } from '../../domain/value-objects';
+import {
+  Attack,
+  Ability,
+  Weakness,
+  Resistance,
+  TrainerEffect,
+} from '../../domain/value-objects';
 
 describe('CardMapper', () => {
   let mockCard: Card;
@@ -110,7 +116,6 @@ describe('CardMapper', () => {
       const resistance = new Resistance(EnergyType.METAL, '-20');
       mockCard.setResistance(resistance);
 
-      mockCard.setLevel(12);
       mockCard.setRegulationMark('E');
 
       // Act
@@ -128,7 +133,6 @@ describe('CardMapper', () => {
       expect(result.rarity).toBe(Rarity.COMMON);
       expect(result.hp).toBe(60);
       expect(result.stage).toBe(EvolutionStage.BASIC);
-      expect(result.level).toBe(12);
       expect(result.retreatCost).toBe(1);
       expect(result.artist).toBe('Mitsuhiro Arita');
       expect(result.description).toBe('Mouse Pokémon');
@@ -138,15 +142,22 @@ describe('CardMapper', () => {
       // Check ability mapping
       expect(result.ability).toBeDefined();
       expect(result.ability!.name).toBe('Static');
-      expect(result.ability!.text).toBe('When attacked, flip a coin. If heads, the attacking Pokémon is paralyzed.');
-      expect(result.ability!.activationType).toBe(AbilityActivationType.PASSIVE);
+      expect(result.ability!.text).toBe(
+        'When attacked, flip a coin. If heads, the attacking Pokémon is paralyzed.',
+      );
+      expect(result.ability!.activationType).toBe(
+        AbilityActivationType.PASSIVE,
+      );
 
       // Check attack mapping
       expect(result.attacks).toBeDefined();
       expect(result.attacks!.length).toBe(1);
       expect(result.attacks![0].name).toBe('Thunder Shock');
       expect(result.attacks![0].damage).toBe('30');
-      expect(result.attacks![0].energyCost).toEqual([EnergyType.LIGHTNING, EnergyType.COLORLESS]);
+      expect(result.attacks![0].energyCost).toEqual([
+        EnergyType.LIGHTNING,
+        EnergyType.COLORLESS,
+      ]);
 
       // Check weakness mapping
       expect(result.weakness).toBeDefined();
@@ -168,7 +179,6 @@ describe('CardMapper', () => {
       expect(result.attacks).toEqual([]);
       expect(result.weakness).toBeUndefined();
       expect(result.resistance).toBeUndefined();
-      expect(result.level).toBeUndefined();
       expect(result.regulationMark).toBeUndefined();
       expect(result.evolvesFrom).toBeUndefined();
     });
@@ -242,7 +252,9 @@ describe('CardMapper', () => {
       expect(result.trainerType).toBe(TrainerType.SUPPORTER);
       expect(result.trainerEffects).toBeDefined();
       expect(result.trainerEffects!.length).toBe(1);
-      expect(result.trainerEffects![0].effectType).toBe(TrainerEffectType.DRAW_CARDS);
+      expect(result.trainerEffects![0].effectType).toBe(
+        TrainerEffectType.DRAW_CARDS,
+      );
       expect(result.trainerEffects![0].target).toBe(TargetType.SELF);
       expect(result.trainerEffects![0].value).toBe(2);
       expect(result.trainerEffects![0].description).toBe('Draw 2 cards');
@@ -301,10 +313,16 @@ describe('CardMapper', () => {
       expect(result.trainerType).toBe(TrainerType.ITEM);
       expect(result.trainerEffects).toBeDefined();
       expect(result.trainerEffects!.length).toBe(3);
-      expect(result.trainerEffects![0].effectType).toBe(TrainerEffectType.DISCARD_HAND);
-      expect(result.trainerEffects![1].effectType).toBe(TrainerEffectType.SEARCH_DECK);
+      expect(result.trainerEffects![0].effectType).toBe(
+        TrainerEffectType.DISCARD_HAND,
+      );
+      expect(result.trainerEffects![1].effectType).toBe(
+        TrainerEffectType.SEARCH_DECK,
+      );
       expect(result.trainerEffects![1].cardType).toBe('Any');
-      expect(result.trainerEffects![2].effectType).toBe(TrainerEffectType.SHUFFLE_DECK);
+      expect(result.trainerEffects![2].effectType).toBe(
+        TrainerEffectType.SHUFFLE_DECK,
+      );
     });
 
     it('should return undefined for trainerEffects when card has no effects', () => {
@@ -341,4 +359,3 @@ describe('CardMapper', () => {
     });
   });
 });
-

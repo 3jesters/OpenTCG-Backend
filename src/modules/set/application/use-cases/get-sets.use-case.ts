@@ -19,4 +19,3 @@ export class GetSetsUseCase {
     return this.setCache.getAll();
   }
 }
-

@@ -8,4 +8,3 @@ export enum CoinFlipContext {
   ABILITY = 'ABILITY',
   TRAINER = 'TRAINER',
 }
-

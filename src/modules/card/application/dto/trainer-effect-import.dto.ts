@@ -32,4 +32,3 @@ export class TrainerEffectImportDto {
   @IsString()
   source?: string;
 }
-

@@ -21,4 +21,3 @@ export enum AbilityActivationType {
    */
   ACTIVATED = 'ACTIVATED',
 }
-

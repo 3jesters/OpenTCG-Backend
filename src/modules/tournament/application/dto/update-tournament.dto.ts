@@ -82,4 +82,3 @@ export class UpdateTournamentDto {
   @IsOptional()
   regulationMarks?: string[];
 }
-

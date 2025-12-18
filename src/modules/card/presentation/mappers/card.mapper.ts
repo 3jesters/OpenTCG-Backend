@@ -8,7 +8,15 @@ import { AttackEffectDto } from '../dto/attack-effect.dto';
 import { WeaknessDto } from '../dto/weakness.dto';
 import { ResistanceDto } from '../dto/resistance.dto';
 import { TrainerEffectDto } from '../dto/trainer-effect.dto';
-import { Ability, Attack, Weakness, Resistance, TrainerEffect, AnyAbilityEffect, AttackEffect } from '../../domain/value-objects';
+import {
+  Ability,
+  Attack,
+  Weakness,
+  Resistance,
+  TrainerEffect,
+  AnyAbilityEffect,
+  AttackEffect,
+} from '../../domain/value-objects';
 import { AbilityEffectType } from '../../domain/enums/ability-effect-type.enum';
 import { AttackEffectType } from '../../domain/enums/attack-effect-type.enum';
 
@@ -51,12 +59,13 @@ export class CardMapper {
       rarity: card.rarity,
       hp: card.hp,
       stage: card.stage,
-      level: card.level,
       evolvesFrom: card.evolvesFrom?.name,
       ability: card.ability ? this.mapAbility(card.ability) : undefined,
       attacks: card.attacks.map((attack) => this.mapAttack(attack)),
       weakness: card.weakness ? this.mapWeakness(card.weakness) : undefined,
-      resistance: card.resistance ? this.mapResistance(card.resistance) : undefined,
+      resistance: card.resistance
+        ? this.mapResistance(card.resistance)
+        : undefined,
       retreatCost: card.retreatCost,
       artist: card.artist,
       description: card.description || undefined,
@@ -64,9 +73,10 @@ export class CardMapper {
       regulationMark: card.regulationMark,
       energyType: card.energyType,
       trainerType: card.trainerType,
-      trainerEffects: card.trainerEffects.length > 0
-        ? card.trainerEffects.map((effect) => this.mapTrainerEffect(effect))
-        : undefined,
+      trainerEffects:
+        card.trainerEffects.length > 0
+          ? card.trainerEffects.map((effect) => this.mapTrainerEffect(effect))
+          : undefined,
     };
   }
 
@@ -80,7 +90,9 @@ export class CardMapper {
       activationType: ability.activationType,
       triggerEvent: ability.triggerEvent,
       usageLimit: ability.usageLimit,
-      effects: ability.effects.map((effect) => this.mapAbilityEffect(effect as AnyAbilityEffect)),
+      effects: ability.effects.map((effect) =>
+        this.mapAbilityEffect(effect as AnyAbilityEffect),
+      ),
     };
   }
 
@@ -216,7 +228,9 @@ export class CardMapper {
       energyCost: attack.energyCost,
       damage: attack.damage,
       text: attack.text,
-      effects: attack.effects ? attack.effects.map((effect) => this.mapAttackEffect(effect)) : undefined,
+      effects: attack.effects
+        ? attack.effects.map((effect) => this.mapAttackEffect(effect))
+        : undefined,
       energyBonusCap: attack.energyBonusCap,
     };
   }
@@ -323,4 +337,3 @@ export class CardMapper {
     };
   }
 }
-

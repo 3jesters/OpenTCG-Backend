@@ -166,4 +166,3 @@ export class AttackPreconditionValidator {
     return true;
   }
 }
-

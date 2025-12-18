@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { IMatchRepository } from '../../domain/repositories/match.repository.interface';
 import { MatchState } from '../../domain/enums/match-state.enum';
 
@@ -26,7 +32,9 @@ export class CancelMatchUseCase {
 
     // Validate playerId is a participant
     if (match.player1Id !== playerId && match.player2Id !== playerId) {
-      throw new ForbiddenException('Only match participants can cancel a match');
+      throw new ForbiddenException(
+        'Only match participants can cancel a match',
+      );
     }
 
     // Cancel the match (sets state to CANCELLED)
@@ -36,4 +44,3 @@ export class CancelMatchUseCase {
     await this.matchRepository.delete(matchId);
   }
 }
-

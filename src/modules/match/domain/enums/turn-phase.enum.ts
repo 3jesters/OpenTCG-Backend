@@ -9,4 +9,3 @@ export enum TurnPhase {
   END = 'END',
   SELECT_ACTIVE_POKEMON = 'SELECT_ACTIVE_POKEMON', // Active Pokemon selection required after knockout
 }
-

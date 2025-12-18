@@ -55,19 +55,13 @@ describe('Attack Value Object', () => {
 
     it('should throw error if precondition is invalid', () => {
       expect(() => {
-        new Attack(
-          'Test',
-          [EnergyType.COLORLESS],
-          '20',
-          'text',
-          [
-            {
-              type: PreconditionType.COIN_FLIP,
-              value: { numberOfCoins: 0 }, // Invalid: < 1
-              description: 'test',
-            },
-          ],
-        );
+        new Attack('Test', [EnergyType.COLORLESS], '20', 'text', [
+          {
+            type: PreconditionType.COIN_FLIP,
+            value: { numberOfCoins: 0 }, // Invalid: < 1
+            description: 'test',
+          },
+        ]);
       }).toThrow('Attack "Test" has invalid preconditions');
     });
 
@@ -82,25 +76,20 @@ describe('Attack Value Object', () => {
       );
 
       expect(attack.effects).toHaveLength(1);
-      expect(attack.effects![0].effectType).toBe(AttackEffectType.STATUS_CONDITION);
+      expect(attack.effects![0].effectType).toBe(
+        AttackEffectType.STATUS_CONDITION,
+      );
     });
 
     it('should throw error if effect is invalid', () => {
       expect(() => {
-        new Attack(
-          'Test',
-          [EnergyType.COLORLESS],
-          '20',
-          'text',
-          undefined,
-          [
-            {
-              effectType: AttackEffectType.HEAL,
-              target: TargetType.SELF,
-              amount: 0, // Invalid: < 1
-            },
-          ],
-        );
+        new Attack('Test', [EnergyType.COLORLESS], '20', 'text', undefined, [
+          {
+            effectType: AttackEffectType.HEAL,
+            target: TargetType.SELF,
+            amount: 0, // Invalid: < 1
+          },
+        ]);
       }).toThrow('Attack "Test" has invalid effects');
     });
   });
@@ -145,12 +134,7 @@ describe('Attack Value Object', () => {
 
   describe('dealsDamage', () => {
     it('should return true if attack has damage', () => {
-      const attack = new Attack(
-        'Test',
-        [EnergyType.COLORLESS],
-        '20',
-        'text',
-      );
+      const attack = new Attack('Test', [EnergyType.COLORLESS], '20', 'text');
       expect(attack.dealsDamage()).toBe(true);
     });
 
@@ -162,13 +146,9 @@ describe('Attack Value Object', () => {
 
   describe('hasPreconditions', () => {
     it('should return true if attack has preconditions', () => {
-      const attack = new Attack(
-        'Test',
-        [EnergyType.COLORLESS],
-        '20',
-        'text',
-        [AttackPreconditionFactory.coinFlip(1, 'Flip')],
-      );
+      const attack = new Attack('Test', [EnergyType.COLORLESS], '20', 'text', [
+        AttackPreconditionFactory.coinFlip(1, 'Flip'),
+      ]);
       expect(attack.hasPreconditions()).toBe(true);
     });
 
@@ -191,17 +171,11 @@ describe('Attack Value Object', () => {
 
   describe('getPreconditionsByType', () => {
     it('should return preconditions of specific type', () => {
-      const attack = new Attack(
-        'Test',
-        [EnergyType.COLORLESS],
-        '20',
-        'text',
-        [
-          AttackPreconditionFactory.coinFlip(1, 'Flip 1'),
-          AttackPreconditionFactory.damageCheck('has_damage', 'Has damage'),
-          AttackPreconditionFactory.coinFlip(2, 'Flip 2'),
-        ],
-      );
+      const attack = new Attack('Test', [EnergyType.COLORLESS], '20', 'text', [
+        AttackPreconditionFactory.coinFlip(1, 'Flip 1'),
+        AttackPreconditionFactory.damageCheck('has_damage', 'Has damage'),
+        AttackPreconditionFactory.coinFlip(2, 'Flip 2'),
+      ]);
 
       const coinFlips = attack.getPreconditionsByType(
         PreconditionType.COIN_FLIP,
@@ -369,13 +343,17 @@ describe('Attack Value Object', () => {
         ],
       );
 
-      const statusEffects = attack.getEffectsByType(AttackEffectType.STATUS_CONDITION);
+      const statusEffects = attack.getEffectsByType(
+        AttackEffectType.STATUS_CONDITION,
+      );
       expect(statusEffects).toHaveLength(1);
 
       const healEffects = attack.getEffectsByType(AttackEffectType.HEAL);
       expect(healEffects).toHaveLength(1);
 
-      const preventEffects = attack.getEffectsByType(AttackEffectType.PREVENT_DAMAGE);
+      const preventEffects = attack.getEffectsByType(
+        AttackEffectType.PREVENT_DAMAGE,
+      );
       expect(preventEffects).toHaveLength(0);
     });
 
@@ -409,14 +387,22 @@ describe('Attack Value Object', () => {
         'Discard 2 Fire Energy from this Pokémon. This attack does 20 recoil damage.',
         undefined,
         [
-          AttackEffectFactory.discardEnergy(TargetType.SELF, 2, EnergyType.FIRE),
+          AttackEffectFactory.discardEnergy(
+            TargetType.SELF,
+            2,
+            EnergyType.FIRE,
+          ),
           AttackEffectFactory.recoilDamage(20),
         ],
       );
 
       expect(attack.hasEffects()).toBe(true);
-      expect(attack.getEffectsByType(AttackEffectType.DISCARD_ENERGY)).toHaveLength(1);
-      expect(attack.getEffectsByType(AttackEffectType.RECOIL_DAMAGE)).toHaveLength(1);
+      expect(
+        attack.getEffectsByType(AttackEffectType.DISCARD_ENERGY),
+      ).toHaveLength(1);
+      expect(
+        attack.getEffectsByType(AttackEffectType.RECOIL_DAMAGE),
+      ).toHaveLength(1);
     });
 
     it('should create healing attack', () => {
@@ -446,9 +432,10 @@ describe('Attack Value Object', () => {
       );
 
       expect(attack.hasEffects()).toBe(true);
-      const modifiers = attack.getEffectsByType(AttackEffectType.DAMAGE_MODIFIER);
+      const modifiers = attack.getEffectsByType(
+        AttackEffectType.DAMAGE_MODIFIER,
+      );
       expect(modifiers[0].modifier).toBe(30);
     });
   });
 });
-

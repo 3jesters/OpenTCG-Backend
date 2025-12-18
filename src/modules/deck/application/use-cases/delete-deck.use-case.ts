@@ -22,4 +22,3 @@ export class DeleteDeckUseCase {
     await this.deckRepository.delete(id);
   }
 }
-

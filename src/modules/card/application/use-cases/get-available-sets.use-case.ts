@@ -27,7 +27,7 @@ export class GetAvailableSetsUseCase {
     for (const filename of files) {
       try {
         const rawData = await this.fileReader.readCardFile(filename);
-        
+
         // Extract metadata
         if (rawData && typeof rawData === 'object' && 'metadata' in rawData) {
           const metadataDto = plainToClass(
@@ -57,7 +57,10 @@ export class GetAvailableSetsUseCase {
         }
       } catch (error) {
         // Skip files that can't be read or parsed
-        console.error(`Failed to read metadata from ${filename}:`, error.message);
+        console.error(
+          `Failed to read metadata from ${filename}:`,
+          error.message,
+        );
       }
     }
 
@@ -67,4 +70,3 @@ export class GetAvailableSetsUseCase {
     };
   }
 }
-

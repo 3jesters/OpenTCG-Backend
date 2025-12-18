@@ -2,7 +2,11 @@ import { ValidateDeckAgainstTournamentUseCase } from './validate-deck-against-to
 import { IDeckRepository } from '../../domain/repositories';
 import { ITournamentRepository } from '../../../tournament/domain';
 import { Deck, DeckCard } from '../../domain';
-import { Tournament, DeckRules, RestrictedCard } from '../../../tournament/domain';
+import {
+  Tournament,
+  DeckRules,
+  RestrictedCard,
+} from '../../../tournament/domain';
 import { NotFoundException } from '@nestjs/common';
 
 describe('ValidateDeckAgainstTournamentUseCase', () => {
@@ -320,9 +324,9 @@ describe('ValidateDeckAgainstTournamentUseCase', () => {
       expect(result.errors.some((e) => e.includes('restricted-card'))).toBe(
         true,
       );
-      expect(result.errors.some((e) => e.includes('maximum allowed is 1'))).toBe(
-        true,
-      );
+      expect(
+        result.errors.some((e) => e.includes('maximum allowed is 1')),
+      ).toBe(true);
     });
 
     it('should warn about restricted cards even when within limit', async () => {
@@ -421,9 +425,7 @@ describe('ValidateDeckAgainstTournamentUseCase', () => {
       const result = await useCase.execute('deck-1', 'tournament-1');
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some((e) => e.includes('banned-card'))).toBe(
-        true,
-      );
+      expect(result.errors.some((e) => e.includes('banned-card'))).toBe(true);
       expect(result.errors.some((e) => e.includes('is banned'))).toBe(true);
     });
 
@@ -605,9 +607,9 @@ describe('ValidateDeckAgainstTournamentUseCase', () => {
 
       expect(result.isValid).toBe(true);
       // Should not have warning about basic Pokemon when requirement is 0
-      expect(
-        result.warnings.some((w) => w.includes('basic Pokemon')),
-      ).toBe(false);
+      expect(result.warnings.some((w) => w.includes('basic Pokemon'))).toBe(
+        false,
+      );
     });
 
     it('should handle multiple banned sets', async () => {
@@ -638,8 +640,12 @@ describe('ValidateDeckAgainstTournamentUseCase', () => {
       const result = await useCase.execute('deck-1', 'tournament-1');
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.filter((e) => e.includes('banned-set-1')).length).toBeGreaterThan(0);
-      expect(result.errors.filter((e) => e.includes('banned-set-2')).length).toBeGreaterThan(0);
+      expect(
+        result.errors.filter((e) => e.includes('banned-set-1')).length,
+      ).toBeGreaterThan(0);
+      expect(
+        result.errors.filter((e) => e.includes('banned-set-2')).length,
+      ).toBeGreaterThan(0);
     });
 
     it('should handle multiple banned cards in same set', async () => {
@@ -670,8 +676,12 @@ describe('ValidateDeckAgainstTournamentUseCase', () => {
       const result = await useCase.execute('deck-1', 'tournament-1');
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.filter((e) => e.includes('banned-card-1')).length).toBeGreaterThan(0);
-      expect(result.errors.filter((e) => e.includes('banned-card-2')).length).toBeGreaterThan(0);
+      expect(
+        result.errors.filter((e) => e.includes('banned-card-1')).length,
+      ).toBeGreaterThan(0);
+      expect(
+        result.errors.filter((e) => e.includes('banned-card-2')).length,
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -733,4 +743,3 @@ describe('ValidateDeckAgainstTournamentUseCase', () => {
     });
   });
 });
-

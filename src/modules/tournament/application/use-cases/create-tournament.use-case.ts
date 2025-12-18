@@ -1,5 +1,10 @@
 import { Injectable, Inject, ConflictException } from '@nestjs/common';
-import { Tournament, ITournamentRepository, DeckRules, RestrictedCard } from '../../domain';
+import {
+  Tournament,
+  ITournamentRepository,
+  DeckRules,
+  RestrictedCard,
+} from '../../domain';
 import { CreateTournamentDto } from '../dto/create-tournament.dto';
 
 /**
@@ -17,7 +22,9 @@ export class CreateTournamentUseCase {
     // Check if tournament with this ID already exists
     const existing = await this.tournamentRepository.findById(dto.id);
     if (existing) {
-      throw new ConflictException(`Tournament with ID '${dto.id}' already exists`);
+      throw new ConflictException(
+        `Tournament with ID '${dto.id}' already exists`,
+      );
     }
 
     // Create restricted cards
@@ -93,4 +100,3 @@ export class CreateTournamentUseCase {
     return await this.tournamentRepository.save(tournament);
   }
 }
-

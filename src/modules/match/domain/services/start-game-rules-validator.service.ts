@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { Injectable, Inject } from '@nestjs/common';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import {
   StartGameRules,
   StartGameRuleType,
@@ -12,7 +12,10 @@ import { CardType, EvolutionStage } from '../../../card/domain/enums';
  */
 @Injectable()
 export class StartGameRulesValidatorService {
-  constructor(private readonly getCardByIdUseCase: GetCardByIdUseCase) {}
+  constructor(
+    @Inject(IGetCardByIdUseCase)
+    private readonly getCardByIdUseCase: IGetCardByIdUseCase,
+  ) {}
 
   /**
    * Validate if a hand satisfies all start game rules
@@ -20,10 +23,7 @@ export class StartGameRulesValidatorService {
    * @param rules Start game rules to validate against
    * @returns true if all rules are satisfied, false otherwise
    */
-  async validateHand(
-    hand: string[],
-    rules: StartGameRules,
-  ): Promise<boolean> {
+  async validateHand(hand: string[], rules: StartGameRules): Promise<boolean> {
     // If no rules, hand is always valid
     if (rules.isEmpty()) {
       return true;
@@ -160,7 +160,10 @@ export class StartGameRulesValidatorService {
    */
   private isLikelyEnergyCard(cardId: string): boolean {
     const lowerCardId = cardId.toLowerCase();
-    return lowerCardId.includes('energy') && !lowerCardId.includes('energy-removal') && !lowerCardId.includes('energy-retrieval');
+    return (
+      lowerCardId.includes('energy') &&
+      !lowerCardId.includes('energy-removal') &&
+      !lowerCardId.includes('energy-retrieval')
+    );
   }
 }
-

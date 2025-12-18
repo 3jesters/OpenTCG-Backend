@@ -267,14 +267,7 @@ describe('TrainerEffectExecutorService', () => {
         0, // damageCounters is 0 but should be 20
       );
 
-      const player1State = new PlayerGameState(
-        [],
-        [],
-        pokemon,
-        [],
-        [],
-        [],
-      );
+      const player1State = new PlayerGameState([], [], pokemon, [], [], []);
 
       const player2State = new PlayerGameState([], [], null, [], [], [], []);
 
@@ -829,7 +822,9 @@ describe('TrainerEffectExecutorService', () => {
       );
 
       // Card should be removed from opponent's discard pile
-      expect(result.opponentState.discardPile).not.toContain('opponent-pokemon-1');
+      expect(result.opponentState.discardPile).not.toContain(
+        'opponent-pokemon-1',
+      );
       // Card should be on opponent's bench
       expect(result.opponentState.bench).toHaveLength(1);
       expect(result.opponentState.bench[0].cardId).toBe('opponent-pokemon-1');
@@ -918,7 +913,12 @@ describe('TrainerEffectExecutorService', () => {
       };
 
       await expect(
-        service.executeEffects([effect], actionData, gameState, PlayerIdentifier.PLAYER1),
+        service.executeEffects(
+          [effect],
+          actionData,
+          gameState,
+          PlayerIdentifier.PLAYER1,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -949,22 +949,29 @@ describe('TrainerEffectExecutorService', () => {
       };
 
       await expect(
-        service.executeEffects([effect], actionData, gameState, PlayerIdentifier.PLAYER1),
+        service.executeEffects(
+          [effect],
+          actionData,
+          gameState,
+          PlayerIdentifier.PLAYER1,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw error if bench is full', async () => {
-      const fullBench = Array.from({ length: 5 }, (_, i) =>
-        new CardInstance(
-          `bench-${i}`,
-          `pokemon-${i}`,
-          `BENCH_${i}` as PokemonPosition,
-          60,
-          60,
-          [],
-          [],
-          0,
-        ),
+      const fullBench = Array.from(
+        { length: 5 },
+        (_, i) =>
+          new CardInstance(
+            `bench-${i}`,
+            `pokemon-${i}`,
+            `BENCH_${i}` as PokemonPosition,
+            60,
+            60,
+            [],
+            [],
+            0,
+          ),
       );
 
       const player1State = new PlayerGameState(
@@ -1001,9 +1008,13 @@ describe('TrainerEffectExecutorService', () => {
       };
 
       await expect(
-        service.executeEffects([effect], actionData, gameState, PlayerIdentifier.PLAYER1),
+        service.executeEffects(
+          [effect],
+          actionData,
+          gameState,
+          PlayerIdentifier.PLAYER1,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
   });
 });
-

@@ -180,7 +180,9 @@ export class TrainerEffectExecutorService {
       case TrainerEffectType.DISCARD_HAND:
         // handCardId might be in DiscardHandActionData or RetrieveEnergyActionData
         if (!('handCardId' in actionData) || !actionData.handCardId) {
-          throw new BadRequestException('handCardId is required for DISCARD_HAND effect');
+          throw new BadRequestException(
+            'handCardId is required for DISCARD_HAND effect',
+          );
         }
         return this.handleDiscardHand(
           effect,
@@ -398,7 +400,10 @@ export class TrainerEffectExecutorService {
     let benchIndex: number | null = null;
     let isOpponent = false;
 
-    if (effect.target === TargetType.ALL_YOURS || effect.target === TargetType.ACTIVE_YOURS) {
+    if (
+      effect.target === TargetType.ALL_YOURS ||
+      effect.target === TargetType.ACTIVE_YOURS
+    ) {
       // Target own Pokémon
       if (actionData.target === 'ACTIVE') {
         if (!playerState.activePokemon) {
@@ -409,11 +414,16 @@ export class TrainerEffectExecutorService {
         // BENCH_0, BENCH_1, etc.
         benchIndex = this.parseBenchIndex(actionData.target);
         if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-          throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+          throw new BadRequestException(
+            `Invalid bench position: ${actionData.target}`,
+          );
         }
         targetPokemon = playerState.bench[benchIndex];
       }
-    } else if (effect.target === TargetType.ALL_OPPONENTS || effect.target === TargetType.ACTIVE_OPPONENT) {
+    } else if (
+      effect.target === TargetType.ALL_OPPONENTS ||
+      effect.target === TargetType.ACTIVE_OPPONENT
+    ) {
       // Target opponent's Pokémon
       isOpponent = true;
       if (actionData.target === 'ACTIVE') {
@@ -424,12 +434,16 @@ export class TrainerEffectExecutorService {
       } else {
         benchIndex = this.parseBenchIndex(actionData.target);
         if (benchIndex < 0 || benchIndex >= opponentState.bench.length) {
-          throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+          throw new BadRequestException(
+            `Invalid bench position: ${actionData.target}`,
+          );
         }
         targetPokemon = opponentState.bench[benchIndex];
       }
     } else {
-      throw new BadRequestException(`Invalid target type ${effect.target} for HEAL effect`);
+      throw new BadRequestException(
+        `Invalid target type ${effect.target} for HEAL effect`,
+      );
     }
 
     if (!targetPokemon) {
@@ -442,7 +456,7 @@ export class TrainerEffectExecutorService {
       targetPokemon.maxHp,
       targetPokemon.currentHp + healAmount,
     );
-    
+
     // Update HP (damageCounters is calculated automatically)
     const finalPokemon = targetPokemon.withHp(newHp);
 
@@ -495,10 +509,14 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for REMOVE_ENERGY effect');
+      throw new BadRequestException(
+        'target is required for REMOVE_ENERGY effect',
+      );
     }
     if (!actionData.energyCardId) {
-      throw new BadRequestException('energyCardId is required for REMOVE_ENERGY effect');
+      throw new BadRequestException(
+        'energyCardId is required for REMOVE_ENERGY effect',
+      );
     }
 
     // REMOVE_ENERGY typically targets opponent's Pokémon
@@ -513,7 +531,9 @@ export class TrainerEffectExecutorService {
     } else {
       benchIndex = this.parseBenchIndex(actionData.target);
       if (benchIndex < 0 || benchIndex >= opponentState.bench.length) {
-        throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+        throw new BadRequestException(
+          `Invalid bench position: ${actionData.target}`,
+        );
       }
       targetPokemon = opponentState.bench[benchIndex];
     }
@@ -523,16 +543,22 @@ export class TrainerEffectExecutorService {
     }
 
     // Check if energy card is attached and find first occurrence
-    const energyIndex = targetPokemon.attachedEnergy.indexOf(actionData.energyCardId);
+    const energyIndex = targetPokemon.attachedEnergy.indexOf(
+      actionData.energyCardId,
+    );
     if (energyIndex === -1) {
-      throw new BadRequestException('Energy card is not attached to target Pokemon');
+      throw new BadRequestException(
+        'Energy card is not attached to target Pokemon',
+      );
     }
 
     // Remove energy card from attached energy (only the first occurrence)
     const updatedAttachedEnergy = targetPokemon.attachedEnergy.filter(
       (_, index) => index !== energyIndex,
     );
-    const updatedPokemon = targetPokemon.withAttachedEnergy(updatedAttachedEnergy);
+    const updatedPokemon = targetPokemon.withAttachedEnergy(
+      updatedAttachedEnergy,
+    );
 
     // Update opponent's state
     if (actionData.target === 'ACTIVE') {
@@ -564,13 +590,20 @@ export class TrainerEffectExecutorService {
     opponentState: PlayerGameState,
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
-    if (!actionData.selectedCardIds || !Array.isArray(actionData.selectedCardIds)) {
-      throw new BadRequestException('selectedCardIds is required for RETRIEVE_ENERGY (array of energy card IDs to retrieve, can be empty)');
+    if (
+      !actionData.selectedCardIds ||
+      !Array.isArray(actionData.selectedCardIds)
+    ) {
+      throw new BadRequestException(
+        'selectedCardIds is required for RETRIEVE_ENERGY (array of energy card IDs to retrieve, can be empty)',
+      );
     }
 
     const maxRetrieve = typeof effect.value === 'number' ? effect.value : 2; // Default to 2
     if (actionData.selectedCardIds.length > maxRetrieve) {
-      throw new BadRequestException(`RETRIEVE_ENERGY can retrieve at most ${maxRetrieve} energy cards`);
+      throw new BadRequestException(
+        `RETRIEVE_ENERGY can retrieve at most ${maxRetrieve} energy cards`,
+      );
     }
 
     let updatedHand = [...playerState.hand];
@@ -581,7 +614,9 @@ export class TrainerEffectExecutorService {
       // Validate that all selected cards are in discard pile
       for (const selectedCardId of actionData.selectedCardIds) {
         if (!updatedDiscardPile.includes(selectedCardId)) {
-          throw new BadRequestException(`Selected card ${selectedCardId} is not in discard pile`);
+          throw new BadRequestException(
+            `Selected card ${selectedCardId} is not in discard pile`,
+          );
         }
       }
 
@@ -589,7 +624,9 @@ export class TrainerEffectExecutorService {
       for (const selectedCardId of actionData.selectedCardIds) {
         const indexToRemove = updatedDiscardPile.indexOf(selectedCardId);
         if (indexToRemove === -1) {
-          throw new BadRequestException(`Selected card ${selectedCardId} is not in discard pile`);
+          throw new BadRequestException(
+            `Selected card ${selectedCardId} is not in discard pile`,
+          );
         }
         updatedDiscardPile = updatedDiscardPile.filter(
           (_, index) => index !== indexToRemove,
@@ -620,7 +657,9 @@ export class TrainerEffectExecutorService {
     playedCardId: string, // The trainer card being played
   ): ExecuteEffectsResult {
     if (!actionData.handCardId) {
-      throw new BadRequestException('handCardId is required for DISCARD_HAND effect');
+      throw new BadRequestException(
+        'handCardId is required for DISCARD_HAND effect',
+      );
     }
 
     // Validate that the selected card is in hand
@@ -629,29 +668,43 @@ export class TrainerEffectExecutorService {
     }
 
     // Find the index of the card to discard
-    const handCardIndexToRemove = actionData.handCardIndex !== undefined
-      ? actionData.handCardIndex
-      : playerState.hand.indexOf(actionData.handCardId);
+    const handCardIndexToRemove =
+      actionData.handCardIndex !== undefined
+        ? actionData.handCardIndex
+        : playerState.hand.indexOf(actionData.handCardId);
 
-    if (handCardIndexToRemove === -1 || handCardIndexToRemove >= playerState.hand.length) {
+    if (
+      handCardIndexToRemove === -1 ||
+      handCardIndexToRemove >= playerState.hand.length
+    ) {
       throw new BadRequestException('Selected card is not in hand');
     }
 
     if (playerState.hand[handCardIndexToRemove] !== actionData.handCardId) {
-      throw new BadRequestException('handCardId does not match card at handCardIndex');
+      throw new BadRequestException(
+        'handCardId does not match card at handCardIndex',
+      );
     }
 
     // Prevent discarding the trainer card that was just played
     const playedCardIndex = playerState.hand.indexOf(playedCardId);
-    if (handCardIndexToRemove === playedCardIndex && actionData.handCardId === playedCardId) {
-      throw new BadRequestException('Cannot select the same trainer card that was just played');
+    if (
+      handCardIndexToRemove === playedCardIndex &&
+      actionData.handCardId === playedCardId
+    ) {
+      throw new BadRequestException(
+        'Cannot select the same trainer card that was just played',
+      );
     }
 
     // Remove card from hand and add to discard pile
     const updatedHand = playerState.hand.filter(
       (_, index) => index !== handCardIndexToRemove,
     );
-    const updatedDiscardPile = [...playerState.discardPile, actionData.handCardId];
+    const updatedDiscardPile = [
+      ...playerState.discardPile,
+      actionData.handCardId,
+    ];
 
     return {
       playerState: playerState
@@ -672,13 +725,13 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     const drawCount = typeof effect.value === 'number' ? effect.value : 1;
-    
+
     if (playerState.deck.length < drawCount) {
       // Draw as many as possible
       const drawnCards = [...playerState.deck];
       const updatedHand = [...playerState.hand, ...drawnCards];
       const updatedDeck: string[] = [];
-      
+
       return {
         playerState: playerState.withDeck(updatedDeck).withHand(updatedHand),
         opponentState,
@@ -735,13 +788,20 @@ export class TrainerEffectExecutorService {
     opponentState: PlayerGameState,
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
-    if (!actionData.selectedCardIds || !Array.isArray(actionData.selectedCardIds)) {
-      throw new BadRequestException('selectedCardIds is required for SEARCH_DECK effect');
+    if (
+      !actionData.selectedCardIds ||
+      !Array.isArray(actionData.selectedCardIds)
+    ) {
+      throw new BadRequestException(
+        'selectedCardIds is required for SEARCH_DECK effect',
+      );
     }
 
     const maxSearch = typeof effect.value === 'number' ? effect.value : 1;
     if (actionData.selectedCardIds.length > maxSearch) {
-      throw new BadRequestException(`SEARCH_DECK can select at most ${maxSearch} cards`);
+      throw new BadRequestException(
+        `SEARCH_DECK can select at most ${maxSearch} cards`,
+      );
     }
 
     // Validate all selected cards are in deck
@@ -752,7 +812,7 @@ export class TrainerEffectExecutorService {
     }
 
     // Remove selected cards from deck
-    let updatedDeck = [...playerState.deck];
+    const updatedDeck = [...playerState.deck];
     for (const cardId of actionData.selectedCardIds) {
       const index = updatedDeck.indexOf(cardId);
       if (index !== -1) {
@@ -780,12 +840,16 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.benchPosition) {
-      throw new BadRequestException('benchPosition is required for SWITCH_ACTIVE effect');
+      throw new BadRequestException(
+        'benchPosition is required for SWITCH_ACTIVE effect',
+      );
     }
 
     const benchIndex = this.parseBenchIndex(actionData.benchPosition);
     if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-      throw new BadRequestException(`Invalid bench position: ${actionData.benchPosition}`);
+      throw new BadRequestException(
+        `Invalid bench position: ${actionData.benchPosition}`,
+      );
     }
 
     if (!playerState.activePokemon) {
@@ -826,7 +890,9 @@ export class TrainerEffectExecutorService {
     updatedBench[benchIndex] = newBench;
 
     return {
-      playerState: playerState.withActivePokemon(newActive).withBench(updatedBench),
+      playerState: playerState
+        .withActivePokemon(newActive)
+        .withBench(updatedBench),
       opponentState,
     };
   }
@@ -842,12 +908,16 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.benchPosition) {
-      throw new BadRequestException('benchPosition is required for FORCE_SWITCH effect');
+      throw new BadRequestException(
+        'benchPosition is required for FORCE_SWITCH effect',
+      );
     }
 
     const benchIndex = this.parseBenchIndex(actionData.benchPosition);
     if (benchIndex < 0 || benchIndex >= opponentState.bench.length) {
-      throw new BadRequestException(`Invalid bench position: ${actionData.benchPosition}`);
+      throw new BadRequestException(
+        `Invalid bench position: ${actionData.benchPosition}`,
+      );
     }
 
     if (!opponentState.activePokemon) {
@@ -889,7 +959,9 @@ export class TrainerEffectExecutorService {
 
     return {
       playerState,
-      opponentState: opponentState.withActivePokemon(newActive).withBench(updatedBench),
+      opponentState: opponentState
+        .withActivePokemon(newActive)
+        .withBench(updatedBench),
     };
   }
 
@@ -904,14 +976,19 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for CURE_STATUS effect');
+      throw new BadRequestException(
+        'target is required for CURE_STATUS effect',
+      );
     }
 
     let targetPokemon: CardInstance | null = null;
     let benchIndex: number | null = null;
     let isOpponent = false;
 
-    if (effect.target === TargetType.ALL_YOURS || effect.target === TargetType.ACTIVE_YOURS) {
+    if (
+      effect.target === TargetType.ALL_YOURS ||
+      effect.target === TargetType.ACTIVE_YOURS
+    ) {
       if (actionData.target === 'ACTIVE') {
         if (!playerState.activePokemon) {
           throw new BadRequestException('No active Pokemon to cure');
@@ -920,11 +997,16 @@ export class TrainerEffectExecutorService {
       } else {
         benchIndex = this.parseBenchIndex(actionData.target);
         if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-          throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+          throw new BadRequestException(
+            `Invalid bench position: ${actionData.target}`,
+          );
         }
         targetPokemon = playerState.bench[benchIndex];
       }
-    } else if (effect.target === TargetType.ALL_OPPONENTS || effect.target === TargetType.ACTIVE_OPPONENT) {
+    } else if (
+      effect.target === TargetType.ALL_OPPONENTS ||
+      effect.target === TargetType.ACTIVE_OPPONENT
+    ) {
       isOpponent = true;
       if (actionData.target === 'ACTIVE') {
         if (!opponentState.activePokemon) {
@@ -934,12 +1016,16 @@ export class TrainerEffectExecutorService {
       } else {
         benchIndex = this.parseBenchIndex(actionData.target);
         if (benchIndex < 0 || benchIndex >= opponentState.bench.length) {
-          throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+          throw new BadRequestException(
+            `Invalid bench position: ${actionData.target}`,
+          );
         }
         targetPokemon = opponentState.bench[benchIndex];
       }
     } else {
-      throw new BadRequestException(`Invalid target type ${effect.target} for CURE_STATUS effect`);
+      throw new BadRequestException(
+        `Invalid target type ${effect.target} for CURE_STATUS effect`,
+      );
     }
 
     if (!targetPokemon) {
@@ -1008,10 +1094,14 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for DISCARD_ENERGY effect');
+      throw new BadRequestException(
+        'target is required for DISCARD_ENERGY effect',
+      );
     }
     if (!actionData.energyCardId) {
-      throw new BadRequestException('energyCardId is required for DISCARD_ENERGY effect');
+      throw new BadRequestException(
+        'energyCardId is required for DISCARD_ENERGY effect',
+      );
     }
 
     let targetPokemon: CardInstance | null = null;
@@ -1025,7 +1115,9 @@ export class TrainerEffectExecutorService {
     } else {
       benchIndex = this.parseBenchIndex(actionData.target);
       if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-        throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+        throw new BadRequestException(
+          `Invalid bench position: ${actionData.target}`,
+        );
       }
       targetPokemon = playerState.bench[benchIndex];
     }
@@ -1035,19 +1127,28 @@ export class TrainerEffectExecutorService {
     }
 
     // Check if energy card is attached and find first occurrence
-    const energyIndex = targetPokemon.attachedEnergy.indexOf(actionData.energyCardId);
+    const energyIndex = targetPokemon.attachedEnergy.indexOf(
+      actionData.energyCardId,
+    );
     if (energyIndex === -1) {
-      throw new BadRequestException('Energy card is not attached to target Pokemon');
+      throw new BadRequestException(
+        'Energy card is not attached to target Pokemon',
+      );
     }
 
     // Remove energy card from attached energy
     const updatedAttachedEnergy = targetPokemon.attachedEnergy.filter(
       (_, index) => index !== energyIndex,
     );
-    const updatedPokemon = targetPokemon.withAttachedEnergy(updatedAttachedEnergy);
+    const updatedPokemon = targetPokemon.withAttachedEnergy(
+      updatedAttachedEnergy,
+    );
 
     // Add energy to discard pile
-    const updatedDiscardPile = [...playerState.discardPile, actionData.energyCardId];
+    const updatedDiscardPile = [
+      ...playerState.discardPile,
+      actionData.energyCardId,
+    ];
 
     // Update state
     if (actionData.target === 'ACTIVE') {
@@ -1083,7 +1184,9 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for RETURN_TO_HAND effect');
+      throw new BadRequestException(
+        'target is required for RETURN_TO_HAND effect',
+      );
     }
 
     let targetPokemon: CardInstance | null = null;
@@ -1097,7 +1200,9 @@ export class TrainerEffectExecutorService {
     } else {
       benchIndex = this.parseBenchIndex(actionData.target);
       if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-        throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+        throw new BadRequestException(
+          `Invalid bench position: ${actionData.target}`,
+        );
       }
       targetPokemon = playerState.bench[benchIndex];
     }
@@ -1113,7 +1218,9 @@ export class TrainerEffectExecutorService {
     if (actionData.target === 'ACTIVE') {
       // If active is returned, must have bench Pokémon to replace (game rule)
       if (playerState.bench.length === 0) {
-        throw new BadRequestException('Cannot return active Pokemon: no bench Pokemon available');
+        throw new BadRequestException(
+          'Cannot return active Pokemon: no bench Pokemon available',
+        );
       }
       // Move first bench to active
       const newActive = playerState.bench[0];
@@ -1153,7 +1260,9 @@ export class TrainerEffectExecutorService {
       if (benchIndex === null) {
         throw new BadRequestException('Bench index is required');
       }
-      const updatedBench = playerState.bench.filter((_, index) => index !== benchIndex);
+      const updatedBench = playerState.bench.filter(
+        (_, index) => index !== benchIndex,
+      );
       // Reindex bench positions
       const reindexedBench = updatedBench.map((pokemon, index) => {
         return new CardInstance(
@@ -1169,7 +1278,9 @@ export class TrainerEffectExecutorService {
         );
       });
       return {
-        playerState: playerState.withBench(reindexedBench).withHand(updatedHand),
+        playerState: playerState
+          .withBench(reindexedBench)
+          .withHand(updatedHand),
         opponentState,
       };
     }
@@ -1186,7 +1297,9 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for RETURN_TO_DECK effect');
+      throw new BadRequestException(
+        'target is required for RETURN_TO_DECK effect',
+      );
     }
 
     let targetPokemon: CardInstance | null = null;
@@ -1200,7 +1313,9 @@ export class TrainerEffectExecutorService {
     } else {
       benchIndex = this.parseBenchIndex(actionData.target);
       if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-        throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+        throw new BadRequestException(
+          `Invalid bench position: ${actionData.target}`,
+        );
       }
       targetPokemon = playerState.bench[benchIndex];
     }
@@ -1222,7 +1337,9 @@ export class TrainerEffectExecutorService {
     if (actionData.target === 'ACTIVE') {
       // If active is returned, must have bench Pokémon to replace (game rule)
       if (playerState.bench.length === 0) {
-        throw new BadRequestException('Cannot return active Pokemon: no bench Pokemon available');
+        throw new BadRequestException(
+          'Cannot return active Pokemon: no bench Pokemon available',
+        );
       }
       // Move first bench to active
       const newActive = playerState.bench[0];
@@ -1263,7 +1380,9 @@ export class TrainerEffectExecutorService {
       if (benchIndex === null) {
         throw new BadRequestException('Bench index is required');
       }
-      const updatedBench = playerState.bench.filter((_, index) => index !== benchIndex);
+      const updatedBench = playerState.bench.filter(
+        (_, index) => index !== benchIndex,
+      );
       // Reindex bench positions
       const reindexedBench = updatedBench.map((pokemon, index) => {
         return new CardInstance(
@@ -1280,7 +1399,9 @@ export class TrainerEffectExecutorService {
         );
       });
       return {
-        playerState: playerState.withBench(reindexedBench).withDeck(updatedDeck),
+        playerState: playerState
+          .withBench(reindexedBench)
+          .withDeck(updatedDeck),
         opponentState,
       };
     }
@@ -1298,10 +1419,14 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for EVOLVE_POKEMON effect');
+      throw new BadRequestException(
+        'target is required for EVOLVE_POKEMON effect',
+      );
     }
     if (!actionData.evolutionCardId) {
-      throw new BadRequestException('evolutionCardId is required for EVOLVE_POKEMON effect');
+      throw new BadRequestException(
+        'evolutionCardId is required for EVOLVE_POKEMON effect',
+      );
     }
 
     // Validate evolution card is in hand
@@ -1320,7 +1445,9 @@ export class TrainerEffectExecutorService {
     } else {
       benchIndex = this.parseBenchIndex(actionData.target);
       if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-        throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+        throw new BadRequestException(
+          `Invalid bench position: ${actionData.target}`,
+        );
       }
       targetPokemon = playerState.bench[benchIndex];
     }
@@ -1337,7 +1464,9 @@ export class TrainerEffectExecutorService {
     );
 
     // Remove evolution card from hand
-    const updatedHand = playerState.hand.filter((id) => id !== actionData.evolutionCardId);
+    const updatedHand = playerState.hand.filter(
+      (id) => id !== actionData.evolutionCardId,
+    );
 
     // Build evolution chain: add current card to existing chain
     const evolutionChain = [
@@ -1362,7 +1491,9 @@ export class TrainerEffectExecutorService {
     // Update state
     if (actionData.target === 'ACTIVE') {
       return {
-        playerState: playerState.withActivePokemon(evolvedPokemon).withHand(updatedHand),
+        playerState: playerState
+          .withActivePokemon(evolvedPokemon)
+          .withHand(updatedHand),
         opponentState,
       };
     } else {
@@ -1389,7 +1520,9 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for DEVOLVE_POKEMON effect');
+      throw new BadRequestException(
+        'target is required for DEVOLVE_POKEMON effect',
+      );
     }
 
     // Note: Devolving requires knowing the pre-evolution card ID
@@ -1412,10 +1545,14 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for PUT_INTO_PLAY effect');
+      throw new BadRequestException(
+        'target is required for PUT_INTO_PLAY effect',
+      );
     }
     if (!actionData.pokemonCardId) {
-      throw new BadRequestException('pokemonCardId is required for PUT_INTO_PLAY effect');
+      throw new BadRequestException(
+        'pokemonCardId is required for PUT_INTO_PLAY effect',
+      );
     }
 
     // Determine source location (default to player's discard for backward compatibility)
@@ -1434,17 +1571,23 @@ export class TrainerEffectExecutorService {
 
     // Validate Pokémon is in the correct discard pile
     if (!sourceDiscardPile.includes(actionData.pokemonCardId)) {
-      const sourceName = isFromOpponentDiscard ? "opponent's discard pile" : "player's discard pile";
+      const sourceName = isFromOpponentDiscard
+        ? "opponent's discard pile"
+        : "player's discard pile";
       throw new BadRequestException(`Pokemon card is not in ${sourceName}`);
     }
 
     // Get the target bench
-    const targetBench = isTargetOpponentBench ? opponentState.bench : playerState.bench;
+    const targetBench = isTargetOpponentBench
+      ? opponentState.bench
+      : playerState.bench;
 
     // Check bench space
     if (targetBench.length >= 5) {
       const benchOwner = isTargetOpponentBench ? "opponent's" : "player's";
-      throw new BadRequestException(`${benchOwner} bench is full (max 5 Pokemon)`);
+      throw new BadRequestException(
+        `${benchOwner} bench is full (max 5 Pokemon)`,
+      );
     }
 
     // Remove from source discard pile
@@ -1515,7 +1658,9 @@ export class TrainerEffectExecutorService {
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
     if (!actionData.target) {
-      throw new BadRequestException('target is required for ATTACH_TO_POKEMON effect');
+      throw new BadRequestException(
+        'target is required for ATTACH_TO_POKEMON effect',
+      );
     }
 
     // Tool cards are attached to Pokémon - this would require tracking attached tools
@@ -1532,7 +1677,9 @@ export class TrainerEffectExecutorService {
     } else {
       benchIndex = this.parseBenchIndex(actionData.target);
       if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-        throw new BadRequestException(`Invalid bench position: ${actionData.target}`);
+        throw new BadRequestException(
+          `Invalid bench position: ${actionData.target}`,
+        );
       }
       targetPokemon = playerState.bench[benchIndex];
     }
@@ -1559,12 +1706,21 @@ export class TrainerEffectExecutorService {
     opponentState: PlayerGameState,
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
-    if (!actionData.selectedCardIds || !Array.isArray(actionData.selectedCardIds)) {
-      throw new BadRequestException('selectedCardIds is required for RETRIEVE_FROM_DISCARD effect');
+    if (
+      !actionData.selectedCardIds ||
+      !Array.isArray(actionData.selectedCardIds)
+    ) {
+      throw new BadRequestException(
+        'selectedCardIds is required for RETRIEVE_FROM_DISCARD effect',
+      );
     }
 
-    const maxRetrieve = typeof effect.value === 'number' ? effect.value : undefined;
-    if (maxRetrieve !== undefined && actionData.selectedCardIds.length > maxRetrieve) {
+    const maxRetrieve =
+      typeof effect.value === 'number' ? effect.value : undefined;
+    if (
+      maxRetrieve !== undefined &&
+      actionData.selectedCardIds.length > maxRetrieve
+    ) {
       throw new BadRequestException(
         `RETRIEVE_FROM_DISCARD can retrieve at most ${maxRetrieve} cards`,
       );
@@ -1573,12 +1729,14 @@ export class TrainerEffectExecutorService {
     // Validate all selected cards are in discard pile
     for (const cardId of actionData.selectedCardIds) {
       if (!playerState.discardPile.includes(cardId)) {
-        throw new BadRequestException(`Selected card ${cardId} is not in discard pile`);
+        throw new BadRequestException(
+          `Selected card ${cardId} is not in discard pile`,
+        );
       }
     }
 
     // Remove selected cards from discard pile (one occurrence per entry)
-    let updatedDiscardPile = [...playerState.discardPile];
+    const updatedDiscardPile = [...playerState.discardPile];
     for (const cardId of actionData.selectedCardIds) {
       const index = updatedDiscardPile.indexOf(cardId);
       if (index !== -1) {
@@ -1590,7 +1748,9 @@ export class TrainerEffectExecutorService {
     const updatedHand = [...playerState.hand, ...actionData.selectedCardIds];
 
     return {
-      playerState: playerState.withHand(updatedHand).withDiscardPile(updatedDiscardPile),
+      playerState: playerState
+        .withHand(updatedHand)
+        .withDiscardPile(updatedDiscardPile),
       opponentState,
     };
   }
@@ -1605,11 +1765,21 @@ export class TrainerEffectExecutorService {
     opponentState: PlayerGameState,
     playerIdentifier: PlayerIdentifier,
   ): ExecuteEffectsResult {
-    if (!actionData.discardCardIds || !Array.isArray(actionData.discardCardIds)) {
-      throw new BadRequestException('discardCardIds is required for TRADE_CARDS effect');
+    if (
+      !actionData.discardCardIds ||
+      !Array.isArray(actionData.discardCardIds)
+    ) {
+      throw new BadRequestException(
+        'discardCardIds is required for TRADE_CARDS effect',
+      );
     }
-    if (!actionData.selectedCardIds || !Array.isArray(actionData.selectedCardIds)) {
-      throw new BadRequestException('selectedCardIds is required for TRADE_CARDS effect');
+    if (
+      !actionData.selectedCardIds ||
+      !Array.isArray(actionData.selectedCardIds)
+    ) {
+      throw new BadRequestException(
+        'selectedCardIds is required for TRADE_CARDS effect',
+      );
     }
 
     // Validate discarded cards are in hand
@@ -1632,7 +1802,7 @@ export class TrainerEffectExecutorService {
     );
 
     // Remove selected cards from deck
-    let updatedDeck = [...playerState.deck];
+    const updatedDeck = [...playerState.deck];
     for (const cardId of actionData.selectedCardIds) {
       const index = updatedDeck.indexOf(cardId);
       if (index !== -1) {
@@ -1644,7 +1814,10 @@ export class TrainerEffectExecutorService {
     updatedHand = [...updatedHand, ...actionData.selectedCardIds];
 
     // Add discarded cards to discard pile
-    const updatedDiscardPile = [...playerState.discardPile, ...actionData.discardCardIds];
+    const updatedDiscardPile = [
+      ...playerState.discardPile,
+      ...actionData.discardCardIds,
+    ];
 
     return {
       playerState: playerState
@@ -1675,7 +1848,9 @@ export class TrainerEffectExecutorService {
 
       return {
         playerState,
-        opponentState: opponentState.withDeck(updatedDeck).withHand(updatedHand),
+        opponentState: opponentState
+          .withDeck(updatedDeck)
+          .withHand(updatedHand),
       };
     }
 
@@ -1723,7 +1898,9 @@ export class TrainerEffectExecutorService {
     // Note: This would typically require opponent to select cards
     // For now, we'll require handCardId to be provided
     if (!actionData.handCardId) {
-      throw new BadRequestException('handCardId is required for OPPONENT_DISCARDS effect');
+      throw new BadRequestException(
+        'handCardId is required for OPPONENT_DISCARDS effect',
+      );
     }
 
     // Validate card is in opponent's hand
@@ -1732,12 +1909,19 @@ export class TrainerEffectExecutorService {
     }
 
     // Remove from opponent's hand and add to discard pile
-    const updatedHand = opponentState.hand.filter((id) => id !== actionData.handCardId);
-    const updatedDiscardPile = [...opponentState.discardPile, actionData.handCardId];
+    const updatedHand = opponentState.hand.filter(
+      (id) => id !== actionData.handCardId,
+    );
+    const updatedDiscardPile = [
+      ...opponentState.discardPile,
+      actionData.handCardId,
+    ];
 
     return {
       playerState,
-      opponentState: opponentState.withHand(updatedHand).withDiscardPile(updatedDiscardPile),
+      opponentState: opponentState
+        .withHand(updatedHand)
+        .withDiscardPile(updatedDiscardPile),
     };
   }
 
@@ -1806,9 +1990,13 @@ export class TrainerEffectExecutorService {
         if (actionData.target === 'ACTIVE') {
           targetInstanceId = playerState.activePokemon?.instanceId || null;
         } else if (actionData.target.startsWith('BENCH_')) {
-          const benchIndex = parseInt(actionData.target.replace('BENCH_', ''), 10);
+          const benchIndex = parseInt(
+            actionData.target.replace('BENCH_', ''),
+            10,
+          );
           if (benchIndex >= 0 && benchIndex < playerState.bench.length) {
-            targetInstanceId = playerState.bench[benchIndex]?.instanceId || null;
+            targetInstanceId =
+              playerState.bench[benchIndex]?.instanceId || null;
           }
         }
 
@@ -1821,4 +2009,3 @@ export class TrainerEffectExecutorService {
     }
   }
 }
-

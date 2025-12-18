@@ -11,4 +11,3 @@ export enum AttackEffectType {
   ENERGY_ACCELERATION = 'ENERGY_ACCELERATION', // Attach energy from deck/discard/hand
   SWITCH_POKEMON = 'SWITCH_POKEMON', // Switch this Pokémon with benched
 }
-

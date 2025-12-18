@@ -1,6 +1,9 @@
 import { CoinFlipStatus } from '../enums/coin-flip-status.enum';
 import { CoinFlipContext } from '../enums/coin-flip-context.enum';
-import { CoinFlipConfiguration, CoinFlipCountType } from './coin-flip-configuration.value-object';
+import {
+  CoinFlipConfiguration,
+  CoinFlipCountType,
+} from './coin-flip-configuration.value-object';
 import { CoinFlipResult } from './coin-flip-result.value-object';
 
 /**
@@ -132,4 +135,3 @@ export class CoinFlipState {
     return false;
   }
 }
-

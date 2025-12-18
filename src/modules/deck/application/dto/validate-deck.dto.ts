@@ -8,4 +8,3 @@ export class ValidateDeckDto {
   @IsNotEmpty()
   tournamentId: string;
 }
-

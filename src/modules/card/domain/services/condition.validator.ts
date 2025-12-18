@@ -1,5 +1,9 @@
 import { ConditionType } from '../enums/condition-type.enum';
-import { Condition, ConditionValue, ConditionHelper } from '../value-objects/condition.value-object';
+import {
+  Condition,
+  ConditionValue,
+  ConditionHelper,
+} from '../value-objects/condition.value-object';
 
 /**
  * Condition Validator
@@ -40,7 +44,10 @@ export class ConditionValidator {
   /**
    * Validate condition value based on type
    */
-  private static validateValue(type: ConditionType, value: ConditionValue): void {
+  private static validateValue(
+    type: ConditionType,
+    value: ConditionValue,
+  ): void {
     switch (type) {
       case ConditionType.SELF_HAS_STATUS:
       case ConditionType.OPPONENT_HAS_STATUS:
@@ -70,7 +77,13 @@ export class ConditionValidator {
       throw new Error('Status condition is required');
     }
 
-    const validStatuses = ['PARALYZED', 'POISONED', 'BURNED', 'ASLEEP', 'CONFUSED'];
+    const validStatuses = [
+      'PARALYZED',
+      'POISONED',
+      'BURNED',
+      'ASLEEP',
+      'CONFUSED',
+    ];
     if (!validStatuses.includes(value.statusCondition)) {
       throw new Error(
         `Invalid status condition: ${value.statusCondition}. Must be one of: ${validStatuses.join(', ')}`,
@@ -150,4 +163,3 @@ export class ConditionValidator {
     }
   }
 }
-

@@ -17,7 +17,7 @@ import { CardInstance } from '../value-objects/card-instance.value-object';
 import { StatusEffect } from '../enums/status-effect.enum';
 import { PokemonPosition } from '../enums/pokemon-position.enum';
 import { AbilityActionData } from '../types/ability-action-data.types';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { Card } from '../../../card/domain/entities/card.entity';
 import { Rarity } from '../../../card/domain/enums/rarity.enum';
 import { CardType } from '../../../card/domain/enums/card-type.enum';
@@ -39,7 +39,7 @@ describe('AbilityEffectValidatorService', () => {
       providers: [
         AbilityEffectValidatorService,
         {
-          provide: GetCardByIdUseCase,
+          provide: IGetCardByIdUseCase,
           useValue: mockGetCardByIdUseCase,
         },
       ],
@@ -61,7 +61,15 @@ describe('AbilityEffectValidatorService', () => {
       hand: string[] = [],
       abilityUsageThisTurn: Map<PlayerIdentifier, Set<string>> = new Map(),
     ): GameState => {
-      const player1State = new PlayerGameState(hand, [], activePokemon, bench, [], [], []);
+      const player1State = new PlayerGameState(
+        hand,
+        [],
+        activePokemon,
+        bench,
+        [],
+        [],
+        [],
+      );
       const player2State = new PlayerGameState([], [], null, [], [], [], []);
 
       return new GameState(
@@ -81,7 +89,8 @@ describe('AbilityEffectValidatorService', () => {
       cardId: string,
       statusEffect: StatusEffect = [],
     ): CardInstance => {
-      const statusEffects = statusEffect === StatusEffect.NONE ? [] : [statusEffect];
+      const statusEffects =
+        statusEffect === StatusEffect.NONE ? [] : [statusEffect];
       return new CardInstance(
         'instance-1', // instanceId
         cardId, // cardId
@@ -99,7 +108,7 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-base-set-v1.0-blastoise--2';
       const ability = new Ability(
         'Rain Dance',
-        'As often as you like during your turn (before your attack), you may attach as many Water Energy cards as you like from your hand to 1 or more of your Water Pokémon. This power can\'t be used if Blastoise is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may attach as many Water Energy cards as you like from your hand to 1 or more of your Water Pokémon. This power can't be used if Blastoise is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -183,10 +192,10 @@ describe('AbilityEffectValidatorService', () => {
       it('should reject if Pokemon is Asleep', async () => {
         const pokemon = createPokemon(cardId, StatusEffect.ASLEEP);
         const gameState = createGameState(pokemon);
-        
+
         // Verify pokemon status is set correctly
         expect(pokemon.hasStatusEffect(StatusEffect.ASLEEP)).toBe(true);
-        
+
         const actionData: AbilityActionData = {
           cardId,
           target: PokemonPosition.ACTIVE,
@@ -322,14 +331,9 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-fossil-v1.0-gengar--20';
       const ability = new Ability(
         'Curse',
-        'Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent\'s Pokémon to another (even if it would Knock Out the other Pokémon). This power can\'t be used if Gengar is Asleep, Confused, or Paralyzed.',
+        "Once during your turn (before your attack), you may move 1 damage counter from 1 of your opponent's Pokémon to another (even if it would Knock Out the other Pokémon). This power can't be used if Gengar is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [
-          AbilityEffectFactory.heal(
-            TargetType.SELF,
-            10,
-          ),
-        ],
+        [AbilityEffectFactory.heal(TargetType.SELF, 10)],
         undefined,
         UsageLimit.ONCE_PER_TURN,
       );
@@ -405,7 +409,7 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-base-set-v1.0-charizard--4';
       const ability = new Ability(
         'Energy Burn',
-        'As often as you like during your turn (before your attack), you may take 1 Fire Energy card attached to Charizard and attach it to 1 of your other Pokémon. This power can\'t be used if Charizard is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may take 1 Fire Energy card attached to Charizard and attach it to 1 of your other Pokémon. This power can't be used if Charizard is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -538,11 +542,9 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-fossil-v1.0-hypno--22';
       const ability = new Ability(
         'Prophecy',
-        'Once during your turn (before your attack), you may look at up to 3 cards from the top of either player\'s deck and rearrange them as you like. This power can\'t be used if Hypno is Asleep, Confused, or Paralyzed.',
+        "Once during your turn (before your attack), you may look at up to 3 cards from the top of either player's deck and rearrange them as you like. This power can't be used if Hypno is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [
-          AbilityEffectFactory.searchDeck(3, Destination.HAND),
-        ],
+        [AbilityEffectFactory.searchDeck(3, Destination.HAND)],
         undefined,
         UsageLimit.ONCE_PER_TURN,
       );
@@ -598,11 +600,9 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-base-set-v1.0-alakazam--1';
       const ability = new Ability(
         'Damage Swap',
-        'As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pokémon to another as long as you don\'t Knock Out that Pokémon. This power can\'t be used if Alakazam is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pokémon to another as long as you don't Knock Out that Pokémon. This power can't be used if Alakazam is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [
-          AbilityEffectFactory.heal(TargetType.SELF, 10),
-        ],
+        [AbilityEffectFactory.heal(TargetType.SELF, 10)],
         undefined,
         UsageLimit.UNLIMITED,
       );
@@ -657,7 +657,7 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-base-set-v1.0-electrode--21';
       const ability = new Ability(
         'Buzzap',
-        'As often as you like during your turn (before your attack), you may take 1 Energy card attached to 1 of your Pokémon and attach it to Electrode. This power can\'t be used if Electrode is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may take 1 Energy card attached to 1 of your Pokémon and attach it to Electrode. This power can't be used if Electrode is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -731,7 +731,7 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-base-set-v1.0-venusaur--15';
       const ability = new Ability(
         'Energy Trans',
-        'As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can\'t be used if Venusaur is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can't be used if Venusaur is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -806,14 +806,9 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-fossil-v1.0-slowbro--43';
       const ability = new Ability(
         'Strange Behavior',
-        'Once during your turn (before your attack), you may move 1 damage counter from Slowbro to 1 of your opponent\'s Pokémon. This power can\'t be used if Slowbro is Asleep, Confused, or Paralyzed.',
+        "Once during your turn (before your attack), you may move 1 damage counter from Slowbro to 1 of your opponent's Pokémon. This power can't be used if Slowbro is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [
-          AbilityEffectFactory.heal(
-            TargetType.SELF,
-            10,
-          ),
-        ],
+        [AbilityEffectFactory.heal(TargetType.SELF, 10)],
         undefined,
         UsageLimit.ONCE_PER_TURN,
       );
@@ -871,14 +866,9 @@ describe('AbilityEffectValidatorService', () => {
         const cardId = 'pokemon-base-set-v1.0-machamp--8';
         const ability = new Ability(
           'Strikes Back',
-          'Whenever your opponent\'s attack damages Machamp (even if Machamp is Knocked Out), this power does 10 damage to the attacking Pokémon. (Don\'t apply Weakness and Resistance.)',
+          "Whenever your opponent's attack damages Machamp (even if Machamp is Knocked Out), this power does 10 damage to the attacking Pokémon. (Don't apply Weakness and Resistance.)",
           AbilityActivationType.PASSIVE,
-          [
-            AbilityEffectFactory.reduceDamage(
-              TargetType.SELF,
-              10,
-            ),
-          ],
+          [AbilityEffectFactory.reduceDamage(TargetType.SELF, 10)],
         );
 
         const gameState = createGameState();
@@ -1023,7 +1013,7 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-base-set-v1.0-blastoise--2';
       const ability = new Ability(
         'Rain Dance',
-        'As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon. This power can\'t be used if Blastoise is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may attach 1 Water Energy card to 1 of your Water Pokémon. This power can't be used if Blastoise is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(
@@ -1363,7 +1353,7 @@ describe('AbilityEffectValidatorService', () => {
       const cardId = 'pokemon-base-set-v1.0-venusaur--15';
       const ability = new Ability(
         'Energy Trans',
-        'As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can\'t be used if Venusaur is Asleep, Confused, or Paralyzed.',
+        "As often as you like during your turn (before your attack), you may take 1 Grass Energy card attached to 1 of your Pokémon and attach it to a different one. This power can't be used if Venusaur is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
         [
           AbilityEffectFactory.energyAcceleration(

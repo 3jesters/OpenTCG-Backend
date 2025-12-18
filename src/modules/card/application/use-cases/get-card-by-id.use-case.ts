@@ -1,8 +1,10 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { IFileReader } from '../../domain/ports/file-reader.interface';
-import { GetAvailableSetsUseCase } from './get-available-sets.use-case';
-import { PreviewSetUseCase } from './preview-set.use-case';
-import { PreviewCardUseCase } from './preview-card.use-case';
+import {
+  IGetAvailableSetsUseCase,
+  IPreviewSetUseCase,
+  IPreviewCardUseCase,
+} from '../ports/card-use-cases.interface';
 import { CardDetailDto } from '../../presentation/dto/card-detail.dto';
 import { Card } from '../../domain/entities/card.entity';
 
@@ -15,12 +17,18 @@ export class GetCardByIdUseCase {
   constructor(
     @Inject(IFileReader)
     private readonly fileReader: IFileReader,
-    private readonly getAvailableSetsUseCase: GetAvailableSetsUseCase,
-    private readonly previewSetUseCase: PreviewSetUseCase,
-    private readonly previewCardUseCase: PreviewCardUseCase,
+    @Inject(IGetAvailableSetsUseCase)
+    private readonly getAvailableSetsUseCase: IGetAvailableSetsUseCase,
+    @Inject(IPreviewSetUseCase)
+    private readonly previewSetUseCase: IPreviewSetUseCase,
+    @Inject(IPreviewCardUseCase)
+    private readonly previewCardUseCase: IPreviewCardUseCase,
   ) {}
 
   async execute(cardId: string): Promise<CardDetailDto> {
+    // Normalize the search cardId to handle double dashes and formatting issues
+    const normalizedSearchId = this.normalizeCardId(cardId);
+    
     // Get all available sets
     const availableSets = await this.getAvailableSetsUseCase.execute();
 
@@ -34,8 +42,10 @@ export class GetCardByIdUseCase {
           set.version,
         );
 
-        // Find the card with matching cardId
-        const cardSummary = setCards.cards.find((c) => c.cardId === cardId);
+        // Find the card with matching cardId (normalize both for comparison)
+        const cardSummary = setCards.cards.find((c) => 
+          this.normalizeCardId(c.cardId) === normalizedSearchId
+        );
 
         if (cardSummary) {
           // Found the card, now get full details using PreviewCardUseCase
@@ -63,6 +73,9 @@ export class GetCardByIdUseCase {
    * Get Card domain entity by cardId (for internal use when domain entity is needed)
    */
   async getCardEntity(cardId: string): Promise<Card> {
+    // Normalize the search cardId to handle double dashes and formatting issues
+    const normalizedSearchId = this.normalizeCardId(cardId);
+    
     // Get all available sets
     const availableSets = await this.getAvailableSetsUseCase.execute();
 
@@ -76,8 +89,10 @@ export class GetCardByIdUseCase {
           set.version,
         );
 
-        // Find the card with matching cardId
-        const cardSummary = setCards.cards.find((c) => c.cardId === cardId);
+        // Find the card with matching cardId (normalize both for comparison)
+        const cardSummary = setCards.cards.find((c) => 
+          this.normalizeCardId(c.cardId) === normalizedSearchId
+        );
 
         if (cardSummary) {
           // Use PreviewCardUseCase's new getCardEntity method
@@ -96,5 +111,14 @@ export class GetCardByIdUseCase {
 
     throw new NotFoundException(`Card with ID ${cardId} not found`);
   }
-}
 
+  /**
+   * Normalize card ID by removing consecutive dashes and trimming
+   * This handles cases where card IDs might have double dashes or formatting inconsistencies
+   */
+  private normalizeCardId(cardId: string): string {
+    if (!cardId) return cardId;
+    // Replace consecutive dashes with single dash, then trim leading/trailing dashes
+    return cardId.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+  }
+}

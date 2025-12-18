@@ -22,8 +22,20 @@ describe('GetSetsUseCase', () => {
 
   describe('execute', () => {
     it('should return all sets when no series filter provided', async () => {
-      const baseSet = new Set('base-set', 'Base Set', 'pokemon', '1999-01-09', 102);
-      const jungleSet = new Set('jungle', 'Jungle', 'pokemon', '1999-06-16', 64);
+      const baseSet = new Set(
+        'base-set',
+        'Base Set',
+        'pokemon',
+        '1999-01-09',
+        102,
+      );
+      const jungleSet = new Set(
+        'jungle',
+        'Jungle',
+        'pokemon',
+        '1999-06-16',
+        64,
+      );
 
       mockCache.getAll.mockReturnValue([baseSet, jungleSet]);
 
@@ -36,8 +48,20 @@ describe('GetSetsUseCase', () => {
     });
 
     it('should return sets filtered by series when series provided', async () => {
-      const baseSet = new Set('base-set', 'Base Set', 'pokemon', '1999-01-09', 102);
-      const jungleSet = new Set('jungle', 'Jungle', 'pokemon', '1999-06-16', 64);
+      const baseSet = new Set(
+        'base-set',
+        'Base Set',
+        'pokemon',
+        '1999-01-09',
+        102,
+      );
+      const jungleSet = new Set(
+        'jungle',
+        'Jungle',
+        'pokemon',
+        '1999-06-16',
+        64,
+      );
 
       mockCache.getBySeries.mockReturnValue([baseSet, jungleSet]);
 
@@ -57,4 +81,3 @@ describe('GetSetsUseCase', () => {
     });
   });
 });
-

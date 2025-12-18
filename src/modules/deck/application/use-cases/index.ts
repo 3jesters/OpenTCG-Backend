@@ -4,4 +4,3 @@ export * from './list-decks.use-case';
 export * from './update-deck.use-case';
 export * from './delete-deck.use-case';
 export * from './validate-deck-against-tournament.use-case';
-

@@ -7,4 +7,3 @@ export * from './trainer-effect-executor.service';
 export * from './trainer-effect-validator.service';
 export * from './ability-effect-executor.service';
 export * from './ability-effect-validator.service';
-

@@ -10,4 +10,3 @@ export enum PokemonPosition {
   BENCH_3 = 'BENCH_3',
   BENCH_4 = 'BENCH_4',
 }
-

@@ -18,4 +18,3 @@ export class RestrictedCardDto {
   @Max(4)
   maxCopies: number;
 }
-

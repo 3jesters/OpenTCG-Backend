@@ -31,7 +31,7 @@ export class Card {
   // ========================================
   private readonly _instanceId: string; // UUID - unique instance
   private readonly _cardId: string; // Variant identifier
-  private readonly _pokemonNumber: string; // Pokédex number
+  private readonly _pokemonNumber?: string; // Pokédex number (only for Pokemon cards)
   private _name: string;
   private _setName: string;
   private _cardNumber: string;
@@ -43,7 +43,6 @@ export class Card {
   private readonly _cardType: CardType;
   private _pokemonType?: PokemonType; // For Pokémon cards
   private _stage?: EvolutionStage; // Evolution stage
-  private _level?: number; // Numeric level (optional)
   private _subtypes: string[]; // e.g., ["Pokémon V", "Rapid Strike"]
 
   // ========================================
@@ -99,7 +98,7 @@ export class Card {
   constructor(
     instanceId: string,
     cardId: string,
-    pokemonNumber: string,
+    pokemonNumber: string | undefined,
     name: string,
     setName: string,
     cardNumber: string,
@@ -142,7 +141,7 @@ export class Card {
     return this._cardId;
   }
 
-  get pokemonNumber(): string {
+  get pokemonNumber(): string | undefined {
     return this._pokemonNumber;
   }
 
@@ -172,10 +171,6 @@ export class Card {
 
   get stage(): EvolutionStage | undefined {
     return this._stage;
-  }
-
-  get level(): number | undefined {
-    return this._level;
   }
 
   get subtypes(): string[] {
@@ -274,16 +269,6 @@ export class Card {
       throw new Error('Evolution stage can only be set on Pokemon cards');
     }
     this._stage = stage;
-  }
-
-  setLevel(level: number): void {
-    if (this._cardType !== CardType.POKEMON) {
-      throw new Error('Level can only be set on Pokemon cards');
-    }
-    if (level < 0) {
-      throw new Error('Level cannot be negative');
-    }
-    this._level = level;
   }
 
   addSubtype(subtype: string): void {
@@ -417,7 +402,6 @@ export class Card {
     this._energyProvision = provision;
   }
 
-
   setRegulationMark(mark: string): void {
     this._regulationMark = mark;
   }
@@ -536,8 +520,9 @@ export class Card {
     if (!this._cardId || this._cardId.trim() === '') {
       throw new Error('Card ID is required');
     }
-    if (!this._pokemonNumber || this._pokemonNumber.trim() === '') {
-      throw new Error('Pokemon number is required');
+    // Pokemon number is only required for Pokemon cards
+    if (this._cardType === CardType.POKEMON && (!this._pokemonNumber || this._pokemonNumber.trim() === '')) {
+      throw new Error('Pokemon number is required for Pokemon cards');
     }
     if (!this._name || this._name.trim() === '') {
       throw new Error('Card name is required');
@@ -635,4 +620,3 @@ export class Card {
     );
   }
 }
-

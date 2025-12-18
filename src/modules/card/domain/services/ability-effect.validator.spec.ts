@@ -82,7 +82,11 @@ describe('AbilityEffectValidator', () => {
     it('should validate prevent damage effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.preventDamage(TargetType.SELF, Duration.PERMANENT, 20),
+          AbilityEffectFactory.preventDamage(
+            TargetType.SELF,
+            Duration.PERMANENT,
+            20,
+          ),
         );
       }).not.toThrow();
     });
@@ -90,7 +94,11 @@ describe('AbilityEffectValidator', () => {
     it('should accept "all" as amount', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.preventDamage(TargetType.SELF, 'permanent', 'all'),
+          AbilityEffectFactory.preventDamage(
+            TargetType.SELF,
+            'permanent',
+            'all',
+          ),
         );
       }).not.toThrow();
     });
@@ -148,7 +156,11 @@ describe('AbilityEffectValidator', () => {
     it('should validate energy acceleration effect', () => {
       expect(() => {
         AbilityEffectValidator.validate(
-          AbilityEffectFactory.energyAcceleration(TargetType.SELF, EnergySource.DISCARD, 1),
+          AbilityEffectFactory.energyAcceleration(
+            TargetType.SELF,
+            EnergySource.DISCARD,
+            1,
+          ),
         );
       }).not.toThrow();
     });
@@ -461,7 +473,9 @@ describe('AbilityEffectValidator', () => {
       const effects = [
         AbilityEffectFactory.drawCards(2),
         AbilityEffectFactory.heal(TargetType.ALL_YOURS, 10),
-        AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 20, [PokemonType.FIRE]),
+        AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 20, [
+          PokemonType.FIRE,
+        ]),
       ];
 
       expect(() => {
@@ -480,4 +494,3 @@ describe('AbilityEffectValidator', () => {
     });
   });
 });
-

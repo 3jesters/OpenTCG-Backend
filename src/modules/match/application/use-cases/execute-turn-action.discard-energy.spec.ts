@@ -5,7 +5,7 @@ import { MatchStateMachineService } from '../../domain/services';
 import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
 import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
 import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
@@ -39,7 +39,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
   let useCase: ExecuteTurnActionUseCase;
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
   let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
-  let mockGetCardByIdUseCase: jest.Mocked<GetCardByIdUseCase>;
+  let mockGetCardByIdUseCase: jest.Mocked<IGetCardByIdUseCase>;
   let mockDrawInitialCardsUseCase: jest.Mocked<DrawInitialCardsUseCase>;
   let mockSetPrizeCardsUseCase: jest.Mocked<SetPrizeCardsUseCase>;
   let mockPerformCoinTossUseCase: jest.Mocked<PerformCoinTossUseCase>;
@@ -219,7 +219,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
           useValue: mockStateMachineService,
         },
         {
-          provide: GetCardByIdUseCase,
+          provide: IGetCardByIdUseCase,
           useValue: mockGetCardByIdUseCase,
         },
         {
@@ -288,7 +288,12 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
 
       const charmeleonCard = createPokemonCard('charmeleon', 'Charmeleon', 80);
       charmeleonCard.addAttack(flamethrowerAttack);
-      const charmeleonDto = createCardDetailDto('charmeleon', 'Charmeleon', 80, [flamethrowerAttack]);
+      const charmeleonDto = createCardDetailDto(
+        'charmeleon',
+        'Charmeleon',
+        80,
+        [flamethrowerAttack],
+      );
 
       // Create Charmeleon with 3 Fire Energy attached (2 required + 1 extra to discard)
       const fireEnergyIds = ['energy-fire-1', 'energy-fire-2', 'energy-fire-3'];
@@ -321,7 +326,12 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         undefined, // evolvedAt
       );
 
-      const match = createMatchWithGameState(charmeleonInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        charmeleonInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       // Mock card lookups
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
@@ -349,15 +359,17 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         return Promise.resolve(null);
       });
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'charmeleon') {
-          return Promise.resolve(charmeleonCard);
-        }
-        if (cardId.startsWith('energy-fire')) {
-          return Promise.resolve(createEnergyCard(EnergyType.FIRE));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'charmeleon') {
+            return Promise.resolve(charmeleonCard);
+          }
+          if (cardId.startsWith('energy-fire')) {
+            return Promise.resolve(createEnergyCard(EnergyType.FIRE));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -373,11 +385,15 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
       });
 
       // Verify energy was discarded
-      const updatedPlayerState = result.gameState.getPlayerState(PlayerIdentifier.PLAYER1);
+      const updatedPlayerState = result.gameState.getPlayerState(
+        PlayerIdentifier.PLAYER1,
+      );
       expect(updatedPlayerState.activePokemon).toBeDefined();
       expect(updatedPlayerState.activePokemon.attachedEnergy.length).toBe(2); // Should have 2 energy left (3 - 1)
-      expect(updatedPlayerState.activePokemon.attachedEnergy).not.toContain('energy-fire-1'); // First Fire Energy should be discarded
-      
+      expect(updatedPlayerState.activePokemon.attachedEnergy).not.toContain(
+        'energy-fire-1',
+      ); // First Fire Energy should be discarded
+
       // Verify energy was added to discard pile
       expect(updatedPlayerState.discardPile.length).toBe(1);
       expect(updatedPlayerState.discardPile).toContain('energy-fire-1');
@@ -397,20 +413,21 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         '20',
         'Discard all Energy cards attached to this Pokémon.',
         undefined,
-        [
-          AttackEffectFactory.discardEnergy(
-            TargetType.SELF,
-            'all',
-          ),
-        ],
+        [AttackEffectFactory.discardEnergy(TargetType.SELF, 'all')],
       );
 
       const pokemonCard = createPokemonCard('pokemon', 'Pokemon', 60);
       pokemonCard.addAttack(discardAllAttack);
-      const pokemonDto = createCardDetailDto('pokemon', 'Pokemon', 60, [discardAllAttack]);
+      const pokemonDto = createCardDetailDto('pokemon', 'Pokemon', 60, [
+        discardAllAttack,
+      ]);
 
       // Create Pokemon with 3 energy attached
-      const energyIds = ['energy-fire-1', 'energy-water-1', 'energy-colorless-1'];
+      const energyIds = [
+        'energy-fire-1',
+        'energy-water-1',
+        'energy-colorless-1',
+      ];
       const pokemonInstance = new CardInstance(
         'pokemon-instance',
         'pokemon',
@@ -439,14 +456,22 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         undefined,
       );
 
-      const match = createMatchWithGameState(pokemonInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        pokemonInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'pokemon') return Promise.resolve(pokemonDto);
         if (cardId === 'opponent') return Promise.resolve(opponentDto);
         if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fire') ? EnergyType.FIRE :
-                            cardId.includes('water') ? EnergyType.WATER : EnergyType.COLORLESS;
+          const energyType = cardId.includes('fire')
+            ? EnergyType.FIRE
+            : cardId.includes('water')
+              ? EnergyType.WATER
+              : EnergyType.COLORLESS;
           return Promise.resolve({
             cardId,
             instanceId: `instance-${cardId}`,
@@ -464,15 +489,20 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         return Promise.resolve(null);
       });
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'pokemon') return Promise.resolve(pokemonCard);
-        if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fire') ? EnergyType.FIRE :
-                            cardId.includes('water') ? EnergyType.WATER : EnergyType.COLORLESS;
-          return Promise.resolve(createEnergyCard(energyType));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'pokemon') return Promise.resolve(pokemonCard);
+          if (cardId.startsWith('energy-')) {
+            const energyType = cardId.includes('fire')
+              ? EnergyType.FIRE
+              : cardId.includes('water')
+                ? EnergyType.WATER
+                : EnergyType.COLORLESS;
+            return Promise.resolve(createEnergyCard(energyType));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -483,15 +513,21 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         actionType: PlayerActionType.ATTACK,
         actionData: {
           attackIndex: 0,
-          selectedEnergyIds: ['energy-fire-1', 'energy-water-1', 'energy-colorless-1'], // Select all energy
+          selectedEnergyIds: [
+            'energy-fire-1',
+            'energy-water-1',
+            'energy-colorless-1',
+          ], // Select all energy
         },
       });
 
       // Verify all energy was discarded
-      const updatedPlayerState = result.gameState.getPlayerState(PlayerIdentifier.PLAYER1);
+      const updatedPlayerState = result.gameState.getPlayerState(
+        PlayerIdentifier.PLAYER1,
+      );
       expect(updatedPlayerState.activePokemon).toBeDefined();
       expect(updatedPlayerState.activePokemon.attachedEnergy.length).toBe(0);
-      
+
       // Verify all energy was added to discard pile
       expect(updatedPlayerState.discardPile.length).toBe(3);
       expect(updatedPlayerState.discardPile).toContain('energy-fire-1');
@@ -518,7 +554,9 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
 
       const pokemonCard = createPokemonCard('pokemon', 'Pokemon', 60);
       pokemonCard.addAttack(discardFireAttack);
-      const pokemonDto = createCardDetailDto('pokemon', 'Pokemon', 60, [discardFireAttack]);
+      const pokemonDto = createCardDetailDto('pokemon', 'Pokemon', 60, [
+        discardFireAttack,
+      ]);
 
       // Create Pokemon with 2 Fire Energy and 1 Water Energy
       const energyIds = ['energy-fire-1', 'energy-fire-2', 'energy-water-1'];
@@ -550,13 +588,20 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         undefined,
       );
 
-      const match = createMatchWithGameState(pokemonInstance, [], [], opponentInstance);
+      const match = createMatchWithGameState(
+        pokemonInstance,
+        [],
+        [],
+        opponentInstance,
+      );
 
       mockGetCardByIdUseCase.execute.mockImplementation((cardId: string) => {
         if (cardId === 'pokemon') return Promise.resolve(pokemonDto);
         if (cardId === 'opponent') return Promise.resolve(opponentDto);
         if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fire') ? EnergyType.FIRE : EnergyType.WATER;
+          const energyType = cardId.includes('fire')
+            ? EnergyType.FIRE
+            : EnergyType.WATER;
           return Promise.resolve({
             cardId,
             instanceId: `instance-${cardId}`,
@@ -574,14 +619,18 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         return Promise.resolve(null);
       });
 
-      mockGetCardByIdUseCase.getCardEntity.mockImplementation((cardId: string) => {
-        if (cardId === 'pokemon') return Promise.resolve(pokemonCard);
-        if (cardId.startsWith('energy-')) {
-          const energyType = cardId.includes('fire') ? EnergyType.FIRE : EnergyType.WATER;
-          return Promise.resolve(createEnergyCard(energyType));
-        }
-        return Promise.resolve(null);
-      });
+      mockGetCardByIdUseCase.getCardEntity.mockImplementation(
+        (cardId: string) => {
+          if (cardId === 'pokemon') return Promise.resolve(pokemonCard);
+          if (cardId.startsWith('energy-')) {
+            const energyType = cardId.includes('fire')
+              ? EnergyType.FIRE
+              : EnergyType.WATER;
+            return Promise.resolve(createEnergyCard(energyType));
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
@@ -597,13 +646,21 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
       });
 
       // Verify only Fire Energy was discarded
-      const updatedPlayerState = result.gameState.getPlayerState(PlayerIdentifier.PLAYER1);
+      const updatedPlayerState = result.gameState.getPlayerState(
+        PlayerIdentifier.PLAYER1,
+      );
       expect(updatedPlayerState.activePokemon).toBeDefined();
       expect(updatedPlayerState.activePokemon.attachedEnergy.length).toBe(1); // Should have 1 energy left (Water)
-      expect(updatedPlayerState.activePokemon.attachedEnergy).toContain('energy-water-1'); // Water Energy should remain
-      expect(updatedPlayerState.activePokemon.attachedEnergy).not.toContain('energy-fire-1');
-      expect(updatedPlayerState.activePokemon.attachedEnergy).not.toContain('energy-fire-2');
-      
+      expect(updatedPlayerState.activePokemon.attachedEnergy).toContain(
+        'energy-water-1',
+      ); // Water Energy should remain
+      expect(updatedPlayerState.activePokemon.attachedEnergy).not.toContain(
+        'energy-fire-1',
+      );
+      expect(updatedPlayerState.activePokemon.attachedEnergy).not.toContain(
+        'energy-fire-2',
+      );
+
       // Verify Fire Energy was added to discard pile
       expect(updatedPlayerState.discardPile.length).toBe(2);
       expect(updatedPlayerState.discardPile).toContain('energy-fire-1');

@@ -36,7 +36,9 @@ describe('UpdateDeckUseCase', () => {
     mockRepository.findById.mockResolvedValue(mockDeck);
     mockRepository.save.mockImplementation(async (deck) => deck);
 
-    const result = await useCase.execute('deck-1', { tournamentId: 'tournament-1' });
+    const result = await useCase.execute('deck-1', {
+      tournamentId: 'tournament-1',
+    });
 
     expect(result.tournamentId).toBe('tournament-1');
   });
@@ -56,7 +58,14 @@ describe('UpdateDeckUseCase', () => {
   });
 
   it('should not update fields when not provided', async () => {
-    const mockDeck = new Deck('deck-1', 'My Deck', 'player-1', [], undefined, 'tournament-1');
+    const mockDeck = new Deck(
+      'deck-1',
+      'My Deck',
+      'player-1',
+      [],
+      undefined,
+      'tournament-1',
+    );
     mockRepository.findById.mockResolvedValue(mockDeck);
     mockRepository.save.mockImplementation(async (deck) => deck);
 
@@ -69,9 +78,8 @@ describe('UpdateDeckUseCase', () => {
   it('should throw NotFoundException when deck not found', async () => {
     mockRepository.findById.mockResolvedValue(null);
 
-    await expect(useCase.execute('deck-1', { name: 'New Name' })).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(
+      useCase.execute('deck-1', { name: 'New Name' }),
+    ).rejects.toThrow(NotFoundException);
   });
 });
-

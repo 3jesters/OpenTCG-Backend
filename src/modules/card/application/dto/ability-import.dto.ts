@@ -1,4 +1,10 @@
-import { IsString, IsEnum, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { AbilityActivationType } from '../../domain/enums/ability-activation-type.enum';
 import { GameEventType } from '../../domain/enums/game-event-type.enum';
@@ -33,4 +39,3 @@ export class AbilityImportDto {
   @Type(() => AbilityEffectImportDto)
   effects?: AbilityEffectImportDto[];
 }
-

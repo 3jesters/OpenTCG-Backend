@@ -27,4 +27,3 @@ export interface IFileReader {
 
 // Symbol for dependency injection
 export const IFileReader = Symbol('IFileReader');
-

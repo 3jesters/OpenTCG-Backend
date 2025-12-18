@@ -91,11 +91,9 @@ describe('Ability Effect Value Object', () => {
     });
 
     it('should create boost attack effect', () => {
-      const effect = AbilityEffectFactory.boostAttack(
-        'all_yours',
-        10,
-        [PokemonType.FIRE],
-      );
+      const effect = AbilityEffectFactory.boostAttack('all_yours', 10, [
+        PokemonType.FIRE,
+      ]);
 
       expect(effect.effectType).toBe(AbilityEffectType.BOOST_ATTACK);
       expect(effect.target).toBe('all_yours');
@@ -153,11 +151,9 @@ describe('Ability Effect Value Object', () => {
     });
 
     it('should create retrieve from discard effect', () => {
-      const effect = AbilityEffectFactory.retrieveFromDiscard(
-        2,
-        'choice',
-        { cardType: CardType.POKEMON },
-      );
+      const effect = AbilityEffectFactory.retrieveFromDiscard(2, 'choice', {
+        cardType: CardType.POKEMON,
+      });
 
       expect(effect.effectType).toBe(AbilityEffectType.RETRIEVE_FROM_DISCARD);
       expect(effect.count).toBe(2);
@@ -202,11 +198,9 @@ describe('Ability Effect Value Object', () => {
 
     it('should create Charizard Blaze ability effect', () => {
       // "All your Fire Pokémon do 10 more damage"
-      const effect = AbilityEffectFactory.boostAttack(
-        'all_yours',
-        10,
-        [PokemonType.FIRE],
-      );
+      const effect = AbilityEffectFactory.boostAttack('all_yours', 10, [
+        PokemonType.FIRE,
+      ]);
 
       expect(effect.modifier).toBe(10);
       expect(effect.affectedTypes).toContain(PokemonType.FIRE);
@@ -303,15 +297,11 @@ describe('Ability Effect Value Object', () => {
     });
 
     it('should create ability with search and bench', () => {
-      const effect = AbilityEffectFactory.searchDeck(
-        1,
-        'bench',
-        {
-          cardType: CardType.POKEMON,
-          pokemonType: PokemonType.DRAGON,
-          selector: 'choice',
-        },
-      );
+      const effect = AbilityEffectFactory.searchDeck(1, 'bench', {
+        cardType: CardType.POKEMON,
+        pokemonType: PokemonType.DRAGON,
+        selector: 'choice',
+      });
 
       expect(effect.destination).toBe('bench');
       expect(effect.pokemonType).toBe(PokemonType.DRAGON);
@@ -319,4 +309,3 @@ describe('Ability Effect Value Object', () => {
     });
   });
 });
-

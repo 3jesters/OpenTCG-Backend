@@ -1,15 +1,12 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
-  Match,
-  PlayerIdentifier,
-  MatchState,
-  TurnPhase,
-} from '../../domain';
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { Match, PlayerIdentifier, MatchState, TurnPhase } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
-import {
-  GameState,
-  PlayerGameState,
-} from '../../domain/value-objects';
+import { GameState, PlayerGameState } from '../../domain/value-objects';
 import { ITournamentRepository } from '../../../tournament/domain';
 
 /**
@@ -126,4 +123,3 @@ export class SetPrizeCardsUseCase {
     return await this.matchRepository.save(match);
   }
 }
-

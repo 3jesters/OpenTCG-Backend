@@ -1,5 +1,8 @@
 import { CardRuleValidator } from './card-rule.validator';
-import { CardRule, CardRuleFactory } from '../value-objects/card-rule.value-object';
+import {
+  CardRule,
+  CardRuleFactory,
+} from '../value-objects/card-rule.value-object';
 import { CardRuleType } from '../enums/card-rule-type.enum';
 import { RulePriority } from '../enums/rule-priority.enum';
 import { ConditionFactory } from '../value-objects/condition.value-object';
@@ -78,11 +81,9 @@ describe('CardRuleValidator', () => {
 
     describe('Conditions validation', () => {
       it('should validate rule with valid conditions', () => {
-        const rule = new CardRule(
-          CardRuleType.CANNOT_RETREAT,
-          'Text',
-          [ConditionFactory.always()],
-        );
+        const rule = new CardRule(CardRuleType.CANNOT_RETREAT, 'Text', [
+          ConditionFactory.always(),
+        ]);
 
         expect(() => {
           CardRuleValidator.validate(rule);
@@ -540,4 +541,3 @@ describe('CardRuleValidator', () => {
     });
   });
 });
-

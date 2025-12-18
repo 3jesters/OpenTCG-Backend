@@ -73,13 +73,23 @@ describe('Active Pokemon Selection Phase E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'],
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ],
             statusEffect: 'NONE',
             damageCounters: 0,
             evolutionChain: [],
           },
           bench: [],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: [],
           hasAttachedEnergyThisTurn: true,
         },
@@ -100,7 +110,14 @@ describe('Active Pokemon Selection Phase E2E', () => {
               evolutionChain: ['pokemon-base-set-v1.0-bulbasaur--46'],
             },
           ],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: ['pokemon-base-set-v1.0-bulbasaur--46'],
           hasAttachedEnergyThisTurn: false,
         },
@@ -152,7 +169,9 @@ describe('Active Pokemon Selection Phase E2E', () => {
     // Step 2: Verify phase transitioned to SELECT_ACTIVE_POKEMON
     expect(prizeResponse.body.phase).toBe('SELECT_ACTIVE_POKEMON');
     expect(prizeResponse.body.requiresActivePokemonSelection).toBe(false); // Player 1 doesn't need to select
-    expect(prizeResponse.body.playersRequiringActiveSelection).toEqual(['PLAYER2']);
+    expect(prizeResponse.body.playersRequiringActiveSelection).toEqual([
+      'PLAYER2',
+    ]);
 
     // Step 3: Verify Player 2 can see SET_ACTIVE_POKEMON action
     const player2State = await request(server())
@@ -178,9 +197,13 @@ describe('Active Pokemon Selection Phase E2E', () => {
 
     // Step 5: Verify phase transitioned back to END
     expect(selectActiveResponse.body.phase).toBe('END');
-    expect(selectActiveResponse.body.requiresActivePokemonSelection).toBeUndefined();
+    expect(
+      selectActiveResponse.body.requiresActivePokemonSelection,
+    ).toBeUndefined();
     expect(selectActiveResponse.body.playerState.activePokemon).toBeTruthy();
-    expect(selectActiveResponse.body.playerState.activePokemon.cardId).toBe('pokemon-base-set-v1.0-ivysaur--30');
+    expect(selectActiveResponse.body.playerState.activePokemon.cardId).toBe(
+      'pokemon-base-set-v1.0-ivysaur--30',
+    );
   });
 
   it('should not transition to SELECT_ACTIVE_POKEMON phase when opponent has no bench Pokemon', async () => {
@@ -230,7 +253,14 @@ describe('Active Pokemon Selection Phase E2E', () => {
             evolutionChain: [],
           },
           bench: [],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: [],
           hasAttachedEnergyThisTurn: false,
         },
@@ -239,7 +269,14 @@ describe('Active Pokemon Selection Phase E2E', () => {
           hand: [],
           activePokemon: null, // Knocked out
           bench: [], // No bench Pokemon
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: ['pokemon-base-set-v1.0-bulbasaur--46'],
           hasAttachedEnergyThisTurn: false,
         },
@@ -291,7 +328,7 @@ describe('Active Pokemon Selection Phase E2E', () => {
     // Step 2: Verify phase stays as END (no SELECT_ACTIVE_POKEMON since no bench Pokemon)
     expect(prizeResponse.body.phase).toBe('END');
     expect(prizeResponse.body.requiresActivePokemonSelection).toBeUndefined();
-    
+
     // Step 3: Verify win condition was checked (opponent has no Pokemon)
     // The match should either be ended or ready to end
     // Note: Win condition check happens after prize selection
@@ -346,7 +383,14 @@ describe('Active Pokemon Selection Phase E2E', () => {
               evolutionChain: [],
             },
           ],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: ['pokemon-base-set-v1.0-ponyta--62'],
           hasAttachedEnergyThisTurn: false,
         },
@@ -367,7 +411,14 @@ describe('Active Pokemon Selection Phase E2E', () => {
               evolutionChain: [],
             },
           ],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: ['pokemon-base-set-v1.0-bulbasaur--46'],
           hasAttachedEnergyThisTurn: false,
         },
@@ -401,7 +452,10 @@ describe('Active Pokemon Selection Phase E2E', () => {
       },
     };
 
-    const matchFilePath = join(matchesDirectory, `${MATCH_ID}-double-knockout.json`);
+    const matchFilePath = join(
+      matchesDirectory,
+      `${MATCH_ID}-double-knockout.json`,
+    );
     await writeFile(matchFilePath, JSON.stringify(initialMatchState, null, 2));
 
     // Step 1: Player 1 selects a prize
@@ -418,7 +472,10 @@ describe('Active Pokemon Selection Phase E2E', () => {
 
     // Step 2: Verify phase transitioned to SELECT_ACTIVE_POKEMON and both players need to select
     expect(prizeResponse.body.phase).toBe('SELECT_ACTIVE_POKEMON');
-    expect(prizeResponse.body.playersRequiringActiveSelection).toEqual(['PLAYER1', 'PLAYER2']);
+    expect(prizeResponse.body.playersRequiringActiveSelection).toEqual([
+      'PLAYER1',
+      'PLAYER2',
+    ]);
 
     // Step 3: Verify both players can see SET_ACTIVE_POKEMON action
     const player1State = await request(server())
@@ -451,7 +508,9 @@ describe('Active Pokemon Selection Phase E2E', () => {
 
     // Step 5: Verify phase is still SELECT_ACTIVE_POKEMON (Player 2 still needs to select)
     expect(player1SelectResponse.body.phase).toBe('SELECT_ACTIVE_POKEMON');
-    expect(player1SelectResponse.body.playersRequiringActiveSelection).toEqual(['PLAYER2']);
+    expect(player1SelectResponse.body.playersRequiringActiveSelection).toEqual([
+      'PLAYER2',
+    ]);
 
     // Step 6: Player 2 selects active Pokemon
     const player2SelectResponse = await request(server())
@@ -467,7 +526,9 @@ describe('Active Pokemon Selection Phase E2E', () => {
 
     // Step 7: Verify phase transitioned back to END after both players selected
     expect(player2SelectResponse.body.phase).toBe('END');
-    expect(player2SelectResponse.body.playersRequiringActiveSelection).toBeUndefined();
+    expect(
+      player2SelectResponse.body.playersRequiringActiveSelection,
+    ).toBeUndefined();
     expect(player2SelectResponse.body.playerState.activePokemon).toBeTruthy();
   });
 
@@ -518,7 +579,14 @@ describe('Active Pokemon Selection Phase E2E', () => {
             evolutionChain: [],
           },
           bench: [],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: [],
           hasAttachedEnergyThisTurn: false,
         },
@@ -539,7 +607,14 @@ describe('Active Pokemon Selection Phase E2E', () => {
               evolutionChain: [],
             },
           ],
-          prizeCards: ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'],
+          prizeCards: [
+            'prize-1',
+            'prize-2',
+            'prize-3',
+            'prize-4',
+            'prize-5',
+            'prize-6',
+          ],
           discardPile: ['pokemon-base-set-v1.0-bulbasaur--46'],
           hasAttachedEnergyThisTurn: false,
         },
@@ -582,7 +657,10 @@ describe('Active Pokemon Selection Phase E2E', () => {
       },
     };
 
-    const matchFilePath = join(matchesDirectory, `${MATCH_ID}-prevent-end-turn.json`);
+    const matchFilePath = join(
+      matchesDirectory,
+      `${MATCH_ID}-prevent-end-turn.json`,
+    );
     await writeFile(matchFilePath, JSON.stringify(initialMatchState, null, 2));
 
     // Step 1: Verify phase is SELECT_ACTIVE_POKEMON
@@ -592,7 +670,9 @@ describe('Active Pokemon Selection Phase E2E', () => {
       .expect(200);
 
     expect(initialState.body.phase).toBe('SELECT_ACTIVE_POKEMON');
-    expect(initialState.body.playersRequiringActiveSelection).toEqual(['PLAYER2']);
+    expect(initialState.body.playersRequiringActiveSelection).toEqual([
+      'PLAYER2',
+    ]);
 
     // Step 2: Try to end turn (should fail)
     const endTurnResponse = await request(server())
@@ -614,7 +694,9 @@ describe('Active Pokemon Selection Phase E2E', () => {
       .send({ playerId: PLAYER1_ID })
       .expect(200);
 
-    expect(stateAfterFailedEndTurn.body.availableActions).not.toContain('END_TURN');
+    expect(stateAfterFailedEndTurn.body.availableActions).not.toContain(
+      'END_TURN',
+    );
 
     // Step 4: Opponent selects active Pokemon
     const opponentSelectResponse = await request(server())
@@ -641,6 +723,8 @@ describe('Active Pokemon Selection Phase E2E', () => {
       .expect(200);
 
     // After ending turn, state should be PLAYER_TURN, BETWEEN_TURNS, or MATCH_ENDED (if win condition met)
-    expect(['PLAYER_TURN', 'BETWEEN_TURNS', 'MATCH_ENDED']).toContain(endTurnAfterSelection.body.state);
+    expect(['PLAYER_TURN', 'BETWEEN_TURNS', 'MATCH_ENDED']).toContain(
+      endTurnAfterSelection.body.state,
+    );
   });
 });

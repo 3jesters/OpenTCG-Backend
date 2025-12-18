@@ -20,4 +20,3 @@ export class CreateMatchRequestDto {
   @IsOptional()
   player1DeckId?: string;
 }
-

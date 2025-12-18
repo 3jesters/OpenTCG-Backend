@@ -55,18 +55,24 @@ describe('DeckRules Value Object', () => {
     });
 
     it('should get max copies for restricted card', () => {
-      const restrictedCards = [new RestrictedCard('base-set', 'alakazam-base-1', 1)];
+      const restrictedCards = [
+        new RestrictedCard('base-set', 'alakazam-base-1', 1),
+      ];
       const rules = new DeckRules(60, 60, true, 4, 1, restrictedCards);
 
       expect(rules.getMaxCopiesForCard('base-set', 'alakazam-base-1')).toBe(1);
     });
 
     it('should check if card is restricted', () => {
-      const restrictedCards = [new RestrictedCard('base-set', 'alakazam-base-1', 1)];
+      const restrictedCards = [
+        new RestrictedCard('base-set', 'alakazam-base-1', 1),
+      ];
       const rules = new DeckRules(60, 60, true, 4, 1, restrictedCards);
 
       expect(rules.isCardRestricted('base-set', 'alakazam-base-1')).toBe(true);
-      expect(rules.isCardRestricted('base-set', 'blastoise-base-2')).toBe(false);
+      expect(rules.isCardRestricted('base-set', 'blastoise-base-2')).toBe(
+        false,
+      );
     });
   });
 
@@ -86,4 +92,3 @@ describe('DeckRules Value Object', () => {
     });
   });
 });
-

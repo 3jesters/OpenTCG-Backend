@@ -35,4 +35,3 @@ export class PerformCoinTossUseCase {
     return await this.matchRepository.save(match);
   }
 }
-

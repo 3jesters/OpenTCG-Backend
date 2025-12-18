@@ -10,5 +10,6 @@
   "transformIgnorePatterns": [
     "node_modules/(?!uuid)"
   ],
-  "globalSetup": "<rootDir>/jest-global-setup.ts"
+  "globalSetup": "<rootDir>/jest-global-setup.ts",
+  "setupFiles": ["<rootDir>/jest-setup.ts"]
 }

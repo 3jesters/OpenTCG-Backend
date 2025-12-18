@@ -1,6 +1,10 @@
 import { ConflictException } from '@nestjs/common';
 import { CreateTournamentUseCase } from './create-tournament.use-case';
-import { ITournamentRepository, Tournament, TournamentStatus } from '../../domain';
+import {
+  ITournamentRepository,
+  Tournament,
+  TournamentStatus,
+} from '../../domain';
 import { CreateTournamentDto } from '../dto/create-tournament.dto';
 
 describe('CreateTournamentUseCase', () => {
@@ -119,4 +123,3 @@ describe('CreateTournamentUseCase', () => {
     });
   });
 });
-

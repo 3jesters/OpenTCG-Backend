@@ -137,8 +137,12 @@ describe('Special Trainer Cards - Play as Basic Pokemon E2E', () => {
 
     // Verify Clefairy Doll was added to bench
     expect(response.body.playerState.bench).toHaveLength(1);
-    expect(response.body.playerState.bench[0].cardId).toBe('pokemon-base-set-v1.0-clefairy-doll--72');
-    expect(response.body.playerState.hand).not.toContain('pokemon-base-set-v1.0-clefairy-doll--72');
+    expect(response.body.playerState.bench[0].cardId).toBe(
+      'pokemon-base-set-v1.0-clefairy-doll--72',
+    );
+    expect(response.body.playerState.hand).not.toContain(
+      'pokemon-base-set-v1.0-clefairy-doll--72',
+    );
   });
 
   it('should allow playing Mysterious Fossil as Basic Pokemon', async () => {
@@ -236,8 +240,12 @@ describe('Special Trainer Cards - Play as Basic Pokemon E2E', () => {
 
     // Verify Mysterious Fossil was added to bench
     expect(response.body.playerState.bench).toHaveLength(1);
-    expect(response.body.playerState.bench[0].cardId).toBe('pokemon-fossil-v1.0-mysterious-fossil--61');
-    expect(response.body.playerState.hand).not.toContain('pokemon-fossil-v1.0-mysterious-fossil--61');
+    expect(response.body.playerState.bench[0].cardId).toBe(
+      'pokemon-fossil-v1.0-mysterious-fossil--61',
+    );
+    expect(response.body.playerState.hand).not.toContain(
+      'pokemon-fossil-v1.0-mysterious-fossil--61',
+    );
   });
 
   it('should reject playing regular trainer card as Pokemon', async () => {
@@ -333,7 +341,9 @@ describe('Special Trainer Cards - Play as Basic Pokemon E2E', () => {
       })
       .expect(400)
       .expect((res) => {
-        expect(res.body.message).toContain('Only Pokemon cards can be played to the bench');
+        expect(res.body.message).toContain(
+          'Only Pokemon cards can be played to the bench',
+        );
       });
   });
 
@@ -430,8 +440,9 @@ describe('Special Trainer Cards - Play as Basic Pokemon E2E', () => {
       })
       .expect(400)
       .expect((res) => {
-        expect(res.body.message).toContain('Cannot play STAGE_1 Pokemon directly');
+        expect(res.body.message).toContain(
+          'Cannot play STAGE_1 Pokemon directly',
+        );
       });
   });
 });
-

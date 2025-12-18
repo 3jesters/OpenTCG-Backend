@@ -45,7 +45,7 @@ import { TrainerActionData } from '../../domain/types/trainer-action-data.types'
 import { AbilityActionData } from '../../domain/types/ability-action-data.types';
 import { PokemonPosition } from '../../domain/enums';
 import { v4 as uuidv4 } from 'uuid';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { Attack } from '../../../card/domain/value-objects/attack.value-object';
 import { AbilityActivationType } from '../../../card/domain/enums/ability-activation-type.enum';
 import { AttackEffectType } from '../../../card/domain/enums/attack-effect-type.enum';
@@ -82,7 +82,8 @@ export class ExecuteTurnActionUseCase {
     private readonly drawInitialCardsUseCase: DrawInitialCardsUseCase,
     private readonly setPrizeCardsUseCase: SetPrizeCardsUseCase,
     private readonly performCoinTossUseCase: PerformCoinTossUseCase,
-    private readonly getCardByIdUseCase: GetCardByIdUseCase,
+    @Inject(IGetCardByIdUseCase)
+    private readonly getCardByIdUseCase: IGetCardByIdUseCase,
     private readonly coinFlipResolver: CoinFlipResolverService,
     private readonly attackCoinFlipParser: AttackCoinFlipParserService,
     private readonly attackEnergyValidator: AttackEnergyValidatorService,

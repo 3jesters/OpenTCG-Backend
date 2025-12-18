@@ -1,16 +1,16 @@
 /**
  * Game Event Type Enum
- * 
+ *
  * **REUSABLE GAME MECHANIC ENUM**
  * This enum represents game events that can trigger various mechanics throughout the system.
- * 
+ *
  * Can be used for:
  * - Ability triggers (when does an ability activate?)
  * - Card rule triggers (when does a rule apply?)
  * - Trainer card timing (when can a trainer be played?)
  * - Effect activation (when does an effect occur?)
  * - Game engine event tracking
- * 
+ *
  * Similar to the Condition system, this is designed to be reusable across the entire codebase.
  */
 export enum GameEventType {
@@ -62,4 +62,3 @@ export enum GameEventType {
    */
   END_OF_TURN = 'END_OF_TURN',
 }
-

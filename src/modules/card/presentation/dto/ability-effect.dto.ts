@@ -33,7 +33,8 @@ export class AbilityEffectDto {
   target?: TargetType;
 
   @ApiProperty({
-    description: 'Source location for energy acceleration effects (DECK, HAND, DISCARD, SELF)',
+    description:
+      'Source location for energy acceleration effects (DECK, HAND, DISCARD, SELF)',
     enum: EnergySource,
     required: false,
     example: EnergySource.HAND,
@@ -41,7 +42,8 @@ export class AbilityEffectDto {
   source?: EnergySource;
 
   @ApiProperty({
-    description: 'Number of items affected (cards to draw, energy to attach, etc.). For DISCARD_FROM_HAND, can be "all"',
+    description:
+      'Number of items affected (cards to draw, energy to attach, etc.). For DISCARD_FROM_HAND, can be "all"',
     required: false,
     example: 1,
   })
@@ -71,7 +73,8 @@ export class AbilityEffectDto {
   targetPokemonType?: PokemonType;
 
   @ApiProperty({
-    description: 'Source Pokémon type restriction (for SELF source energy acceleration)',
+    description:
+      'Source Pokémon type restriction (for SELF source energy acceleration)',
     enum: PokemonType,
     required: false,
     example: PokemonType.FIRE,

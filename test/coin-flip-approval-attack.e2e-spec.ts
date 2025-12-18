@@ -173,7 +173,8 @@ describe('Coin Flip Approval Attack E2E', () => {
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
-      const initialStatusEffect = initialState.body.opponentState.activePokemon.statusEffect;
+      const initialStatusEffect =
+        initialState.body.opponentState.activePokemon.statusEffect;
       expect(initialStatusEffect).toBe('NONE');
 
       // 1. Execute ATTACK action (PLAYER1)
@@ -197,13 +198,17 @@ describe('Coin Flip Approval Attack E2E', () => {
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
-      expect(player1State.body.availableActions).toContain('GENERATE_COIN_FLIP');
+      expect(player1State.body.availableActions).toContain(
+        'GENERATE_COIN_FLIP',
+      );
 
       const player2State = await request(server())
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER2_ID })
         .expect(200);
-      expect(player2State.body.availableActions).toContain('GENERATE_COIN_FLIP');
+      expect(player2State.body.availableActions).toContain(
+        'GENERATE_COIN_FLIP',
+      );
       expect(player2State.body.coinFlipState).toBeDefined(); // Both see same state
 
       // 4. First player (PLAYER1) approves - triggers coin flip generation
@@ -221,8 +226,12 @@ describe('Coin Flip Approval Attack E2E', () => {
       // Check if coinFlipState is cleared (results applied) or if results are in coinFlipState
       if (approveResponse1.body.coinFlipState) {
         // Results may be in coinFlipState if not yet applied
-        expect(approveResponse1.body.coinFlipState.player1HasApproved).toBe(true);
-        expect(approveResponse1.body.coinFlipState.player2HasApproved).toBe(false);
+        expect(approveResponse1.body.coinFlipState.player1HasApproved).toBe(
+          true,
+        );
+        expect(approveResponse1.body.coinFlipState.player2HasApproved).toBe(
+          false,
+        );
       }
 
       // 6. Verify PLAYER2 sees the same result (if coinFlipState still exists)
@@ -236,7 +245,7 @@ describe('Coin Flip Approval Attack E2E', () => {
         // Results should be the same if present
         if (approveResponse1.body.coinFlipState?.results) {
           expect(player2View.body.coinFlipState.results).toEqual(
-            approveResponse1.body.coinFlipState.results
+            approveResponse1.body.coinFlipState.results,
           );
         }
       }
@@ -246,23 +255,32 @@ describe('Coin Flip Approval Attack E2E', () => {
       if (approveResponse1.body.lastAction?.actionType === 'ATTACK') {
         expect(approveResponse1.body.lastAction.actionData.attackIndex).toBe(0);
         // Coin flip results may be in actionData if attack had coin flip
-        
+
         // Verify status effect based on coin flip result
-        const coinFlipResults = approveResponse1.body.lastAction.actionData.coinFlipResults;
+        const coinFlipResults =
+          approveResponse1.body.lastAction.actionData.coinFlipResults;
         if (coinFlipResults && coinFlipResults.length > 0) {
           const coinFlipResult = coinFlipResults[0];
           const finalState = approveResponse1.body;
-          
+
           if (coinFlipResult.result === 'heads') {
             // Heads: Status effect should be applied
-            expect(finalState.opponentState.activePokemon.statusEffect).toBe('CONFUSED');
-            expect(approveResponse1.body.lastAction.actionData.effectFailed).toBeUndefined();
+            expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+              'CONFUSED',
+            );
+            expect(
+              approveResponse1.body.lastAction.actionData.effectFailed,
+            ).toBeUndefined();
           } else {
             // Tails: Status effect should NOT be applied
-            expect(finalState.opponentState.activePokemon.statusEffect).toBe('NONE');
-            expect(approveResponse1.body.lastAction.actionData.effectFailed).toBe(true);
+            expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+              'NONE',
+            );
+            expect(
+              approveResponse1.body.lastAction.actionData.effectFailed,
+            ).toBe(true);
           }
-          
+
           // Verify damage was always applied
           expect(approveResponse1.body.lastAction.actionData.damage).toBe(10);
         }
@@ -275,7 +293,8 @@ describe('Coin Flip Approval Attack E2E', () => {
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
-      const initialStatusEffect = initialState.body.opponentState.activePokemon.statusEffect;
+      const initialStatusEffect =
+        initialState.body.opponentState.activePokemon.statusEffect;
       expect(initialStatusEffect).toBe('NONE');
 
       // Execute ATTACK
@@ -300,31 +319,48 @@ describe('Coin Flip Approval Attack E2E', () => {
 
       // Verify PLAYER2 approval tracked
       if (approveResponse2.body.coinFlipState) {
-        expect(approveResponse2.body.coinFlipState.player2HasApproved).toBe(true);
-        expect(approveResponse2.body.coinFlipState.player1HasApproved).toBe(false);
+        expect(approveResponse2.body.coinFlipState.player2HasApproved).toBe(
+          true,
+        );
+        expect(approveResponse2.body.coinFlipState.player1HasApproved).toBe(
+          false,
+        );
       }
 
       // Verify status effect based on coin flip result
       if (approveResponse2.body.lastAction?.actionType === 'ATTACK') {
-        const coinFlipResults = approveResponse2.body.lastAction.actionData.coinFlipResults;
+        const coinFlipResults =
+          approveResponse2.body.lastAction.actionData.coinFlipResults;
         if (coinFlipResults && coinFlipResults.length > 0) {
           const coinFlipResult = coinFlipResults[0];
           const finalState = approveResponse2.body;
-          
+
           if (coinFlipResult.result === 'heads') {
             // Heads: Status effect should be applied
-            expect(finalState.opponentState.activePokemon.statusEffect).toBe('CONFUSED');
-            expect(approveResponse2.body.lastAction.actionData.effectFailed).toBeUndefined();
+            expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+              'CONFUSED',
+            );
+            expect(
+              approveResponse2.body.lastAction.actionData.effectFailed,
+            ).toBeUndefined();
             // Verify status effect changed from initial state
-            expect(finalState.opponentState.activePokemon.statusEffect).not.toBe(initialStatusEffect);
+            expect(
+              finalState.opponentState.activePokemon.statusEffect,
+            ).not.toBe(initialStatusEffect);
           } else {
             // Tails: Status effect should NOT be applied
-            expect(finalState.opponentState.activePokemon.statusEffect).toBe('NONE');
-            expect(approveResponse2.body.lastAction.actionData.effectFailed).toBe(true);
+            expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+              'NONE',
+            );
+            expect(
+              approveResponse2.body.lastAction.actionData.effectFailed,
+            ).toBe(true);
             // Verify status effect did not change from initial state
-            expect(finalState.opponentState.activePokemon.statusEffect).toBe(initialStatusEffect);
+            expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+              initialStatusEffect,
+            );
           }
-          
+
           // Verify damage was always applied
           expect(approveResponse2.body.lastAction.actionData.damage).toBe(10);
         }
@@ -337,8 +373,10 @@ describe('Coin Flip Approval Attack E2E', () => {
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
-      const initialOpponentHp = initialState.body.opponentState.activePokemon.currentHp;
-      const initialStatusEffect = initialState.body.opponentState.activePokemon.statusEffect;
+      const initialOpponentHp =
+        initialState.body.opponentState.activePokemon.currentHp;
+      const initialStatusEffect =
+        initialState.body.opponentState.activePokemon.statusEffect;
 
       // Verify initial state: no status effect
       expect(initialStatusEffect).toBe('NONE');
@@ -395,16 +433,24 @@ describe('Coin Flip Approval Attack E2E', () => {
         // Tails: damage applied, but status effect failed
         expect(attackAction.actionData.effectFailed).toBe(true);
         // Verify no status effect applied
-        expect(finalState.opponentState.activePokemon.statusEffect).toBe('NONE');
+        expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+          'NONE',
+        );
         // Verify status effect did not change from initial state
-        expect(finalState.opponentState.activePokemon.statusEffect).toBe(initialStatusEffect);
+        expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+          initialStatusEffect,
+        );
       } else if (isHeads) {
         // Heads: damage applied, status effect should be applied
         expect(attackAction.actionData.effectFailed).toBeUndefined();
         // Verify status effect applied (Confused)
-        expect(finalState.opponentState.activePokemon.statusEffect).toBe('CONFUSED');
+        expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+          'CONFUSED',
+        );
         // Verify status effect changed from initial state
-        expect(finalState.opponentState.activePokemon.statusEffect).not.toBe(initialStatusEffect);
+        expect(finalState.opponentState.activePokemon.statusEffect).not.toBe(
+          initialStatusEffect,
+        );
       }
     });
 
@@ -414,9 +460,11 @@ describe('Coin Flip Approval Attack E2E', () => {
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
-      
+
       // Verify initial state: no status effect
-      expect(initialState.body.opponentState.activePokemon.statusEffect).toBe('NONE');
+      expect(initialState.body.opponentState.activePokemon.statusEffect).toBe(
+        'NONE',
+      );
 
       // Execute ATTACK (Confuse Ray)
       await request(server())
@@ -449,11 +497,15 @@ describe('Coin Flip Approval Attack E2E', () => {
       // Verify opponent Pokemon status effect based on coin flip
       if (coinFlipResult.result === 'heads') {
         // Heads: Status effect should be applied
-        expect(finalState.opponentState.activePokemon.statusEffect).toBe('CONFUSED');
+        expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+          'CONFUSED',
+        );
         expect(attackAction.actionData.effectFailed).toBeUndefined();
       } else {
         // Tails: Status effect should NOT be applied
-        expect(finalState.opponentState.activePokemon.statusEffect).toBe('NONE');
+        expect(finalState.opponentState.activePokemon.statusEffect).toBe(
+          'NONE',
+        );
         expect(attackAction.actionData.effectFailed).toBe(true);
       }
 
@@ -542,5 +594,3 @@ describe('Coin Flip Approval Attack E2E', () => {
     });
   });
 });
-
-

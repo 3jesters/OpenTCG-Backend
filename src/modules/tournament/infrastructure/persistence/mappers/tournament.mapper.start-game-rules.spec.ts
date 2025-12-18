@@ -178,9 +178,11 @@ describe('TournamentMapper - Start Game Rules', () => {
       const tournament = TournamentMapper.toDomain(json);
 
       expect(tournament.startGameRules.rules).toHaveLength(2);
-      expect(tournament.startGameRules.hasRuleType(StartGameRuleType.HAS_ENERGY_CARD)).toBe(
-        true,
-      );
+      expect(
+        tournament.startGameRules.hasRuleType(
+          StartGameRuleType.HAS_ENERGY_CARD,
+        ),
+      ).toBe(true);
     });
 
     it('should use default rules when startGameRules is missing in JSON', () => {
@@ -251,4 +253,3 @@ describe('TournamentMapper - Start Game Rules', () => {
     });
   });
 });
-

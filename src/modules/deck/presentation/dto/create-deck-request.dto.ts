@@ -46,4 +46,3 @@ export class CreateDeckRequestDto {
   @IsOptional()
   cards?: DeckCardRequestDto[];
 }
-

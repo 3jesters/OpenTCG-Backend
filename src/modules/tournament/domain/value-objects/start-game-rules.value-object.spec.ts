@@ -170,9 +170,7 @@ describe('StartGameRules Value Object', () => {
         },
       ]);
 
-      expect(rules.hasRuleType(StartGameRuleType.HAS_BASIC_POKEMON)).toBe(
-        true,
-      );
+      expect(rules.hasRuleType(StartGameRuleType.HAS_BASIC_POKEMON)).toBe(true);
     });
 
     it('should return false when rule type does not exist', () => {
@@ -286,4 +284,3 @@ describe('StartGameRules Value Object', () => {
     });
   });
 });
-

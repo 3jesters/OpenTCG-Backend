@@ -25,4 +25,3 @@ export class GetCardsResponseDto {
   })
   count: number;
 }
-

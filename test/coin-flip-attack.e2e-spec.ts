@@ -207,7 +207,9 @@ describe('Coin Flip Attack E2E', () => {
               prizeCards: [],
             }),
             activePokemon: {
-              instanceId: baseMatchState.gameState?.player2State?.activePokemon?.instanceId || 'test-instance-2',
+              instanceId:
+                baseMatchState.gameState?.player2State?.activePokemon
+                  ?.instanceId || 'test-instance-2',
               cardId: 'pokemon-base-set-v1.0-nidoran--57', // Override to use Nidoran with Horn Hazard
               position: 'ACTIVE',
               currentHp: 40,
@@ -236,7 +238,8 @@ describe('Coin Flip Attack E2E', () => {
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER2_ID })
         .expect(200);
-      const initialOpponentHp = initialState.body.opponentState.activePokemon?.currentHp || 50;
+      const initialOpponentHp =
+        initialState.body.opponentState.activePokemon?.currentHp || 50;
 
       // Execute ATTACK action
       const attackResponse = await request(server())
@@ -248,9 +251,12 @@ describe('Coin Flip Attack E2E', () => {
             attackIndex: 0, // Horn Hazard attack
           },
         });
-      
+
       if (attackResponse.status !== 200) {
-        console.error('Attack failed:', JSON.stringify(attackResponse.body, null, 2));
+        console.error(
+          'Attack failed:',
+          JSON.stringify(attackResponse.body, null, 2),
+        );
       }
       expect(attackResponse.status).toBe(200);
 
@@ -287,7 +293,7 @@ describe('Coin Flip Attack E2E', () => {
       expect(attackAction.actionData.coinFlipResults.length).toBe(1);
 
       const coinFlipResult = attackAction.actionData.coinFlipResults[0];
-      
+
       // Verify we got heads (deterministic based on match ID)
       expect(coinFlipResult.result).toBe('heads');
       expect(attackAction.actionData.damage).toBe(30);
@@ -340,7 +346,9 @@ describe('Coin Flip Attack E2E', () => {
               prizeCards: [],
             }),
             activePokemon: {
-              instanceId: baseMatchState.gameState?.player2State?.activePokemon?.instanceId || 'test-instance-2',
+              instanceId:
+                baseMatchState.gameState?.player2State?.activePokemon
+                  ?.instanceId || 'test-instance-2',
               cardId: 'pokemon-base-set-v1.0-nidoran--57', // Override to use Nidoran with Horn Hazard
               position: 'ACTIVE',
               currentHp: 40,
@@ -369,7 +377,8 @@ describe('Coin Flip Attack E2E', () => {
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER2_ID })
         .expect(200);
-      const initialOpponentHp = initialState.body.opponentState.activePokemon?.currentHp || 50;
+      const initialOpponentHp =
+        initialState.body.opponentState.activePokemon?.currentHp || 50;
 
       // Execute ATTACK action
       const attackResponse = await request(server())
@@ -443,7 +452,9 @@ describe('Coin Flip Attack E2E', () => {
               prizeCards: [],
             }),
             activePokemon: {
-              instanceId: baseMatchState.gameState?.player2State?.activePokemon?.instanceId || 'test-instance-2',
+              instanceId:
+                baseMatchState.gameState?.player2State?.activePokemon
+                  ?.instanceId || 'test-instance-2',
               cardId: 'pokemon-base-set-v1.0-nidoran--57', // Override to use Nidoran with Horn Hazard
               position: 'ACTIVE',
               currentHp: 40,
@@ -502,7 +513,9 @@ describe('Coin Flip Attack E2E', () => {
       const attackAction = state.lastAction;
       expect(attackAction.actionData.coinFlipResults).toBeDefined();
       expect(attackAction.actionData.coinFlipResults.length).toBe(1);
-      expect(['heads', 'tails']).toContain(attackAction.actionData.coinFlipResults[0].result);
+      expect(['heads', 'tails']).toContain(
+        attackAction.actionData.coinFlipResults[0].result,
+      );
     });
   });
 });

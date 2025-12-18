@@ -3,7 +3,7 @@
   "name": "Classic Water Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-15T14:07:57.337Z",
+  "updatedAt": "2025-12-16T12:38:33.639Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
   "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
@@ -49,7 +49,7 @@
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-magikarp--35",
+      "cardId": "pokemon-base-set-v1.0-staryu--67",
       "setName": "base-set",
       "quantity": 2
     },

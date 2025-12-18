@@ -1,15 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import {
-  Match,
-  PlayerIdentifier,
-  MatchState,
-  TurnPhase,
-} from '../../domain';
+import { Match, PlayerIdentifier, MatchState, TurnPhase } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
-import {
-  GameState,
-  PlayerGameState,
-} from '../../domain/value-objects';
+import { GameState, PlayerGameState } from '../../domain/value-objects';
 import { IDeckRepository } from '../../../deck/domain/repositories';
 import { DeckCard } from '../../../deck/domain/value-objects';
 import { ITournamentRepository } from '../../../tournament/domain';
@@ -32,7 +24,10 @@ export class StartMatchUseCase {
     private readonly startGameRulesValidator: StartGameRulesValidatorService,
   ) {}
 
-  async execute(matchId: string, firstPlayer: PlayerIdentifier): Promise<Match> {
+  async execute(
+    matchId: string,
+    firstPlayer: PlayerIdentifier,
+  ): Promise<Match> {
     // Find match
     const match = await this.matchRepository.findById(matchId);
     if (!match) {
@@ -197,7 +192,7 @@ export class StartMatchUseCase {
    */
   private shuffleDeck(deck: string[], seed?: number): string[] {
     const shuffled = [...deck];
-    
+
     // Use seeded random if seed provided, otherwise use Math.random()
     let random: () => number;
     if (seed !== undefined) {
@@ -211,7 +206,7 @@ export class StartMatchUseCase {
     } else {
       random = Math.random;
     }
-    
+
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -267,4 +262,3 @@ export class StartMatchUseCase {
     return { hand: currentHand, deck: currentDeck };
   }
 }
-

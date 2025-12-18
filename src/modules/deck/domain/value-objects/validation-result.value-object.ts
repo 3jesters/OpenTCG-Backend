@@ -37,7 +37,10 @@ export class ValidationResult {
   /**
    * Create a failed validation result with errors and warnings
    */
-  static failureWithWarnings(errors: string[], warnings: string[]): ValidationResult {
+  static failureWithWarnings(
+    errors: string[],
+    warnings: string[],
+  ): ValidationResult {
     if (errors.length === 0) {
       throw new Error('Failure result must have at least one error');
     }
@@ -59,11 +62,10 @@ export class ValidationResult {
    * Add warnings to the result
    */
   addWarnings(newWarnings: string[]): ValidationResult {
-    return new ValidationResult(
-      this.isValid,
-      this.errors,
-      [...this.warnings, ...newWarnings],
-    );
+    return new ValidationResult(this.isValid, this.errors, [
+      ...this.warnings,
+      ...newWarnings,
+    ]);
   }
 
   /**
@@ -84,4 +86,3 @@ export class ValidationResult {
     return this.errors.length > 0 || this.warnings.length > 0;
   }
 }
-

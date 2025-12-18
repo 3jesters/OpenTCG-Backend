@@ -12,4 +12,3 @@ export class StartMatchRequestDto {
   @IsEnum(PlayerIdentifier)
   firstPlayer: PlayerIdentifier;
 }
-

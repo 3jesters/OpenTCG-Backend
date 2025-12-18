@@ -292,14 +292,10 @@ export class Deck {
 
     // Check deck size
     if (totalCards < minDeckSize) {
-      errors.push(
-        `Deck has ${totalCards} cards but minimum is ${minDeckSize}`,
-      );
+      errors.push(`Deck has ${totalCards} cards but minimum is ${minDeckSize}`);
     }
     if (totalCards > maxDeckSize) {
-      errors.push(
-        `Deck has ${totalCards} cards but maximum is ${maxDeckSize}`,
-      );
+      errors.push(`Deck has ${totalCards} cards but maximum is ${maxDeckSize}`);
     }
 
     // Check card copies
@@ -324,4 +320,3 @@ export class Deck {
     return this._cards.filter((c) => c.cardId.startsWith(prefix));
   }
 }
-

@@ -24,9 +24,7 @@ export class DeckRules {
       throw new Error('Max deck size cannot be less than min deck size');
     }
     if (this.exactDeckSize && this.minDeckSize !== this.maxDeckSize) {
-      throw new Error(
-        'For exact deck size, min and max must be equal',
-      );
+      throw new Error('For exact deck size, min and max must be equal');
     }
     if (this.maxCopiesPerCard < 1) {
       throw new Error('Max copies per card must be at least 1');
@@ -63,7 +61,9 @@ export class DeckRules {
       this.maxCopiesPerCard === other.maxCopiesPerCard &&
       this.minBasicPokemon === other.minBasicPokemon &&
       this.restrictedCards.length === other.restrictedCards.length &&
-      this.restrictedCards.every((rc, idx) => rc.equals(other.restrictedCards[idx]))
+      this.restrictedCards.every((rc, idx) =>
+        rc.equals(other.restrictedCards[idx]),
+      )
     );
   }
 
@@ -81,4 +81,3 @@ export class DeckRules {
     );
   }
 }
-

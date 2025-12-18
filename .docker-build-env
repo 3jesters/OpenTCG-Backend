@@ -1,0 +1,5 @@
+# Environment variables to enable BuildKit for faster Docker builds
+# Source this file before running docker-compose: source .docker-build-env
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
+

@@ -5,4 +5,3 @@ export * from './repositories/tournament.repository.interface';
 
 // Re-export repositories folder for backward compatibility
 export * as repositories from './repositories/tournament.repository.interface';
-

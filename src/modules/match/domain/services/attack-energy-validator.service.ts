@@ -29,7 +29,7 @@ export class AttackEnergyValidatorService {
     attachedEnergyCards: EnergyCardData[],
   ): { isValid: boolean; error?: string } {
     const requiredEnergy = attack.energyCost;
-    
+
     // If attack has no energy cost, it's always valid
     if (!requiredEnergy || requiredEnergy.length === 0) {
       return { isValid: true };
@@ -50,11 +50,11 @@ export class AttackEnergyValidatorService {
    */
   private countEnergyByType(energyCost: EnergyType[]): Map<EnergyType, number> {
     const counts = new Map<EnergyType, number>();
-    
+
     for (const energyType of energyCost) {
       counts.set(energyType, (counts.get(energyType) || 0) + 1);
     }
-    
+
     return counts;
   }
 
@@ -134,4 +134,3 @@ export class AttackEnergyValidatorService {
     return { isValid: true };
   }
 }
-

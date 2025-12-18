@@ -23,9 +23,3 @@ export class GetMatchByIdUseCase {
     return match;
   }
 }
-
-
-
-
-
-

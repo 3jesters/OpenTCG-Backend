@@ -4,4 +4,3 @@ export enum TrainerType {
   STADIUM = 'STADIUM',
   TOOL = 'TOOL',
 }
-

@@ -18,9 +18,13 @@ import { GetCardsResponseDto } from '../../presentation/dto/get-cards-response.d
 import { CardMapper } from '../../presentation/mappers/card.mapper';
 import { v4 as uuidv4 } from 'uuid';
 import { AttackEffectImportDto } from '../dto/attack-effect-import.dto';
-import { AttackEffect, AttackEffectFactory } from '../../domain/value-objects/attack-effect.value-object';
+import {
+  AttackEffect,
+  AttackEffectFactory,
+} from '../../domain/value-objects/attack-effect.value-object';
 import { AttackEffectType } from '../../domain/enums/attack-effect-type.enum';
 import { TargetType } from '../../domain/enums/target-type.enum';
+import { AbilityEffectNormalizer } from '../../infrastructure/persistence/mappers/ability-effect-normalizer.util';
 
 /**
  * Preview Set Use Case
@@ -173,9 +177,6 @@ export class PreviewSetUseCase {
       if (dto.hp) {
         card.setHp(dto.hp);
       }
-      if (dto.level !== undefined) {
-        card.setLevel(dto.level);
-      }
       if (dto.retreatCost !== undefined) {
         card.setRetreatCost(dto.retreatCost);
       }
@@ -199,7 +200,10 @@ export class PreviewSetUseCase {
 
       // Set resistance
       if (dto.resistance) {
-        const resistance = new Resistance(dto.resistance.type, dto.resistance.modifier);
+        const resistance = new Resistance(
+          dto.resistance.type,
+          dto.resistance.modifier,
+        );
         card.setResistance(resistance);
       }
 
@@ -209,37 +213,44 @@ export class PreviewSetUseCase {
       // This allows abilities to be sent to the client even without structured effects.
       if (dto.ability) {
         let effects: any[];
-        
-        if (dto.ability.effects && Array.isArray(dto.ability.effects) && dto.ability.effects.length > 0 && dto.ability.effects.some(e => e && e.effectType)) {
+
+        if (
+          dto.ability.effects &&
+          Array.isArray(dto.ability.effects) &&
+          dto.ability.effects.length > 0 &&
+          dto.ability.effects.some((e) => e && e.effectType)
+        ) {
           // Convert AbilityEffectImportDto to AbilityEffect
           // The DTO already has the correct structure, just need to map conditions
-          effects = dto.ability.effects.map(e => {
+          effects = dto.ability.effects.map((e) => {
             // Convert conditions from DTO to domain objects
             // ConditionImportDto has value as string, but Condition needs ConditionValue object
-            const requiredConditions = e.conditions?.map(c => {
-              const condition: any = {
-                type: c.type,
-              };
-              
-              // Only add value if it's properly structured (for now, skip string values)
-              // TODO: Add proper conversion from string to ConditionValue when needed
-              if (c.numericValue !== undefined) {
-                condition.value = { minimumAmount: c.numericValue };
-              } else if (c.value && c.value !== '') {
-                // For now, skip string values that can't be converted
-                // This will be handled when card data is updated with proper structures
-              }
-              
-              // Condition interface doesn't have operator, so we skip it
-              // If needed in the future, it can be added to the Condition interface
-              
-              return condition;
-            }) || [];
-            
+            const requiredConditions =
+              e.conditions?.map((c) => {
+                const condition: any = {
+                  type: c.type,
+                };
+
+                // Only add value if it's properly structured (for now, skip string values)
+                // TODO: Add proper conversion from string to ConditionValue when needed
+                if (c.numericValue !== undefined) {
+                  condition.value = { minimumAmount: c.numericValue };
+                } else if (c.value && c.value !== '') {
+                  // For now, skip string values that can't be converted
+                  // This will be handled when card data is updated with proper structures
+                }
+
+                // Condition interface doesn't have operator, so we skip it
+                // If needed in the future, it can be added to the Condition interface
+
+                return condition;
+              }) || [];
+
             // Build effect object with all properties
             const effect: any = {
               effectType: e.effectType,
-              target: e.target || (e.targetType ? (e.targetType as any) : undefined),
+              target:
+                e.target || (e.targetType ? (e.targetType as any) : undefined),
               requiredConditions,
             };
 
@@ -253,14 +264,18 @@ export class PreviewSetUseCase {
                 if (e.amount !== undefined) effect.amount = e.amount;
                 break;
               case 'STATUS_CONDITION':
-                if (e.statusCondition !== undefined) effect.statusCondition = e.statusCondition;
+                if (e.statusCondition !== undefined)
+                  effect.statusCondition = e.statusCondition;
                 break;
               case 'ENERGY_ACCELERATION':
                 if (e.source !== undefined) effect.source = e.source;
                 if (e.count !== undefined) effect.count = e.count;
-                if (e.energyType !== undefined) effect.energyType = e.energyType;
-                if (e.targetPokemonType !== undefined) effect.targetPokemonType = e.targetPokemonType;
-                if (e.sourcePokemonType !== undefined) effect.sourcePokemonType = e.sourcePokemonType;
+                if (e.energyType !== undefined)
+                  effect.energyType = e.energyType;
+                if (e.targetPokemonType !== undefined)
+                  effect.targetPokemonType = e.targetPokemonType;
+                if (e.sourcePokemonType !== undefined)
+                  effect.sourcePokemonType = e.sourcePokemonType;
                 if (e.selector !== undefined) effect.selector = e.selector;
                 break;
               case 'SWITCH_POKEMON':
@@ -272,14 +287,17 @@ export class PreviewSetUseCase {
                 break;
               case 'SEARCH_DECK':
                 if (e.count !== undefined) effect.count = e.count;
-                if (e.destination !== undefined) effect.destination = e.destination;
+                if (e.destination !== undefined)
+                  effect.destination = e.destination;
                 if (e.cardType !== undefined) effect.cardType = e.cardType;
-                if (e.pokemonType !== undefined) effect.pokemonType = e.pokemonType;
+                if (e.pokemonType !== undefined)
+                  effect.pokemonType = e.pokemonType;
                 if (e.selector !== undefined) effect.selector = e.selector;
                 break;
               case 'BOOST_ATTACK':
                 if (e.modifier !== undefined) effect.modifier = e.modifier;
-                if (e.affectedTypes !== undefined) effect.affectedTypes = e.affectedTypes;
+                if (e.affectedTypes !== undefined)
+                  effect.affectedTypes = e.affectedTypes;
                 break;
               case 'BOOST_HP':
                 if (e.modifier !== undefined) effect.modifier = e.modifier;
@@ -294,19 +312,26 @@ export class PreviewSetUseCase {
                 break;
               case 'ATTACH_FROM_DISCARD':
                 if (e.count !== undefined) effect.count = e.count;
-                if (e.energyType !== undefined) effect.energyType = e.energyType;
+                if (e.energyType !== undefined)
+                  effect.energyType = e.energyType;
                 if (e.selector !== undefined) effect.selector = e.selector;
                 break;
               case 'RETRIEVE_FROM_DISCARD':
                 if (e.count !== undefined) effect.count = e.count;
                 if (e.selector !== undefined) effect.selector = e.selector;
                 if (e.cardType !== undefined) effect.cardType = e.cardType;
-                if (e.pokemonType !== undefined) effect.pokemonType = e.pokemonType;
+                if (e.pokemonType !== undefined)
+                  effect.pokemonType = e.pokemonType;
                 break;
             }
 
             // Legacy support for old properties
-            if (e.value !== undefined && !effect.amount && !effect.count && !effect.modifier) {
+            if (
+              e.value !== undefined &&
+              !effect.amount &&
+              !effect.count &&
+              !effect.modifier
+            ) {
               effect.value = e.value;
             }
             if (e.damageModifier) {
@@ -318,6 +343,9 @@ export class PreviewSetUseCase {
 
             return effect;
           });
+          
+          // Normalize effects to fix invalid targets (e.g., DEFENDING in HEAL effects)
+          effects = AbilityEffectNormalizer.normalize(effects);
         } else {
           // Create a placeholder effect for display purposes when no structured effects exist
           // This allows the ability to be sent to the client with name, text, etc.
@@ -325,7 +353,7 @@ export class PreviewSetUseCase {
           // Note: This effect is only used for display - it won't be executed in gameplay
           effects = [AbilityEffectFactory.drawCards(1)];
         }
-        
+
         const ability = new Ability(
           dto.ability.name,
           dto.ability.text,
@@ -342,7 +370,9 @@ export class PreviewSetUseCase {
         for (const attackDto of dto.attacks) {
           // Convert attack effects from DTO to domain objects
           const effects = attackDto.effects
-            ? attackDto.effects.map((effectDto) => this.convertAttackEffect(effectDto))
+            ? attackDto.effects.map((effectDto) =>
+                this.convertAttackEffect(effectDto),
+              )
             : undefined;
 
           const attack = new Attack(
@@ -413,9 +443,11 @@ export class PreviewSetUseCase {
     const authorKebab = this.toKebabCase(author);
     const setNameKebab = this.toKebabCase(setName);
     const cardNameKebab = this.toKebabCase(dto.name);
-    const level = dto.level !== undefined ? dto.level.toString() : '';
 
-    return `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${level}-${dto.cardNumber}`;
+    // Build card ID and normalize to remove any double dashes
+    const cardId = `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${dto.cardNumber}`;
+    // Remove any consecutive dashes that might have been created
+    return cardId.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
   }
 
   private toKebabCase(str: string): string {
@@ -439,12 +471,17 @@ export class PreviewSetUseCase {
     switch (effectDto.effectType) {
       case AttackEffectType.DISCARD_ENERGY:
         // Use target or targetType (legacy support)
-        const target = effectDto.target || (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
+        const target =
+          effectDto.target ||
+          (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
         if (!target) {
           throw new Error('DISCARD_ENERGY effect requires target');
         }
         // Use amount or value (legacy support)
-        const amount = effectDto.amount !== undefined ? effectDto.amount : (effectDto.value as number | 'all' || 1);
+        const amount =
+          effectDto.amount !== undefined
+            ? effectDto.amount
+            : (effectDto.value as number | 'all') || 1;
         return AttackEffectFactory.discardEnergy(
           target as TargetType.SELF | TargetType.DEFENDING,
           amount,
@@ -457,31 +494,53 @@ export class PreviewSetUseCase {
           throw new Error('STATUS_CONDITION effect requires statusCondition');
         }
         return AttackEffectFactory.statusCondition(
-          effectDto.statusCondition as 'PARALYZED' | 'POISONED' | 'BURNED' | 'ASLEEP' | 'CONFUSED',
+          effectDto.statusCondition as
+            | 'PARALYZED'
+            | 'POISONED'
+            | 'BURNED'
+            | 'ASLEEP'
+            | 'CONFUSED',
           conditions,
         );
 
       case AttackEffectType.DAMAGE_MODIFIER:
-        const modifier = effectDto.modifier !== undefined ? effectDto.modifier : parseInt(effectDto.damageModifier || '0', 10);
+        const modifier =
+          effectDto.modifier !== undefined
+            ? effectDto.modifier
+            : parseInt(effectDto.damageModifier || '0', 10);
         return AttackEffectFactory.damageModifier(modifier, conditions);
 
       case AttackEffectType.HEAL:
-        const healAmount = effectDto.healAmount !== undefined ? effectDto.healAmount : (effectDto.value as number);
+        const healAmount =
+          effectDto.healAmount !== undefined
+            ? effectDto.healAmount
+            : (effectDto.value as number);
         if (healAmount === undefined) {
           throw new Error('HEAL effect requires healAmount or value');
         }
-        const healTarget = effectDto.target || (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
+        const healTarget =
+          effectDto.target ||
+          (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
         if (!healTarget) {
           throw new Error('HEAL effect requires target');
         }
-        return AttackEffectFactory.heal(healTarget as TargetType.SELF | TargetType.DEFENDING, healAmount, conditions);
+        return AttackEffectFactory.heal(
+          healTarget as TargetType.SELF | TargetType.DEFENDING,
+          healAmount,
+          conditions,
+        );
 
       case AttackEffectType.PREVENT_DAMAGE:
-        const preventTarget = effectDto.target || (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
+        const preventTarget =
+          effectDto.target ||
+          (effectDto.targetType as TargetType.SELF | TargetType.DEFENDING);
         if (!preventTarget) {
           throw new Error('PREVENT_DAMAGE effect requires target');
         }
-        const preventAmount = effectDto.amount !== undefined ? effectDto.amount : (effectDto.value as number | 'all');
+        const preventAmount =
+          effectDto.amount !== undefined
+            ? effectDto.amount
+            : (effectDto.value as number | 'all');
         if (!effectDto.duration) {
           throw new Error('PREVENT_DAMAGE effect requires duration');
         }
@@ -500,8 +559,9 @@ export class PreviewSetUseCase {
         return AttackEffectFactory.recoilDamage(recoilAmount, conditions);
 
       default:
-        throw new Error(`Unsupported attack effect type: ${effectDto.effectType}`);
+        throw new Error(
+          `Unsupported attack effect type: ${effectDto.effectType}`,
+        );
     }
   }
 }
-

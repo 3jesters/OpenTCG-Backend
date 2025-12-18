@@ -87,7 +87,10 @@ describe('End Game Scenarios E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'],
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ],
             statusEffect: 'NONE',
             damageCounters: 0,
           },
@@ -140,7 +143,11 @@ describe('End Game Scenarios E2E', () => {
       },
     };
 
-    await writeFile(matchFilePath, JSON.stringify(initialMatchState, null, 2), 'utf-8');
+    await writeFile(
+      matchFilePath,
+      JSON.stringify(initialMatchState, null, 2),
+      'utf-8',
+    );
 
     // Step 1: Player 1 attacks and knocks out Player 2's active Pokemon
     const attackResponse = await request(server())
@@ -184,7 +191,6 @@ describe('End Game Scenarios E2E', () => {
   it('should end game when player cannot draw card (deck is empty)', async () => {
     const MATCH_ID = 'spec-end-game-deck-out';
     const matchFilePath = join(matchesDirectory, `${MATCH_ID}.json`);
-
 
     // Setup: Player 2's deck is empty, it's Player 2's turn to draw
     const initialMatchState = {
@@ -275,7 +281,11 @@ describe('End Game Scenarios E2E', () => {
       },
     };
 
-    await writeFile(matchFilePath, JSON.stringify(initialMatchState, null, 2), 'utf-8');
+    await writeFile(
+      matchFilePath,
+      JSON.stringify(initialMatchState, null, 2),
+      'utf-8',
+    );
 
     // Step 1: Player 2 attempts to draw a card (deck is empty)
     // Win condition should be checked and match should end
@@ -298,7 +308,6 @@ describe('End Game Scenarios E2E', () => {
   it('should end game when player has no Pokemon in play after knockout', async () => {
     const MATCH_ID = 'spec-end-game-no-pokemon';
     const matchFilePath = join(matchesDirectory, `${MATCH_ID}.json`);
-
 
     // Setup: Player 2 has only active Pokemon (no bench), Player 1 can attack
     const initialMatchState = {
@@ -340,7 +349,10 @@ describe('End Game Scenarios E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-fire-energy--99', 'pokemon-base-set-v1.0-fire-energy--99'],
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-fire-energy--99',
+              'pokemon-base-set-v1.0-fire-energy--99',
+            ],
             statusEffect: 'NONE',
             damageCounters: 0,
           },
@@ -389,7 +401,11 @@ describe('End Game Scenarios E2E', () => {
       },
     };
 
-    await writeFile(matchFilePath, JSON.stringify(initialMatchState, null, 2), 'utf-8');
+    await writeFile(
+      matchFilePath,
+      JSON.stringify(initialMatchState, null, 2),
+      'utf-8',
+    );
 
     // Step 1: Player 1 attacks and knocks out Player 2's active Pokemon
     const attackResponse = await request(server())
@@ -416,7 +432,6 @@ describe('End Game Scenarios E2E', () => {
   it('should handle double knockout where both players collect prizes', async () => {
     const MATCH_ID = 'spec-end-game-double-knockout';
     const matchFilePath = join(matchesDirectory, `${MATCH_ID}.json`);
-
 
     // Setup: Both players have active Pokemon, Player 1 uses Magnemite with Selfdestruct
     // Note: This test requires self-damage support which may need to be implemented
@@ -459,7 +474,10 @@ describe('End Game Scenarios E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-lightning-energy--101', 'pokemon-base-set-v1.0-lightning-energy--101'], // 2 Electric energy for Selfdestruct (card number 101)
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-lightning-energy--101',
+              'pokemon-base-set-v1.0-lightning-energy--101',
+            ], // 2 Electric energy for Selfdestruct (card number 101)
             statusEffect: 'NONE',
             damageCounters: 0,
           },
@@ -530,7 +548,11 @@ describe('End Game Scenarios E2E', () => {
       },
     };
 
-    await writeFile(matchFilePath, JSON.stringify(initialMatchState, null, 2), 'utf-8');
+    await writeFile(
+      matchFilePath,
+      JSON.stringify(initialMatchState, null, 2),
+      'utf-8',
+    );
 
     // Step 1: Player 1 attacks with Magnemite's Selfdestruct
     // This attack does 40 to opponent's active, 10 to each bench, and 40 to itself
@@ -550,24 +572,28 @@ describe('End Game Scenarios E2E', () => {
       // If attack succeeds, verify both Pokemon are knocked out
       // Player 2's active should be knocked out (40 damage)
       // Player 1's Magnemite should be knocked out (40 self-damage)
-      
+
       // Verify discard piles contain correct cards
       const player1DiscardPile = attackResponse.body.playerState.discardPile;
       const player2DiscardPile = attackResponse.body.opponentState.discardPile;
-      
+
       // Player 1's Magnemite should be in discard (knocked out by self-damage)
-      expect(player1DiscardPile).toContain('pokemon-base-set-v1.0-magnemite--37');
+      expect(player1DiscardPile).toContain(
+        'pokemon-base-set-v1.0-magnemite--37',
+      );
       // Magnemite had 2 lightning energy attached
       const lightningEnergyCount = player1DiscardPile.filter(
         (id: string) => id === 'pokemon-base-set-v1.0-lightning-energy--101',
       ).length;
       expect(lightningEnergyCount).toBe(2);
-      
+
       // Player 2's Bulbasaur should be in discard (knocked out by attack)
-      expect(player2DiscardPile).toContain('pokemon-base-set-v1.0-bulbasaur--46');
+      expect(player2DiscardPile).toContain(
+        'pokemon-base-set-v1.0-bulbasaur--46',
+      );
       // Bulbasaur had no energy attached
       expect(player2DiscardPile.length).toBe(1); // Only Bulbasaur card
-      
+
       // Step 2: Player 1 selects a prize card (for knocking out Player 2's Pokemon)
       const prizeResponse = await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)
@@ -608,20 +634,25 @@ describe('End Game Scenarios E2E', () => {
         })
         .expect(200);
 
-      expect(player1SelectActiveResponse.body.playerState.activePokemon).toBeTruthy();
+      expect(
+        player1SelectActiveResponse.body.playerState.activePokemon,
+      ).toBeTruthy();
       expect(player1SelectActiveResponse.body.state).toBe('PLAYER_TURN');
-      expect(player1SelectActiveResponse.body.playerState.prizeCardsRemaining).toBe(5);
+      expect(
+        player1SelectActiveResponse.body.playerState.prizeCardsRemaining,
+      ).toBe(5);
     } else {
       // If attack fails due to missing self-damage support, skip this test for now
       // This will be implemented as part of the business logic
-      console.warn('Self-damage attack not yet implemented, skipping double knockout test');
+      console.warn(
+        'Self-damage attack not yet implemented, skipping double knockout test',
+      );
     }
   });
 
   it('should allow player to select multiple prizes when multiple Pokemon are knocked out in same turn', async () => {
     const MATCH_ID = 'spec-end-game-multiple-knockouts';
     const matchFilePath = join(matchesDirectory, `${MATCH_ID}.json`);
-
 
     // Setup: Player 1 uses Magnemite with Selfdestruct to knock out multiple Pokemon
     const initialMatchState = {
@@ -663,7 +694,10 @@ describe('End Game Scenarios E2E', () => {
             position: 'ACTIVE',
             maxHp: 40,
             currentHp: 40,
-            attachedEnergy: ['pokemon-base-set-v1.0-lightning-energy--101', 'pokemon-base-set-v1.0-lightning-energy--101'],
+            attachedEnergy: [
+              'pokemon-base-set-v1.0-lightning-energy--101',
+              'pokemon-base-set-v1.0-lightning-energy--101',
+            ],
             statusEffect: 'NONE',
             damageCounters: 0,
           },
@@ -754,7 +788,11 @@ describe('End Game Scenarios E2E', () => {
       },
     };
 
-    await writeFile(matchFilePath, JSON.stringify(initialMatchState, null, 2), 'utf-8');
+    await writeFile(
+      matchFilePath,
+      JSON.stringify(initialMatchState, null, 2),
+      'utf-8',
+    );
 
     // Step 1: Player 1 attacks with Magnemite's Selfdestruct
     // This should knock out: active Pokemon (40 damage) + 2 bench Pokemon (10 damage each)
@@ -798,15 +836,14 @@ describe('End Game Scenarios E2E', () => {
     // If multiple bench Pokemon were knocked out, they should each require a prize selection
     // For now, verify that at least the active Pokemon knockout prize selection works
     // Future enhancement: support multiple prize selections for multiple knockouts in same attack
-    
+
     // Verify that bench Pokemon were knocked out (2 should be knocked out, 1 should survive)
     expect(knockedOutBenchCount).toBe(2);
     expect(benchAfterAttack.length).toBe(1); // One bench Pokemon should survive
-    
+
     // Note: The current implementation may only support one prize selection per attack
     // If multiple Pokemon are knocked out (active + bench), only the active Pokemon knockout
     // triggers prize selection. Bench Pokemon knockouts may not trigger additional prize selections
     // in the current implementation. This is a limitation that could be enhanced in the future.
   });
 });
-

@@ -17,4 +17,3 @@ export class CardFileDto {
   @Type(() => ImportCardDto)
   cards: ImportCardDto[];
 }
-

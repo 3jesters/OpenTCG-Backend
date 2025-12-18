@@ -11,4 +11,3 @@ export enum ActionValidationError {
   RULE_VIOLATION = 'RULE_VIOLATION',
   INVALID_ACTION = 'INVALID_ACTION',
 }
-

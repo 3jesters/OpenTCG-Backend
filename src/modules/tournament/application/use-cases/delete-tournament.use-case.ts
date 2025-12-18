@@ -23,4 +23,3 @@ export class DeleteTournamentUseCase {
     await this.tournamentRepository.delete(id);
   }
 }
-

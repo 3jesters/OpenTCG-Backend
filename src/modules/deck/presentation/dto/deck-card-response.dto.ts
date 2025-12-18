@@ -29,4 +29,3 @@ export class DeckCardResponseDto {
     return dto;
   }
 }
-

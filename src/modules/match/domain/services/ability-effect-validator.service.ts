@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { Ability } from '../../../card/domain/value-objects/ability.value-object';
 import { AbilityActivationType } from '../../../card/domain/enums/ability-activation-type.enum';
 import { UsageLimit } from '../../../card/domain/enums/usage-limit.enum';
@@ -8,7 +8,7 @@ import { PlayerIdentifier } from '../enums/player-identifier.enum';
 import { AbilityActionData } from '../types/ability-action-data.types';
 import { CardInstance } from '../value-objects/card-instance.value-object';
 import { AbilityEffectType } from '../../../card/domain/enums/ability-effect-type.enum';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { EnergySource } from '../../../card/domain/enums/energy-source.enum';
 import { EnergyType } from '../../../card/domain/enums/energy-type.enum';
 import { PokemonType } from '../../../card/domain/enums/pokemon-type.enum';
@@ -31,7 +31,8 @@ export interface AbilityValidationResult {
 @Injectable()
 export class AbilityEffectValidatorService {
   constructor(
-    private readonly getCardByIdUseCase: GetCardByIdUseCase,
+    @Inject(IGetCardByIdUseCase)
+    private readonly getCardByIdUseCase: IGetCardByIdUseCase,
   ) {}
 
   /**
@@ -67,8 +68,11 @@ export class AbilityEffectValidatorService {
       pokemon.hasStatusEffect(StatusEffect.CONFUSED) ||
       pokemon.hasStatusEffect(StatusEffect.PARALYZED)
     ) {
-      const blockingStatuses = pokemon.statusEffects.filter(s => 
-        s === StatusEffect.ASLEEP || s === StatusEffect.CONFUSED || s === StatusEffect.PARALYZED
+      const blockingStatuses = pokemon.statusEffects.filter(
+        (s) =>
+          s === StatusEffect.ASLEEP ||
+          s === StatusEffect.CONFUSED ||
+          s === StatusEffect.PARALYZED,
       );
       errors.push(
         `Ability "${ability.name}" cannot be used because Pokemon is ${blockingStatuses.join(', ')}`,
@@ -80,9 +84,7 @@ export class AbilityEffectValidatorService {
     // Check usage limits
     if (ability.usageLimit === UsageLimit.ONCE_PER_TURN) {
       if (gameState.hasAbilityBeenUsed(playerIdentifier, actionData.cardId)) {
-        errors.push(
-          `Ability "${ability.name}" can only be used once per turn`,
-        );
+        errors.push(`Ability "${ability.name}" can only be used once per turn`);
       }
     }
 
@@ -156,10 +158,7 @@ export class AbilityEffectValidatorService {
         // HEAL may target self or other Pokemon
         if (effect.target && effect.target !== TargetType.SELF) {
           // If targeting other Pokemon, targetPokemon should be provided
-          if (
-            !('targetPokemon' in actionData) ||
-            !actionData.targetPokemon
-          ) {
+          if (!('targetPokemon' in actionData) || !actionData.targetPokemon) {
             errors.push(
               'targetPokemon is required for HEAL effect when targeting other Pokemon',
             );
@@ -180,9 +179,7 @@ export class AbilityEffectValidatorService {
         } else {
           const maxSearch = effect.count || 1;
           if (actionData.selectedCardIds.length > maxSearch) {
-            errors.push(
-              `SEARCH_DECK can select at most ${maxSearch} card(s)`,
-            );
+            errors.push(`SEARCH_DECK can select at most ${maxSearch} card(s)`);
           }
         }
         break;
@@ -208,10 +205,7 @@ export class AbilityEffectValidatorService {
       case AbilityEffectType.ENERGY_ACCELERATION:
         // May need targetPokemon if not targeting self
         if (effect.target && effect.target !== TargetType.SELF) {
-          if (
-            !('targetPokemon' in actionData) ||
-            !actionData.targetPokemon
-          ) {
+          if (!('targetPokemon' in actionData) || !actionData.targetPokemon) {
             errors.push(
               'targetPokemon is required for ENERGY_ACCELERATION effect when targeting other Pokemon',
             );
@@ -220,7 +214,8 @@ export class AbilityEffectValidatorService {
         // If source is hand or discard, selectedCardIds may be needed
         if (
           effect.source &&
-          (effect.source === EnergySource.HAND || effect.source === EnergySource.DISCARD)
+          (effect.source === EnergySource.HAND ||
+            effect.source === EnergySource.DISCARD)
         ) {
           if (
             !('selectedCardIds' in actionData) ||
@@ -235,16 +230,21 @@ export class AbilityEffectValidatorService {
             if (effect.energyType) {
               for (const cardId of actionData.selectedCardIds) {
                 try {
-                  const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+                  const card =
+                    await this.getCardByIdUseCase.getCardEntity(cardId);
                   if (card.cardType !== CardType.ENERGY) {
-                    errors.push(`Selected card ${cardId} is not an Energy card`);
+                    errors.push(
+                      `Selected card ${cardId} is not an Energy card`,
+                    );
                   } else if (card.energyType !== effect.energyType) {
                     errors.push(
                       `Selected energy card ${cardId} must be ${effect.energyType} Energy, but is ${card.energyType || 'unknown type'}`,
                     );
                   }
                 } catch (error) {
-                  errors.push(`Failed to validate energy card ${cardId}: ${error.message}`);
+                  errors.push(
+                    `Failed to validate energy card ${cardId}: ${error.message}`,
+                  );
                 }
               }
             }
@@ -265,27 +265,36 @@ export class AbilityEffectValidatorService {
             if (effect.energyType) {
               for (const cardId of actionData.selectedCardIds) {
                 try {
-                  const card = await this.getCardByIdUseCase.getCardEntity(cardId);
+                  const card =
+                    await this.getCardByIdUseCase.getCardEntity(cardId);
                   if (card.cardType !== CardType.ENERGY) {
-                    errors.push(`Selected card ${cardId} is not an Energy card`);
+                    errors.push(
+                      `Selected card ${cardId} is not an Energy card`,
+                    );
                   } else if (card.energyType !== effect.energyType) {
                     errors.push(
                       `Selected energy card ${cardId} must be ${effect.energyType} Energy, but is ${card.energyType || 'unknown type'}`,
                     );
                   }
                 } catch (error) {
-                  errors.push(`Failed to validate energy card ${cardId}: ${error.message}`);
+                  errors.push(
+                    `Failed to validate energy card ${cardId}: ${error.message}`,
+                  );
                 }
               }
             }
           }
         }
         // Validate target Pokemon type restriction
-        if (effect.targetPokemonType && 'targetPokemon' in actionData && actionData.targetPokemon) {
+        if (
+          effect.targetPokemonType &&
+          'targetPokemon' in actionData &&
+          actionData.targetPokemon
+        ) {
           try {
             const targetPosition = actionData.targetPokemon;
             let targetPokemonInstance: CardInstance | null = null;
-            
+
             if (targetPosition === PokemonPosition.ACTIVE) {
               targetPokemonInstance = playerState.activePokemon;
             } else if (
@@ -295,12 +304,15 @@ export class AbilityEffectValidatorService {
               targetPosition === PokemonPosition.BENCH_3 ||
               targetPosition === PokemonPosition.BENCH_4
             ) {
-              const benchIndex = parseInt(targetPosition.replace('BENCH_', ''), 10);
+              const benchIndex = parseInt(
+                targetPosition.replace('BENCH_', ''),
+                10,
+              );
               if (benchIndex >= 0 && benchIndex < playerState.bench.length) {
                 targetPokemonInstance = playerState.bench[benchIndex];
               }
             }
-            
+
             if (targetPokemonInstance) {
               const targetCard = await this.getCardByIdUseCase.getCardEntity(
                 targetPokemonInstance.cardId,
@@ -326,10 +338,7 @@ export class AbilityEffectValidatorService {
         break;
 
       case AbilityEffectType.SWITCH_POKEMON:
-        if (
-          !('benchPosition' in actionData) ||
-          !actionData.benchPosition
-        ) {
+        if (!('benchPosition' in actionData) || !actionData.benchPosition) {
           errors.push('benchPosition is required for SWITCH_POKEMON effect');
         }
         break;
@@ -368,10 +377,7 @@ export class AbilityEffectValidatorService {
         break;
 
       case AbilityEffectType.STATUS_CONDITION:
-        if (
-          !('targetPokemon' in actionData) ||
-          !actionData.targetPokemon
-        ) {
+        if (!('targetPokemon' in actionData) || !actionData.targetPokemon) {
           errors.push('targetPokemon is required for STATUS_CONDITION effect');
         }
         break;

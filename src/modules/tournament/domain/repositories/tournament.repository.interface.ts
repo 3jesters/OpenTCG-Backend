@@ -12,4 +12,3 @@ export interface ITournamentRepository {
 }
 
 export const ITournamentRepository = Symbol('ITournamentRepository');
-

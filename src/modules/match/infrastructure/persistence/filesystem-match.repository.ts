@@ -1,15 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { readFile, writeFile, readdir, unlink, mkdir, access } from 'fs/promises';
+import {
+  readFile,
+  writeFile,
+  readdir,
+  unlink,
+  mkdir,
+  access,
+} from 'fs/promises';
 import { join } from 'path';
 import { Match, IMatchRepository, MatchState } from '../../domain';
 import { MatchMapper, MatchJson } from './match.mapper';
 
 /**
- * JSON Match Repository
- * Implements match persistence using JSON files
+ * File System Match Repository
+ * Implements match persistence using JSON files on the file system
  */
 @Injectable()
-export class JsonMatchRepository implements IMatchRepository {
+export class FileSystemMatchRepository implements IMatchRepository {
   private readonly dataDirectory: string;
 
   constructor() {
@@ -84,10 +91,7 @@ export class JsonMatchRepository implements IMatchRepository {
 
           // Filter by player ID if provided
           if (playerId) {
-            if (
-              match.player1Id !== playerId &&
-              match.player2Id !== playerId
-            ) {
+            if (match.player1Id !== playerId && match.player2Id !== playerId) {
               continue;
             }
           }

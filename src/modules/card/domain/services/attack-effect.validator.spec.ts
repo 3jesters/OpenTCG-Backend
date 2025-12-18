@@ -14,9 +14,9 @@ describe('AttackEffectValidator', () => {
     });
 
     it('should throw error if effect type is missing', () => {
-      expect(() =>
-        AttackEffectValidator.validate({} as any),
-      ).toThrow('Effect type is required');
+      expect(() => AttackEffectValidator.validate({} as any)).toThrow(
+        'Effect type is required',
+      );
     });
 
     it('should throw error for unknown effect type', () => {
@@ -116,7 +116,13 @@ describe('AttackEffectValidator', () => {
     });
 
     it('should validate all status conditions', () => {
-      const statuses = ['PARALYZED', 'POISONED', 'BURNED', 'ASLEEP', 'CONFUSED'] as const;
+      const statuses = [
+        'PARALYZED',
+        'POISONED',
+        'BURNED',
+        'ASLEEP',
+        'CONFUSED',
+      ] as const;
       statuses.forEach((status) => {
         const effect = AttackEffectFactory.statusCondition(status);
         expect(AttackEffectValidator.validate(effect)).toBe(true);
@@ -262,17 +268,28 @@ describe('AttackEffectValidator', () => {
 
   describe('PREVENT_DAMAGE validation', () => {
     it('should validate prevent damage effect', () => {
-      const effect = AttackEffectFactory.preventDamage(TargetType.SELF, 'next_turn');
+      const effect = AttackEffectFactory.preventDamage(
+        TargetType.SELF,
+        'next_turn',
+      );
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
     it('should validate with specific amount', () => {
-      const effect = AttackEffectFactory.preventDamage(TargetType.SELF, 'next_turn', 30);
+      const effect = AttackEffectFactory.preventDamage(
+        TargetType.SELF,
+        'next_turn',
+        30,
+      );
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
     it('should validate with all damage', () => {
-      const effect = AttackEffectFactory.preventDamage(TargetType.SELF, 'next_turn', 'all');
+      const effect = AttackEffectFactory.preventDamage(
+        TargetType.SELF,
+        'next_turn',
+        'all',
+      );
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
@@ -336,14 +353,22 @@ describe('AttackEffectValidator', () => {
 
   describe('ENERGY_ACCELERATION validation', () => {
     it('should validate energy acceleration effect', () => {
-      const effect = AttackEffectFactory.energyAcceleration(TargetType.SELF, 'deck', 1);
+      const effect = AttackEffectFactory.energyAcceleration(
+        TargetType.SELF,
+        'deck',
+        1,
+      );
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
     it('should validate with all sources', () => {
       const sources = ['deck', 'discard', 'hand'] as const;
       sources.forEach((source) => {
-        const effect = AttackEffectFactory.energyAcceleration(TargetType.SELF, source, 1);
+        const effect = AttackEffectFactory.energyAcceleration(
+          TargetType.SELF,
+          source,
+          1,
+        );
         expect(AttackEffectValidator.validate(effect)).toBe(true);
       });
     });
@@ -367,7 +392,9 @@ describe('AttackEffectValidator', () => {
           source: 'invalid' as any,
           count: 1,
         }),
-      ).toThrow('Energy acceleration source must be "deck", "discard", or "hand"');
+      ).toThrow(
+        'Energy acceleration source must be "deck", "discard", or "hand"',
+      );
     });
 
     it('should throw error if count is less than 1', () => {
@@ -467,9 +494,9 @@ describe('AttackEffectValidator', () => {
         AttackEffectFactory.heal(TargetType.SELF, 30),
       ];
 
-      expect(() =>
-        AttackEffectValidator.validateAll(effects),
-      ).toThrow('Effect at index 1 is invalid');
+      expect(() => AttackEffectValidator.validateAll(effects)).toThrow(
+        'Effect at index 1 is invalid',
+      );
     });
 
     it('should validate empty array', () => {
@@ -480,7 +507,10 @@ describe('AttackEffectValidator', () => {
   describe('Effects with conditions', () => {
     it('should validate effects with valid conditions', () => {
       const conditions = [ConditionFactory.coinFlipSuccess()];
-      const effect = AttackEffectFactory.statusCondition('PARALYZED', conditions);
+      const effect = AttackEffectFactory.statusCondition(
+        'PARALYZED',
+        conditions,
+      );
       expect(AttackEffectValidator.validate(effect)).toBe(true);
     });
 
@@ -496,4 +526,3 @@ describe('AttackEffectValidator', () => {
     });
   });
 });
-

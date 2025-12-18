@@ -1,4 +1,11 @@
-import { IsEnum, IsNumber, IsOptional, IsArray, IsString, ValidateNested } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { PreconditionType } from '../../domain/enums/precondition-type.enum';
 import { ConditionImportDto } from './condition-import.dto';
@@ -26,4 +33,3 @@ export class AttackPreconditionImportDto {
   @Type(() => ConditionImportDto)
   conditions?: ConditionImportDto[];
 }
-

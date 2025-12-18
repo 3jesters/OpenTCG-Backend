@@ -17,4 +17,3 @@ export class ListDecksUseCase {
     return await this.deckRepository.findAll(tournamentId);
   }
 }
-

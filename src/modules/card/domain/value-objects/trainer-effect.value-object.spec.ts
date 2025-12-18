@@ -18,31 +18,19 @@ describe('TrainerEffect Value Object', () => {
 
     it('should throw error if effect type is missing', () => {
       expect(() => {
-        new TrainerEffect(
-          null as any,
-          TargetType.SELF,
-          2,
-        );
+        new TrainerEffect(null as any, TargetType.SELF, 2);
       }).toThrow('Effect type is required');
     });
 
     it('should throw error if target is missing', () => {
       expect(() => {
-        new TrainerEffect(
-          TrainerEffectType.DRAW_CARDS,
-          null as any,
-          2,
-        );
+        new TrainerEffect(TrainerEffectType.DRAW_CARDS, null as any, 2);
       }).toThrow('Target is required');
     });
 
     it('should throw error if effect type is invalid', () => {
       expect(() => {
-        new TrainerEffect(
-          'INVALID_TYPE' as any,
-          TargetType.SELF,
-          2,
-        );
+        new TrainerEffect('INVALID_TYPE' as any, TargetType.SELF, 2);
       }).toThrow('Invalid effect type');
     });
 
@@ -60,28 +48,19 @@ describe('TrainerEffect Value Object', () => {
   describe('Effect-Specific Validation', () => {
     it('should require value for DRAW_CARDS', () => {
       expect(() => {
-        new TrainerEffect(
-          TrainerEffectType.DRAW_CARDS,
-          TargetType.SELF,
-        );
+        new TrainerEffect(TrainerEffectType.DRAW_CARDS, TargetType.SELF);
       }).toThrow('DRAW_CARDS requires a value');
     });
 
     it('should require value for HEAL', () => {
       expect(() => {
-        new TrainerEffect(
-          TrainerEffectType.HEAL,
-          TargetType.ACTIVE_YOURS,
-        );
+        new TrainerEffect(TrainerEffectType.HEAL, TargetType.ACTIVE_YOURS);
       }).toThrow('HEAL requires a value');
     });
 
     it('should require cardType for SEARCH_DECK', () => {
       expect(() => {
-        new TrainerEffect(
-          TrainerEffectType.SEARCH_DECK,
-          TargetType.SELF,
-        );
+        new TrainerEffect(TrainerEffectType.SEARCH_DECK, TargetType.SELF);
       }).toThrow('SEARCH_DECK requires a cardType');
     });
 
@@ -129,7 +108,9 @@ describe('TrainerEffect Value Object', () => {
           20,
         );
 
-        expect(effect.getDescription()).toBe('Remove up to 20 damage counter(s)');
+        expect(effect.getDescription()).toBe(
+          'Remove up to 20 damage counter(s)',
+        );
       });
 
       it('should generate description for SEARCH_DECK', () => {
@@ -140,7 +121,9 @@ describe('TrainerEffect Value Object', () => {
           'Energy',
         );
 
-        expect(effect.getDescription()).toBe('Search your deck for a Energy card');
+        expect(effect.getDescription()).toBe(
+          'Search your deck for a Energy card',
+        );
       });
     });
 
@@ -276,4 +259,3 @@ describe('TrainerEffect Value Object', () => {
     });
   });
 });
-

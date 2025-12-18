@@ -16,10 +16,7 @@ export class MatchStateMachineService {
   /**
    * Check if a state transition is valid
    */
-  canTransition(
-    fromState: MatchState,
-    toState: MatchState,
-  ): boolean {
+  canTransition(fromState: MatchState, toState: MatchState): boolean {
     // Terminal states cannot transition
     if (
       fromState === MatchState.MATCH_ENDED ||
@@ -110,7 +107,7 @@ export class MatchStateMachineService {
       MatchState.FIRST_PLAYER_SELECTION,
       MatchState.MATCH_APPROVAL,
     ];
-    
+
     if (!playableStates.includes(state)) {
       if (actionType === PlayerActionType.CONCEDE) {
         return { isValid: true }; // Can always concede
@@ -387,13 +384,25 @@ export class MatchStateMachineService {
    * @deprecated This method is kept for reference but the logic is now inlined in getAvailableActions for better reliability
    */
   private hasPendingPrizeSelection(
-    gameState: { lastAction: { actionType: PlayerActionType; playerId: PlayerIdentifier; actionData?: any; actionId?: string } | null; actionHistory: Array<{ actionType: PlayerActionType; playerId: PlayerIdentifier; actionId?: string }> },
+    gameState: {
+      lastAction: {
+        actionType: PlayerActionType;
+        playerId: PlayerIdentifier;
+        actionData?: any;
+        actionId?: string;
+      } | null;
+      actionHistory: Array<{
+        actionType: PlayerActionType;
+        playerId: PlayerIdentifier;
+        actionId?: string;
+      }>;
+    },
     currentPlayer: PlayerIdentifier,
   ): boolean {
     if (!gameState?.lastAction) return false;
-    
+
     const lastAction = gameState.lastAction;
-    
+
     // Must be an ATTACK that caused a knockout by the current player
     if (
       lastAction.actionType !== PlayerActionType.ATTACK ||
@@ -402,19 +411,20 @@ export class MatchStateMachineService {
     ) {
       return false;
     }
-    
+
     // Find the lastAction in actionHistory by actionId (if available)
     let lastActionIndex = -1;
-    
+
     if (lastAction.actionId) {
       lastActionIndex = gameState.actionHistory.findIndex(
-        (action) => action.actionId === lastAction.actionId
+        (action) => action.actionId === lastAction.actionId,
       );
     }
-    
+
     // Fallback: if not found by actionId, check if last item matches
     if (lastActionIndex < 0 && gameState.actionHistory.length > 0) {
-      const lastHistoryItem = gameState.actionHistory[gameState.actionHistory.length - 1];
+      const lastHistoryItem =
+        gameState.actionHistory[gameState.actionHistory.length - 1];
       if (
         lastHistoryItem.actionType === lastAction.actionType &&
         lastHistoryItem.playerId === lastAction.playerId
@@ -422,18 +432,18 @@ export class MatchStateMachineService {
         lastActionIndex = gameState.actionHistory.length - 1;
       }
     }
-    
+
     // If not found, assume prize not selected
     if (lastActionIndex < 0) return true;
-    
+
     // Check if there's a SELECT_PRIZE after this attack by the same player
     const prizeSelected = gameState.actionHistory.some(
       (action, index) =>
         index > lastActionIndex &&
         action.actionType === PlayerActionType.SELECT_PRIZE &&
-        action.playerId === currentPlayer
+        action.playerId === currentPlayer,
     );
-    
+
     return !prizeSelected;
   }
 
@@ -443,35 +453,37 @@ export class MatchStateMachineService {
   getAvailableActions(
     state: MatchState,
     phase: TurnPhase | null,
-    gameState?: { lastAction: { actionType: PlayerActionType; playerId: PlayerIdentifier; actionData?: any; actionId?: string } | null; actionHistory: Array<{ actionType: PlayerActionType; playerId: PlayerIdentifier; actionId?: string }>; player1State?: any; player2State?: any },
+    gameState?: {
+      lastAction: {
+        actionType: PlayerActionType;
+        playerId: PlayerIdentifier;
+        actionData?: any;
+        actionId?: string;
+      } | null;
+      actionHistory: Array<{
+        actionType: PlayerActionType;
+        playerId: PlayerIdentifier;
+        actionId?: string;
+      }>;
+      player1State?: any;
+      player2State?: any;
+    },
     currentPlayer?: PlayerIdentifier,
   ): PlayerActionType[] {
     if (state === MatchState.MATCH_APPROVAL) {
-      return [
-        PlayerActionType.APPROVE_MATCH,
-        PlayerActionType.CONCEDE,
-      ];
+      return [PlayerActionType.APPROVE_MATCH, PlayerActionType.CONCEDE];
     }
 
     if (state === MatchState.DRAWING_CARDS) {
-      return [
-        PlayerActionType.DRAW_INITIAL_CARDS,
-        PlayerActionType.CONCEDE,
-      ];
+      return [PlayerActionType.DRAW_INITIAL_CARDS, PlayerActionType.CONCEDE];
     }
 
     if (state === MatchState.SET_PRIZE_CARDS) {
-      return [
-        PlayerActionType.SET_PRIZE_CARDS,
-        PlayerActionType.CONCEDE,
-      ];
+      return [PlayerActionType.SET_PRIZE_CARDS, PlayerActionType.CONCEDE];
     }
 
     if (state === MatchState.SELECT_ACTIVE_POKEMON) {
-      return [
-        PlayerActionType.SET_ACTIVE_POKEMON,
-        PlayerActionType.CONCEDE,
-      ];
+      return [PlayerActionType.SET_ACTIVE_POKEMON, PlayerActionType.CONCEDE];
     }
 
     if (state === MatchState.SELECT_BENCH_POKEMON) {
@@ -483,10 +495,7 @@ export class MatchStateMachineService {
     }
 
     if (state === MatchState.FIRST_PLAYER_SELECTION) {
-      return [
-        PlayerActionType.CONFIRM_FIRST_PLAYER,
-        PlayerActionType.CONCEDE,
-      ];
+      return [PlayerActionType.CONFIRM_FIRST_PLAYER, PlayerActionType.CONCEDE];
     }
 
     if (state === MatchState.INITIAL_SETUP) {
@@ -544,36 +553,51 @@ export class MatchStateMachineService {
     } else {
       actions = phaseActions[phase] || [];
     }
-    
+
     // Add GENERATE_COIN_FLIP if coin flip state exists and is ready
     // This handles STATUS_CHECK context (confusion/sleep) in MAIN_PHASE or DRAW phase
     // Note: gameState parameter doesn't include coinFlipState, so we check it separately
     // The caller (get-match-state.use-case) handles coin flip state filtering
-    
+
     // If in SELECT_ACTIVE_POKEMON phase, check if both players need to select (double knockout)
-    if (phase === TurnPhase.SELECT_ACTIVE_POKEMON && gameState && gameState.player1State && gameState.player2State) {
+    if (
+      phase === TurnPhase.SELECT_ACTIVE_POKEMON &&
+      gameState &&
+      gameState.player1State &&
+      gameState.player2State
+    ) {
       const player1State = gameState.player1State;
       const player2State = gameState.player2State;
-      const player1NeedsActive = player1State.activePokemon === null && player1State.bench.length > 0;
-      const player2NeedsActive = player2State.activePokemon === null && player2State.bench.length > 0;
-      
+      const player1NeedsActive =
+        player1State.activePokemon === null && player1State.bench.length > 0;
+      const player2NeedsActive =
+        player2State.activePokemon === null && player2State.bench.length > 0;
+
       // If current player needs to select, they can select
-      const currentPlayerState = currentPlayer === PlayerIdentifier.PLAYER1 ? player1State : player2State;
-      const currentPlayerNeedsActive = currentPlayerState && currentPlayerState.activePokemon === null && currentPlayerState.bench.length > 0;
-      
+      const currentPlayerState =
+        currentPlayer === PlayerIdentifier.PLAYER1
+          ? player1State
+          : player2State;
+      const currentPlayerNeedsActive =
+        currentPlayerState &&
+        currentPlayerState.activePokemon === null &&
+        currentPlayerState.bench.length > 0;
+
       if (currentPlayerNeedsActive) {
         // Player needs to select active Pokemon
         if (!actions.includes(PlayerActionType.SET_ACTIVE_POKEMON)) {
           actions.push(PlayerActionType.SET_ACTIVE_POKEMON);
         }
       }
-      
+
       // If both players still need to select, don't allow END_TURN
       if (player1NeedsActive || player2NeedsActive) {
-        actions = actions.filter((action) => action !== PlayerActionType.END_TURN);
+        actions = actions.filter(
+          (action) => action !== PlayerActionType.END_TURN,
+        );
       }
     }
-    
+
     // If in END phase and knockout occurred, require SELECT_PRIZE before END_TURN
     if (
       phase === TurnPhase.END &&
@@ -587,36 +611,44 @@ export class MatchStateMachineService {
       // Check if prize was already selected by looking for SELECT_PRIZE after the last ATTACK
       const lastActionId = gameState.lastAction.actionId;
       const lastActionIndex = lastActionId
-        ? gameState.actionHistory.findIndex((action) => action.actionId === lastActionId)
-        : -1;
-      
-      // If not found by actionId, check if last item matches
-      const effectiveIndex = lastActionIndex >= 0
-        ? lastActionIndex
-        : (gameState.actionHistory.length > 0 &&
-           gameState.actionHistory[gameState.actionHistory.length - 1].actionType === PlayerActionType.ATTACK &&
-           gameState.actionHistory[gameState.actionHistory.length - 1].playerId === currentPlayer)
-          ? gameState.actionHistory.length - 1
-          : -1;
-      
-      // Check if there's a SELECT_PRIZE or DRAW_PRIZE after this attack
-      const prizeSelected = effectiveIndex >= 0
-        ? gameState.actionHistory.some(
-            (action, index) =>
-              index > effectiveIndex &&
-              (action.actionType === PlayerActionType.SELECT_PRIZE ||
-                action.actionType === PlayerActionType.DRAW_PRIZE) &&
-              action.playerId === currentPlayer
+        ? gameState.actionHistory.findIndex(
+            (action) => action.actionId === lastActionId,
           )
-        : false;
-      
+        : -1;
+
+      // If not found by actionId, check if last item matches
+      const effectiveIndex =
+        lastActionIndex >= 0
+          ? lastActionIndex
+          : gameState.actionHistory.length > 0 &&
+              gameState.actionHistory[gameState.actionHistory.length - 1]
+                .actionType === PlayerActionType.ATTACK &&
+              gameState.actionHistory[gameState.actionHistory.length - 1]
+                .playerId === currentPlayer
+            ? gameState.actionHistory.length - 1
+            : -1;
+
+      // Check if there's a SELECT_PRIZE or DRAW_PRIZE after this attack
+      const prizeSelected =
+        effectiveIndex >= 0
+          ? gameState.actionHistory.some(
+              (action, index) =>
+                index > effectiveIndex &&
+                (action.actionType === PlayerActionType.SELECT_PRIZE ||
+                  action.actionType === PlayerActionType.DRAW_PRIZE) &&
+                action.playerId === currentPlayer,
+            )
+          : false;
+
       if (!prizeSelected) {
         // Remove END_TURN and add SELECT_PRIZE
-        actions = actions.filter((action) => action !== PlayerActionType.END_TURN);
+        actions = actions.filter(
+          (action) => action !== PlayerActionType.END_TURN,
+        );
         actions.push(PlayerActionType.SELECT_PRIZE);
       }
     }
-    
+
     // Always allow concede
     if (!actions.includes(PlayerActionType.CONCEDE)) {
       actions.push(PlayerActionType.CONCEDE);
@@ -625,4 +657,3 @@ export class MatchStateMachineService {
     return actions;
   }
 }
-

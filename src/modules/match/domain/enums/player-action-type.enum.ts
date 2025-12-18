@@ -23,4 +23,3 @@ export enum PlayerActionType {
   APPROVE_MATCH = 'APPROVE_MATCH',
   CONCEDE = 'CONCEDE',
 }
-

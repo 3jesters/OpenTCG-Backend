@@ -101,4 +101,3 @@ describe('CreateDeckUseCase', () => {
     expect(savedDeck.name).toBe('My Deck');
   });
 });
-

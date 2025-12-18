@@ -1,4 +1,12 @@
-import { IsString, IsArray, IsEnum, IsOptional, ValidateNested, IsNumber, Min } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  ValidateNested,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { EnergyType } from '../../domain/enums/energy-type.enum';
 import { AttackPreconditionImportDto } from './attack-precondition-import.dto';
@@ -39,4 +47,3 @@ export class AttackImportDto {
   @Min(1)
   energyBonusCap?: number; // Maximum number of extra energy that can contribute to bonus damage (for "+" damage attacks)
 }
-

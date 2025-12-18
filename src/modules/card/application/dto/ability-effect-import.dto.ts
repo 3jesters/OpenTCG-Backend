@@ -1,4 +1,12 @@
-import { IsEnum, IsString, IsNumber, IsBoolean, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { AbilityEffectType } from '../../domain/enums/ability-effect-type.enum';
 import { TargetType } from '../../domain/enums/target-type.enum';
@@ -106,4 +114,3 @@ export class AbilityEffectImportDto {
   @Type(() => ConditionImportDto)
   conditions?: ConditionImportDto[];
 }
-

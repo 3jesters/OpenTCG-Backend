@@ -1,4 +1,8 @@
-import { CoinFlipConfiguration, CoinFlipCountType, DamageCalculationType } from '../value-objects/coin-flip-configuration.value-object';
+import {
+  CoinFlipConfiguration,
+  CoinFlipCountType,
+  DamageCalculationType,
+} from '../value-objects/coin-flip-configuration.value-object';
 
 /**
  * Attack Coin Flip Parser Service
@@ -9,7 +13,10 @@ export class AttackCoinFlipParserService {
    * Parse attack text and damage to create coin flip configuration
    * Returns null if no coin flip is detected
    */
-  parseCoinFlipFromAttack(attackText: string, damage: string): CoinFlipConfiguration | null {
+  parseCoinFlipFromAttack(
+    attackText: string,
+    damage: string,
+  ): CoinFlipConfiguration | null {
     if (!attackText || !attackText.toLowerCase().includes('flip')) {
       return null;
     }
@@ -17,7 +24,11 @@ export class AttackCoinFlipParserService {
     const text = attackText.toLowerCase();
 
     // Pattern 1: "Flip a coin. If tails, this attack does nothing."
-    if (text.includes('flip a coin') && text.includes('if tails') && text.includes('does nothing')) {
+    if (
+      text.includes('flip a coin') &&
+      text.includes('if tails') &&
+      text.includes('does nothing')
+    ) {
       const baseDamage = this.parseBaseDamage(damage);
       return new CoinFlipConfiguration(
         CoinFlipCountType.FIXED,
@@ -30,7 +41,9 @@ export class AttackCoinFlipParserService {
     }
 
     // Pattern 2: "Flip X coins. This attack does Y damage times the number of heads."
-    const multiplyMatch = text.match(/flip (\d+) coins?.*does (\d+) damage times the number of heads/i);
+    const multiplyMatch = text.match(
+      /flip (\d+) coins?.*does (\d+) damage times the number of heads/i,
+    );
     if (multiplyMatch) {
       const coinCount = parseInt(multiplyMatch[1], 10);
       const damagePerHead = parseInt(multiplyMatch[2], 10);
@@ -47,7 +60,9 @@ export class AttackCoinFlipParserService {
 
     // Pattern 3: "Flip a coin until you get tails. This attack does Y damage times the number of heads."
     if (text.includes('flip a coin until you get tails')) {
-      const untilTailsMatch = text.match(/does (\d+) damage times the number of heads/i);
+      const untilTailsMatch = text.match(
+        /does (\d+) damage times the number of heads/i,
+      );
       if (untilTailsMatch) {
         const damagePerHead = parseInt(untilTailsMatch[1], 10);
         return new CoinFlipConfiguration(
@@ -63,12 +78,16 @@ export class AttackCoinFlipParserService {
     }
 
     // Pattern 4: "Flip a coin. If heads, this attack does X damage plus Y more damage; if tails, this attack does X damage and [Pokemon] does Z damage to itself."
-    const conditionalMatch = text.match(/if heads.*does (\d+) damage plus (\d+) more damage/i);
+    const conditionalMatch = text.match(
+      /if heads.*does (\d+) damage plus (\d+) more damage/i,
+    );
     if (conditionalMatch) {
       const baseDamage = parseInt(conditionalMatch[1], 10);
       const bonus = parseInt(conditionalMatch[2], 10);
       const selfDamageMatch = text.match(/does (\d+) damage to itself/i);
-      const selfDamage = selfDamageMatch ? parseInt(selfDamageMatch[1], 10) : undefined;
+      const selfDamage = selfDamageMatch
+        ? parseInt(selfDamageMatch[1], 10)
+        : undefined;
       return new CoinFlipConfiguration(
         CoinFlipCountType.FIXED,
         1,
@@ -86,7 +105,10 @@ export class AttackCoinFlipParserService {
     // These may still have damage, but coin flip determines status effect
     // We still need to create a coin flip configuration so both players can see it
     // Note: text is already lowercase from line 17
-    if (text.includes('flip a coin') && (text.includes('if heads') || text.includes('if tails'))) {
+    if (
+      text.includes('flip a coin') &&
+      (text.includes('if heads') || text.includes('if tails'))
+    ) {
       // Check if it's status effects (damage may still apply)
       if (
         text.includes('now') &&
@@ -135,4 +157,3 @@ export class AttackCoinFlipParserService {
     return match ? parseInt(match[1], 10) : 0;
   }
 }
-

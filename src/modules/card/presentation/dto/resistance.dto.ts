@@ -19,4 +19,3 @@ export class ResistanceDto {
   })
   modifier: string;
 }
-

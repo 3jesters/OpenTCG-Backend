@@ -3,4 +3,3 @@ export enum PreconditionType {
   DAMAGE_CHECK = 'DAMAGE_CHECK',
   ENERGY_CHECK = 'ENERGY_CHECK',
 }
-

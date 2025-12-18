@@ -19,9 +19,18 @@ export class GameState {
     public readonly lastAction: ActionSummary | null, // Last action taken
     public readonly actionHistory: ActionSummary[], // Complete history of actions
     public readonly coinFlipState: CoinFlipState | null = null, // Current coin flip state
-    public readonly abilityUsageThisTurn: Map<PlayerIdentifier, Set<string>> = new Map(), // Track abilities used this turn (playerId -> Set of cardIds)
-    public readonly damagePrevention: Map<PlayerIdentifier, Map<string, PreventDamageEffect & { appliedTurn: number }>> = new Map(), // Track damage prevention effects (playerId -> instanceId -> effect)
-    public readonly damageReduction: Map<PlayerIdentifier, Map<string, { amount: number; appliedTurn: number }>> = new Map(), // Track damage reduction effects (playerId -> instanceId -> reduction)
+    public readonly abilityUsageThisTurn: Map<
+      PlayerIdentifier,
+      Set<string>
+    > = new Map(), // Track abilities used this turn (playerId -> Set of cardIds)
+    public readonly damagePrevention: Map<
+      PlayerIdentifier,
+      Map<string, PreventDamageEffect & { appliedTurn: number }>
+    > = new Map(), // Track damage prevention effects (playerId -> instanceId -> effect)
+    public readonly damageReduction: Map<
+      PlayerIdentifier,
+      Map<string, { amount: number; appliedTurn: number }>
+    > = new Map(), // Track damage reduction effects (playerId -> instanceId -> reduction)
   ) {
     this.validate();
   }
@@ -246,7 +255,10 @@ export class GameState {
     const newPreventionMap = new Map(this.damagePrevention);
     const playerPrevention = newPreventionMap.get(playerId) || new Map();
     const updatedPlayerPrevention = new Map(playerPrevention);
-    updatedPlayerPrevention.set(instanceId, { ...effect, appliedTurn: this.turnNumber });
+    updatedPlayerPrevention.set(instanceId, {
+      ...effect,
+      appliedTurn: this.turnNumber,
+    });
     newPreventionMap.set(playerId, updatedPlayerPrevention);
 
     return new GameState(
@@ -281,7 +293,10 @@ export class GameState {
   /**
    * Clear damage prevention effect for a Pokemon
    */
-  clearDamagePrevention(playerId: PlayerIdentifier, instanceId: string): GameState {
+  clearDamagePrevention(
+    playerId: PlayerIdentifier,
+    instanceId: string,
+  ): GameState {
     const newPreventionMap = new Map(this.damagePrevention);
     const playerPrevention = newPreventionMap.get(playerId);
     if (playerPrevention) {
@@ -314,13 +329,19 @@ export class GameState {
    */
   clearExpiredDamagePrevention(turnNumber: number): GameState {
     const newPreventionMap = new Map(this.damagePrevention);
-    
+
     for (const [playerId, playerPrevention] of newPreventionMap.entries()) {
       const updatedPlayerPrevention = new Map(playerPrevention);
       for (const [instanceId, effect] of playerPrevention.entries()) {
-        if (effect.duration === 'next_turn' && turnNumber > effect.appliedTurn + 1) {
+        if (
+          effect.duration === 'next_turn' &&
+          turnNumber > effect.appliedTurn + 1
+        ) {
           updatedPlayerPrevention.delete(instanceId);
-        } else if (effect.duration === 'this_turn' && turnNumber > effect.appliedTurn) {
+        } else if (
+          effect.duration === 'this_turn' &&
+          turnNumber > effect.appliedTurn
+        ) {
           updatedPlayerPrevention.delete(instanceId);
         }
       }
@@ -357,7 +378,10 @@ export class GameState {
     const newReductionMap = new Map(this.damageReduction);
     const playerReduction = newReductionMap.get(playerId) || new Map();
     const updatedPlayerReduction = new Map(playerReduction);
-    updatedPlayerReduction.set(instanceId, { amount, appliedTurn: this.turnNumber });
+    updatedPlayerReduction.set(instanceId, {
+      amount,
+      appliedTurn: this.turnNumber,
+    });
     newReductionMap.set(playerId, updatedPlayerReduction);
 
     return new GameState(
@@ -390,7 +414,10 @@ export class GameState {
   /**
    * Clear damage reduction effect for a Pokemon
    */
-  clearDamageReduction(playerId: PlayerIdentifier, instanceId: string): GameState {
+  clearDamageReduction(
+    playerId: PlayerIdentifier,
+    instanceId: string,
+  ): GameState {
     const newReductionMap = new Map(this.damageReduction);
     const playerReduction = newReductionMap.get(playerId);
     if (playerReduction) {
@@ -418,4 +445,3 @@ export class GameState {
     );
   }
 }
-

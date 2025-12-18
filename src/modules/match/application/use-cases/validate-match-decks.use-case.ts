@@ -54,8 +54,7 @@ export class ValidateMatchDecksUseCase {
       );
 
       // Both decks must be valid (no errors)
-      const bothValid =
-        player1Validation.isValid && player2Validation.isValid;
+      const bothValid = player1Validation.isValid && player2Validation.isValid;
 
       // Mark validation as complete
       match.markDeckValidationComplete(bothValid);
@@ -74,4 +73,3 @@ export class ValidateMatchDecksUseCase {
     }
   }
 }
-

@@ -8,4 +8,3 @@ export enum WinCondition {
   DECK_OUT = 'DECK_OUT',
   CONCEDE = 'CONCEDE',
 }
-

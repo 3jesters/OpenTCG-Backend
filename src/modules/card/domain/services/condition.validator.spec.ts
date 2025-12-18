@@ -13,9 +13,9 @@ describe('ConditionValidator', () => {
       });
 
       it('should throw error if condition type is missing', () => {
-        expect(() =>
-          ConditionValidator.validate({ } as any),
-        ).toThrow('Condition type is required');
+        expect(() => ConditionValidator.validate({} as any)).toThrow(
+          'Condition type is required',
+        );
       });
 
       it('should throw error for invalid condition type', () => {
@@ -107,7 +107,13 @@ describe('ConditionValidator', () => {
       });
 
       it('should validate all valid status conditions', () => {
-        const statuses = ['PARALYZED', 'POISONED', 'BURNED', 'ASLEEP', 'CONFUSED'] as const;
+        const statuses = [
+          'PARALYZED',
+          'POISONED',
+          'BURNED',
+          'ASLEEP',
+          'CONFUSED',
+        ] as const;
         statuses.forEach((status) => {
           const condition = ConditionFactory.selfHasStatus(status);
           expect(ConditionValidator.validate(condition)).toBe(true);
@@ -165,7 +171,10 @@ describe('ConditionValidator', () => {
 
     describe('energy type condition validation', () => {
       it('should validate SELF_HAS_ENERGY_TYPE with valid energy and amount', () => {
-        const condition = ConditionFactory.selfHasEnergyType(EnergyType.FIRE, 2);
+        const condition = ConditionFactory.selfHasEnergyType(
+          EnergyType.FIRE,
+          2,
+        );
         expect(ConditionValidator.validate(condition)).toBe(true);
       });
 
@@ -216,9 +225,9 @@ describe('ConditionValidator', () => {
         ConditionFactory.coinFlipSuccess(),
       ];
 
-      expect(() =>
-        ConditionValidator.validateAll(conditions),
-      ).toThrow('Condition at index 1 is invalid');
+      expect(() => ConditionValidator.validateAll(conditions)).toThrow(
+        'Condition at index 1 is invalid',
+      );
     });
 
     it('should validate empty array', () => {
@@ -251,4 +260,3 @@ describe('ConditionValidator', () => {
     });
   });
 });
-

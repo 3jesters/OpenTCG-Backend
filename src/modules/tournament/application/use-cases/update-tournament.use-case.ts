@@ -1,5 +1,10 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { Tournament, ITournamentRepository, DeckRules, RestrictedCard } from '../../domain';
+import {
+  Tournament,
+  ITournamentRepository,
+  DeckRules,
+  RestrictedCard,
+} from '../../domain';
 import { UpdateTournamentDto } from '../dto/update-tournament.dto';
 
 /**
@@ -83,7 +88,9 @@ export class UpdateTournamentUseCase {
     // Update saved decks if provided (replaces existing)
     if (dto.savedDecks !== undefined) {
       // Clear existing saved decks
-      tournament.savedDecks.forEach((deckId) => tournament.removeSavedDeck(deckId));
+      tournament.savedDecks.forEach((deckId) =>
+        tournament.removeSavedDeck(deckId),
+      );
       // Add new saved decks
       dto.savedDecks.forEach((deckId) => tournament.addSavedDeck(deckId));
     }
@@ -105,7 +112,9 @@ export class UpdateTournamentUseCase {
     // Update regulation marks if provided (replaces existing)
     if (dto.regulationMarks !== undefined) {
       // Clear existing marks
-      tournament.regulationMarks.forEach((mark) => tournament.removeRegulationMark(mark));
+      tournament.regulationMarks.forEach((mark) =>
+        tournament.removeRegulationMark(mark),
+      );
       // Add new marks
       dto.regulationMarks.forEach((mark) => tournament.addRegulationMark(mark));
     }
@@ -114,4 +123,3 @@ export class UpdateTournamentUseCase {
     return await this.tournamentRepository.save(tournament);
   }
 }
-

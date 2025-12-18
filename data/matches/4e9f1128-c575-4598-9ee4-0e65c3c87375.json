@@ -1,0 +1,262 @@
+{
+  "id": "4e9f1128-c575-4598-9ee4-0e65c3c87375",
+  "tournamentId": "classic-tournament",
+  "player1Id": "test-player-1",
+  "player2Id": "test-player-2",
+  "player1DeckId": "classic-grass-starter-deck",
+  "player2DeckId": "classic-water-starter-deck",
+  "state": "PLAYER_TURN",
+  "currentPlayer": "PLAYER1",
+  "firstPlayer": "PLAYER1",
+  "player1HasDrawnValidHand": true,
+  "player2HasDrawnValidHand": true,
+  "player1HasSetPrizeCards": true,
+  "player2HasSetPrizeCards": true,
+  "player1ReadyToStart": true,
+  "player2ReadyToStart": true,
+  "player1HasConfirmedFirstPlayer": true,
+  "player2HasConfirmedFirstPlayer": true,
+  "player1HasApprovedMatch": true,
+  "player2HasApprovedMatch": true,
+  "createdAt": "2025-12-16T12:38:24.394Z",
+  "updatedAt": "2025-12-16T12:51:12.465Z",
+  "startedAt": null,
+  "endedAt": null,
+  "winnerId": null,
+  "result": null,
+  "winCondition": null,
+  "cancellationReason": null,
+  "gameState": {
+    "player1State": {
+      "deck": [
+        "pokemon-base-set-v1.0-weedle--71",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-bulbasaur--46",
+        "pokemon-base-set-v1.0-potion--90",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-bulbasaur--46",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-potion--90",
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-tangela--68",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-nidoran--57",
+        "pokemon-base-set-v1.0-energy-retrieval--83",
+        "pokemon-base-set-v1.0-energy-retrieval--83",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
+        "pokemon-base-set-v1.0-tangela--68",
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-bulbasaur--46",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-venusaur--15",
+        "pokemon-base-set-v1.0-bulbasaur--46",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-switch--96",
+        "pokemon-base-set-v1.0-weedle--71",
+        "pokemon-base-set-v1.0-gust-of-wind--94",
+        "pokemon-base-set-v1.0-energy-removal--93",
+        "pokemon-base-set-v1.0-potion--90",
+        "pokemon-base-set-v1.0-caterpie--47",
+        "pokemon-base-set-v1.0-gust-of-wind--94",
+        "pokemon-base-set-v1.0-weedle--71",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
+        "pokemon-base-set-v1.0-grass-energy--100"
+      ],
+      "hand": [
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-ivysaur--30",
+        "pokemon-base-set-v1.0-switch--96",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100"
+      ],
+      "activePokemon": {
+        "instanceId": "e9cd96d7-ad42-4b9d-8908-726749cc46d9",
+        "cardId": "pokemon-base-set-v1.0-tangela--68",
+        "position": "ACTIVE",
+        "currentHp": 50,
+        "maxHp": 50,
+        "attachedEnergy": [
+          "pokemon-base-set-v1.0-grass-energy--100"
+        ],
+        "statusEffect": "NONE",
+        "damageCounters": 0,
+        "evolutionChain": []
+      },
+      "bench": [
+        {
+          "instanceId": "e94c6d92-affc-4c1d-827d-ce50f654384a",
+          "cardId": "pokemon-base-set-v1.0-caterpie--47",
+          "position": "BENCH_0",
+          "currentHp": 40,
+          "maxHp": 40,
+          "attachedEnergy": [],
+          "statusEffect": "NONE",
+          "damageCounters": 0,
+          "evolutionChain": []
+        }
+      ],
+      "prizeCards": [
+        "pokemon-base-set-v1.0-energy-removal--93",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-caterpie--47",
+        "pokemon-base-set-v1.0-nidoran--57",
+        "pokemon-base-set-v1.0-ivysaur--30",
+        "pokemon-base-set-v1.0-grass-energy--100"
+      ],
+      "discardPile": [
+        "pokemon-base-set-v1.0-bill--92"
+      ],
+      "hasAttachedEnergyThisTurn": true
+    },
+    "player2State": {
+      "deck": [
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-energy-removal--93",
+        "pokemon-base-set-v1.0-squirtle--65",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-poliwag--39",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-squirtle--65",
+        "pokemon-base-set-v1.0-starmie--66",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-poliwag--39",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-energy-removal--93",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-blastoise--2",
+        "pokemon-base-set-v1.0-poliwhirl--40",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-poliwrath--13",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-squirtle--65",
+        "pokemon-base-set-v1.0-switch--96",
+        "pokemon-base-set-v1.0-potion--90",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-poliwhirl--40",
+        "pokemon-base-set-v1.0-gust-of-wind--94",
+        "pokemon-base-set-v1.0-poliwag--39",
+        "pokemon-base-set-v1.0-energy-retrieval--83",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-seel--43",
+        "pokemon-base-set-v1.0-wartortle--44",
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-switch--96",
+        "pokemon-base-set-v1.0-staryu--67"
+      ],
+      "hand": [
+        "pokemon-base-set-v1.0-staryu--67",
+        "pokemon-base-set-v1.0-pokemon-breeder--78",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-energy-retrieval--83",
+        "pokemon-base-set-v1.0-starmie--66",
+        "pokemon-base-set-v1.0-gust-of-wind--94"
+      ],
+      "activePokemon": {
+        "instanceId": "6cbe6b87-2be3-4e5b-b133-1a6f8591a259",
+        "cardId": "pokemon-base-set-v1.0-seel--43",
+        "position": "ACTIVE",
+        "currentHp": 60,
+        "maxHp": 60,
+        "attachedEnergy": [],
+        "statusEffect": "NONE",
+        "damageCounters": 0,
+        "evolutionChain": []
+      },
+      "bench": [],
+      "prizeCards": [
+        "pokemon-base-set-v1.0-potion--90",
+        "pokemon-base-set-v1.0-potion--90",
+        "pokemon-base-set-v1.0-seel--43",
+        "pokemon-base-set-v1.0-wartortle--44",
+        "pokemon-base-set-v1.0-squirtle--65",
+        "pokemon-base-set-v1.0-bill--92"
+      ],
+      "discardPile": [],
+      "hasAttachedEnergyThisTurn": false
+    },
+    "turnNumber": 1,
+    "phase": "MAIN_PHASE",
+    "currentPlayer": "PLAYER1",
+    "lastAction": {
+      "actionId": "e1e0e343-a9fc-450e-96a7-f810f4701701",
+      "playerId": "PLAYER1",
+      "actionType": "ATTACH_ENERGY",
+      "timestamp": "2025-12-16T12:51:12.465Z",
+      "actionData": {
+        "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+        "target": "ACTIVE"
+      }
+    },
+    "actionHistory": [
+      {
+        "actionId": "86cbf20b-cb42-4cf5-8994-212372f8c87e",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-16T12:39:49.816Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "9ffe7174-d74d-44bf-8307-fa6afed90189",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-16T12:39:54.906Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bill--92",
+          "instanceId": "a4ea0b21-f0ea-4007-b441-38756ffced4d"
+        }
+      },
+      {
+        "actionId": "3274e4cb-54e8-4937-bc5a-7c3b44050261",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-16T12:40:03.850Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-caterpie--47"
+        }
+      },
+      {
+        "actionId": "e1e0e343-a9fc-450e-96a7-f810f4701701",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-16T12:51:12.465Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "ACTIVE"
+        }
+      }
+    ],
+    "coinFlipState": null,
+    "abilityUsageThisTurn": {
+      "PLAYER1": [],
+      "PLAYER2": []
+    }
+  }
+}

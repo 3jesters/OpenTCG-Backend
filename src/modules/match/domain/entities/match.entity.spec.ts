@@ -146,7 +146,11 @@ describe('Match Entity', () => {
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
 
-      match.endMatch('player-1', MatchResult.PLAYER1_WIN, WinCondition.PRIZE_CARDS);
+      match.endMatch(
+        'player-1',
+        MatchResult.PLAYER1_WIN,
+        WinCondition.PRIZE_CARDS,
+      );
 
       expect(match.state).toBe(MatchState.MATCH_ENDED);
       expect(match.winnerId).toBe('player-1');
@@ -161,7 +165,11 @@ describe('Match Entity', () => {
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
 
       expect(() => {
-        match.endMatch('player-3', MatchResult.PLAYER1_WIN, WinCondition.PRIZE_CARDS);
+        match.endMatch(
+          'player-3',
+          MatchResult.PLAYER1_WIN,
+          WinCondition.PRIZE_CARDS,
+        );
       }).toThrow('Winner ID must be one of the players');
     });
 
@@ -169,10 +177,18 @@ describe('Match Entity', () => {
       const match = new Match('match-001', 'tournament-001');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
-      match.endMatch('player-1', MatchResult.PLAYER1_WIN, WinCondition.PRIZE_CARDS);
+      match.endMatch(
+        'player-1',
+        MatchResult.PLAYER1_WIN,
+        WinCondition.PRIZE_CARDS,
+      );
 
       expect(() => {
-        match.endMatch('player-2', MatchResult.PLAYER2_WIN, WinCondition.PRIZE_CARDS);
+        match.endMatch(
+          'player-2',
+          MatchResult.PLAYER2_WIN,
+          WinCondition.PRIZE_CARDS,
+        );
       }).toThrow('Cannot end match in state');
     });
   });
@@ -197,7 +213,11 @@ describe('Match Entity', () => {
       const match = new Match('match-001', 'tournament-001');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
-      match.endMatch('player-1', MatchResult.PLAYER1_WIN, WinCondition.PRIZE_CARDS);
+      match.endMatch(
+        'player-1',
+        MatchResult.PLAYER1_WIN,
+        WinCondition.PRIZE_CARDS,
+      );
 
       expect(() => {
         match.cancelMatch('Reason');
@@ -214,7 +234,9 @@ describe('Match Entity', () => {
 
       expect(() => {
         match.cancelMatch('Reason');
-      }).toThrow('Match can only be cancelled when in WAITING_FOR_PLAYERS state');
+      }).toThrow(
+        'Match can only be cancelled when in WAITING_FOR_PLAYERS state',
+      );
     });
 
     it('should throw error if match is in CREATED state', () => {
@@ -225,7 +247,9 @@ describe('Match Entity', () => {
 
       expect(() => {
         match.cancelMatch('Reason');
-      }).toThrow('Match can only be cancelled when in WAITING_FOR_PLAYERS state');
+      }).toThrow(
+        'Match can only be cancelled when in WAITING_FOR_PLAYERS state',
+      );
     });
   });
 
@@ -234,7 +258,11 @@ describe('Match Entity', () => {
       const match = new Match('match-001', 'tournament-001');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
-      match.endMatch('player-1', MatchResult.PLAYER1_WIN, WinCondition.PRIZE_CARDS);
+      match.endMatch(
+        'player-1',
+        MatchResult.PLAYER1_WIN,
+        WinCondition.PRIZE_CARDS,
+      );
 
       expect(match.isTerminal()).toBe(true);
     });
@@ -260,7 +288,9 @@ describe('Match Entity', () => {
       const match = new Match('match-001', 'tournament-001');
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
 
-      expect(match.getPlayerIdentifier('player-1')).toBe(PlayerIdentifier.PLAYER1);
+      expect(match.getPlayerIdentifier('player-1')).toBe(
+        PlayerIdentifier.PLAYER1,
+      );
     });
 
     it('should return PLAYER2 for player 2', () => {
@@ -268,7 +298,9 @@ describe('Match Entity', () => {
       match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
 
-      expect(match.getPlayerIdentifier('player-2')).toBe(PlayerIdentifier.PLAYER2);
+      expect(match.getPlayerIdentifier('player-2')).toBe(
+        PlayerIdentifier.PLAYER2,
+      );
     });
 
     it('should return null for unknown player', () => {
@@ -302,4 +334,3 @@ describe('Match Entity', () => {
     });
   });
 });
-

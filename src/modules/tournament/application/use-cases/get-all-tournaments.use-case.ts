@@ -16,4 +16,3 @@ export class GetAllTournamentsUseCase {
     return await this.tournamentRepository.findAll();
   }
 }
-

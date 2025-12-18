@@ -174,4 +174,3 @@ export class TournamentMapper {
     return tournament;
   }
 }
-

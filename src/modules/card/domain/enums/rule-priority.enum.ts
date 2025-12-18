@@ -1,10 +1,10 @@
 /**
  * Rule Priority Enum
  * Defines the execution priority for card rules
- * 
+ *
  * When multiple rules apply simultaneously, they are evaluated in priority order:
  * HIGHEST → HIGH → NORMAL → LOW → LOWEST
- * 
+ *
  * This ensures consistent and predictable rule resolution.
  */
 export enum RulePriority {
@@ -43,4 +43,3 @@ export enum RulePriority {
    */
   LOWEST = 'LOWEST',
 }
-

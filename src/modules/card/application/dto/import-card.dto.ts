@@ -46,11 +46,6 @@ export class ImportCardDto {
   hp?: number;
 
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  level?: number;
-
-  @IsOptional()
   @IsEnum(EvolutionStage)
   stage?: EvolutionStage;
 
@@ -122,4 +117,3 @@ export class ImportCardDto {
   @Type(() => EnergyProvisionImportDto)
   energyProvision?: EnergyProvisionImportDto;
 }
-

@@ -67,9 +67,9 @@ describe('ValidationResult Value Object', () => {
     });
 
     it('should throw error if no errors provided', () => {
-      expect(() => ValidationResult.failureWithWarnings([], ['warning'])).toThrow(
-        'Failure result must have at least one error',
-      );
+      expect(() =>
+        ValidationResult.failureWithWarnings([], ['warning']),
+      ).toThrow('Failure result must have at least one error');
     });
   });
 
@@ -158,8 +158,14 @@ describe('ValidationResult Value Object', () => {
     });
 
     it('should merge all errors and warnings', () => {
-      const result1 = ValidationResult.failureWithWarnings(['error1'], ['warning1']);
-      const result2 = ValidationResult.failureWithWarnings(['error2'], ['warning2']);
+      const result1 = ValidationResult.failureWithWarnings(
+        ['error1'],
+        ['warning1'],
+      );
+      const result2 = ValidationResult.failureWithWarnings(
+        ['error2'],
+        ['warning2'],
+      );
       const merged = result1.merge(result2);
 
       expect(merged.isValid).toBe(false);
@@ -185,9 +191,11 @@ describe('ValidationResult Value Object', () => {
     });
 
     it('should return true for result with both errors and warnings', () => {
-      const result = ValidationResult.failureWithWarnings(['error1'], ['warning1']);
+      const result = ValidationResult.failureWithWarnings(
+        ['error1'],
+        ['warning1'],
+      );
       expect(result.hasIssues()).toBe(true);
     });
   });
 });
-

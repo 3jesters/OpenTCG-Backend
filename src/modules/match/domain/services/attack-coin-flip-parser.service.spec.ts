@@ -56,8 +56,11 @@ describe('AttackCoinFlipParserService - STATUS_EFFECT_ONLY Validation', () => {
 
     statusEffectAttacks.forEach((attack) => {
       it(`should parse ${attack.name} as STATUS_EFFECT_ONLY`, () => {
-        const result = parser.parseCoinFlipFromAttack(attack.text, attack.damage);
-        
+        const result = parser.parseCoinFlipFromAttack(
+          attack.text,
+          attack.damage,
+        );
+
         expect(result).not.toBeNull();
         expect(result?.damageCalculationType).toBe(attack.expectedType);
         expect(result?.baseDamage).toBe(attack.expectedDamage);
@@ -84,11 +87,16 @@ describe('AttackCoinFlipParserService - STATUS_EFFECT_ONLY Validation', () => {
 
     nonStatusAttacks.forEach((attack) => {
       it(`should NOT parse ${attack.name} as STATUS_EFFECT_ONLY`, () => {
-        const result = parser.parseCoinFlipFromAttack(attack.text, attack.damage);
-        
+        const result = parser.parseCoinFlipFromAttack(
+          attack.text,
+          attack.damage,
+        );
+
         expect(result).not.toBeNull();
         expect(result?.damageCalculationType).toBe(attack.expectedType);
-        expect(result?.damageCalculationType).not.toBe(DamageCalculationType.STATUS_EFFECT_ONLY);
+        expect(result?.damageCalculationType).not.toBe(
+          DamageCalculationType.STATUS_EFFECT_ONLY,
+        );
       });
     });
   });

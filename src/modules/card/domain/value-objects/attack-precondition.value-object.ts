@@ -42,7 +42,10 @@ export interface AttackPrecondition {
  * Helper functions to create preconditions with proper typing
  */
 export class AttackPreconditionFactory {
-  static coinFlip(numberOfCoins: number, description: string): AttackPrecondition {
+  static coinFlip(
+    numberOfCoins: number,
+    description: string,
+  ): AttackPrecondition {
     return {
       type: PreconditionType.COIN_FLIP,
       value: { numberOfCoins },
@@ -74,4 +77,3 @@ export class AttackPreconditionFactory {
     };
   }
 }
-

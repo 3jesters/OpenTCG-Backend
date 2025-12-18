@@ -52,4 +52,3 @@ export class DeckCard {
     return this.cardId === other.cardId && this.setName === other.setName;
   }
 }
-

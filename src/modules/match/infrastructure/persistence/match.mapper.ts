@@ -18,7 +18,11 @@ import {
 import { StatusEffect, PokemonPosition } from '../../domain/enums';
 import { CoinFlipStatus } from '../../domain/enums/coin-flip-status.enum';
 import { CoinFlipContext } from '../../domain/enums/coin-flip-context.enum';
-import { CoinFlipCountType, DamageCalculationType, VariableCoinCountSource } from '../../domain/value-objects/coin-flip-configuration.value-object';
+import {
+  CoinFlipCountType,
+  DamageCalculationType,
+  VariableCoinCountSource,
+} from '../../domain/value-objects/coin-flip-configuration.value-object';
 import { EnergyType } from '../../../card/domain/enums';
 
 /**
@@ -238,8 +242,9 @@ export class MatchMapper {
 
   /**
    * Convert GameState to JSON
+   * Public method for use by ORM mapper
    */
-  private static gameStateToJson(gameState: GameState): GameStateJson {
+  static gameStateToJson(gameState: GameState): GameStateJson {
     // Convert Map<PlayerIdentifier, Set<string>> to Record<PlayerIdentifier, string[]>
     const abilityUsageJson: Record<PlayerIdentifier, string[]> = {
       [PlayerIdentifier.PLAYER1]: [],
@@ -264,20 +269,24 @@ export class MatchMapper {
       coinFlipState: gameState.coinFlipState
         ? this.coinFlipStateToJson(gameState.coinFlipState)
         : null,
-      abilityUsageThisTurn: Object.keys(abilityUsageJson).length > 0 ? abilityUsageJson : undefined,
+      abilityUsageThisTurn:
+        Object.keys(abilityUsageJson).length > 0 ? abilityUsageJson : undefined,
     };
   }
 
   /**
    * Convert JSON to GameState
+   * Public method for use by ORM mapper
    */
-  private static gameStateFromJson(json: GameStateJson): GameState {
+  static gameStateFromJson(json: GameStateJson): GameState {
     // Convert Record<PlayerIdentifier, string[]> to Map<PlayerIdentifier, Set<string>>
     const abilityUsageMap = new Map<PlayerIdentifier, Set<string>>();
     if (json.abilityUsageThisTurn) {
-      Object.entries(json.abilityUsageThisTurn).forEach(([playerId, cardIds]) => {
-        abilityUsageMap.set(playerId as PlayerIdentifier, new Set(cardIds));
-      });
+      Object.entries(json.abilityUsageThisTurn).forEach(
+        ([playerId, cardIds]) => {
+          abilityUsageMap.set(playerId as PlayerIdentifier, new Set(cardIds));
+        },
+      );
     }
 
     return new GameState(
@@ -286,11 +295,11 @@ export class MatchMapper {
       json.turnNumber,
       json.phase,
       json.currentPlayer,
-      json.lastAction
-        ? this.actionSummaryFromJson(json.lastAction)
-        : null,
+      json.lastAction ? this.actionSummaryFromJson(json.lastAction) : null,
       json.actionHistory.map((action) => this.actionSummaryFromJson(action)),
-      json.coinFlipState ? this.coinFlipStateFromJson(json.coinFlipState) : null,
+      json.coinFlipState
+        ? this.coinFlipStateFromJson(json.coinFlipState)
+        : null,
       abilityUsageMap,
     );
   }
@@ -323,9 +332,7 @@ export class MatchMapper {
     return new PlayerGameState(
       json.deck,
       json.hand,
-      json.activePokemon
-        ? this.cardInstanceFromJson(json.activePokemon)
-        : null,
+      json.activePokemon ? this.cardInstanceFromJson(json.activePokemon) : null,
       json.bench.map((card) => this.cardInstanceFromJson(card)),
       json.prizeCards,
       json.discardPile,
@@ -359,7 +366,10 @@ export class MatchMapper {
     // Calculate damageCounters from HP for backward compatibility (if not present in JSON)
     // Note: We don't use damageCounters in CardInstance anymore, but we validate it matches
     const calculatedDamageCounters = json.maxHp - json.currentHp;
-    if (json.damageCounters !== undefined && json.damageCounters !== calculatedDamageCounters) {
+    if (
+      json.damageCounters !== undefined &&
+      json.damageCounters !== calculatedDamageCounters
+    ) {
       // Log warning but use calculated value (HP is source of truth)
       // Note: This is expected during migration from stored damageCounters to computed values
       // In production, we can remove this warning after all matches are migrated
@@ -370,14 +380,15 @@ export class MatchMapper {
         );
       }
     }
-    
+
     // Support both old format (statusEffect) and new format (statusEffects)
-    const statusEffects = json.statusEffects !== undefined
-      ? json.statusEffects
-      : (json.statusEffect && json.statusEffect !== StatusEffect.NONE)
-        ? [json.statusEffect]
-        : [];
-    
+    const statusEffects =
+      json.statusEffects !== undefined
+        ? json.statusEffects
+        : json.statusEffect && json.statusEffect !== StatusEffect.NONE
+          ? [json.statusEffect]
+          : [];
+
     return new CardInstance(
       json.instanceId,
       json.cardId,
@@ -457,7 +468,9 @@ export class MatchMapper {
   /**
    * Convert CoinFlipResult to JSON
    */
-  private static coinFlipResultToJson(result: CoinFlipResult): CoinFlipResultJson {
+  private static coinFlipResultToJson(
+    result: CoinFlipResult,
+  ): CoinFlipResultJson {
     return {
       flipIndex: result.flipIndex,
       result: result.result,
@@ -468,7 +481,9 @@ export class MatchMapper {
   /**
    * Convert JSON to CoinFlipResult
    */
-  private static coinFlipResultFromJson(json: CoinFlipResultJson): CoinFlipResult {
+  private static coinFlipResultFromJson(
+    json: CoinFlipResultJson,
+  ): CoinFlipResult {
     return new CoinFlipResult(json.flipIndex, json.result, json.seed);
   }
 
@@ -500,7 +515,9 @@ export class MatchMapper {
     return new CoinFlipConfiguration(
       this.validateCoinFlipCountType(json.countType),
       json.fixedCount,
-      json.variableSource ? this.validateVariableCoinCountSource(json.variableSource) : undefined,
+      json.variableSource
+        ? this.validateVariableCoinCountSource(json.variableSource)
+        : undefined,
       json.energyType,
       this.validateDamageCalculationType(json.damageCalculationType),
       json.baseDamage,
@@ -543,8 +560,14 @@ export class MatchMapper {
   /**
    * Validate and convert string to VariableCoinCountSource enum
    */
-  private static validateVariableCoinCountSource(value: string): VariableCoinCountSource {
-    if (Object.values(VariableCoinCountSource).includes(value as VariableCoinCountSource)) {
+  private static validateVariableCoinCountSource(
+    value: string,
+  ): VariableCoinCountSource {
+    if (
+      Object.values(VariableCoinCountSource).includes(
+        value as VariableCoinCountSource,
+      )
+    ) {
       return value as VariableCoinCountSource;
     }
     throw new Error(`Invalid VariableCoinCountSource: ${value}`);
@@ -553,11 +576,16 @@ export class MatchMapper {
   /**
    * Validate and convert string to DamageCalculationType enum
    */
-  private static validateDamageCalculationType(value: string): DamageCalculationType {
-    if (Object.values(DamageCalculationType).includes(value as DamageCalculationType)) {
+  private static validateDamageCalculationType(
+    value: string,
+  ): DamageCalculationType {
+    if (
+      Object.values(DamageCalculationType).includes(
+        value as DamageCalculationType,
+      )
+    ) {
       return value as DamageCalculationType;
     }
     throw new Error(`Invalid DamageCalculationType: ${value}`);
   }
 }
-

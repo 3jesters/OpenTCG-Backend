@@ -32,7 +32,10 @@ describe('Condition Value Objects', () => {
     });
 
     it('should create a self minimum damage condition', () => {
-      const condition = ConditionFactory.selfMinimumDamage(3, 'At least 3 damage');
+      const condition = ConditionFactory.selfMinimumDamage(
+        3,
+        'At least 3 damage',
+      );
       expect(condition.type).toBe(ConditionType.SELF_MINIMUM_DAMAGE);
       expect(condition.value?.minimumAmount).toBe(3);
     });
@@ -88,7 +91,7 @@ describe('Condition Value Objects', () => {
       const condition = ConditionFactory.selfHasEnergyType(
         EnergyType.FIRE,
         2,
-        'At least 2 Fire'
+        'At least 2 Fire',
       );
       expect(condition.type).toBe(ConditionType.SELF_HAS_ENERGY_TYPE);
       expect(condition.value?.energyType).toBe(EnergyType.FIRE);
@@ -166,23 +169,20 @@ describe('Condition Value Objects', () => {
     });
 
     it('should identify conditions that require a value', () => {
+      expect(ConditionHelper.requiresValue(ConditionType.SELF_HAS_STATUS)).toBe(
+        true,
+      );
       expect(
-        ConditionHelper.requiresValue(ConditionType.SELF_HAS_STATUS)
+        ConditionHelper.requiresValue(ConditionType.SELF_MINIMUM_DAMAGE),
       ).toBe(true);
       expect(
-        ConditionHelper.requiresValue(ConditionType.SELF_MINIMUM_DAMAGE)
-      ).toBe(true);
-      expect(
-        ConditionHelper.requiresValue(ConditionType.SELF_HAS_ENERGY_TYPE)
+        ConditionHelper.requiresValue(ConditionType.SELF_HAS_ENERGY_TYPE),
       ).toBe(true);
 
+      expect(ConditionHelper.requiresValue(ConditionType.ALWAYS)).toBe(false);
       expect(
-        ConditionHelper.requiresValue(ConditionType.ALWAYS)
-      ).toBe(false);
-      expect(
-        ConditionHelper.requiresValue(ConditionType.COIN_FLIP_SUCCESS)
+        ConditionHelper.requiresValue(ConditionType.COIN_FLIP_SUCCESS),
       ).toBe(false);
     });
   });
 });
-

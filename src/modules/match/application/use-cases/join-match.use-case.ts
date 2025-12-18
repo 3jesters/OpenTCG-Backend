@@ -52,4 +52,3 @@ export class JoinMatchUseCase {
     return savedMatch;
   }
 }
-

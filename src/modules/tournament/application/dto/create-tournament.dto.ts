@@ -86,4 +86,3 @@ export class CreateTournamentDto {
   @IsOptional()
   regulationMarks?: string[];
 }
-

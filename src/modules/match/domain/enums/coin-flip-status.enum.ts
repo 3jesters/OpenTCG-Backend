@@ -7,4 +7,3 @@ export enum CoinFlipStatus {
   FLIP_RESULT = 'FLIP_RESULT',
   COMPLETED = 'COMPLETED',
 }
-

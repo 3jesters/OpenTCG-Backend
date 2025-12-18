@@ -60,4 +60,3 @@ export enum TrainerEffectType {
   TRADE_CARDS = 'TRADE_CARDS', // Trade cards (Pokémon Trader)
   ATTACH_TO_POKEMON = 'ATTACH_TO_POKEMON', // Attach this card to a Pokémon (Tools)
 }
-

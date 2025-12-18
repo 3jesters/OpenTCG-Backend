@@ -352,7 +352,8 @@ describe('Match Gameplay Flow E2E', () => {
     expect(player1EnergyResponse.body.state).toBe('PLAYER_TURN');
     expect(player1EnergyResponse.body.phase).toBe('MAIN_PHASE');
     expect(
-      player1EnergyResponse.body.playerState.activePokemon.attachedEnergy.length,
+      player1EnergyResponse.body.playerState.activePokemon.attachedEnergy
+        .length,
     ).toBe(1);
     expect(
       player1EnergyResponse.body.playerState.activePokemon.attachedEnergy[0],
@@ -428,7 +429,8 @@ describe('Match Gameplay Flow E2E', () => {
     expect(player2EnergyResponse.body.state).toBe('PLAYER_TURN');
     expect(player2EnergyResponse.body.phase).toBe('MAIN_PHASE');
     expect(
-      player2EnergyResponse.body.playerState.activePokemon.attachedEnergy.length,
+      player2EnergyResponse.body.playerState.activePokemon.attachedEnergy
+        .length,
     ).toBe(1);
     expect(
       player2EnergyResponse.body.playerState.activePokemon.attachedEnergy[0],
@@ -526,7 +528,8 @@ describe('Match Gameplay Flow E2E', () => {
     expect(player1TrainerResponse.body.phase).toBe('MAIN_PHASE');
     // Verify energy was removed from opponent's active Pokemon
     expect(
-      player1TrainerResponse.body.opponentState.activePokemon.attachedEnergy.length,
+      player1TrainerResponse.body.opponentState.activePokemon.attachedEnergy
+        .length,
     ).toBe(0);
     // Verify trainer card was removed from hand
     expect(
@@ -548,7 +551,10 @@ describe('Match Gameplay Flow E2E', () => {
       })
       .expect(200);
 
-    expect(player1Energy2Response.body.playerState.activePokemon.attachedEnergy.length).toBe(2);
+    expect(
+      player1Energy2Response.body.playerState.activePokemon.attachedEnergy
+        .length,
+    ).toBe(2);
 
     // Step 12b: Player 1 attacks with Flame Tail (30 damage, but 60 due to weakness)
     const player1AttackResponse = await request(server())
@@ -560,7 +566,7 @@ describe('Match Gameplay Flow E2E', () => {
           attackIndex: 1, // Flame Tail is the second attack (index 1)
         },
       });
-    
+
     if (player1AttackResponse.status !== 200) {
       console.error('Attack failed:', player1AttackResponse.body);
     }
@@ -571,7 +577,9 @@ describe('Match Gameplay Flow E2E', () => {
     // Verify opponent's active Pokemon was knocked out (50 HP - 60 damage = 0 HP)
     expect(player1AttackResponse.body.opponentState.activePokemon).toBeNull();
     expect(player1AttackResponse.body.lastAction.actionType).toBe('ATTACK');
-    expect(player1AttackResponse.body.lastAction.actionData.isKnockedOut).toBe(true);
+    expect(player1AttackResponse.body.lastAction.actionData.isKnockedOut).toBe(
+      true,
+    );
     expect(player1AttackResponse.body.lastAction.actionData.damage).toBe(60);
 
     // Step 13: Player 1 selects a prize
@@ -602,9 +610,12 @@ describe('Match Gameplay Flow E2E', () => {
           cardId: 'pokemon-base-set-v1.0-ivysaur--30',
         },
       });
-    
+
     if (player2SelectActiveResponse.status !== 200) {
-      console.error('SET_ACTIVE_POKEMON failed:', JSON.stringify(player2SelectActiveResponse.body, null, 2));
+      console.error(
+        'SET_ACTIVE_POKEMON failed:',
+        JSON.stringify(player2SelectActiveResponse.body, null, 2),
+      );
     }
     expect(player2SelectActiveResponse.status).toBe(200);
 
@@ -612,14 +623,17 @@ describe('Match Gameplay Flow E2E', () => {
     // After selecting active Pokemon, it's still Player 1's turn
     expect(player2SelectActiveResponse.body.currentPlayer).toBe('PLAYER1');
     // Verify Player 2's active Pokemon was set (from Player 2's perspective)
-    expect(player2SelectActiveResponse.body.playerState.activePokemon).toBeTruthy();
-    expect(player2SelectActiveResponse.body.playerState.activePokemon.cardId).toBe(
-      'pokemon-base-set-v1.0-ivysaur--30',
-    );
+    expect(
+      player2SelectActiveResponse.body.playerState.activePokemon,
+    ).toBeTruthy();
+    expect(
+      player2SelectActiveResponse.body.playerState.activePokemon.cardId,
+    ).toBe('pokemon-base-set-v1.0-ivysaur--30');
     // Verify Ivysaur was removed from bench
-    const ivysaurOnBench = player2SelectActiveResponse.body.playerState.bench.find(
-      (p: any) => p.cardId === 'pokemon-base-set-v1.0-ivysaur--30',
-    );
+    const ivysaurOnBench =
+      player2SelectActiveResponse.body.playerState.bench.find(
+        (p: any) => p.cardId === 'pokemon-base-set-v1.0-ivysaur--30',
+      );
     expect(ivysaurOnBench).toBeUndefined();
 
     // Step 14.5: Player 1 ends their turn (after Player 2 selected active Pokemon)
@@ -671,7 +685,8 @@ describe('Match Gameplay Flow E2E', () => {
     expect(player2Energy2Response.body.state).toBe('PLAYER_TURN');
     expect(player2Energy2Response.body.phase).toBe('MAIN_PHASE');
     expect(
-      player2Energy2Response.body.playerState.activePokemon.attachedEnergy.length,
+      player2Energy2Response.body.playerState.activePokemon.attachedEnergy
+        .length,
     ).toBe(1);
     expect(
       player2Energy2Response.body.playerState.activePokemon.attachedEnergy[0],
@@ -696,4 +711,3 @@ describe('Match Gameplay Flow E2E', () => {
     }
   });
 });
-

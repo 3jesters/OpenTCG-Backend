@@ -7,4 +7,3 @@ export class JoinMatchDto {
   playerId: string;
   deckId: string;
 }
-

@@ -32,4 +32,3 @@ export class EndMatchUseCase {
     return await this.matchRepository.save(match);
   }
 }
-

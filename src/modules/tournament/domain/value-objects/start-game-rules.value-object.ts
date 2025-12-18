@@ -37,7 +37,9 @@ export class StartGameRules {
         throw new Error(`Invalid rule type: ${rule.type}`);
       }
       if (typeof rule.minCount !== 'number' || rule.minCount < 1) {
-        throw new Error(`Min count must be a positive number, got: ${rule.minCount}`);
+        throw new Error(
+          `Min count must be a positive number, got: ${rule.minCount}`,
+        );
       }
     }
   }
@@ -104,4 +106,3 @@ export class StartGameRules {
     return new StartGameRules([]);
   }
 }
-

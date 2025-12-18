@@ -200,4 +200,3 @@ describe('Match Deck Validation Failure E2E', () => {
     expect(player2State.body.state).toBe('CANCELLED');
   });
 });
-

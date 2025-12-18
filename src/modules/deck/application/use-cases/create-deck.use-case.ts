@@ -21,9 +21,7 @@ export class CreateDeckUseCase {
 
     // Convert DTO cards to domain DeckCard objects
     const cards: DeckCard[] = dto.cards
-      ? dto.cards.map(
-          (c) => new DeckCard(c.cardId, c.setName, c.quantity),
-        )
+      ? dto.cards.map((c) => new DeckCard(c.cardId, c.setName, c.quantity))
       : [];
 
     // Create domain entity
@@ -40,4 +38,3 @@ export class CreateDeckUseCase {
     return await this.deckRepository.save(deck);
   }
 }
-

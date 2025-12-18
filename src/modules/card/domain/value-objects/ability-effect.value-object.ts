@@ -335,10 +335,7 @@ export class AbilityEffectFactory {
 
   // ABILITY-SPECIFIC EFFECTS
 
-  static drawCards(
-    count: number,
-    conditions?: Condition[],
-  ): DrawCardsEffect {
+  static drawCards(count: number, conditions?: Condition[]): DrawCardsEffect {
     return {
       effectType: AbilityEffectType.DRAW_CARDS,
       count,
@@ -477,4 +474,3 @@ export class AbilityEffectFactory {
     };
   }
 }
-

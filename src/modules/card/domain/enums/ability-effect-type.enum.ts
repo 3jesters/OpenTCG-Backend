@@ -1,7 +1,7 @@
 /**
  * Ability Effect Type Enum
  * Defines the types of effects that abilities can have
- * 
+ *
  * Includes both shared effect types (also used in attacks) and ability-specific effects
  */
 export enum AbilityEffectType {
@@ -91,4 +91,3 @@ export enum AbilityEffectType {
    */
   RETRIEVE_FROM_DISCARD = 'RETRIEVE_FROM_DISCARD',
 }
-

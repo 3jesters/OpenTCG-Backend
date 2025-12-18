@@ -68,4 +68,3 @@ export class CardFileMetadataDto {
   @IsString()
   logoUrl?: string;
 }
-

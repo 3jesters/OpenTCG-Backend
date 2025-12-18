@@ -33,13 +33,15 @@ export class Attack {
     if (!this.text || this.text.trim() === '') {
       throw new Error('Attack text is required');
     }
-    
+
     // Validate preconditions if present
     if (this.preconditions && this.preconditions.length > 0) {
       try {
         AttackPreconditionValidator.validateAll(this.preconditions);
       } catch (error) {
-        throw new Error(`Attack "${this.name}" has invalid preconditions: ${error.message}`);
+        throw new Error(
+          `Attack "${this.name}" has invalid preconditions: ${error.message}`,
+        );
       }
     }
 
@@ -48,7 +50,9 @@ export class Attack {
       try {
         AttackEffectValidator.validateAll(this.effects);
       } catch (error) {
-        throw new Error(`Attack "${this.name}" has invalid effects: ${error.message}`);
+        throw new Error(
+          `Attack "${this.name}" has invalid effects: ${error.message}`,
+        );
       }
     }
   }
@@ -118,4 +122,3 @@ export class Attack {
     );
   }
 }
-

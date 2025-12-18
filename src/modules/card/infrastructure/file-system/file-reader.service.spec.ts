@@ -35,7 +35,9 @@ describe('FileReaderService', () => {
     it('should throw error if file not found', async () => {
       // Arrange
       const filename = 'non-existent.json';
-      mockFs.readFile.mockRejectedValue(new Error('ENOENT: no such file or directory'));
+      mockFs.readFile.mockRejectedValue(
+        new Error('ENOENT: no such file or directory'),
+      );
 
       // Act & Assert
       await expect(service.readCardFile(filename)).rejects.toThrow();
@@ -91,4 +93,3 @@ describe('FileReaderService', () => {
     });
   });
 });
-

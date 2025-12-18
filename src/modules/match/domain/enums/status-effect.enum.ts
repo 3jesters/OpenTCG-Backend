@@ -10,4 +10,3 @@ export enum StatusEffect {
   POISONED = 'POISONED',
   BURNED = 'BURNED',
 }
-

@@ -1,4 +1,9 @@
-import { CoinFlipConfiguration, CoinFlipCountType, VariableCoinCountSource, DamageCalculationType } from '../value-objects/coin-flip-configuration.value-object';
+import {
+  CoinFlipConfiguration,
+  CoinFlipCountType,
+  VariableCoinCountSource,
+  DamageCalculationType,
+} from '../value-objects/coin-flip-configuration.value-object';
 import { CoinFlipResult } from '../value-objects/coin-flip-result.value-object';
 import { PlayerGameState } from '../value-objects/player-game-state.value-object';
 import { EnergyType } from '../../../card/domain/enums';
@@ -14,7 +19,11 @@ export class CoinFlipResolverService {
   calculateCoinCount(
     configuration: CoinFlipConfiguration,
     playerState: PlayerGameState,
-    activePokemon?: { attachedEnergy: string[]; currentHp: number; maxHp: number } | null,
+    activePokemon?: {
+      attachedEnergy: string[];
+      currentHp: number;
+      maxHp: number;
+    } | null,
   ): number {
     switch (configuration.countType) {
       case CoinFlipCountType.FIXED:
@@ -44,7 +53,11 @@ export class CoinFlipResolverService {
     source: VariableCoinCountSource,
     energyType: EnergyType | undefined,
     playerState: PlayerGameState,
-    activePokemon?: { attachedEnergy: string[]; currentHp: number; maxHp: number } | null,
+    activePokemon?: {
+      attachedEnergy: string[];
+      currentHp: number;
+      maxHp: number;
+    } | null,
   ): number {
     switch (source) {
       case VariableCoinCountSource.ENERGY_ATTACHED:
@@ -97,7 +110,12 @@ export class CoinFlipResolverService {
   /**
    * Generate a seed from match context
    */
-  private generateSeed(matchId: string, turnNumber: number, actionId: string, flipIndex: number): number {
+  private generateSeed(
+    matchId: string,
+    turnNumber: number,
+    actionId: string,
+    flipIndex: number,
+  ): number {
     // Combine all factors into a seed
     const seedString = `${matchId}-${turnNumber}-${actionId}-${flipIndex}`;
     let hash = 0;
@@ -177,16 +195,19 @@ export class CoinFlipResolverService {
   ): boolean {
     // If we have a BASE_DAMAGE type and tails appeared, attack does nothing
     if (
-      configuration.damageCalculationType === DamageCalculationType.BASE_DAMAGE &&
+      configuration.damageCalculationType ===
+        DamageCalculationType.BASE_DAMAGE &&
       results.some((r) => r.isTails())
     ) {
       return false;
     }
     // STATUS_EFFECT_ONLY always proceeds (damage always applies)
-    if (configuration.damageCalculationType === DamageCalculationType.STATUS_EFFECT_ONLY) {
+    if (
+      configuration.damageCalculationType ===
+      DamageCalculationType.STATUS_EFFECT_ONLY
+    ) {
       return true;
     }
     return true;
   }
 }
-

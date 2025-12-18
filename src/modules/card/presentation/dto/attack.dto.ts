@@ -29,8 +29,7 @@ export class AttackDto {
 
   @ApiProperty({
     description: 'Human-readable attack effect text',
-    example:
-      'Flip a coin. If heads, the Defending Pokémon is now Confused.',
+    example: 'Flip a coin. If heads, the Defending Pokémon is now Confused.',
   })
   text: string;
 
@@ -42,10 +41,10 @@ export class AttackDto {
   effects?: AttackEffectDto[];
 
   @ApiProperty({
-    description: 'Maximum number of extra energy that can contribute to bonus damage (for "+" damage attacks)',
+    description:
+      'Maximum number of extra energy that can contribute to bonus damage (for "+" damage attacks)',
     required: false,
     example: 2,
   })
   energyBonusCap?: number;
 }
-

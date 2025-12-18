@@ -15,7 +15,11 @@ describe('Ability Value Object', () => {
         'Blaze',
         'All your Fire Pokémon do 10 more damage',
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [PokemonType.FIRE])],
+        [
+          AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [
+            PokemonType.FIRE,
+          ]),
+        ],
       );
 
       expect(ability.name).toBe('Blaze');
@@ -52,45 +56,33 @@ describe('Ability Value Object', () => {
 
     it('should throw error if name is empty', () => {
       expect(() => {
-        new Ability(
-          '',
-          'text',
-          AbilityActivationType.PASSIVE,
-          [AbilityEffectFactory.drawCards(1)],
-        );
+        new Ability('', 'text', AbilityActivationType.PASSIVE, [
+          AbilityEffectFactory.drawCards(1),
+        ]);
       }).toThrow('Ability name is required');
     });
 
     it('should throw error if text is empty', () => {
       expect(() => {
-        new Ability(
-          'Test',
-          '',
-          AbilityActivationType.PASSIVE,
-          [AbilityEffectFactory.drawCards(1)],
-        );
+        new Ability('Test', '', AbilityActivationType.PASSIVE, [
+          AbilityEffectFactory.drawCards(1),
+        ]);
       }).toThrow('Ability text is required');
     });
 
     it('should throw error if activation type is invalid', () => {
       expect(() => {
-        new Ability(
-          'Test',
-          'text',
-          'INVALID' as any,
-          [AbilityEffectFactory.drawCards(1)],
-        );
+        new Ability('Test', 'text', 'INVALID' as any, [
+          AbilityEffectFactory.drawCards(1),
+        ]);
       }).toThrow('Invalid activation type');
     });
 
     it('should throw error if triggered ability has no trigger event', () => {
       expect(() => {
-        new Ability(
-          'Test',
-          'text',
-          AbilityActivationType.TRIGGERED,
-          [AbilityEffectFactory.drawCards(1)],
-        );
+        new Ability('Test', 'text', AbilityActivationType.TRIGGERED, [
+          AbilityEffectFactory.drawCards(1),
+        ]);
       }).toThrow('Triggered abilities must specify a trigger event');
     });
 
@@ -121,29 +113,19 @@ describe('Ability Value Object', () => {
 
     it('should throw error if ability has no effects', () => {
       expect(() => {
-        new Ability(
-          'Test',
-          'text',
-          AbilityActivationType.PASSIVE,
-          [],
-        );
+        new Ability('Test', 'text', AbilityActivationType.PASSIVE, []);
       }).toThrow('Ability must have at least one effect');
     });
 
     it('should throw error if effects are invalid', () => {
       expect(() => {
-        new Ability(
-          'Test',
-          'text',
-          AbilityActivationType.PASSIVE,
-          [
-            {
-              effectType: AbilityEffectType.HEAL,
-              target: TargetType.SELF,
-              amount: 0, // Invalid
-            } as any,
-          ],
-        );
+        new Ability('Test', 'text', AbilityActivationType.PASSIVE, [
+          {
+            effectType: AbilityEffectType.HEAL,
+            target: TargetType.SELF,
+            amount: 0, // Invalid
+          } as any,
+        ]);
       }).toThrow('invalid effects');
     });
   });
@@ -362,13 +344,19 @@ describe('Ability Value Object', () => {
     it('should create Charizard Blaze ability (passive boost)', () => {
       const ability = new Ability(
         'Blaze',
-        'All your Fire Pokémon do 10 more damage to the opponent\'s Active Pokémon',
+        "All your Fire Pokémon do 10 more damage to the opponent's Active Pokémon",
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [PokemonType.FIRE])],
+        [
+          AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [
+            PokemonType.FIRE,
+          ]),
+        ],
       );
 
       expect(ability.isPassive()).toBe(true);
-      expect(ability.getEffectsByType(AbilityEffectType.BOOST_ATTACK)).toHaveLength(1);
+      expect(
+        ability.getEffectsByType(AbilityEffectType.BOOST_ATTACK),
+      ).toHaveLength(1);
     });
 
     it('should create Venusaur Solar Power ability (activated heal)', () => {
@@ -395,7 +383,9 @@ describe('Ability Value Object', () => {
         UsageLimit.ONCE_PER_TURN,
       );
 
-      expect(ability.getEffectsByType(AbilityEffectType.DRAW_CARDS)).toHaveLength(1);
+      expect(
+        ability.getEffectsByType(AbilityEffectType.DRAW_CARDS),
+      ).toHaveLength(1);
     });
 
     it('should create Metagross Geotech System ability (activated energy attach)', () => {
@@ -415,7 +405,9 @@ describe('Ability Value Object', () => {
         UsageLimit.ONCE_PER_TURN,
       );
 
-      expect(ability.getEffectsByType(AbilityEffectType.ATTACH_FROM_DISCARD)).toHaveLength(1);
+      expect(
+        ability.getEffectsByType(AbilityEffectType.ATTACH_FROM_DISCARD),
+      ).toHaveLength(1);
     });
 
     it('should create Pyukumuku Innards Out ability (triggered on knockout)', () => {
@@ -450,13 +442,21 @@ describe('Ability Value Object', () => {
     it('should create Keldeo-GX Pure Heart ability (passive prevent damage)', () => {
       const ability = new Ability(
         'Pure Heart',
-        'Prevent all effects of your opponent\'s attacks, including damage, done to this Pokémon',
+        "Prevent all effects of your opponent's attacks, including damage, done to this Pokémon",
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.preventDamage(TargetType.SELF, 'permanent', 'all')],
+        [
+          AbilityEffectFactory.preventDamage(
+            TargetType.SELF,
+            'permanent',
+            'all',
+          ),
+        ],
       );
 
       expect(ability.isPassive()).toBe(true);
-      expect(ability.getEffectsByType(AbilityEffectType.PREVENT_DAMAGE)).toHaveLength(1);
+      expect(
+        ability.getEffectsByType(AbilityEffectType.PREVENT_DAMAGE),
+      ).toHaveLength(1);
     });
 
     it('should create Greninja Shadow Stitching ability (passive damage reduction)', () => {
@@ -464,10 +464,18 @@ describe('Ability Value Object', () => {
         'Water Veil',
         'Prevent all damage done to this Pokémon by attacks from Fire Pokémon',
         AbilityActivationType.PASSIVE,
-        [AbilityEffectFactory.reduceDamage(TargetType.SELF, 'all', PokemonType.FIRE)],
+        [
+          AbilityEffectFactory.reduceDamage(
+            TargetType.SELF,
+            'all',
+            PokemonType.FIRE,
+          ),
+        ],
       );
 
-      expect(ability.getEffectsByType(AbilityEffectType.REDUCE_DAMAGE)).toHaveLength(1);
+      expect(
+        ability.getEffectsByType(AbilityEffectType.REDUCE_DAMAGE),
+      ).toHaveLength(1);
     });
 
     it('should create Tapu Lele-GX Wonder Tag ability (triggered on play)', () => {
@@ -475,7 +483,11 @@ describe('Ability Value Object', () => {
         'Wonder Tag',
         'When you play this Pokémon from your hand to your Bench, you may search your deck for a Supporter card',
         AbilityActivationType.TRIGGERED,
-        [AbilityEffectFactory.searchDeck(1, 'hand', { cardType: 'TRAINER' as any })],
+        [
+          AbilityEffectFactory.searchDeck(1, 'hand', {
+            cardType: 'TRAINER' as any,
+          }),
+        ],
         GameEventType.WHEN_PLAYED,
       );
 
@@ -490,7 +502,9 @@ describe('Ability Value Object', () => {
         [AbilityEffectFactory.boostHP(TargetType.SELF, 30)],
       );
 
-      expect(ability.getEffectsByType(AbilityEffectType.BOOST_HP)).toHaveLength(1);
+      expect(ability.getEffectsByType(AbilityEffectType.BOOST_HP)).toHaveLength(
+        1,
+      );
     });
   });
 
@@ -537,4 +551,3 @@ describe('Ability Value Object', () => {
     });
   });
 });
-

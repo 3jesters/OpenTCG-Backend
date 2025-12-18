@@ -35,4 +35,3 @@ export class CreateMatchUseCase {
     return await this.matchRepository.save(match);
   }
 }
-

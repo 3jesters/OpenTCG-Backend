@@ -11,19 +11,27 @@ describe('DeckCard Value Object', () => {
     });
 
     it('should throw error if cardId is empty', () => {
-      expect(() => new DeckCard('', 'Base Set', 1)).toThrow('Card ID is required');
+      expect(() => new DeckCard('', 'Base Set', 1)).toThrow(
+        'Card ID is required',
+      );
     });
 
     it('should throw error if cardId is whitespace only', () => {
-      expect(() => new DeckCard('   ', 'Base Set', 1)).toThrow('Card ID is required');
+      expect(() => new DeckCard('   ', 'Base Set', 1)).toThrow(
+        'Card ID is required',
+      );
     });
 
     it('should throw error if setName is empty', () => {
-      expect(() => new DeckCard('card-123', '', 1)).toThrow('Set name is required');
+      expect(() => new DeckCard('card-123', '', 1)).toThrow(
+        'Set name is required',
+      );
     });
 
     it('should throw error if setName is whitespace only', () => {
-      expect(() => new DeckCard('card-123', '   ', 1)).toThrow('Set name is required');
+      expect(() => new DeckCard('card-123', '   ', 1)).toThrow(
+        'Set name is required',
+      );
     });
 
     it('should throw error if quantity is less than 1', () => {
@@ -68,7 +76,9 @@ describe('DeckCard Value Object', () => {
 
     it('should validate the new quantity', () => {
       const original = new DeckCard('card-123', 'Base Set', 2);
-      expect(() => original.withQuantity(0)).toThrow('Quantity must be at least 1');
+      expect(() => original.withQuantity(0)).toThrow(
+        'Quantity must be at least 1',
+      );
     });
   });
 
@@ -132,4 +142,3 @@ describe('DeckCard Value Object', () => {
     });
   });
 });
-

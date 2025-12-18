@@ -71,9 +71,11 @@ describe('Tournament Entity - Start Game Rules', () => {
       tournament.setStartGameRules(newRules);
 
       expect(tournament.startGameRules.rules).toHaveLength(2);
-      expect(tournament.startGameRules.hasRuleType(StartGameRuleType.HAS_ENERGY_CARD)).toBe(
-        true,
-      );
+      expect(
+        tournament.startGameRules.hasRuleType(
+          StartGameRuleType.HAS_ENERGY_CARD,
+        ),
+      ).toBe(true);
     });
 
     it('should set empty start game rules', () => {
@@ -122,10 +124,9 @@ describe('Tournament Entity - Start Game Rules', () => {
       tournament.setStartGameRules(newRules);
 
       const retrievedRules = tournament.startGameRules;
-      expect(retrievedRules.hasRuleType(StartGameRuleType.HAS_ENERGY_CARD)).toBe(
-        true,
-      );
+      expect(
+        retrievedRules.hasRuleType(StartGameRuleType.HAS_ENERGY_CARD),
+      ).toBe(true);
     });
   });
 });
-

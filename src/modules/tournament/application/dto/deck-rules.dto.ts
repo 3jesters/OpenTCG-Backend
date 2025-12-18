@@ -39,4 +39,3 @@ export class DeckRulesDto {
   @IsOptional()
   restrictedCards?: RestrictedCardDto[];
 }
-

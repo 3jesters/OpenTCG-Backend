@@ -15,7 +15,9 @@ describe('LegacyAbilityAdapter', () => {
         text: 'All your Fire Pokémon do 10 more damage',
         legacyType: LegacyAbilityType.POKE_BODY,
         effects: [
-          AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [PokemonType.FIRE]),
+          AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [
+            PokemonType.FIRE,
+          ]),
         ],
       };
 
@@ -127,7 +129,11 @@ describe('LegacyAbilityAdapter', () => {
       const ability = LegacyAbilityAdapter.fromLegacyText(
         'Blaze',
         'All your Fire Pokémon do 10 more damage',
-        [AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [PokemonType.FIRE])],
+        [
+          AbilityEffectFactory.boostAttack(TargetType.ALL_YOURS, 10, [
+            PokemonType.FIRE,
+          ]),
+        ],
       );
 
       expect(ability.name).toBe('Blaze');
@@ -226,4 +232,3 @@ describe('LegacyAbilityAdapter', () => {
     });
   });
 });
-

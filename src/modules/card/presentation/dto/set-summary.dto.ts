@@ -63,4 +63,3 @@ export class SetSummaryDto {
   })
   logoUrl?: string;
 }
-

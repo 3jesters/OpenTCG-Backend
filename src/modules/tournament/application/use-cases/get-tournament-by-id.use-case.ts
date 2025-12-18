@@ -22,4 +22,3 @@ export class GetTournamentByIdUseCase {
     return tournament;
   }
 }
-

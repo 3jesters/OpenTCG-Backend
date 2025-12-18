@@ -47,4 +47,3 @@ export class InMemorySetCacheService implements ISetCache {
     this.sets.clear();
   }
 }
-

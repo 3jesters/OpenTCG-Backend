@@ -11,4 +11,3 @@ export enum EnergyType {
   DRAGON = 'DRAGON',
   COLORLESS = 'COLORLESS',
 }
-

@@ -45,21 +45,21 @@ export class AttackEffectValidator {
     // Validate based on effect type
     switch (effect.effectType) {
       case AttackEffectType.DISCARD_ENERGY:
-        return this.validateDiscardEnergy(effect as DiscardEnergyEffect);
+        return this.validateDiscardEnergy(effect);
       case AttackEffectType.STATUS_CONDITION:
-        return this.validateStatusCondition(effect as StatusConditionEffect);
+        return this.validateStatusCondition(effect);
       case AttackEffectType.DAMAGE_MODIFIER:
-        return this.validateDamageModifier(effect as DamageModifierEffect);
+        return this.validateDamageModifier(effect);
       case AttackEffectType.HEAL:
-        return this.validateHeal(effect as HealEffect);
+        return this.validateHeal(effect);
       case AttackEffectType.PREVENT_DAMAGE:
-        return this.validatePreventDamage(effect as PreventDamageEffect);
+        return this.validatePreventDamage(effect);
       case AttackEffectType.RECOIL_DAMAGE:
-        return this.validateRecoilDamage(effect as RecoilDamageEffect);
+        return this.validateRecoilDamage(effect);
       case AttackEffectType.ENERGY_ACCELERATION:
-        return this.validateEnergyAcceleration(effect as EnergyAccelerationEffect);
+        return this.validateEnergyAcceleration(effect);
       case AttackEffectType.SWITCH_POKEMON:
-        return this.validateSwitchPokemon(effect as SwitchPokemonEffect);
+        return this.validateSwitchPokemon(effect);
       default:
         throw new Error(`Unknown effect type: ${(effect as any).effectType}`);
     }
@@ -73,7 +73,10 @@ export class AttackEffectValidator {
       throw new Error('Discard energy target is required');
     }
 
-    if (effect.target !== TargetType.SELF && effect.target !== TargetType.DEFENDING) {
+    if (
+      effect.target !== TargetType.SELF &&
+      effect.target !== TargetType.DEFENDING
+    ) {
       throw new Error('Discard energy target must be "self" or "defending"');
     }
 
@@ -101,7 +104,9 @@ export class AttackEffectValidator {
   /**
    * Validate status condition effect
    */
-  private static validateStatusCondition(effect: StatusConditionEffect): boolean {
+  private static validateStatusCondition(
+    effect: StatusConditionEffect,
+  ): boolean {
     if (!effect.target) {
       throw new Error('Status condition target is required');
     }
@@ -114,7 +119,13 @@ export class AttackEffectValidator {
       throw new Error('Status condition is required');
     }
 
-    const validStatuses = ['PARALYZED', 'POISONED', 'BURNED', 'ASLEEP', 'CONFUSED'];
+    const validStatuses = [
+      'PARALYZED',
+      'POISONED',
+      'BURNED',
+      'ASLEEP',
+      'CONFUSED',
+    ];
     if (!validStatuses.includes(effect.statusCondition)) {
       throw new Error(
         `Invalid status condition: ${effect.statusCondition}. Must be one of: ${validStatuses.join(', ')}`,
@@ -155,7 +166,10 @@ export class AttackEffectValidator {
       throw new Error('Heal target is required');
     }
 
-    if (effect.target !== TargetType.SELF && effect.target !== TargetType.DEFENDING) {
+    if (
+      effect.target !== TargetType.SELF &&
+      effect.target !== TargetType.DEFENDING
+    ) {
       throw new Error('Heal target must be "self" or "defending"');
     }
 
@@ -186,7 +200,10 @@ export class AttackEffectValidator {
       throw new Error('Prevent damage target is required');
     }
 
-    if (effect.target !== TargetType.SELF && effect.target !== TargetType.DEFENDING) {
+    if (
+      effect.target !== TargetType.SELF &&
+      effect.target !== TargetType.DEFENDING
+    ) {
       throw new Error('Prevent damage target must be "self" or "defending"');
     }
 
@@ -195,7 +212,9 @@ export class AttackEffectValidator {
     }
 
     if (!['next_turn', 'this_turn'].includes(effect.duration)) {
-      throw new Error('Prevent damage duration must be "next_turn" or "this_turn"');
+      throw new Error(
+        'Prevent damage duration must be "next_turn" or "this_turn"',
+      );
     }
 
     if (effect.amount !== undefined && effect.amount !== 'all') {
@@ -256,7 +275,10 @@ export class AttackEffectValidator {
       throw new Error('Energy acceleration target is required');
     }
 
-    if (effect.target !== TargetType.SELF && effect.target !== TargetType.BENCHED_YOURS) {
+    if (
+      effect.target !== TargetType.SELF &&
+      effect.target !== TargetType.BENCHED_YOURS
+    ) {
       throw new Error('Energy acceleration target must be "self" or "benched"');
     }
 
@@ -265,7 +287,9 @@ export class AttackEffectValidator {
     }
 
     if (!['deck', 'discard', 'hand'].includes(effect.source)) {
-      throw new Error('Energy acceleration source must be "deck", "discard", or "hand"');
+      throw new Error(
+        'Energy acceleration source must be "deck", "discard", or "hand"',
+      );
     }
 
     if (effect.count === undefined || effect.count === null) {
@@ -285,7 +309,9 @@ export class AttackEffectValidator {
     }
 
     if (effect.selector && !['choice', 'random'].includes(effect.selector)) {
-      throw new Error('Energy acceleration selector must be "choice" or "random"');
+      throw new Error(
+        'Energy acceleration selector must be "choice" or "random"',
+      );
     }
 
     return true;
@@ -337,11 +363,12 @@ export class AttackEffectValidator {
       try {
         this.validate(effect);
       } catch (error) {
-        throw new Error(`Effect at index ${index} is invalid: ${error.message}`);
+        throw new Error(
+          `Effect at index ${index} is invalid: ${error.message}`,
+        );
       }
     });
 
     return true;
   }
 }
-

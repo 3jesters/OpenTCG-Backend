@@ -182,7 +182,9 @@ describe('CardRule', () => {
       expect(highest.getPriorityValue()).toBeGreaterThan(
         high.getPriorityValue(),
       );
-      expect(high.getPriorityValue()).toBeGreaterThan(normal.getPriorityValue());
+      expect(high.getPriorityValue()).toBeGreaterThan(
+        normal.getPriorityValue(),
+      );
       expect(normal.getPriorityValue()).toBeGreaterThan(low.getPriorityValue());
       expect(low.getPriorityValue()).toBeGreaterThan(lowest.getPriorityValue());
     });
@@ -190,11 +192,9 @@ describe('CardRule', () => {
 
   describe('hasConditions', () => {
     it('should return true when conditions exist', () => {
-      const rule = new CardRule(
-        CardRuleType.CANNOT_RETREAT,
-        'Text',
-        [ConditionFactory.always()],
-      );
+      const rule = new CardRule(CardRuleType.CANNOT_RETREAT, 'Text', [
+        ConditionFactory.always(),
+      ]);
 
       expect(rule.hasConditions()).toBe(true);
     });
@@ -558,4 +558,3 @@ describe('CardRuleFactory', () => {
     });
   });
 });
-

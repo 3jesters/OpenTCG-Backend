@@ -8,4 +8,3 @@ export enum MatchResult {
   DRAW = 'DRAW',
   CANCELLED = 'CANCELLED',
 }
-

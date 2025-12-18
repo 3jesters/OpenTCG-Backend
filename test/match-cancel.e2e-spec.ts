@@ -122,9 +122,7 @@ describe('Match Cancel E2E', () => {
         .query({ playerId: PLAYER1_ID })
         .expect(400);
 
-      expect(cancelResponse.body.message).toContain(
-        'WAITING_FOR_PLAYERS',
-      );
+      expect(cancelResponse.body.message).toContain('WAITING_FOR_PLAYERS');
 
       // 4. Verify match still exists
       const matchListAfterCancel = await request(server())
@@ -280,9 +278,7 @@ describe('Match Cancel E2E', () => {
           .expect(200);
 
         // 5. Verify match is deleted
-        await request(server())
-          .get(`/api/v1/matches/${MATCH_ID}`)
-          .expect(404);
+        await request(server()).get(`/api/v1/matches/${MATCH_ID}`).expect(404);
       } else {
         // If match has progressed past WAITING_FOR_PLAYERS, cancellation should fail
         await request(server())
@@ -334,4 +330,3 @@ describe('Match Cancel E2E', () => {
     });
   });
 });
-

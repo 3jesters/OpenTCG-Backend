@@ -8,4 +8,3 @@ export enum Rarity {
   SECRET_RARE = 'SECRET_RARE',
   PROMO = 'PROMO',
 }
-

@@ -179,7 +179,9 @@ describe('Confusion Attack E2E', () => {
         .send({ playerId: PLAYER1_ID })
         .expect(200);
 
-      expect(initialState.body.playerState.activePokemon.statusEffect).toBe('CONFUSED');
+      expect(initialState.body.playerState.activePokemon.statusEffect).toBe(
+        'CONFUSED',
+      );
       expect(initialState.body.coinFlipState).toBeNull();
 
       // Attempt to attack with confused Pokemon
@@ -197,10 +199,16 @@ describe('Confusion Attack E2E', () => {
       expect(attackResponse.body.coinFlipState.context).toBe('STATUS_CHECK');
       expect(attackResponse.body.coinFlipState.statusEffect).toBe('CONFUSED');
       expect(attackResponse.body.coinFlipState.status).toBe('READY_TO_FLIP');
-      expect(attackResponse.body.coinFlipState.configuration.damageCalculationType).toBe('BASE_DAMAGE');
-      expect(attackResponse.body.coinFlipState.configuration.baseDamage).toBe(0);
-      expect(attackResponse.body.coinFlipState.pokemonInstanceId).toBe('test-instance-1');
-      
+      expect(
+        attackResponse.body.coinFlipState.configuration.damageCalculationType,
+      ).toBe('BASE_DAMAGE');
+      expect(attackResponse.body.coinFlipState.configuration.baseDamage).toBe(
+        0,
+      );
+      expect(attackResponse.body.coinFlipState.pokemonInstanceId).toBe(
+        'test-instance-1',
+      );
+
       // Note: GENERATE_COIN_FLIP is not in availableActions for STATUS_CHECK contexts
       // The coin flip state is created automatically, and the client can call GENERATE_COIN_FLIP
       // when coinFlipState exists, but it doesn't need to be in availableActions
@@ -212,8 +220,10 @@ describe('Confusion Attack E2E', () => {
         .post(`/api/v1/matches/${TEST_MATCH_ID}/state`)
         .send({ playerId: PLAYER1_ID })
         .expect(200);
-      const initialOpponentHp = initialState.body.opponentState.activePokemon.currentHp;
-      const initialPlayerHp = initialState.body.playerState.activePokemon.currentHp;
+      const initialOpponentHp =
+        initialState.body.opponentState.activePokemon.currentHp;
+      const initialPlayerHp =
+        initialState.body.playerState.activePokemon.currentHp;
 
       // Attempt to attack with confused Pokemon
       await request(server())
@@ -251,16 +261,28 @@ describe('Confusion Attack E2E', () => {
         // Heads: Attack should proceed, no self-damage
         expect(attackAction.actionData.attackFailed).toBeUndefined();
         expect(attackAction.actionData.damage).toBe(10); // Confuse Ray damage
-        expect(finalState.opponentState.activePokemon.currentHp).toBe(initialOpponentHp - 10);
-        expect(finalState.playerState.activePokemon.currentHp).toBe(initialPlayerHp); // No self-damage
-        expect(finalState.playerState.activePokemon.statusEffect).toBe('CONFUSED'); // Status remains
+        expect(finalState.opponentState.activePokemon.currentHp).toBe(
+          initialOpponentHp - 10,
+        );
+        expect(finalState.playerState.activePokemon.currentHp).toBe(
+          initialPlayerHp,
+        ); // No self-damage
+        expect(finalState.playerState.activePokemon.statusEffect).toBe(
+          'CONFUSED',
+        ); // Status remains
       } else if (isTails) {
         // Tails: Attack should fail, 30 self-damage applied
         expect(attackAction.actionData.attackFailed).toBe(true);
         expect(attackAction.actionData.damage).toBe(0); // No damage to opponent
-        expect(finalState.opponentState.activePokemon.currentHp).toBe(initialOpponentHp); // No damage
-        expect(finalState.playerState.activePokemon.currentHp).toBe(initialPlayerHp - 30); // 30 self-damage
-        expect(finalState.playerState.activePokemon.statusEffect).toBe('CONFUSED'); // Status remains
+        expect(finalState.opponentState.activePokemon.currentHp).toBe(
+          initialOpponentHp,
+        ); // No damage
+        expect(finalState.playerState.activePokemon.currentHp).toBe(
+          initialPlayerHp - 30,
+        ); // 30 self-damage
+        expect(finalState.playerState.activePokemon.statusEffect).toBe(
+          'CONFUSED',
+        ); // Status remains
       }
     });
 
@@ -292,7 +314,7 @@ describe('Confusion Attack E2E', () => {
         // Tails: Attack should fail
         expect(attackAction.actionData.attackFailed).toBe(true);
         expect(attackAction.actionData.damage).toBe(0);
-        
+
         // Verify opponent took no damage
         const finalState = coinFlipResponse.body;
         const initialState = await request(server())
@@ -311,7 +333,9 @@ describe('Confusion Attack E2E', () => {
         .send({ playerId: PLAYER1_ID })
         .expect(200);
 
-      expect(stateBeforeAttack.body.playerState.activePokemon.statusEffect).toBe('CONFUSED');
+      expect(
+        stateBeforeAttack.body.playerState.activePokemon.statusEffect,
+      ).toBe('CONFUSED');
       expect(stateBeforeAttack.body.availableActions).toContain('ATTACK'); // Can attempt attack
 
       // Attempt attack should succeed (creates coin flip state automatically)

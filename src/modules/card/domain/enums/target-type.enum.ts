@@ -17,4 +17,3 @@ export enum TargetType {
   BENCHED_OPPONENTS = 'BENCHED_OPPONENTS',
   DEFENDING = 'DEFENDING',
 }
-

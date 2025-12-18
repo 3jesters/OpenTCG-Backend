@@ -20,7 +20,7 @@ export interface LegacyAbilityData {
 /**
  * Legacy Ability Adapter
  * Converts legacy Pokémon Power, Poké-Body, and Poké-Power to modern Ability format
- * 
+ *
  * This adapter enables:
  * - Importing historical Pokémon cards
  * - Converting legacy mechanics to modern game engine
@@ -31,11 +31,10 @@ export class LegacyAbilityAdapter {
    * Convert legacy ability data to modern Ability
    */
   static toAbility(legacyData: LegacyAbilityData): Ability {
-    const {
-      activationType,
-      usageLimit,
-      triggerEvent,
-    } = this.mapLegacyToModern(legacyData.legacyType, legacyData.triggerEvent);
+    const { activationType, usageLimit, triggerEvent } = this.mapLegacyToModern(
+      legacyData.legacyType,
+      legacyData.triggerEvent,
+    );
 
     return new Ability(
       legacyData.name,
@@ -133,7 +132,7 @@ export class LegacyAbilityAdapter {
     triggerEvent?: GameEventType,
   ): Ability {
     const detectedType = this.detectLegacyType(text);
-    
+
     if (!detectedType) {
       throw new Error('Could not detect legacy ability type from text');
     }
@@ -163,4 +162,3 @@ export class LegacyAbilityAdapter {
     return descriptions[legacyType];
   }
 }
-

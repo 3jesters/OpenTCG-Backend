@@ -58,7 +58,7 @@ describe('Card Preview API (e2e)', () => {
           expect(res.body.cards).toBeDefined();
           expect(Array.isArray(res.body.cards)).toBe(true);
           expect(res.body.count).toBeGreaterThan(0);
-          
+
           // Check card structure
           if (res.body.cards.length > 0) {
             const firstCard = res.body.cards[0];
@@ -132,7 +132,7 @@ describe('Card Preview API (e2e)', () => {
           expect(res.body.ability.effects).toBeDefined();
           expect(Array.isArray(res.body.ability.effects)).toBe(true);
           expect(res.body.ability.effects.length).toBe(1);
-          
+
           const effect = res.body.ability.effects[0];
           expect(effect.effectType).toBe('ENERGY_ACCELERATION');
           expect(effect.target).toBe('ALL_YOURS');

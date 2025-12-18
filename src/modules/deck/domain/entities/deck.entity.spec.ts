@@ -23,7 +23,14 @@ describe('Deck Entity', () => {
     });
 
     it('should create a deck with tournament ID', () => {
-      const deck = new Deck('deck-1', 'My Deck', 'player-1', [], undefined, 'tournament-1');
+      const deck = new Deck(
+        'deck-1',
+        'My Deck',
+        'player-1',
+        [],
+        undefined,
+        'tournament-1',
+      );
 
       expect(deck.tournamentId).toBe('tournament-1');
     });
@@ -36,15 +43,21 @@ describe('Deck Entity', () => {
     });
 
     it('should throw error if id is empty', () => {
-      expect(() => new Deck('', 'My Deck', 'player-1')).toThrow('Deck ID is required');
+      expect(() => new Deck('', 'My Deck', 'player-1')).toThrow(
+        'Deck ID is required',
+      );
     });
 
     it('should throw error if name is empty', () => {
-      expect(() => new Deck('deck-1', '', 'player-1')).toThrow('Deck name is required');
+      expect(() => new Deck('deck-1', '', 'player-1')).toThrow(
+        'Deck name is required',
+      );
     });
 
     it('should throw error if createdBy is empty', () => {
-      expect(() => new Deck('deck-1', 'My Deck', '')).toThrow('Creator is required');
+      expect(() => new Deck('deck-1', 'My Deck', '')).toThrow(
+        'Creator is required',
+      );
     });
   });
 
@@ -62,7 +75,9 @@ describe('Deck Entity', () => {
 
       setTimeout(() => {
         deck.setName('New Name');
-        expect(deck.updatedAt.getTime()).toBeGreaterThanOrEqual(oldUpdatedAt.getTime());
+        expect(deck.updatedAt.getTime()).toBeGreaterThanOrEqual(
+          oldUpdatedAt.getTime(),
+        );
       }, 10);
     });
 
@@ -302,4 +317,3 @@ describe('Deck Entity', () => {
     });
   });
 });
-
