@@ -68,6 +68,11 @@ import { AttackEffectFactory } from '../../../card/domain/value-objects/attack-e
 import { ConditionFactory } from '../../../card/domain/value-objects/condition.value-object';
 import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.value-object';
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
+import {
+  EnergyAttachmentExecutionService,
+  EvolutionExecutionService,
+  PlayPokemonExecutionService,
+} from '../services';
 
 /**
  * Execute Turn Action Use Case
@@ -95,6 +100,9 @@ export class ExecuteTurnActionUseCase {
     private readonly abilityEffectExecutor: AbilityEffectExecutorService,
     private readonly abilityEffectValidator: AbilityEffectValidatorService,
     private readonly actionHandlerFactory: ActionHandlerFactory,
+    private readonly energyAttachmentExecutionService: EnergyAttachmentExecutionService,
+    private readonly evolutionExecutionService: EvolutionExecutionService,
+    private readonly playPokemonExecutionService: PlayPokemonExecutionService,
   ) {}
 
   /**
@@ -334,10 +342,10 @@ export class ExecuteTurnActionUseCase {
         ? await this.getCardByIdUseCase.getCardsByIds(Array.from(cardIds))
         : new Map<string, Card>();
 
-    const gameState = match.gameState;
-    if (!gameState) {
-      throw new BadRequestException('Game state must be initialized');
-    }
+      const gameState = match.gameState;
+      if (!gameState) {
+        throw new BadRequestException('Game state must be initialized');
+      }
 
     // Route to handler if available
     if (this.actionHandlerFactory.hasHandler(dto.actionType)) {
@@ -371,7 +379,7 @@ export class ExecuteTurnActionUseCase {
           dto,
           match,
           gameState,
-          playerIdentifier,
+        playerIdentifier,
         );
 
       case MatchState.SELECT_BENCH_POKEMON:
@@ -421,116 +429,116 @@ export class ExecuteTurnActionUseCase {
       throw new BadRequestException(
         `Action ${dto.actionType} is not valid in SELECT_ACTIVE_POKEMON state`,
       );
-    }
+      }
 
-    const cardId = (dto.actionData as any)?.cardId;
-    if (!cardId) {
-      throw new BadRequestException('cardId is required');
-    }
+      const cardId = (dto.actionData as any)?.cardId;
+      if (!cardId) {
+        throw new BadRequestException('cardId is required');
+      }
 
-    const playerState = gameState.getPlayerState(playerIdentifier);
+      const playerState = gameState.getPlayerState(playerIdentifier);
 
-    // Validate that player needs to select active Pokemon
-    if (playerState.activePokemon !== null) {
-      throw new BadRequestException(
-        'Cannot set active Pokemon when one already exists',
+      // Validate that player needs to select active Pokemon
+      if (playerState.activePokemon !== null) {
+        throw new BadRequestException(
+          'Cannot set active Pokemon when one already exists',
+        );
+      }
+
+      // Check if card is in hand or on bench
+      const isInHand = playerState.hand.includes(cardId);
+      const benchIndex = playerState.bench.findIndex(
+        (p) => p.cardId === cardId,
       );
-    }
+      const isOnBench = benchIndex !== -1;
 
-    // Check if card is in hand or on bench
-    const isInHand = playerState.hand.includes(cardId);
-    const benchIndex = playerState.bench.findIndex(
-      (p) => p.cardId === cardId,
-    );
-    const isOnBench = benchIndex !== -1;
+      if (!isInHand && !isOnBench) {
+        throw new BadRequestException('Card must be in hand or on bench');
+      }
 
-    if (!isInHand && !isOnBench) {
-      throw new BadRequestException('Card must be in hand or on bench');
-    }
+      let activePokemon: CardInstance;
+      let updatedHand = playerState.hand;
+      let updatedBench = playerState.bench;
 
-    let activePokemon: CardInstance;
-    let updatedHand = playerState.hand;
-    let updatedBench = playerState.bench;
+      if (isInHand) {
+        // Card is in hand - create new CardInstance
+        const cardHp = await this.getCardHp(cardId);
+        activePokemon = new CardInstance(
+          uuidv4(),
+          cardId,
+          PokemonPosition.ACTIVE,
+          cardHp,
+          cardHp,
+          [],
+          [], // No status effects for new Pokemon
+          [],
+          undefined,
+          undefined, // evolvedAt - new Pokemon, not evolved
+        );
+        // Remove from hand
+        updatedHand = playerState.hand.filter((id) => id !== cardId);
+      } else {
+        // Card is on bench - move it to active
+        const benchPokemon = playerState.bench[benchIndex];
+        // Clear all status effects when Pokemon switches/retreats
+        activePokemon = benchPokemon
+          .withPosition(PokemonPosition.ACTIVE)
+          .withStatusEffectsCleared(); // Clear status effects on switch
+        // Remove from bench and renumber positions
+        updatedBench = playerState.bench
+          .filter((_, i) => i !== benchIndex)
+          .map((p, newIndex) => {
+            const newPosition = `BENCH_${newIndex}` as PokemonPosition;
+            // Clear status effects when Pokemon moves positions (retreat/switch)
+            return p
+              .withPosition(newPosition)
+              .withStatusEffect(StatusEffect.NONE);
+          });
+      }
 
-    if (isInHand) {
-      // Card is in hand - create new CardInstance
-      const cardHp = await this.getCardHp(cardId);
-      activePokemon = new CardInstance(
+      const updatedPlayerState = new PlayerGameState(
+        playerState.deck,
+        updatedHand,
+        activePokemon,
+        updatedBench,
+        playerState.prizeCards,
+        playerState.discardPile,
+        playerState.hasAttachedEnergyThisTurn,
+      );
+
+      // Update game state
+      const updatedGameState =
+        playerIdentifier === PlayerIdentifier.PLAYER1
+          ? gameState.withPlayer1State(updatedPlayerState)
+          : gameState.withPlayer2State(updatedPlayerState);
+
+      // Create action summary (store instanceId and source for reversibility)
+      const actionSummary = new ActionSummary(
         uuidv4(),
-        cardId,
-        PokemonPosition.ACTIVE,
-        cardHp,
-        cardHp,
-        [],
-        [], // No status effects for new Pokemon
-        [],
-        undefined,
-        undefined, // evolvedAt - new Pokemon, not evolved
+        playerIdentifier,
+        PlayerActionType.SET_ACTIVE_POKEMON,
+        new Date(),
+        {
+          cardId,
+          instanceId: activePokemon.instanceId,
+          source: isInHand ? 'HAND' : `BENCH_${benchIndex}`,
+        },
       );
-      // Remove from hand
-      updatedHand = playerState.hand.filter((id) => id !== cardId);
-    } else {
-      // Card is on bench - move it to active
-      const benchPokemon = playerState.bench[benchIndex];
-      // Clear all status effects when Pokemon switches/retreats
-      activePokemon = benchPokemon
-        .withPosition(PokemonPosition.ACTIVE)
-        .withStatusEffectsCleared(); // Clear status effects on switch
-      // Remove from bench and renumber positions
-      updatedBench = playerState.bench
-        .filter((_, i) => i !== benchIndex)
-        .map((p, newIndex) => {
-          const newPosition = `BENCH_${newIndex}` as PokemonPosition;
-          // Clear status effects when Pokemon moves positions (retreat/switch)
-          return p
-            .withPosition(newPosition)
-            .withStatusEffect(StatusEffect.NONE);
-        });
-    }
 
-    const updatedPlayerState = new PlayerGameState(
-      playerState.deck,
-      updatedHand,
-      activePokemon,
-      updatedBench,
-      playerState.prizeCards,
-      playerState.discardPile,
-      playerState.hasAttachedEnergyThisTurn,
-    );
+        // Initial setup phase - use setup update method
+        match.updateGameStateDuringSetup(updatedGameState);
 
-    // Update game state
-    const updatedGameState =
-      playerIdentifier === PlayerIdentifier.PLAYER1
-        ? gameState.withPlayer1State(updatedPlayerState)
-        : gameState.withPlayer2State(updatedPlayerState);
+        // Check if both players have set active Pokemon (only in SELECT_ACTIVE_POKEMON state)
+        const player1State = updatedGameState.player1State;
+        const player2State = updatedGameState.player2State;
 
-    // Create action summary (store instanceId and source for reversibility)
-    const actionSummary = new ActionSummary(
-      uuidv4(),
-      playerIdentifier,
-      PlayerActionType.SET_ACTIVE_POKEMON,
-      new Date(),
-      {
-        cardId,
-        instanceId: activePokemon.instanceId,
-        source: isInHand ? 'HAND' : `BENCH_${benchIndex}`,
-      },
-    );
+        if (player1State.activePokemon && player2State.activePokemon) {
+          // Both players have set active Pokemon, transition to SELECT_BENCH_POKEMON
+          // Prize cards should already be set during SET_PRIZE_CARDS phase
+          match.transitionToSelectBenchPokemon(updatedGameState);
+        }
 
-    // Initial setup phase - use setup update method
-    match.updateGameStateDuringSetup(updatedGameState);
-
-    // Check if both players have set active Pokemon (only in SELECT_ACTIVE_POKEMON state)
-    const player1State = updatedGameState.player1State;
-    const player2State = updatedGameState.player2State;
-
-    if (player1State.activePokemon && player2State.activePokemon) {
-      // Both players have set active Pokemon, transition to SELECT_BENCH_POKEMON
-      // Prize cards should already be set during SET_PRIZE_CARDS phase
-      match.transitionToSelectBenchPokemon(updatedGameState);
-    }
-
-    return await this.matchRepository.save(match);
+        return await this.matchRepository.save(match);
   }
 
   /**
@@ -668,14 +676,14 @@ export class ExecuteTurnActionUseCase {
     }
       try {
         match.confirmFirstPlayer(playerIdentifier);
-    } catch (error) {
-      if (error.message.includes('already confirmed')) {
-        throw new BadRequestException(error.message);
+      } catch (error) {
+        if (error.message.includes('already confirmed')) {
+          throw new BadRequestException(error.message);
+        }
+        throw error;
       }
-      throw error;
+      return await this.matchRepository.save(match);
     }
-    return await this.matchRepository.save(match);
-  }
 
   /**
    * Handle actions in INITIAL_SETUP state (legacy)
@@ -690,9 +698,9 @@ export class ExecuteTurnActionUseCase {
       throw new BadRequestException(
         `Action ${dto.actionType} is not valid in INITIAL_SETUP state`,
       );
-    }
+      }
 
-    const playerState = gameState.getPlayerState(playerIdentifier);
+      const playerState = gameState.getPlayerState(playerIdentifier);
       if (!playerState.activePokemon) {
         throw new BadRequestException(
           'Must set active Pokemon before completing initial setup',
@@ -703,13 +711,13 @@ export class ExecuteTurnActionUseCase {
       const player1State = gameState.player1State;
       const player2State = gameState.player2State;
 
-    if (player1State.activePokemon && player2State.activePokemon) {
-      // Both players have set active Pokemon, transition to PLAYER_TURN
-      match.completeInitialSetup();
-    }
+      if (player1State.activePokemon && player2State.activePokemon) {
+        // Both players have set active Pokemon, transition to PLAYER_TURN
+        match.completeInitialSetup();
+      }
 
-    return await this.matchRepository.save(match);
-  }
+      return await this.matchRepository.save(match);
+    }
 
   /**
    * Handle actions in PLAYER_TURN state
@@ -731,7 +739,7 @@ export class ExecuteTurnActionUseCase {
 
       // Validate that player needs to select active Pokemon
       if (playerState.activePokemon !== null) {
-        throw new BadRequestException(
+          throw new BadRequestException(
           'Cannot set active Pokemon when one already exists',
         );
       }
@@ -816,28 +824,28 @@ export class ExecuteTurnActionUseCase {
           });
       }
 
-      const updatedPlayerState = new PlayerGameState(
+        const updatedPlayerState = new PlayerGameState(
         playerState.deck,
-        updatedHand,
+          updatedHand,
         activePokemon,
         updatedBench,
-        playerState.prizeCards,
-        playerState.discardPile,
-        playerState.hasAttachedEnergyThisTurn,
-      );
+          playerState.prizeCards,
+          playerState.discardPile,
+          playerState.hasAttachedEnergyThisTurn,
+        );
 
       // Update game state
-      const updatedGameState =
-        playerIdentifier === PlayerIdentifier.PLAYER1
+        const updatedGameState =
+          playerIdentifier === PlayerIdentifier.PLAYER1
           ? gameState.withPlayer1State(updatedPlayerState)
           : gameState.withPlayer2State(updatedPlayerState);
 
       // Create action summary (store instanceId and source for reversibility)
-      const actionSummary = new ActionSummary(
-        uuidv4(),
-        playerIdentifier,
+        const actionSummary = new ActionSummary(
+          uuidv4(),
+          playerIdentifier,
         PlayerActionType.SET_ACTIVE_POKEMON,
-        new Date(),
+          new Date(),
         {
           cardId,
           instanceId: activePokemon.instanceId,
@@ -871,8 +879,8 @@ export class ExecuteTurnActionUseCase {
         .withPhase(nextPhase)
         .withAction(actionSummary);
       match.updateGameState(finalGameState);
-      return await this.matchRepository.save(match);
-    }
+        return await this.matchRepository.save(match);
+      }
 
     // DRAW_CARD is handled by handler - no fallback needed
 
@@ -880,14 +888,8 @@ export class ExecuteTurnActionUseCase {
     // ATTACH_ENERGY, EVOLVE_POKEMON, PLAY_POKEMON (main phase), RETREAT
     // ATTACK (handler not fully implemented)
 
-    // Handle ATTACH_ENERGY action
+      // Handle ATTACH_ENERGY action
       if (dto.actionType === PlayerActionType.ATTACH_ENERGY) {
-        if (gameState.phase !== TurnPhase.MAIN_PHASE) {
-          throw new BadRequestException(
-            `Cannot attach energy in phase ${gameState.phase}. Must be MAIN_PHASE`,
-          );
-        }
-
         const energyCardId = (dto.actionData as any)?.energyCardId;
         const target = (dto.actionData as any)?.target;
 
@@ -898,98 +900,24 @@ export class ExecuteTurnActionUseCase {
           throw new BadRequestException('target is required');
         }
 
-        const playerState = gameState.getPlayerState(playerIdentifier);
-
-        // Check if energy has already been attached this turn
-        if (playerState.hasAttachedEnergyThisTurn) {
-          throw new BadRequestException(
-            'Energy can only be attached once per turn (unless using a special ability)',
-          );
-        }
-
-        // Check if energy card is in hand
-        if (!playerState.hand.includes(energyCardId)) {
-          throw new BadRequestException('Energy card must be in hand');
-        }
-
-        // Find target Pokemon
-        let targetPokemon: CardInstance | null = null;
-        let updatedBench: CardInstance[] = [...playerState.bench];
-
-        if (target === 'ACTIVE') {
-          if (!playerState.activePokemon) {
-            throw new BadRequestException(
-              'No active Pokemon to attach energy to',
-            );
-          }
-          targetPokemon = playerState.activePokemon;
-        } else {
-          // BENCH_0, BENCH_1, etc.
-          const benchIndex = parseInt(target.replace('BENCH_', ''));
-          if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-            throw new BadRequestException(`Invalid bench position: ${target}`);
-          }
-          targetPokemon = playerState.bench[benchIndex];
-          // Update bench with new Pokemon instance
-          updatedBench = playerState.bench.map((pokemon, index) =>
-            index === benchIndex ? pokemon : pokemon,
-          );
-        }
-
-        // Attach energy to Pokemon
-        const updatedAttachedEnergy = [
-          ...targetPokemon.attachedEnergy,
+      // Execute energy attachment using execution service
+      const result = this.energyAttachmentExecutionService.executeAttachEnergy({
           energyCardId,
-        ];
-        const updatedPokemon = targetPokemon.withAttachedEnergy(
-          updatedAttachedEnergy,
-        );
+        target,
+        gameState,
+        playerIdentifier,
+      });
 
-        // Update bench if needed
-        if (target !== 'ACTIVE') {
-          const benchIndex = parseInt(target.replace('BENCH_', ''));
-          updatedBench = playerState.bench.map((pokemon, index) =>
-            index === benchIndex ? updatedPokemon : pokemon,
-          );
-        }
-
-        // Remove one instance of energy card from hand
-        const energyCardIndex = playerState.hand.indexOf(energyCardId);
-        if (energyCardIndex === -1) {
-          throw new BadRequestException('Energy card must be in hand');
-        }
-        const updatedHand = [
-          ...playerState.hand.slice(0, energyCardIndex),
-          ...playerState.hand.slice(energyCardIndex + 1),
-        ];
-
-        // Update player state - set hasAttachedEnergyThisTurn to true after successful attachment
-        const updatedPlayerState = new PlayerGameState(
-          playerState.deck,
-          updatedHand,
-          target === 'ACTIVE' ? updatedPokemon : playerState.activePokemon,
-          updatedBench,
-          playerState.prizeCards,
-          playerState.discardPile,
-          true, // Energy was attached this turn
-        );
-
-        // Update game state
-        const updatedGameState =
-          playerIdentifier === PlayerIdentifier.PLAYER1
-            ? gameState.withPlayer1State(updatedPlayerState)
-            : gameState.withPlayer2State(updatedPlayerState);
-
-        // Create action summary (store instanceId of target Pokemon for reversibility)
+      // Create action summary
         const actionSummary = new ActionSummary(
           uuidv4(),
           playerIdentifier,
           PlayerActionType.ATTACH_ENERGY,
           new Date(),
-          { energyCardId, target, instanceId: targetPokemon.instanceId },
+        { energyCardId, target, instanceId: result.targetInstanceId },
         );
 
-        const finalGameState = updatedGameState.withAction(actionSummary);
+      const finalGameState = result.updatedGameState.withAction(actionSummary);
 
         // Update match
         match.updateGameState(finalGameState);
@@ -997,104 +925,48 @@ export class ExecuteTurnActionUseCase {
         return await this.matchRepository.save(match);
       }
 
-      // Handle PLAY_POKEMON action during gameplay (MAIN_PHASE)
-      if (
-        dto.actionType === PlayerActionType.PLAY_POKEMON &&
-        gameState.phase === TurnPhase.MAIN_PHASE
-      ) {
-        const cardId = (dto.actionData as any)?.cardId;
-        if (!cardId) {
-          throw new BadRequestException('cardId is required');
-        }
+    // Handle PLAY_POKEMON action during gameplay (MAIN_PHASE)
+    if (
+      dto.actionType === PlayerActionType.PLAY_POKEMON &&
+      gameState.phase === TurnPhase.MAIN_PHASE
+    ) {
+      const cardId = (dto.actionData as any)?.cardId;
+      if (!cardId) {
+        throw new BadRequestException('cardId is required');
+      }
 
-        const playerState = gameState.getPlayerState(playerIdentifier);
+      // Execute play Pokemon using execution service
+      const result = await this.playPokemonExecutionService.executePlayPokemon({
+        cardId,
+        gameState,
+        playerIdentifier,
+        getCardEntity: this.getCardEntity.bind(this),
+        getCardHp: this.getCardHp.bind(this),
+      });
 
-        // Check if card is in hand
-        if (!playerState.hand.includes(cardId)) {
-          throw new BadRequestException('Card must be in hand');
-        }
-
-        // Validate that only Basic Pokemon can be played directly
-        const cardEntity = await this.getCardEntity(cardId);
-        if (cardEntity.cardType !== CardType.POKEMON) {
-          throw new BadRequestException(
-            'Only Pokemon cards can be played to the bench',
-          );
-        }
-        if (cardEntity.stage !== EvolutionStage.BASIC) {
-          throw new BadRequestException(
-            `Cannot play ${cardEntity.stage} Pokemon directly. Only Basic Pokemon can be played to the bench. Evolved Pokemon must be evolved from their pre-evolution.`,
-          );
-        }
-
-        // Check bench space (max 5)
-        if (playerState.bench.length >= 5) {
-          throw new BadRequestException('Bench is full (max 5 Pokemon)');
-        }
-
-        // Load card details to get HP
-        const cardHp = await this.getCardHp(cardId);
-
-        // Create CardInstance for bench Pokemon
-        const benchPosition =
-          `BENCH_${playerState.bench.length}` as PokemonPosition;
-        const benchPokemon = new CardInstance(
-          uuidv4(),
+      // Create action summary
+      const actionSummary = new ActionSummary(
+        uuidv4(),
+        playerIdentifier,
+        PlayerActionType.PLAY_POKEMON,
+        new Date(),
+        {
           cardId,
-          benchPosition,
-          cardHp,
-          cardHp,
-          [],
-          [], // No status effects for new Pokemon
-          [], // evolutionChain
-          undefined, // poisonDamageAmount
-          undefined, // evolvedAt - new Pokemon, not evolved
-        );
+          benchPosition: result.benchPosition,
+          instanceId: result.instanceId,
+        },
+      );
 
-        // Remove card from hand and add to bench
-        const updatedHand = playerState.hand.filter((id) => id !== cardId);
-        const updatedBench = [...playerState.bench, benchPokemon];
-        const updatedPlayerState = new PlayerGameState(
-          playerState.deck,
-          updatedHand,
-          playerState.activePokemon,
-          updatedBench,
-          playerState.prizeCards,
-          playerState.discardPile,
-          playerState.hasAttachedEnergyThisTurn,
-        );
+      const finalGameState = result.updatedGameState.withAction(actionSummary);
 
-        // Update game state
-        const updatedGameState =
-          playerIdentifier === PlayerIdentifier.PLAYER1
-            ? gameState.withPlayer1State(updatedPlayerState)
-            : gameState.withPlayer2State(updatedPlayerState);
+      // Update match
+      match.updateGameState(finalGameState);
 
-        // Create action summary (store bench position and instanceId for reversibility)
-        const actionSummary = new ActionSummary(
-          uuidv4(),
-          playerIdentifier,
-          PlayerActionType.PLAY_POKEMON,
-          new Date(),
-          { cardId, benchPosition, instanceId: benchPokemon.instanceId },
-        );
-
-        const finalGameState = updatedGameState.withAction(actionSummary);
-
-        // Update match
-        match.updateGameState(finalGameState);
-
-        return await this.matchRepository.save(match);
-      }
+      return await this.matchRepository.save(match);
+    }
 
       // Handle EVOLVE_POKEMON action
       if (dto.actionType === PlayerActionType.EVOLVE_POKEMON) {
-        if (gameState.phase !== TurnPhase.MAIN_PHASE) {
-          throw new BadRequestException(
-            `Cannot evolve Pokemon in phase ${gameState.phase}. Must be MAIN_PHASE`,
-          );
-        }
-
         const evolutionCardId = (dto.actionData as any)?.evolutionCardId;
         const target = (dto.actionData as any)?.target;
 
@@ -1105,113 +977,34 @@ export class ExecuteTurnActionUseCase {
           throw new BadRequestException('target is required');
         }
 
-        const playerState = gameState.getPlayerState(playerIdentifier);
-
-        // Check if evolution card is in hand
-        if (!playerState.hand.includes(evolutionCardId)) {
-          throw new BadRequestException('Evolution card must be in hand');
-        }
-
-        // Find target Pokemon to evolve
-        let targetPokemon: CardInstance | null = null;
-        let updatedBench: CardInstance[] = [...playerState.bench];
-
-        if (target === 'ACTIVE') {
-          if (!playerState.activePokemon) {
-            throw new BadRequestException('No active Pokemon to evolve');
-          }
-          targetPokemon = playerState.activePokemon;
-        } else {
-          // BENCH_0, BENCH_1, etc.
-          const benchIndex = parseInt(target.replace('BENCH_', ''));
-          if (benchIndex < 0 || benchIndex >= playerState.bench.length) {
-            throw new BadRequestException(`Invalid bench position: ${target}`);
-          }
-          targetPokemon = playerState.bench[benchIndex];
-        }
-
-        // Validate that this Pokemon hasn't been evolved this turn (check first)
-        this.validatePokemonNotEvolvedThisTurn(
+      // Execute evolution using execution service
+      const result = await this.evolutionExecutionService.executeEvolvePokemon({
+        evolutionCardId,
+        target,
           gameState,
           playerIdentifier,
-          targetPokemon.instanceId,
-          targetPokemon.cardId,
-        );
+        cardsMap: this.cardsMap,
+        validatePokemonNotEvolvedThisTurn: this.validatePokemonNotEvolvedThisTurn.bind(
+          this,
+        ),
+        validateEvolution: this.validateEvolution.bind(this),
+        getCardHp: this.getCardHp.bind(this),
+      });
 
-        // Validate evolution chain
-        await this.validateEvolution(targetPokemon.cardId, evolutionCardId);
-
-        // Load evolution card details to get HP
-        const evolutionCardHp = await this.getCardHp(evolutionCardId);
-
-        // Calculate damage taken (preserve absolute damage amount)
-        const damageTaken = targetPokemon.maxHp - targetPokemon.currentHp;
-
-        // Apply the same damage to the evolved Pokemon
-        // New current HP = new max HP - same damage amount
-        const newCurrentHp = Math.max(0, evolutionCardHp - damageTaken);
-
-        // Build evolution chain: add current card to existing chain
-        const evolutionChain = [
-          targetPokemon.cardId,
-          ...targetPokemon.evolutionChain,
-        ];
-
-        // Create evolved Pokemon instance (preserve damage amount, energy, but clear status effects)
-        // Evolution cures all status effects (sleep, confused, poison, paralyzed, burned)
-        const evolvedPokemon = new CardInstance(
-          targetPokemon.instanceId, // Keep same instance ID
-          evolutionCardId, // New card ID
-          targetPokemon.position,
-          newCurrentHp,
-          evolutionCardHp, // Use actual HP from evolution card
-          targetPokemon.attachedEnergy, // Preserve attached energy
-          [], // Clear all status effects on evolution (empty array)
-          evolutionChain, // Add evolution chain
-          undefined, // Clear poison damage amount (status effect is cleared)
-          gameState.turnNumber, // evolvedAt = current turn number
-        );
-
-        // Remove evolution card from hand
-        const updatedHand = playerState.hand.filter(
-          (id) => id !== evolutionCardId,
-        );
-
-        // Update bench if needed
-        if (target !== 'ACTIVE') {
-          const benchIndex = parseInt(target.replace('BENCH_', ''));
-          updatedBench = playerState.bench.map((pokemon, index) =>
-            index === benchIndex ? evolvedPokemon : pokemon,
-          );
-        }
-
-        // Update player state
-        const updatedPlayerState = new PlayerGameState(
-          playerState.deck,
-          updatedHand,
-          target === 'ACTIVE' ? evolvedPokemon : playerState.activePokemon,
-          updatedBench,
-          playerState.prizeCards,
-          playerState.discardPile,
-          playerState.hasAttachedEnergyThisTurn,
-        );
-
-        // Update game state
-        const updatedGameState =
-          playerIdentifier === PlayerIdentifier.PLAYER1
-            ? gameState.withPlayer1State(updatedPlayerState)
-            : gameState.withPlayer2State(updatedPlayerState);
-
-        // Create action summary (include instanceId to track which Pokemon was evolved)
+      // Create action summary
         const actionSummary = new ActionSummary(
           uuidv4(),
           playerIdentifier,
           PlayerActionType.EVOLVE_POKEMON,
           new Date(),
-          { evolutionCardId, target, instanceId: targetPokemon.instanceId },
-        );
+        {
+          evolutionCardId,
+          target,
+          instanceId: result.targetInstanceId,
+        },
+      );
 
-        const finalGameState = updatedGameState.withAction(actionSummary);
+      const finalGameState = result.updatedGameState.withAction(actionSummary);
 
         // Update match
         match.updateGameState(finalGameState);
@@ -1289,7 +1082,7 @@ export class ExecuteTurnActionUseCase {
           if (
             !gameState.coinFlipState ||
             gameState.coinFlipState.context !== CoinFlipContext.STATUS_CHECK ||
-            gameState.coinFlipState.statusEffect !== 'ASLEEP' ||
+            gameState.coinFlipState.statusEffect !== StatusEffect.ASLEEP ||
             gameState.coinFlipState.pokemonInstanceId !==
               activePokemon.instanceId
           ) {
@@ -1325,7 +1118,7 @@ export class ExecuteTurnActionUseCase {
           if (
             !gameState.coinFlipState ||
             gameState.coinFlipState.context !== CoinFlipContext.STATUS_CHECK ||
-            gameState.coinFlipState.statusEffect !== 'CONFUSED' ||
+            gameState.coinFlipState.statusEffect !== StatusEffect.CONFUSED ||
             gameState.coinFlipState.pokemonInstanceId !==
               activePokemon.instanceId
           ) {
@@ -1348,7 +1141,7 @@ export class ExecuteTurnActionUseCase {
               [],
               attackIndex, // Store attackIndex so we can proceed with attack after coin flip
               activePokemon.instanceId,
-              'CONFUSED',
+              StatusEffect.CONFUSED,
               actionId,
             );
 
@@ -1817,21 +1610,26 @@ export class ExecuteTurnActionUseCase {
               let poisonDamageAmount: number | undefined;
 
               switch (statusEffect.statusCondition) {
+                case StatusEffect.POISONED:
                 case 'POISONED':
                   status = StatusEffect.POISONED;
                   // Check if this is Nidoking's Toxic attack (20 damage) or normal poison (10)
                   // Nidoking's Toxic attack does 20 poison damage, all others do 10
                   poisonDamageAmount = attack.name === 'Toxic' ? 20 : 10;
                   break;
+                case StatusEffect.CONFUSED:
                 case 'CONFUSED':
                   status = StatusEffect.CONFUSED;
                   break;
+                case StatusEffect.ASLEEP:
                 case 'ASLEEP':
                   status = StatusEffect.ASLEEP;
                   break;
+                case StatusEffect.PARALYZED:
                 case 'PARALYZED':
                   status = StatusEffect.PARALYZED;
                   break;
+                case StatusEffect.BURNED:
                 case 'BURNED':
                   status = StatusEffect.BURNED;
                   break;
@@ -2028,7 +1826,7 @@ export class ExecuteTurnActionUseCase {
         let finalGameState = updatedGameState;
         if (
           gameState.coinFlipState?.context === CoinFlipContext.STATUS_CHECK &&
-          gameState.coinFlipState.statusEffect === 'CONFUSED'
+          gameState.coinFlipState.statusEffect === StatusEffect.CONFUSED
         ) {
           finalGameState = finalGameState.withCoinFlipState(null);
         }
@@ -2507,21 +2305,26 @@ export class ExecuteTurnActionUseCase {
                     let poisonDamageAmount: number | undefined;
 
                     switch (statusEffect.statusCondition) {
+                      case StatusEffect.POISONED:
                       case 'POISONED':
                         status = StatusEffect.POISONED;
                         // Check if this is Nidoking's Toxic attack (20 damage) or normal poison (10)
                         // Nidoking's Toxic attack does 20 poison damage, all others do 10
                         poisonDamageAmount = attack.name === 'Toxic' ? 20 : 10;
                         break;
+                      case StatusEffect.CONFUSED:
                       case 'CONFUSED':
                         status = StatusEffect.CONFUSED;
                         break;
+                      case StatusEffect.ASLEEP:
                       case 'ASLEEP':
                         status = StatusEffect.ASLEEP;
                         break;
+                      case StatusEffect.PARALYZED:
                       case 'PARALYZED':
                         status = StatusEffect.PARALYZED;
                         break;
+                      case StatusEffect.BURNED:
                       case 'BURNED':
                         status = StatusEffect.BURNED;
                         break;
@@ -2564,19 +2367,24 @@ export class ExecuteTurnActionUseCase {
                     let poisonDamageAmount: number | undefined;
 
                     switch (parsedStatusEffect.statusCondition) {
+                      case StatusEffect.POISONED:
                       case 'POISONED':
                         status = StatusEffect.POISONED;
                         poisonDamageAmount = 10;
                         break;
+                      case StatusEffect.CONFUSED:
                       case 'CONFUSED':
                         status = StatusEffect.CONFUSED;
                         break;
+                      case StatusEffect.ASLEEP:
                       case 'ASLEEP':
                         status = StatusEffect.ASLEEP;
                         break;
+                      case StatusEffect.PARALYZED:
                       case 'PARALYZED':
                         status = StatusEffect.PARALYZED;
                         break;
+                      case StatusEffect.BURNED:
                       case 'BURNED':
                         status = StatusEffect.BURNED;
                         break;
@@ -2925,7 +2733,7 @@ export class ExecuteTurnActionUseCase {
         ) {
           // Handle status check coin flips (sleep wake-up, confusion)
           if (
-            updatedCoinFlipState.statusEffect === 'ASLEEP' &&
+            updatedCoinFlipState.statusEffect === StatusEffect.ASLEEP &&
             updatedCoinFlipState.pokemonInstanceId
           ) {
             // Sleep wake-up coin flip
@@ -3029,8 +2837,8 @@ export class ExecuteTurnActionUseCase {
               PlayerActionType.GENERATE_COIN_FLIP,
               new Date(),
               {
-                context: 'STATUS_CHECK',
-                statusEffect: 'ASLEEP',
+                context: CoinFlipContext.STATUS_CHECK,
+                statusEffect: StatusEffect.ASLEEP,
                 pokemonInstanceId,
                 wokeUp: hasHeads,
               },
@@ -3039,7 +2847,7 @@ export class ExecuteTurnActionUseCase {
             match.updateGameState(finalGameState.withAction(actionSummary));
             return await this.matchRepository.save(match);
           } else if (
-            updatedCoinFlipState.statusEffect === 'CONFUSED' &&
+            updatedCoinFlipState.statusEffect === StatusEffect.CONFUSED &&
             updatedCoinFlipState.pokemonInstanceId
           ) {
             // Confusion coin flip - process results immediately
@@ -3458,19 +3266,24 @@ export class ExecuteTurnActionUseCase {
                         let poisonDamageAmount: number | undefined;
 
                         switch (statusEffect.statusCondition) {
+                          case StatusEffect.POISONED:
                           case 'POISONED':
                             status = StatusEffect.POISONED;
                             poisonDamageAmount = 10;
                             break;
+                          case StatusEffect.CONFUSED:
                           case 'CONFUSED':
                             status = StatusEffect.CONFUSED;
                             break;
+                          case StatusEffect.ASLEEP:
                           case 'ASLEEP':
                             status = StatusEffect.ASLEEP;
                             break;
+                          case StatusEffect.PARALYZED:
                           case 'PARALYZED':
                             status = StatusEffect.PARALYZED;
                             break;
+                          case StatusEffect.BURNED:
                           case 'BURNED':
                             status = StatusEffect.BURNED;
                             break;
@@ -3890,6 +3703,7 @@ export class ExecuteTurnActionUseCase {
                       let poisonDamageAmount: number | undefined;
 
                       switch (statusEffect.statusCondition) {
+                        case StatusEffect.POISONED:
                         case 'POISONED':
                           status = StatusEffect.POISONED;
                           // Check if this is Nidoking's Toxic attack (20 damage) or normal poison (10)
@@ -3897,15 +3711,19 @@ export class ExecuteTurnActionUseCase {
                           poisonDamageAmount =
                             attack.name === 'Toxic' ? 20 : 10;
                           break;
+                        case StatusEffect.CONFUSED:
                         case 'CONFUSED':
                           status = StatusEffect.CONFUSED;
                           break;
+                        case StatusEffect.ASLEEP:
                         case 'ASLEEP':
                           status = StatusEffect.ASLEEP;
                           break;
+                        case StatusEffect.PARALYZED:
                         case 'PARALYZED':
                           status = StatusEffect.PARALYZED;
                           break;
+                        case StatusEffect.BURNED:
                         case 'BURNED':
                           status = StatusEffect.BURNED;
                           break;
@@ -4267,7 +4085,7 @@ export class ExecuteTurnActionUseCase {
       // For other actions not yet implemented
       throw new BadRequestException(
         `Action ${dto.actionType} is not yet implemented`,
-      );
+    );
   }
 
   /**
@@ -4746,7 +4564,7 @@ export class ExecuteTurnActionUseCase {
             [],
             undefined,
             activePokemon.instanceId,
-            'ASLEEP',
+            StatusEffect.ASLEEP,
             actionId,
           );
           updatedGameState = updatedGameState.withCoinFlipState(coinFlipState);

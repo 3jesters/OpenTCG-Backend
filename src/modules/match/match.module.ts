@@ -33,6 +33,13 @@ import {
   AbilityEffectValidatorService,
     StatusEffectProcessorService,
 } from './domain/services';
+import {
+  EnergyAttachmentExecutionService,
+  EvolutionExecutionService,
+  PlayPokemonExecutionService,
+  AttackExecutionService,
+  CoinFlipExecutionService,
+} from './application/services';
 import { DeckModule } from '../deck/deck.module';
 import { CardModule } from '../card/card.module';
 import { TournamentModule } from '../tournament/tournament.module';
@@ -99,6 +106,13 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     TrainerEffectValidatorService,
     AbilityEffectExecutorService,
     AbilityEffectValidatorService,
+    StatusEffectProcessorService,
+    // Execution Services
+    EnergyAttachmentExecutionService,
+    EvolutionExecutionService,
+    PlayPokemonExecutionService,
+    AttackExecutionService,
+    CoinFlipExecutionService,
     // Action Handlers (Strategy Pattern)
     ActionHandlerFactory,
     ConcedeActionHandler,

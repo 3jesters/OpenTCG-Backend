@@ -37,6 +37,14 @@ import { AbilityEffectValidatorService } from '../../domain/services/ability-eff
 import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
 import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
 import { PlayerActionType } from '../../domain/enums/player-action-type.enum';
+import {
+  EnergyAttachmentExecutionService,
+  EvolutionExecutionService,
+  PlayPokemonExecutionService,
+  AttackExecutionService,
+  CoinFlipExecutionService,
+} from '../services';
+import { EvolutionExecutionService as RealEvolutionExecutionService } from '../services/evolution-execution.service';
 import { CardMapper } from '../../../card/presentation/mappers/card.mapper';
 import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.value-object';
 
@@ -46,6 +54,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
   let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
   let mockCoinFlipResolver: jest.Mocked<CoinFlipResolverService>;
+  let mockEvolutionExecutionService: any;
 
   beforeEach(async () => {
     mockGetCardByIdUseCase = {
@@ -68,6 +77,16 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       checkWinConditions: jest
         .fn()
         .mockReturnValue({ hasWinner: false, winner: null }),
+    } as any;
+
+    // Use real service for tests that need actual evolution logic
+    const realEvolutionService = new RealEvolutionExecutionService(
+      mockGetCardByIdUseCase,
+    );
+    mockEvolutionExecutionService = {
+      executeEvolvePokemon: jest.fn().mockImplementation(async (params) => {
+        return realEvolutionService.executeEvolvePokemon(params);
+      }),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -212,6 +231,35 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
                 return updatedGameState;
               },
             ),
+          },
+        },
+        {
+          provide: EnergyAttachmentExecutionService,
+          useValue: {
+            executeAttachEnergy: jest.fn(),
+          },
+        },
+        {
+          provide: EvolutionExecutionService,
+          useValue: mockEvolutionExecutionService,
+        },
+        {
+          provide: PlayPokemonExecutionService,
+          useValue: {
+            executePlayPokemon: jest.fn(),
+          },
+        },
+        {
+          provide: AttackExecutionService,
+          useValue: {
+            executeAttack: jest.fn(),
+            checkCoinFlipRequired: jest.fn(),
+          },
+        },
+        {
+          provide: CoinFlipExecutionService,
+          useValue: {
+            generateCoinFlip: jest.fn(),
           },
         },
         {

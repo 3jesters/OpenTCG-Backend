@@ -93,7 +93,7 @@ export class AttackActionHandler
       if (
         !gameState.coinFlipState ||
         gameState.coinFlipState.context !== CoinFlipContext.STATUS_CHECK ||
-        gameState.coinFlipState.statusEffect !== 'ASLEEP' ||
+        gameState.coinFlipState.statusEffect !== StatusEffect.ASLEEP ||
         gameState.coinFlipState.pokemonInstanceId !== activePokemon.instanceId
       ) {
         throw new BadRequestException(
@@ -128,7 +128,7 @@ export class AttackActionHandler
       if (
         !gameState.coinFlipState ||
         gameState.coinFlipState.context !== CoinFlipContext.STATUS_CHECK ||
-        gameState.coinFlipState.statusEffect !== 'CONFUSED' ||
+        gameState.coinFlipState.statusEffect !== StatusEffect.CONFUSED ||
         gameState.coinFlipState.pokemonInstanceId !== activePokemon.instanceId
       ) {
         // Confusion coin flip must be created first via GENERATE_COIN_FLIP

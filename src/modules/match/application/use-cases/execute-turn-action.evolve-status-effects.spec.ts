@@ -14,6 +14,14 @@ import { TrainerEffectValidatorService } from '../../domain/services/trainer-eff
 import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
 import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
+import {
+  EnergyAttachmentExecutionService,
+  EvolutionExecutionService,
+  PlayPokemonExecutionService,
+  AttackExecutionService,
+  CoinFlipExecutionService,
+} from '../services';
+import { EvolutionExecutionService as RealEvolutionExecutionService } from '../services/evolution-execution.service';
 import { Match } from '../../domain/entities/match.entity';
 import { PlayerIdentifier } from '../../domain/enums/player-identifier.enum';
 import { MatchState } from '../../domain/enums/match-state.enum';
@@ -47,6 +55,8 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
   let mockTrainerEffectValidator: jest.Mocked<TrainerEffectValidatorService>;
   let mockAbilityEffectExecutor: jest.Mocked<AbilityEffectExecutorService>;
   let mockAbilityEffectValidator: jest.Mocked<AbilityEffectValidatorService>;
+  let mockEnergyAttachmentExecutionService: any;
+  let mockEvolutionExecutionService: any;
 
   // Helper to create Pokemon cards
   const createPokemonCard = (
@@ -127,6 +137,26 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
   };
 
   beforeEach(async () => {
+    mockGetCardByIdUseCase = {
+      execute: jest.fn(),
+      getCardEntity: jest.fn(),
+      getCardsByIds: jest.fn().mockResolvedValue(new Map()),
+    } as any;
+
+    // Use real service for tests that need actual evolution logic
+    const realEvolutionService = new RealEvolutionExecutionService(
+      mockGetCardByIdUseCase,
+    );
+    mockEvolutionExecutionService = {
+      executeEvolvePokemon: jest.fn().mockImplementation(async (params) => {
+        return realEvolutionService.executeEvolvePokemon(params);
+      }),
+    } as any;
+
+    mockEnergyAttachmentExecutionService = {
+      executeAttachEnergy: jest.fn(),
+    } as any;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ExecuteTurnActionUseCase,
@@ -194,6 +224,33 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         {
           provide: AbilityEffectValidatorService,
           useValue: {},
+        },
+        {
+          provide: EnergyAttachmentExecutionService,
+          useValue: mockEnergyAttachmentExecutionService,
+        },
+        {
+          provide: EvolutionExecutionService,
+          useValue: mockEvolutionExecutionService,
+        },
+        {
+          provide: PlayPokemonExecutionService,
+          useValue: {
+            executePlayPokemon: jest.fn(),
+          },
+        },
+        {
+          provide: AttackExecutionService,
+          useValue: {
+            executeAttack: jest.fn(),
+            checkCoinFlipRequired: jest.fn(),
+          },
+        },
+        {
+          provide: CoinFlipExecutionService,
+          useValue: {
+            generateCoinFlip: jest.fn(),
+          },
         },
         {
           provide: ActionHandlerFactory,

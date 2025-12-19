@@ -17,6 +17,14 @@ import { AbilityEffectValidatorService } from '../../domain/services/ability-eff
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
 import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
 import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
+import {
+  EnergyAttachmentExecutionService,
+  EvolutionExecutionService,
+  PlayPokemonExecutionService,
+  AttackExecutionService,
+  CoinFlipExecutionService,
+} from '../services';
+import { EvolutionExecutionService as RealEvolutionExecutionService } from '../services/evolution-execution.service';
 import { Match } from '../../domain/entities/match.entity';
 import { PlayerIdentifier } from '../../domain/enums/player-identifier.enum';
 import { MatchState } from '../../domain/enums/match-state.enum';
@@ -159,6 +167,26 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
     mockAbilityEffectExecutor = {} as any;
     mockAbilityEffectValidator = {} as any;
 
+    const mockEnergyAttachmentExecutionService = {
+      executeAttachEnergy: jest.fn().mockImplementation((params) => {
+        // Return a mock result that matches the expected structure
+        return {
+          updatedGameState: params.gameState,
+          targetInstanceId: 'mock-instance-id',
+        };
+      }),
+    } as any;
+
+    // Use real service for tests that need actual evolution logic
+    const realEvolutionService = new RealEvolutionExecutionService(
+      mockGetCardByIdUseCase,
+    );
+    const mockEvolutionExecutionService = {
+      executeEvolvePokemon: jest.fn().mockImplementation(async (params) => {
+        return realEvolutionService.executeEvolvePokemon(params);
+      }),
+    } as any;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ExecuteTurnActionUseCase,
@@ -220,6 +248,33 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
             processBetweenTurnsStatusEffects: jest.fn().mockImplementation(
               async (gameState) => gameState,
             ),
+          },
+        },
+        {
+          provide: EnergyAttachmentExecutionService,
+          useValue: mockEnergyAttachmentExecutionService,
+        },
+        {
+          provide: EvolutionExecutionService,
+          useValue: mockEvolutionExecutionService,
+        },
+        {
+          provide: PlayPokemonExecutionService,
+          useValue: {
+            executePlayPokemon: jest.fn(),
+          },
+        },
+        {
+          provide: AttackExecutionService,
+          useValue: {
+            executeAttack: jest.fn(),
+            checkCoinFlipRequired: jest.fn(),
+          },
+        },
+        {
+          provide: CoinFlipExecutionService,
+          useValue: {
+            generateCoinFlip: jest.fn(),
           },
         },
         {

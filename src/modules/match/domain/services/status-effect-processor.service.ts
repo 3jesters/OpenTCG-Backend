@@ -83,7 +83,7 @@ export class StatusEffectProcessorService {
             [],
             undefined,
             activePokemon.instanceId,
-            'ASLEEP',
+            StatusEffect.ASLEEP,
             actionId,
           );
           updatedGameState = updatedGameState.withCoinFlipState(coinFlipState);

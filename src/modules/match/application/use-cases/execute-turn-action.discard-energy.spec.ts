@@ -14,6 +14,13 @@ import { TrainerEffectValidatorService } from '../../domain/services/trainer-eff
 import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
 import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
+import {
+  EnergyAttachmentExecutionService,
+  EvolutionExecutionService,
+  PlayPokemonExecutionService,
+  AttackExecutionService,
+  CoinFlipExecutionService,
+} from '../services';
 import { Match } from '../../domain/entities/match.entity';
 import { PlayerIdentifier } from '../../domain/enums/player-identifier.enum';
 import { MatchState } from '../../domain/enums/match-state.enum';
@@ -263,6 +270,37 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         {
           provide: AbilityEffectValidatorService,
           useValue: mockAbilityEffectValidator,
+        },
+        {
+          provide: EnergyAttachmentExecutionService,
+          useValue: {
+            executeAttachEnergy: jest.fn(),
+          },
+        },
+        {
+          provide: EvolutionExecutionService,
+          useValue: {
+            executeEvolvePokemon: jest.fn(),
+          },
+        },
+        {
+          provide: PlayPokemonExecutionService,
+          useValue: {
+            executePlayPokemon: jest.fn(),
+          },
+        },
+        {
+          provide: AttackExecutionService,
+          useValue: {
+            executeAttack: jest.fn(),
+            checkCoinFlipRequired: jest.fn(),
+          },
+        },
+        {
+          provide: CoinFlipExecutionService,
+          useValue: {
+            generateCoinFlip: jest.fn(),
+          },
         },
         {
           provide: ActionHandlerFactory,

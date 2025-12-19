@@ -220,7 +220,7 @@ export class GenerateCoinFlipActionHandler
     results: any[],
   ): Promise<Match> {
     if (
-      coinFlipState.statusEffect === 'ASLEEP' &&
+      coinFlipState.statusEffect === StatusEffect.ASLEEP &&
       coinFlipState.pokemonInstanceId
     ) {
       // Sleep wake-up coin flip
@@ -319,8 +319,8 @@ export class GenerateCoinFlipActionHandler
         PlayerActionType.GENERATE_COIN_FLIP,
         new Date(),
         {
-          context: 'STATUS_CHECK',
-          statusEffect: 'ASLEEP',
+          context: CoinFlipContext.STATUS_CHECK,
+          statusEffect: StatusEffect.ASLEEP,
           pokemonInstanceId,
           wokeUp: hasHeads,
         },
