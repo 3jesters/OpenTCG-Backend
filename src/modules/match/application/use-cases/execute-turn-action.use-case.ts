@@ -357,26 +357,371 @@ export class ExecuteTurnActionUseCase {
           (error.message.includes('not yet implemented') ||
             error.message.includes('delegating to use case'))
         ) {
-          // Fall through to old implementation
+          // Fall through to state-specific handler
         } else {
           throw error;
         }
       }
     }
 
-    // Setup actions are handled by handlers - no fallback needed
+    // State machine router - route to state-specific handlers
+    switch (match.state) {
+      case MatchState.SELECT_ACTIVE_POKEMON:
+        return this.handleSelectActivePokemonState(
+          dto,
+          match,
+          gameState,
+          playerIdentifier,
+        );
 
-    // Handle set active Pokemon in SELECT_ACTIVE_POKEMON state or after knockout
-    if (
-      dto.actionType === PlayerActionType.SET_ACTIVE_POKEMON &&
-      (match.state === MatchState.SELECT_ACTIVE_POKEMON ||
-        match.state === MatchState.PLAYER_TURN)
-    ) {
+      case MatchState.SELECT_BENCH_POKEMON:
+        return this.handleSelectBenchPokemonState(
+          dto,
+          match,
+          gameState,
+          playerIdentifier,
+        );
+
+      case MatchState.FIRST_PLAYER_SELECTION:
+        return this.handleFirstPlayerSelectionState(
+          dto,
+          match,
+          playerIdentifier,
+        );
+
+      case MatchState.INITIAL_SETUP:
+        return this.handleInitialSetupState(dto, match, gameState, playerIdentifier);
+
+      case MatchState.PLAYER_TURN:
+        return this.handlePlayerTurnState(
+          dto,
+          match,
+          gameState,
+          playerIdentifier,
+        );
+
+      // Other states are handled by action handlers (MATCH_APPROVAL, DRAWING_CARDS, SET_PRIZE_CARDS, etc.)
+      default:
+        throw new BadRequestException(
+          `Action ${dto.actionType} could not be processed in state ${match.state}`,
+        );
+    }
+  }
+
+  /**
+   * Handle actions in SELECT_ACTIVE_POKEMON state
+   */
+  private async handleSelectActivePokemonState(
+    dto: ExecuteActionDto,
+    match: Match,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+  ): Promise<Match> {
+    if (dto.actionType !== PlayerActionType.SET_ACTIVE_POKEMON) {
+      throw new BadRequestException(
+        `Action ${dto.actionType} is not valid in SELECT_ACTIVE_POKEMON state`,
+      );
+    }
+
+    const cardId = (dto.actionData as any)?.cardId;
+    if (!cardId) {
+      throw new BadRequestException('cardId is required');
+    }
+
+    const playerState = gameState.getPlayerState(playerIdentifier);
+
+    // Validate that player needs to select active Pokemon
+    if (playerState.activePokemon !== null) {
+      throw new BadRequestException(
+        'Cannot set active Pokemon when one already exists',
+      );
+    }
+
+    // Check if card is in hand or on bench
+    const isInHand = playerState.hand.includes(cardId);
+    const benchIndex = playerState.bench.findIndex(
+      (p) => p.cardId === cardId,
+    );
+    const isOnBench = benchIndex !== -1;
+
+    if (!isInHand && !isOnBench) {
+      throw new BadRequestException('Card must be in hand or on bench');
+    }
+
+    let activePokemon: CardInstance;
+    let updatedHand = playerState.hand;
+    let updatedBench = playerState.bench;
+
+    if (isInHand) {
+      // Card is in hand - create new CardInstance
+      const cardHp = await this.getCardHp(cardId);
+      activePokemon = new CardInstance(
+        uuidv4(),
+        cardId,
+        PokemonPosition.ACTIVE,
+        cardHp,
+        cardHp,
+        [],
+        [], // No status effects for new Pokemon
+        [],
+        undefined,
+        undefined, // evolvedAt - new Pokemon, not evolved
+      );
+      // Remove from hand
+      updatedHand = playerState.hand.filter((id) => id !== cardId);
+    } else {
+      // Card is on bench - move it to active
+      const benchPokemon = playerState.bench[benchIndex];
+      // Clear all status effects when Pokemon switches/retreats
+      activePokemon = benchPokemon
+        .withPosition(PokemonPosition.ACTIVE)
+        .withStatusEffectsCleared(); // Clear status effects on switch
+      // Remove from bench and renumber positions
+      updatedBench = playerState.bench
+        .filter((_, i) => i !== benchIndex)
+        .map((p, newIndex) => {
+          const newPosition = `BENCH_${newIndex}` as PokemonPosition;
+          // Clear status effects when Pokemon moves positions (retreat/switch)
+          return p
+            .withPosition(newPosition)
+            .withStatusEffect(StatusEffect.NONE);
+        });
+    }
+
+    const updatedPlayerState = new PlayerGameState(
+      playerState.deck,
+      updatedHand,
+      activePokemon,
+      updatedBench,
+      playerState.prizeCards,
+      playerState.discardPile,
+      playerState.hasAttachedEnergyThisTurn,
+    );
+
+    // Update game state
+    const updatedGameState =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? gameState.withPlayer1State(updatedPlayerState)
+        : gameState.withPlayer2State(updatedPlayerState);
+
+    // Create action summary (store instanceId and source for reversibility)
+    const actionSummary = new ActionSummary(
+      uuidv4(),
+      playerIdentifier,
+      PlayerActionType.SET_ACTIVE_POKEMON,
+      new Date(),
+      {
+        cardId,
+        instanceId: activePokemon.instanceId,
+        source: isInHand ? 'HAND' : `BENCH_${benchIndex}`,
+      },
+    );
+
+    // Initial setup phase - use setup update method
+    match.updateGameStateDuringSetup(updatedGameState);
+
+    // Check if both players have set active Pokemon (only in SELECT_ACTIVE_POKEMON state)
+    const player1State = updatedGameState.player1State;
+    const player2State = updatedGameState.player2State;
+
+    if (player1State.activePokemon && player2State.activePokemon) {
+      // Both players have set active Pokemon, transition to SELECT_BENCH_POKEMON
+      // Prize cards should already be set during SET_PRIZE_CARDS phase
+      match.transitionToSelectBenchPokemon(updatedGameState);
+    }
+
+    return await this.matchRepository.save(match);
+  }
+
+  /**
+   * Handle actions in SELECT_BENCH_POKEMON state
+   */
+  private async handleSelectBenchPokemonState(
+    dto: ExecuteActionDto,
+    match: Match,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+  ): Promise<Match> {
+
+    if (dto.actionType === PlayerActionType.PLAY_POKEMON) {
+      const cardId = (dto.actionData as any)?.cardId;
+      if (!cardId) {
+        throw new BadRequestException('cardId is required');
+      }
+
+      const playerState = gameState.getPlayerState(playerIdentifier);
+
+      // Check if card is in hand
+      if (!playerState.hand.includes(cardId)) {
+        throw new BadRequestException('Card must be in hand');
+      }
+
+      // Validate that only Basic Pokemon can be played directly
+      // Exception: Trainer cards with PUT_INTO_PLAY effect (source: HAND, target: SELF) can be played as Basic Pokemon
+      // Examples: Clefairy Doll, Mysterious Fossil
+      const cardEntity = await this.getCardEntity(cardId);
+
+      // Check if it's a special trainer card that can be played as Basic Pokemon
+      const isSpecialTrainerCard =
+        cardEntity.cardType === CardType.TRAINER &&
+        cardEntity.trainerEffects.some(
+          (effect) =>
+            effect.effectType === TrainerEffectType.PUT_INTO_PLAY &&
+            effect.source === 'HAND' &&
+            effect.target === TargetType.SELF,
+        );
+
+      if (!isSpecialTrainerCard) {
+        // For non-special trainer cards, must be a Basic Pokemon
+        if (cardEntity.cardType !== CardType.POKEMON) {
+          throw new BadRequestException(
+            'Only Pokemon cards can be played to the bench',
+          );
+        }
+        if (cardEntity.stage !== EvolutionStage.BASIC) {
+          throw new BadRequestException(
+            `Cannot play ${cardEntity.stage} Pokemon directly. Only Basic Pokemon can be played to the bench. Evolved Pokemon must be evolved from their pre-evolution.`,
+          );
+        }
+      }
+
+      // Check bench space (max 5)
+      if (playerState.bench.length >= 5) {
+        throw new BadRequestException('Bench is full (max 5 Pokemon)');
+      }
+
+      // Load card details to get HP
+      const cardHp = await this.getCardHp(cardId);
+
+      // Create CardInstance for bench Pokemon
+      const benchPosition =
+        `BENCH_${playerState.bench.length}` as PokemonPosition;
+      const benchPokemon = new CardInstance(
+        uuidv4(),
+        cardId,
+        benchPosition,
+        cardHp,
+        cardHp,
+        [],
+        [], // No status effects for new Pokemon
+        [],
+        undefined, // poisonDamageAmount
+        undefined, // evolvedAt - new Pokemon, not evolved
+      );
+
+      // Remove card from hand and add to bench
+      const updatedHand = playerState.hand.filter((id) => id !== cardId);
+      const updatedBench = [...playerState.bench, benchPokemon];
+      const updatedPlayerState = new PlayerGameState(
+        playerState.deck,
+        updatedHand,
+        playerState.activePokemon,
+        updatedBench,
+        playerState.prizeCards,
+        playerState.discardPile,
+        playerState.hasAttachedEnergyThisTurn,
+      );
+
+      // Update game state
+      const updatedGameState =
+        playerIdentifier === PlayerIdentifier.PLAYER1
+          ? gameState.withPlayer1State(updatedPlayerState)
+          : gameState.withPlayer2State(updatedPlayerState);
+
+      match.updateGameStateDuringSetup(updatedGameState);
+
+      return await this.matchRepository.save(match);
+    }
+
+    if (dto.actionType === PlayerActionType.COMPLETE_INITIAL_SETUP) {
       const gameState = match.gameState;
       if (!gameState) {
         throw new BadRequestException('Game state must be initialized');
       }
 
+      // Mark player as ready to start
+      // This will automatically transition to FIRST_PLAYER_SELECTION when both are ready
+      match.markPlayerReadyToStart(playerIdentifier);
+
+      // Don't call completeInitialSetup() here - it will be called automatically
+      // by confirmFirstPlayer() after both players confirm the first player selection
+      return await this.matchRepository.save(match);
+    }
+
+    throw new BadRequestException(
+      `Action ${dto.actionType} is not valid in SELECT_BENCH_POKEMON state`,
+    );
+  }
+
+  /**
+   * Handle actions in FIRST_PLAYER_SELECTION state
+   */
+  private async handleFirstPlayerSelectionState(
+    dto: ExecuteActionDto,
+    match: Match,
+    playerIdentifier: PlayerIdentifier,
+  ): Promise<Match> {
+    if (dto.actionType !== PlayerActionType.CONFIRM_FIRST_PLAYER) {
+      throw new BadRequestException(
+        `Action ${dto.actionType} is not valid in FIRST_PLAYER_SELECTION state`,
+      );
+    }
+      try {
+        match.confirmFirstPlayer(playerIdentifier);
+    } catch (error) {
+      if (error.message.includes('already confirmed')) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
+    return await this.matchRepository.save(match);
+  }
+
+  /**
+   * Handle actions in INITIAL_SETUP state (legacy)
+   */
+  private async handleInitialSetupState(
+    dto: ExecuteActionDto,
+    match: Match,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+  ): Promise<Match> {
+    if (dto.actionType !== PlayerActionType.COMPLETE_INITIAL_SETUP) {
+      throw new BadRequestException(
+        `Action ${dto.actionType} is not valid in INITIAL_SETUP state`,
+      );
+    }
+
+    const playerState = gameState.getPlayerState(playerIdentifier);
+      if (!playerState.activePokemon) {
+        throw new BadRequestException(
+          'Must set active Pokemon before completing initial setup',
+        );
+      }
+
+      // Check if both players have completed setup
+      const player1State = gameState.player1State;
+      const player2State = gameState.player2State;
+
+    if (player1State.activePokemon && player2State.activePokemon) {
+      // Both players have set active Pokemon, transition to PLAYER_TURN
+      match.completeInitialSetup();
+    }
+
+    return await this.matchRepository.save(match);
+  }
+
+  /**
+   * Handle actions in PLAYER_TURN state
+   */
+  private async handlePlayerTurnState(
+    dto: ExecuteActionDto,
+    match: Match,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+  ): Promise<Match> {
+    // Handle SET_ACTIVE_POKEMON in PLAYER_TURN state (after knockout)
+    if (dto.actionType === PlayerActionType.SET_ACTIVE_POKEMON) {
       const cardId = (dto.actionData as any)?.cardId;
       if (!cardId) {
         throw new BadRequestException('cardId is required');
@@ -391,11 +736,8 @@ export class ExecuteTurnActionUseCase {
         );
       }
 
-      // If in PLAYER_TURN state (not SELECT_ACTIVE_POKEMON), validate prize was selected
-      if (
-        match.state === MatchState.PLAYER_TURN &&
-        gameState.phase !== TurnPhase.SELECT_ACTIVE_POKEMON
-      ) {
+      // Validate prize was selected after knockout
+      if (gameState.phase !== TurnPhase.SELECT_ACTIVE_POKEMON) {
         // Check if attacker has selected prize after knockout
         const lastAction = gameState.lastAction;
         if (
@@ -503,230 +845,42 @@ export class ExecuteTurnActionUseCase {
         },
       );
 
-      // Use appropriate update method based on state
-      if (match.state === MatchState.SELECT_ACTIVE_POKEMON) {
-        // Initial setup phase - use setup update method
-        match.updateGameStateDuringSetup(updatedGameState);
+      // In PLAYER_TURN state (after knockout), check if phase should transition
+      const opponentState =
+        updatedGameState.getOpponentState(playerIdentifier);
+      const attackerState = updatedGameState.getPlayerState(playerIdentifier);
 
-        // Check if both players have set active Pokemon (only in SELECT_ACTIVE_POKEMON state)
-        const player1State = updatedGameState.player1State;
-        const player2State = updatedGameState.player2State;
+      // Check if both players still need to select (double knockout scenario)
+      const opponentNeedsActive =
+        opponentState.activePokemon === null &&
+        opponentState.bench.length > 0;
+      const attackerNeedsActive =
+        attackerState.activePokemon === null &&
+        attackerState.bench.length > 0;
 
-        if (player1State.activePokemon && player2State.activePokemon) {
-          // Both players have set active Pokemon, transition to SELECT_BENCH_POKEMON
-          // Prize cards should already be set during SET_PRIZE_CARDS phase
-          match.transitionToSelectBenchPokemon(updatedGameState);
-        }
-
-        return await this.matchRepository.save(match);
+      let nextPhase = gameState.phase;
+      if (opponentNeedsActive || attackerNeedsActive) {
+        // Still need active Pokemon selection
+        nextPhase = TurnPhase.SELECT_ACTIVE_POKEMON;
       } else {
-        // In PLAYER_TURN state (after knockout), check if phase should transition
-        const opponentState =
-          updatedGameState.getOpponentState(playerIdentifier);
-        const attackerState = updatedGameState.getPlayerState(playerIdentifier);
-
-        // Check if both players still need to select (double knockout scenario)
-        const opponentNeedsActive =
-          opponentState.activePokemon === null &&
-          opponentState.bench.length > 0;
-        const attackerNeedsActive =
-          attackerState.activePokemon === null &&
-          attackerState.bench.length > 0;
-
-        let nextPhase = gameState.phase;
-        if (opponentNeedsActive || attackerNeedsActive) {
-          // Still need active Pokemon selection
-          nextPhase = TurnPhase.SELECT_ACTIVE_POKEMON;
-        } else {
-          // Both players have active Pokemon, transition back to END phase
-          nextPhase = TurnPhase.END;
-        }
-
-        const finalGameState = updatedGameState
-          .withPhase(nextPhase)
-          .withAction(actionSummary);
-        match.updateGameState(finalGameState);
-        return await this.matchRepository.save(match);
-      }
-    }
-
-    // Handle play Pokemon in SELECT_BENCH_POKEMON state
-    if (
-      dto.actionType === PlayerActionType.PLAY_POKEMON &&
-      match.state === MatchState.SELECT_BENCH_POKEMON
-    ) {
-      const gameState = match.gameState;
-      if (!gameState) {
-        throw new BadRequestException('Game state must be initialized');
+        // Both players have active Pokemon, transition back to END phase
+        nextPhase = TurnPhase.END;
       }
 
-      const cardId = (dto.actionData as any)?.cardId;
-      if (!cardId) {
-        throw new BadRequestException('cardId is required');
-      }
-
-      const playerState = gameState.getPlayerState(playerIdentifier);
-
-      // Check if card is in hand
-      if (!playerState.hand.includes(cardId)) {
-        throw new BadRequestException('Card must be in hand');
-      }
-
-      // Validate that only Basic Pokemon can be played directly
-      // Exception: Trainer cards with PUT_INTO_PLAY effect (source: HAND, target: SELF) can be played as Basic Pokemon
-      // Examples: Clefairy Doll, Mysterious Fossil
-      const cardEntity = await this.getCardEntity(cardId);
-
-      // Check if it's a special trainer card that can be played as Basic Pokemon
-      const isSpecialTrainerCard =
-        cardEntity.cardType === CardType.TRAINER &&
-        cardEntity.trainerEffects.some(
-          (effect) =>
-            effect.effectType === TrainerEffectType.PUT_INTO_PLAY &&
-            effect.source === 'HAND' &&
-            effect.target === TargetType.SELF,
-        );
-
-      if (!isSpecialTrainerCard) {
-        // For non-special trainer cards, must be a Basic Pokemon
-        if (cardEntity.cardType !== CardType.POKEMON) {
-          throw new BadRequestException(
-            'Only Pokemon cards can be played to the bench',
-          );
-        }
-        if (cardEntity.stage !== EvolutionStage.BASIC) {
-          throw new BadRequestException(
-            `Cannot play ${cardEntity.stage} Pokemon directly. Only Basic Pokemon can be played to the bench. Evolved Pokemon must be evolved from their pre-evolution.`,
-          );
-        }
-      }
-
-      // Check bench space (max 5)
-      if (playerState.bench.length >= 5) {
-        throw new BadRequestException('Bench is full (max 5 Pokemon)');
-      }
-
-      // Load card details to get HP
-      const cardHp = await this.getCardHp(cardId);
-
-      // Create CardInstance for bench Pokemon
-      const benchPosition =
-        `BENCH_${playerState.bench.length}` as PokemonPosition;
-      const benchPokemon = new CardInstance(
-        uuidv4(),
-        cardId,
-        benchPosition,
-        cardHp,
-        cardHp,
-        [],
-        [], // No status effects for new Pokemon
-        [],
-        undefined, // poisonDamageAmount
-        undefined, // evolvedAt - new Pokemon, not evolved
-      );
-
-      // Remove card from hand and add to bench
-      const updatedHand = playerState.hand.filter((id) => id !== cardId);
-      const updatedBench = [...playerState.bench, benchPokemon];
-      const updatedPlayerState = new PlayerGameState(
-        playerState.deck,
-        updatedHand,
-        playerState.activePokemon,
-        updatedBench,
-        playerState.prizeCards,
-        playerState.discardPile,
-        playerState.hasAttachedEnergyThisTurn,
-      );
-
-      // Update game state
-      const updatedGameState =
-        playerIdentifier === PlayerIdentifier.PLAYER1
-          ? gameState.withPlayer1State(updatedPlayerState)
-          : gameState.withPlayer2State(updatedPlayerState);
-
-      match.updateGameStateDuringSetup(updatedGameState);
-
+      const finalGameState = updatedGameState
+        .withPhase(nextPhase)
+        .withAction(actionSummary);
+      match.updateGameState(finalGameState);
       return await this.matchRepository.save(match);
     }
 
-    // Handle complete initial setup in SELECT_BENCH_POKEMON state
-    if (
-      dto.actionType === PlayerActionType.COMPLETE_INITIAL_SETUP &&
-      match.state === MatchState.SELECT_BENCH_POKEMON
-    ) {
-      const gameState = match.gameState;
-      if (!gameState) {
-        throw new BadRequestException('Game state must be initialized');
-      }
+    // DRAW_CARD is handled by handler - no fallback needed
 
-      // Mark player as ready to start
-      // This will automatically transition to FIRST_PLAYER_SELECTION when both are ready
-      match.markPlayerReadyToStart(playerIdentifier);
+    // Actions without handlers yet - keep old implementation
+    // ATTACH_ENERGY, EVOLVE_POKEMON, PLAY_POKEMON (main phase), RETREAT
+    // ATTACK (handler not fully implemented)
 
-      // Don't call completeInitialSetup() here - it will be called automatically
-      // by confirmFirstPlayer() after both players confirm the first player selection
-      return await this.matchRepository.save(match);
-    }
-
-    // Handle confirm first player in FIRST_PLAYER_SELECTION state
-    if (
-      dto.actionType === PlayerActionType.CONFIRM_FIRST_PLAYER &&
-      match.state === MatchState.FIRST_PLAYER_SELECTION
-    ) {
-      try {
-        match.confirmFirstPlayer(playerIdentifier);
-      } catch (error) {
-        if (error.message.includes('already confirmed')) {
-          throw new BadRequestException(error.message);
-        }
-        throw error;
-      }
-      return await this.matchRepository.save(match);
-    }
-
-    // Handle complete initial setup in INITIAL_SETUP state (legacy)
-    if (
-      dto.actionType === PlayerActionType.COMPLETE_INITIAL_SETUP &&
-      match.state === MatchState.INITIAL_SETUP
-    ) {
-      const gameState = match.gameState;
-      if (!gameState) {
-        throw new BadRequestException('Game state must be initialized');
-      }
-
-      const playerState = gameState.getPlayerState(playerIdentifier);
-      if (!playerState.activePokemon) {
-        throw new BadRequestException(
-          'Must set active Pokemon before completing initial setup',
-        );
-      }
-
-      // Check if both players have completed setup
-      const player1State = gameState.player1State;
-      const player2State = gameState.player2State;
-
-      if (player1State.activePokemon && player2State.activePokemon) {
-        // Both players have set active Pokemon, transition to PLAYER_TURN
-        match.completeInitialSetup();
-      }
-
-      return await this.matchRepository.save(match);
-    }
-
-    // Handle turn actions in PLAYER_TURN state
-    if (match.state === MatchState.PLAYER_TURN) {
-      const gameState = match.gameState;
-      if (!gameState) {
-        throw new BadRequestException('Game state must be initialized');
-      }
-
-      // DRAW_CARD is handled by handler - no fallback needed
-
-      // Actions without handlers yet - keep old implementation
-      // ATTACH_ENERGY, EVOLVE_POKEMON, PLAY_POKEMON (main phase), RETREAT
-      // ATTACK (handler not fully implemented)
-
-      // Handle ATTACH_ENERGY action
+    // Handle ATTACH_ENERGY action
       if (dto.actionType === PlayerActionType.ATTACH_ENERGY) {
         if (gameState.phase !== TurnPhase.MAIN_PHASE) {
           throw new BadRequestException(
@@ -1075,10 +1229,10 @@ export class ExecuteTurnActionUseCase {
             return await handler.execute(
               dto,
               match,
-              gameState,
-              playerIdentifier,
+          gameState,
+          playerIdentifier,
               this.cardsMap,
-            );
+          );
           } catch (error) {
             // Handler delegates back - fall through to old implementation
             if (
@@ -4114,12 +4268,6 @@ export class ExecuteTurnActionUseCase {
       throw new BadRequestException(
         `Action ${dto.actionType} is not yet implemented`,
       );
-    }
-
-    // If we reach here, no action was handled (should not happen due to validation)
-    throw new BadRequestException(
-      `Action ${dto.actionType} could not be processed`,
-    );
   }
 
   /**

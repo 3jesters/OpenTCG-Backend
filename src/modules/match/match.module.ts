@@ -29,8 +29,8 @@ import {
   AttackEnergyValidatorService,
   TrainerEffectExecutorService,
   TrainerEffectValidatorService,
-    AbilityEffectExecutorService,
-    AbilityEffectValidatorService,
+  AbilityEffectExecutorService,
+  AbilityEffectValidatorService,
     StatusEffectProcessorService,
 } from './domain/services';
 import { DeckModule } from '../deck/deck.module';
