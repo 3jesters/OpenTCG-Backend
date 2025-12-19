@@ -17,6 +17,7 @@ import { PlayerGameState } from '../../domain/value-objects/player-game-state.va
 import { CardInstance } from '../../domain/value-objects/card-instance.value-object';
 import { StatusEffect, PokemonPosition } from '../../domain/enums';
 import { TurnPhase } from '../../domain/enums/turn-phase.enum';
+import { ActionHandlerFactory } from '../handlers/action-handler-factory';
 import { PlayerIdentifier } from '../../domain/enums/player-identifier.enum';
 import { Attack } from '../../../card/domain/value-objects/attack.value-object';
 import { AttackEffectFactory } from '../../../card/domain/value-objects/attack-effect.value-object';
@@ -33,6 +34,9 @@ import { TrainerEffectExecutorService } from '../../domain/services/trainer-effe
 import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
 import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
 import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
+import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
+import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
+import { PlayerActionType } from '../../domain/enums/player-action-type.enum';
 import { CardMapper } from '../../../card/presentation/mappers/card.mapper';
 import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.value-object';
 
@@ -129,6 +133,120 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         {
           provide: AbilityEffectValidatorService,
           useValue: {},
+        },
+        {
+          provide: StatusEffectProcessorService,
+          useValue: {
+            processBetweenTurnsStatusEffects: jest.fn().mockImplementation(
+              async (gameState, matchId) => {
+                // Process status effects: apply poison (10) and burn (20) damage
+                let updatedGameState = gameState;
+                
+                // Process both players
+                for (const playerId of [PlayerIdentifier.PLAYER1, PlayerIdentifier.PLAYER2]) {
+                  const playerState = gameState.getPlayerState(playerId);
+                  let updatedPlayerState = playerState;
+                  
+                  if (playerState.activePokemon) {
+                    let updatedActive = playerState.activePokemon;
+                    let hpChanged = false;
+                    
+                    // Apply poison damage
+                    if (updatedActive.hasStatusEffect(StatusEffect.POISONED)) {
+                      const poisonDamage = updatedActive.poisonDamageAmount || 10;
+                      const newHp = Math.max(0, updatedActive.currentHp - poisonDamage);
+                      updatedActive = updatedActive.withHp(newHp);
+                      hpChanged = true;
+                    }
+                    
+                    // Apply burn damage
+                    if (updatedActive.hasStatusEffect(StatusEffect.BURNED)) {
+                      const burnDamage = 20;
+                      const newHp = Math.max(0, updatedActive.currentHp - burnDamage);
+                      updatedActive = updatedActive.withHp(newHp);
+                      hpChanged = true;
+                    }
+                    
+                    // Clear paralyzed status
+                    if (updatedActive.hasStatusEffect(StatusEffect.PARALYZED)) {
+                      updatedActive = updatedActive.withStatusEffectRemoved(StatusEffect.PARALYZED);
+                    }
+                    
+                    if (hpChanged || updatedActive !== playerState.activePokemon) {
+                      updatedPlayerState = updatedPlayerState.withActivePokemon(updatedActive);
+                    }
+                    
+                    // Process bench Pokemon
+                    const updatedBench = playerState.bench.map((benchPokemon) => {
+                      let updated = benchPokemon;
+                      
+                      if (benchPokemon.hasStatusEffect(StatusEffect.POISONED)) {
+                        const poisonDamage = benchPokemon.poisonDamageAmount || 10;
+                        const newHp = Math.max(0, updated.currentHp - poisonDamage);
+                        updated = updated.withHp(newHp);
+                      }
+                      
+                      if (benchPokemon.hasStatusEffect(StatusEffect.BURNED)) {
+                        const burnDamage = 20;
+                        const newHp = Math.max(0, updated.currentHp - burnDamage);
+                        updated = updated.withHp(newHp);
+                      }
+                      
+                      return updated;
+                    });
+                    
+                    if (updatedBench.some((p, i) => p !== playerState.bench[i])) {
+                      updatedPlayerState = updatedPlayerState.withBench(updatedBench);
+                    }
+                    
+                    if (updatedPlayerState !== playerState) {
+                      if (playerId === PlayerIdentifier.PLAYER1) {
+                        updatedGameState = updatedGameState.withPlayer1State(updatedPlayerState);
+                      } else {
+                        updatedGameState = updatedGameState.withPlayer2State(updatedPlayerState);
+                      }
+                    }
+                  }
+                }
+                
+                return updatedGameState;
+              },
+            ),
+          },
+        },
+        {
+          provide: ActionHandlerFactory,
+          useFactory: (
+            matchRepo: IMatchRepository,
+            stateMachine: MatchStateMachineService,
+            getCardUseCase: IGetCardByIdUseCase,
+            statusEffectProcessor: StatusEffectProcessorService,
+          ) => {
+            const factory = new ActionHandlerFactory();
+            // Create real END_TURN handler for tests
+            const endTurnHandler = new EndTurnActionHandler(
+              matchRepo,
+              stateMachine,
+              getCardUseCase,
+              statusEffectProcessor,
+            );
+            factory.registerHandler(PlayerActionType.END_TURN, endTurnHandler);
+            // For other actions, return false (use old code)
+            const originalHasHandler = factory.hasHandler.bind(factory);
+            factory.hasHandler = jest.fn().mockImplementation((actionType) => {
+              if (actionType === PlayerActionType.END_TURN) {
+                return true;
+              }
+              return false; // Use old code for other actions
+            });
+            return factory;
+          },
+          inject: [
+            IMatchRepository,
+            MatchStateMachineService,
+            IGetCardByIdUseCase,
+            StatusEffectProcessorService,
+          ],
         },
       ],
     }).compile();

@@ -13,6 +13,7 @@ import { TrainerEffectExecutorService } from '../../domain/services/trainer-effe
 import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
 import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
 import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
+import { ActionHandlerFactory } from '../handlers/action-handler-factory';
 import { Match } from '../../domain/entities/match.entity';
 import { PlayerIdentifier } from '../../domain/enums/player-identifier.enum';
 import { MatchState } from '../../domain/enums/match-state.enum';
@@ -193,6 +194,13 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         {
           provide: AbilityEffectValidatorService,
           useValue: {},
+        },
+        {
+          provide: ActionHandlerFactory,
+          useValue: {
+            hasHandler: jest.fn().mockReturnValue(false),
+            getHandler: jest.fn(),
+          },
         },
       ],
     }).compile();

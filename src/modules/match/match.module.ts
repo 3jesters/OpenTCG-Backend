@@ -29,12 +29,32 @@ import {
   AttackEnergyValidatorService,
   TrainerEffectExecutorService,
   TrainerEffectValidatorService,
-  AbilityEffectExecutorService,
-  AbilityEffectValidatorService,
+    AbilityEffectExecutorService,
+    AbilityEffectValidatorService,
+    StatusEffectProcessorService,
 } from './domain/services';
 import { DeckModule } from '../deck/deck.module';
 import { CardModule } from '../card/card.module';
 import { TournamentModule } from '../tournament/tournament.module';
+import { ActionHandlerFactory } from './application/handlers/action-handler-factory';
+import {
+  ConcedeActionHandler,
+  ApproveMatchActionHandler,
+  DrawInitialCardsActionHandler,
+  SetPrizeCardsActionHandler,
+  SetActivePokemonSetupActionHandler,
+  PlayPokemonSetupActionHandler,
+  CompleteInitialSetupActionHandler,
+  ConfirmFirstPlayerActionHandler,
+  DrawCardActionHandler,
+  SelectPrizeActionHandler,
+  PlayTrainerActionHandler,
+  UseAbilityActionHandler,
+  EndTurnActionHandler,
+  GenerateCoinFlipActionHandler,
+  AttackActionHandler,
+} from './application/handlers/handlers';
+import { PlayerActionType } from './domain/enums';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
 const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
@@ -79,6 +99,115 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     TrainerEffectValidatorService,
     AbilityEffectExecutorService,
     AbilityEffectValidatorService,
+    // Action Handlers (Strategy Pattern)
+    ActionHandlerFactory,
+    ConcedeActionHandler,
+    ApproveMatchActionHandler,
+    DrawInitialCardsActionHandler,
+    SetPrizeCardsActionHandler,
+    SetActivePokemonSetupActionHandler,
+    PlayPokemonSetupActionHandler,
+    CompleteInitialSetupActionHandler,
+    ConfirmFirstPlayerActionHandler,
+    DrawCardActionHandler,
+    SelectPrizeActionHandler,
+    PlayTrainerActionHandler,
+    UseAbilityActionHandler,
+    EndTurnActionHandler,
+    GenerateCoinFlipActionHandler,
+    AttackActionHandler,
+    StatusEffectProcessorService,
+    // Register handlers in factory
+    {
+      provide: 'ACTION_HANDLER_REGISTRATION',
+      useFactory: (
+        factory: ActionHandlerFactory,
+        concedeHandler: ConcedeActionHandler,
+        approveMatchHandler: ApproveMatchActionHandler,
+        drawInitialCardsHandler: DrawInitialCardsActionHandler,
+        setPrizeCardsHandler: SetPrizeCardsActionHandler,
+        setActivePokemonSetupHandler: SetActivePokemonSetupActionHandler,
+        playPokemonSetupHandler: PlayPokemonSetupActionHandler,
+        completeInitialSetupHandler: CompleteInitialSetupActionHandler,
+        confirmFirstPlayerHandler: ConfirmFirstPlayerActionHandler,
+        drawCardHandler: DrawCardActionHandler,
+        selectPrizeHandler: SelectPrizeActionHandler,
+        playTrainerHandler: PlayTrainerActionHandler,
+        useAbilityHandler: UseAbilityActionHandler,
+        endTurnHandler: EndTurnActionHandler,
+        generateCoinFlipHandler: GenerateCoinFlipActionHandler,
+        attackHandler: AttackActionHandler,
+      ) => {
+        factory.registerHandler(PlayerActionType.CONCEDE, concedeHandler);
+        factory.registerHandler(
+          PlayerActionType.APPROVE_MATCH,
+          approveMatchHandler,
+        );
+        factory.registerHandler(
+          PlayerActionType.DRAW_INITIAL_CARDS,
+          drawInitialCardsHandler,
+        );
+        factory.registerHandler(
+          PlayerActionType.SET_PRIZE_CARDS,
+          setPrizeCardsHandler,
+        );
+        factory.registerHandler(
+          PlayerActionType.SET_ACTIVE_POKEMON,
+          setActivePokemonSetupHandler,
+        );
+        factory.registerHandler(
+          PlayerActionType.PLAY_POKEMON,
+          playPokemonSetupHandler,
+        );
+        factory.registerHandler(
+          PlayerActionType.COMPLETE_INITIAL_SETUP,
+          completeInitialSetupHandler,
+        );
+        factory.registerHandler(
+          PlayerActionType.CONFIRM_FIRST_PLAYER,
+          confirmFirstPlayerHandler,
+        );
+        factory.registerHandler(PlayerActionType.DRAW_CARD, drawCardHandler);
+        factory.registerHandler(
+          PlayerActionType.SELECT_PRIZE,
+          selectPrizeHandler,
+        );
+        factory.registerHandler(
+          PlayerActionType.DRAW_PRIZE,
+          selectPrizeHandler,
+        ); // Alias
+        factory.registerHandler(
+          PlayerActionType.PLAY_TRAINER,
+          playTrainerHandler,
+        );
+        factory.registerHandler(PlayerActionType.USE_ABILITY, useAbilityHandler);
+        factory.registerHandler(PlayerActionType.END_TURN, endTurnHandler);
+        factory.registerHandler(
+          PlayerActionType.GENERATE_COIN_FLIP,
+          generateCoinFlipHandler,
+        );
+        factory.registerHandler(PlayerActionType.ATTACK, attackHandler);
+        return true;
+      },
+      inject: [
+        ActionHandlerFactory,
+        ConcedeActionHandler,
+        ApproveMatchActionHandler,
+        DrawInitialCardsActionHandler,
+        SetPrizeCardsActionHandler,
+        SetActivePokemonSetupActionHandler,
+        PlayPokemonSetupActionHandler,
+        CompleteInitialSetupActionHandler,
+        ConfirmFirstPlayerActionHandler,
+        DrawCardActionHandler,
+        SelectPrizeActionHandler,
+        PlayTrainerActionHandler,
+        UseAbilityActionHandler,
+        EndTurnActionHandler,
+        GenerateCoinFlipActionHandler,
+        AttackActionHandler,
+      ],
+    },
     // Repository - conditionally provide based on NODE_ENV
     {
       provide: IMatchRepository,

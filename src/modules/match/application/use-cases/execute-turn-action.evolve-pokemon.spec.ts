@@ -14,6 +14,9 @@ import { TrainerEffectExecutorService } from '../../domain/services/trainer-effe
 import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
 import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
 import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
+import { ActionHandlerFactory } from '../handlers/action-handler-factory';
+import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
+import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
 import { Match } from '../../domain/entities/match.entity';
 import { PlayerIdentifier } from '../../domain/enums/player-identifier.enum';
 import { MatchState } from '../../domain/enums/match-state.enum';
@@ -210,6 +213,48 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         {
           provide: AbilityEffectValidatorService,
           useValue: mockAbilityEffectValidator,
+        },
+        {
+          provide: StatusEffectProcessorService,
+          useValue: {
+            processBetweenTurnsStatusEffects: jest.fn().mockImplementation(
+              async (gameState) => gameState,
+            ),
+          },
+        },
+        {
+          provide: ActionHandlerFactory,
+          useFactory: (
+            matchRepo: IMatchRepository,
+            stateMachine: MatchStateMachineService,
+            getCardUseCase: IGetCardByIdUseCase,
+            statusEffectProcessor: StatusEffectProcessorService,
+          ) => {
+            const factory = new ActionHandlerFactory();
+            // Create real END_TURN handler for tests
+            const endTurnHandler = new EndTurnActionHandler(
+              matchRepo,
+              stateMachine,
+              getCardUseCase,
+              statusEffectProcessor,
+            );
+            factory.registerHandler(PlayerActionType.END_TURN, endTurnHandler);
+            // For other actions, return false (use old code)
+            const originalHasHandler = factory.hasHandler.bind(factory);
+            factory.hasHandler = jest.fn().mockImplementation((actionType) => {
+              if (actionType === PlayerActionType.END_TURN) {
+                return true;
+              }
+              return false; // Use old code for other actions
+            });
+            return factory;
+          },
+          inject: [
+            IMatchRepository,
+            MatchStateMachineService,
+            IGetCardByIdUseCase,
+            StatusEffectProcessorService,
+          ],
         },
       ],
     }).compile();

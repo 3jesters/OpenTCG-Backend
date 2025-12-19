@@ -67,6 +67,7 @@ import type {
 import { AttackEffectFactory } from '../../../card/domain/value-objects/attack-effect.value-object';
 import { ConditionFactory } from '../../../card/domain/value-objects/condition.value-object';
 import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.value-object';
+import { ActionHandlerFactory } from '../handlers/action-handler-factory';
 
 /**
  * Execute Turn Action Use Case
@@ -93,6 +94,7 @@ export class ExecuteTurnActionUseCase {
     private readonly trainerEffectValidator: TrainerEffectValidatorService,
     private readonly abilityEffectExecutor: AbilityEffectExecutorService,
     private readonly abilityEffectValidator: AbilityEffectValidatorService,
+    private readonly actionHandlerFactory: ActionHandlerFactory,
   ) {}
 
   /**
@@ -332,79 +334,37 @@ export class ExecuteTurnActionUseCase {
         ? await this.getCardByIdUseCase.getCardsByIds(Array.from(cardIds))
         : new Map<string, Card>();
 
-    // Handle concede
-    if (dto.actionType === PlayerActionType.CONCEDE) {
-      const gameState = match.gameState;
-      if (!gameState) {
-        throw new BadRequestException('Game state must be initialized');
-      }
-
-      // CONCEDE must always be the last action - check if there are any actions after a previous CONCEDE
-      if (this.hasConcedeAction(gameState)) {
-        throw new BadRequestException(
-          'Cannot perform actions after CONCEDE. CONCEDE must be the last action.',
-        );
-      }
-
-      // Record CONCEDE action in history before ending match
-      const concedeAction = new ActionSummary(
-        uuidv4(),
-        playerIdentifier,
-        PlayerActionType.CONCEDE,
-        new Date(),
-        {},
-      );
-
-      const gameStateWithConcede = gameState.withAction(concedeAction);
-      match.updateGameState(gameStateWithConcede);
-
-      const opponentId = match.getOpponentId(dto.playerId);
-      if (opponentId) {
-        match.endMatch(
-          opponentId,
-          playerIdentifier === PlayerIdentifier.PLAYER1
-            ? MatchResult.PLAYER2_WIN
-            : MatchResult.PLAYER1_WIN,
-          WinCondition.CONCEDE,
-        );
-      }
-      return await this.matchRepository.save(match);
+    const gameState = match.gameState;
+    if (!gameState) {
+      throw new BadRequestException('Game state must be initialized');
     }
 
-    // Handle approve match
-    if (dto.actionType === PlayerActionType.APPROVE_MATCH) {
+    // Route to handler if available
+    if (this.actionHandlerFactory.hasHandler(dto.actionType)) {
+      const handler = this.actionHandlerFactory.getHandler(dto.actionType);
       try {
-        match.approveMatch(playerIdentifier);
+        return await handler.execute(
+          dto,
+          match,
+          gameState,
+          playerIdentifier,
+          this.cardsMap,
+        );
       } catch (error) {
-        // Check if player has already approved
+        // ATTACK handler delegates back - allow fallthrough
         if (
-          error instanceof Error &&
-          (error.message.includes('has already approved') ||
-            error.message.includes('already approved'))
+          error instanceof BadRequestException &&
+          (error.message.includes('not yet implemented') ||
+            error.message.includes('delegating to use case'))
         ) {
-          throw new BadRequestException(error.message);
+          // Fall through to old implementation
+        } else {
+          throw error;
         }
-        // Re-throw other errors
-        throw error;
       }
-      // After both approve, match transitions directly to DRAWING_CARDS
-      // Coin toss will happen after both players complete initial setup
-      return await this.matchRepository.save(match);
     }
 
-    // Handle draw initial cards
-    if (dto.actionType === PlayerActionType.DRAW_INITIAL_CARDS) {
-      const result = await this.drawInitialCardsUseCase.execute(
-        dto.matchId,
-        dto.playerId,
-      );
-      return result.match;
-    }
-
-    // Handle set prize cards
-    if (dto.actionType === PlayerActionType.SET_PRIZE_CARDS) {
-      return await this.setPrizeCardsUseCase.execute(dto.matchId, dto.playerId);
-    }
+    // Setup actions are handled by handlers - no fallback needed
 
     // Handle set active Pokemon in SELECT_ACTIVE_POKEMON state or after knockout
     if (
@@ -760,101 +720,11 @@ export class ExecuteTurnActionUseCase {
         throw new BadRequestException('Game state must be initialized');
       }
 
-      // Handle DRAW_CARD action
-      if (dto.actionType === PlayerActionType.DRAW_CARD) {
-        if (gameState.phase !== TurnPhase.DRAW) {
-          throw new BadRequestException(
-            `Cannot draw card in phase ${gameState.phase}. Must be DRAW`,
-          );
-        }
+      // DRAW_CARD is handled by handler - no fallback needed
 
-        const playerState = gameState.getPlayerState(playerIdentifier);
-
-        // Check if deck has cards
-        if (playerState.deck.length === 0) {
-          // Check win conditions before throwing error (deck out = opponent wins)
-          const winCheck = this.stateMachineService.checkWinConditions(
-            gameState.player1State,
-            gameState.player2State,
-          );
-          if (winCheck.hasWinner && winCheck.winner) {
-            const winnerId =
-              winCheck.winner === PlayerIdentifier.PLAYER1
-                ? match.player1Id!
-                : match.player2Id!;
-            match.endMatch(
-              winnerId,
-              winCheck.winner === PlayerIdentifier.PLAYER1
-                ? MatchResult.PLAYER1_WIN
-                : MatchResult.PLAYER2_WIN,
-              winCheck.winCondition as WinCondition,
-            );
-            return await this.matchRepository.save(match);
-          }
-          throw new BadRequestException('Cannot draw card: deck is empty');
-        }
-
-        // Draw top card from deck
-        const deckCopy = [...playerState.deck];
-        const drawnCard = deckCopy.shift()!;
-        const updatedHand = [...playerState.hand, drawnCard];
-
-        // Update player state
-        const updatedPlayerState = new PlayerGameState(
-          deckCopy,
-          updatedHand,
-          playerState.activePokemon,
-          playerState.bench,
-          playerState.prizeCards,
-          playerState.discardPile,
-          playerState.hasAttachedEnergyThisTurn,
-        );
-
-        // Update game state with new player state and phase transition
-        const updatedGameState =
-          playerIdentifier === PlayerIdentifier.PLAYER1
-            ? gameState
-                .withPlayer1State(updatedPlayerState)
-                .withPhase(TurnPhase.MAIN_PHASE)
-            : gameState
-                .withPlayer2State(updatedPlayerState)
-                .withPhase(TurnPhase.MAIN_PHASE);
-
-        // Create action summary (store drawn card for reversibility)
-        const actionSummary = new ActionSummary(
-          uuidv4(),
-          playerIdentifier,
-          PlayerActionType.DRAW_CARD,
-          new Date(),
-          { cardId: drawnCard },
-        );
-
-        const finalGameState = updatedGameState.withAction(actionSummary);
-
-        // Update match
-        match.updateGameState(finalGameState);
-
-        // Check win conditions
-        const winCheck = this.stateMachineService.checkWinConditions(
-          finalGameState.player1State,
-          finalGameState.player2State,
-        );
-        if (winCheck.hasWinner && winCheck.winner) {
-          const winnerId =
-            winCheck.winner === PlayerIdentifier.PLAYER1
-              ? match.player1Id!
-              : match.player2Id!;
-          match.endMatch(
-            winnerId,
-            winCheck.winner === PlayerIdentifier.PLAYER1
-              ? MatchResult.PLAYER1_WIN
-              : MatchResult.PLAYER2_WIN,
-            winCheck.winCondition as WinCondition,
-          );
-        }
-
-        return await this.matchRepository.save(match);
-      }
+      // Actions without handlers yet - keep old implementation
+      // ATTACH_ENERGY, EVOLVE_POKEMON, PLAY_POKEMON (main phase), RETREAT
+      // ATTACK (handler not fully implemented)
 
       // Handle ATTACH_ENERGY action
       if (dto.actionType === PlayerActionType.ATTACH_ENERGY) {
@@ -1195,348 +1065,35 @@ export class ExecuteTurnActionUseCase {
         return await this.matchRepository.save(match);
       }
 
-      // Handle END_TURN action
-      if (dto.actionType === PlayerActionType.END_TURN) {
-        // Prevent ending turn in DRAW phase before drawing a card
-        if (gameState.phase === TurnPhase.DRAW) {
-          throw new BadRequestException(
-            'Cannot end turn. You must draw a card before ending your turn.',
-          );
-        }
+      // END_TURN and PLAY_TRAINER are handled by handlers - no fallback needed
 
-        // END_TURN must come after RETREAT (if RETREAT was performed) or after ATTACK (if no RETREAT)
-        const hasRetreat = this.hasRetreatInCurrentTurn(
-          gameState,
-          playerIdentifier,
-        );
-        const hasAttack = this.hasAttackInCurrentTurn(
-          gameState,
-          playerIdentifier,
-        );
-
-        if (hasRetreat) {
-          // If RETREAT was performed, END_TURN must come after it
-          // Check the order: find the last RETREAT action and ensure no END_TURN comes before it
-          const currentTurnActions = this.getCurrentTurnActions(
-            gameState,
-            playerIdentifier,
-          );
-          let lastRetreatIndex = -1;
-          for (let i = currentTurnActions.length - 1; i >= 0; i--) {
-            if (currentTurnActions[i].actionType === PlayerActionType.RETREAT) {
-              lastRetreatIndex = i;
-              break;
-            }
-          }
-
-          // If RETREAT exists, check if there's an END_TURN before it
-          if (lastRetreatIndex >= 0) {
-            const hasEndTurnBeforeRetreat = currentTurnActions
-              .slice(0, lastRetreatIndex)
-              .some(
-                (action) => action.actionType === PlayerActionType.END_TURN,
-              );
-
-            if (hasEndTurnBeforeRetreat) {
-              throw new BadRequestException(
-                'Cannot end turn. END_TURN must come after RETREAT in the action sequence.',
-              );
-            }
-          }
-        } else if (hasAttack) {
-          // If no RETREAT but ATTACK exists, END_TURN can come after ATTACK
-          // This is valid, so we allow it
-        }
-        // If neither RETREAT nor ATTACK exists, END_TURN is still valid (player can end turn without attacking)
-
-        // Check if a knockout occurred and prize needs to be selected
-        const lastAction = gameState.lastAction;
-        if (
-          lastAction &&
-          lastAction.actionType === PlayerActionType.ATTACK &&
-          lastAction.actionData?.isKnockedOut === true &&
-          lastAction.playerId === playerIdentifier
-        ) {
-          // Check if prize was already selected (look for SELECT_PRIZE action after the ATTACK)
-          const prizeSelected = gameState.actionHistory.some(
-            (action, index) =>
-              index > gameState.actionHistory.indexOf(lastAction) &&
-              action.actionType === PlayerActionType.SELECT_PRIZE &&
-              action.playerId === playerIdentifier,
-          );
-
-          if (!prizeSelected) {
-            throw new BadRequestException(
-              'Cannot end turn. You must select a prize card after knocking out an opponent Pokemon.',
+      // ATTACK handler delegates back for full implementation - keep old code
+      if (dto.actionType === PlayerActionType.ATTACK) {
+        if (this.actionHandlerFactory.hasHandler(dto.actionType)) {
+          const handler = this.actionHandlerFactory.getHandler(dto.actionType);
+          try {
+            return await handler.execute(
+              dto,
+              match,
+              gameState,
+              playerIdentifier,
+              this.cardsMap,
             );
-          }
-        }
-
-        // Prevent ending turn if opponent needs to select active Pokemon
-        if (gameState.phase === TurnPhase.SELECT_ACTIVE_POKEMON) {
-          const opponentState = gameState.getOpponentState(playerIdentifier);
-          const opponentNeedsActive =
-            opponentState.activePokemon === null &&
-            opponentState.bench.length > 0;
-
-          if (opponentNeedsActive) {
-            throw new BadRequestException(
-              'Cannot end turn. Opponent must select an active Pokemon from their bench before you can end your turn.',
-            );
-          }
-        }
-
-        // Create action summary for ending turn
-        const actionSummary = new ActionSummary(
-          uuidv4(),
-          playerIdentifier,
-          PlayerActionType.END_TURN,
-          new Date(),
-          {},
-        );
-
-        // Add action to current game state before ending turn
-        const gameStateWithAction = gameState.withAction(actionSummary);
-        match.updateGameState(gameStateWithAction);
-
-        // End current turn (transitions to BETWEEN_TURNS)
-        match.endTurn();
-
-        // Process between turns (switch to next player)
-        const nextPlayer =
-          gameState.currentPlayer === PlayerIdentifier.PLAYER1
-            ? PlayerIdentifier.PLAYER2
-            : PlayerIdentifier.PLAYER1;
-
-        const nextTurnNumber = gameState.turnNumber + 1;
-
-        // Reset energy attachment flags for both players when new turn starts
-        const resetPlayer1State =
-          gameState.player1State.withHasAttachedEnergyThisTurn(false);
-        const resetPlayer2State =
-          gameState.player2State.withHasAttachedEnergyThisTurn(false);
-
-        // Reset ability usage for the player whose turn just ended
-        const gameStateWithResetAbilityUsage =
-          gameStateWithAction.resetAbilityUsage(playerIdentifier);
-
-        // Create new game state for next turn (DRAW phase)
-        // Use the END_TURN action as the last action (it's already in history)
-        const nextGameState = new GameState(
-          resetPlayer1State,
-          resetPlayer2State,
-          nextTurnNumber,
-          TurnPhase.DRAW,
-          nextPlayer,
-          actionSummary, // Last action is the END_TURN we just created
-          gameStateWithAction.actionHistory, // Keep history including END_TURN
-          null, // coinFlipState
-          gameStateWithResetAbilityUsage.abilityUsageThisTurn, // Preserve ability usage tracking
-        );
-
-        // Process status effects between turns (poison, burn, sleep wake-up, paralyze clear)
-        const gameStateWithStatusEffects =
-          await this.processBetweenTurnsStatusEffects(nextGameState, match.id);
-
-        // Clear expired damage prevention/reduction effects
-        const gameStateWithClearedEffects =
-          gameStateWithStatusEffects.clearExpiredDamagePrevention(
-            nextTurnNumber,
-          );
-
-        // Process between turns (transitions back to PLAYER_TURN)
-        match.processBetweenTurns(gameStateWithClearedEffects);
-
-        // Check win conditions
-        const winCheck = this.stateMachineService.checkWinConditions(
-          nextGameState.player1State,
-          nextGameState.player2State,
-        );
-        if (winCheck.hasWinner && winCheck.winner) {
-          const winnerId =
-            winCheck.winner === PlayerIdentifier.PLAYER1
-              ? match.player1Id!
-              : match.player2Id!;
-          match.endMatch(
-            winnerId,
-            winCheck.winner === PlayerIdentifier.PLAYER1
-              ? MatchResult.PLAYER1_WIN
-              : MatchResult.PLAYER2_WIN,
-            winCheck.winCondition as WinCondition,
-          );
-        }
-
-        return await this.matchRepository.save(match);
-      }
-
-      // Handle PLAY_TRAINER action
-      if (dto.actionType === PlayerActionType.PLAY_TRAINER) {
-        const actionData = dto.actionData as unknown as TrainerActionData;
-        const cardId = actionData.cardId;
-
-        if (gameState.phase !== TurnPhase.MAIN_PHASE) {
-          throw new BadRequestException(
-            `Cannot play trainer card in phase ${gameState.phase}. Must be MAIN_PHASE`,
-          );
-        }
-
-        if (!cardId) {
-          throw new BadRequestException('cardId is required');
-        }
-
-        const playerState = gameState.getPlayerState(playerIdentifier);
-        const opponentState = gameState.getOpponentState(playerIdentifier);
-
-        // Check if trainer card is in hand
-        if (!playerState.hand.includes(cardId)) {
-          throw new BadRequestException('Trainer card must be in hand');
-        }
-
-        // Find the index of the played card in hand (first occurrence)
-        // This is needed to prevent selecting the same card when discarding
-        const playedCardIndex = playerState.hand.indexOf(cardId);
-
-        // Get card from batch-loaded map to determine trainer effect
-        let card = this.cardsMap.get(cardId);
-        if (!card) {
-          // Fallback to individual query if not in map
-          card = await this.getCardByIdUseCase.getCardEntity(cardId);
-        }
-
-        if (card.cardType !== CardType.TRAINER) {
-          throw new BadRequestException('Card must be a trainer card');
-        }
-
-        if (
-          !card.trainerEffects ||
-          card.trainerEffects.length === 0
-        ) {
-          throw new BadRequestException(
-            'Trainer card must have trainerEffects',
-          );
-        }
-
-        // Validate that if trainer requires discarding from hand,
-        // the selected card is not the same trainer card that was just played
-        const hasDiscardHandEffect = card.trainerEffects.some(
-          (effect) => effect.effectType === 'DISCARD_HAND',
-        );
-
-        if (
-          hasDiscardHandEffect &&
-          'handCardId' in actionData &&
-          actionData.handCardId
-        ) {
-          // Validate that the selected card is in hand
-          if (!playerState.hand.includes(actionData.handCardId)) {
-            throw new BadRequestException('Selected card must be in hand');
-          }
-
-          // Prevent selecting the same trainer card that was just played
-          // If handCardIndex is provided, use it to check the exact position
-          // Otherwise, if the selected cardId matches the played cardId,
-          // check if it's the first occurrence (the one being played)
-          if (actionData.handCardId === cardId) {
-            let selectedIndex: number;
-
-            if (actionData.handCardIndex !== undefined) {
-              // Use provided index if available
-              selectedIndex = actionData.handCardIndex;
-              if (
-                selectedIndex < 0 ||
-                selectedIndex >= playerState.hand.length
-              ) {
-                throw new BadRequestException('Invalid handCardIndex');
-              }
-              if (playerState.hand[selectedIndex] !== actionData.handCardId) {
-                throw new BadRequestException(
-                  'handCardId does not match card at handCardIndex',
-                );
-              }
+          } catch (error) {
+            // Handler delegates back - fall through to old implementation
+            if (
+              error instanceof BadRequestException &&
+              error.message.includes('not yet implemented')
+            ) {
+              // Fall through to old implementation
             } else {
-              // Fallback: find first occurrence (may not be accurate if multiple copies exist)
-              selectedIndex = playerState.hand.indexOf(actionData.handCardId);
-            }
-
-            // Prevent selecting the card at the same index as the played card
-            // This prevents selecting the first occurrence (the one being played)
-            // but allows selecting other copies if they exist at different positions
-            if (selectedIndex === playedCardIndex) {
-              throw new BadRequestException(
-                'Cannot select the same trainer card that was just played',
-              );
+              throw error;
             }
           }
         }
-
-        // Validate actionData based on trainer effects
-        const validation = this.trainerEffectValidator.validateActionData(
-          card.trainerEffects,
-          actionData,
-          gameState,
-          playerIdentifier,
-        );
-
-        if (!validation.isValid) {
-          throw new BadRequestException(
-            `Invalid actionData: ${validation.errors.join(', ')}`,
-          );
-        }
-
-        // Execute trainer effects using metadata-driven executor
-        const result = await this.trainerEffectExecutor.executeEffects(
-          card.trainerEffects,
-          actionData,
-          gameState,
-          playerIdentifier,
-          this.cardsMap,
-        );
-
-        // Remove trainer card from hand and add to discard pile
-        // Note: For cards with DISCARD_HAND/RETRIEVE_ENERGY, hand may have already been updated
-        // Remove only the first occurrence of the played card (to handle duplicates correctly)
-        const updatedHand = [...result.playerState.hand];
-        const cardIndexInUpdatedHand = updatedHand.indexOf(cardId);
-        if (cardIndexInUpdatedHand === -1) {
-          // Card might have been removed by an effect (shouldn't happen, but handle gracefully)
-          this.logger.warn(
-            `Played trainer card ${cardId} not found in hand after effects executed. Hand: ${updatedHand.join(', ')}`,
-          );
-          // Continue without removing (card was already removed by effect)
-        } else {
-          updatedHand.splice(cardIndexInUpdatedHand, 1);
-        }
-        const finalHand = updatedHand;
-        const finalDiscardPile = [...result.playerState.discardPile, cardId];
-        const finalPlayerState = result.playerState
-          .withHand(finalHand)
-          .withDiscardPile(finalDiscardPile);
-
-        // Update game state
-        const updatedGameState =
-          playerIdentifier === PlayerIdentifier.PLAYER1
-            ? gameState
-                .withPlayer1State(finalPlayerState)
-                .withPlayer2State(result.opponentState)
-            : gameState
-                .withPlayer2State(finalPlayerState)
-                .withPlayer1State(result.opponentState);
-
-        const actionSummary = new ActionSummary(
-          uuidv4(),
-          playerIdentifier,
-          PlayerActionType.PLAY_TRAINER,
-          new Date(),
-          actionData as unknown as Record<string, unknown>,
-        );
-
-        const finalGameState = updatedGameState.withAction(actionSummary);
-        match.updateGameState(finalGameState);
-
-        return await this.matchRepository.save(match);
       }
 
-      // Handle ATTACK action
+      // Handle ATTACK action (old implementation - handler delegates back)
       if (dto.actionType === PlayerActionType.ATTACK) {
         // Get game state for this action
         let gameState = match.gameState;
@@ -2378,7 +1935,33 @@ export class ExecuteTurnActionUseCase {
         return await this.matchRepository.save(match);
       }
 
-      // Handle GENERATE_COIN_FLIP action
+      // GENERATE_COIN_FLIP handler delegates back for confusion case - keep old code
+      if (dto.actionType === PlayerActionType.GENERATE_COIN_FLIP) {
+        if (this.actionHandlerFactory.hasHandler(dto.actionType)) {
+          const handler = this.actionHandlerFactory.getHandler(dto.actionType);
+          try {
+            return await handler.execute(
+              dto,
+              match,
+              gameState,
+              playerIdentifier,
+              this.cardsMap,
+            );
+          } catch (error) {
+            // Handler delegates back for confusion - fall through to old code
+            if (
+              error instanceof BadRequestException &&
+              error.message.includes('delegating to use case')
+            ) {
+              // Fall through to old implementation
+            } else {
+              throw error;
+            }
+          }
+        }
+      }
+
+      // Handle GENERATE_COIN_FLIP action (old implementation - confusion case delegates back)
       if (dto.actionType === PlayerActionType.GENERATE_COIN_FLIP) {
         // Validate coin flip state exists
         if (!gameState.coinFlipState) {
@@ -4491,249 +4074,7 @@ export class ExecuteTurnActionUseCase {
         }
       }
 
-      // Handle SELECT_PRIZE or DRAW_PRIZE action (when opponent Pokemon is knocked out)
-      // DRAW_PRIZE is an alias for SELECT_PRIZE for client compatibility
-      if (
-        dto.actionType === PlayerActionType.SELECT_PRIZE ||
-        dto.actionType === PlayerActionType.DRAW_PRIZE
-      ) {
-        const playerState = gameState.getPlayerState(playerIdentifier);
-
-        if (playerState.prizeCards.length === 0) {
-          throw new BadRequestException('No prize cards remaining');
-        }
-
-        // Validate that a knockout occurred and it's the attacker's turn
-        const lastAction = gameState.lastAction;
-        if (
-          !lastAction ||
-          lastAction.actionType !== PlayerActionType.ATTACK ||
-          !lastAction.actionData?.isKnockedOut ||
-          lastAction.playerId !== playerIdentifier
-        ) {
-          throw new BadRequestException(
-            'SELECT_PRIZE can only be used after knocking out an opponent Pokemon',
-          );
-        }
-
-        // Get prize index from action data (0-5)
-        const prizeIndex = (dto.actionData as any)?.prizeIndex;
-        if (
-          prizeIndex === undefined ||
-          prizeIndex < 0 ||
-          prizeIndex >= playerState.prizeCards.length
-        ) {
-          throw new BadRequestException(
-            `Invalid prizeIndex. Must be between 0 and ${playerState.prizeCards.length - 1}`,
-          );
-        }
-
-        // Select the specific prize card
-        const prizeCard = playerState.prizeCards[prizeIndex];
-        const updatedPrizeCards = playerState.prizeCards.filter(
-          (_, index) => index !== prizeIndex,
-        );
-        const updatedHand = [...playerState.hand, prizeCard];
-        const updatedPlayerState = playerState
-          .withPrizeCards(updatedPrizeCards)
-          .withHand(updatedHand);
-
-        // Update game state
-        const updatedGameState =
-          playerIdentifier === PlayerIdentifier.PLAYER1
-            ? gameState.withPlayer1State(updatedPlayerState)
-            : gameState.withPlayer2State(updatedPlayerState);
-
-        const actionSummary = new ActionSummary(
-          uuidv4(),
-          playerIdentifier,
-          PlayerActionType.SELECT_PRIZE,
-          new Date(),
-          { prizeCard, prizeIndex },
-        );
-
-        // Check if active Pokemon selection is needed after prize selection
-        // Do this BEFORE win condition check, because if opponent has bench Pokemon, they can select active
-        const opponentState =
-          updatedGameState.getOpponentState(playerIdentifier);
-        const attackerState = updatedGameState.getPlayerState(playerIdentifier);
-
-        // Check for double knockout: both players have no active Pokemon
-        const opponentNeedsActive =
-          opponentState.activePokemon === null &&
-          opponentState.bench.length > 0;
-        const attackerNeedsActive =
-          attackerState.activePokemon === null &&
-          attackerState.bench.length > 0;
-
-        // If opponent needs to select active Pokemon, don't check win conditions yet
-        // (they still have Pokemon in play, just need to select one)
-        if (!opponentNeedsActive && !attackerNeedsActive) {
-          // Check win conditions after prize selection (e.g., player collected last prize)
-          // Only check if no active Pokemon selection is needed
-          const winCheck = this.stateMachineService.checkWinConditions(
-            updatedGameState.player1State,
-            updatedGameState.player2State,
-          );
-          if (winCheck.hasWinner && winCheck.winner) {
-            const winnerId =
-              winCheck.winner === PlayerIdentifier.PLAYER1
-                ? match.player1Id!
-                : match.player2Id!;
-            match.endMatch(
-              winnerId,
-              winCheck.winner === PlayerIdentifier.PLAYER1
-                ? MatchResult.PLAYER1_WIN
-                : MatchResult.PLAYER2_WIN,
-              winCheck.winCondition as WinCondition,
-            );
-            return await this.matchRepository.save(match);
-          }
-        }
-
-        // Determine next phase based on whether active Pokemon selection is needed
-        let nextPhase: TurnPhase;
-        if (opponentNeedsActive || attackerNeedsActive) {
-          // Transition to SELECT_ACTIVE_POKEMON phase
-          nextPhase = TurnPhase.SELECT_ACTIVE_POKEMON;
-        } else {
-          // No active Pokemon selection needed, stay in END phase
-          nextPhase = TurnPhase.END;
-        }
-
-        const finalGameState = updatedGameState
-          .withPhase(nextPhase)
-          .withAction(actionSummary);
-        match.updateGameState(finalGameState);
-
-        return await this.matchRepository.save(match);
-      }
-
-      // Handle USE_ABILITY action
-      if (dto.actionType === PlayerActionType.USE_ABILITY) {
-        const actionData = dto.actionData as unknown as AbilityActionData;
-        const playerState = gameState.getPlayerState(playerIdentifier);
-
-        if (!actionData.cardId) {
-          throw new BadRequestException(
-            'cardId is required for USE_ABILITY action',
-          );
-        }
-
-        if (!actionData.target) {
-          throw new BadRequestException(
-            'target is required for USE_ABILITY action',
-          );
-        }
-
-        // Get card domain entity (needed for ability with effects)
-        const cardEntity = await this.getCardEntity(
-          actionData.cardId,
-        );
-
-        if (cardEntity.cardType !== 'POKEMON') {
-          throw new BadRequestException('Card must be a Pokemon card');
-        }
-
-        const ability = cardEntity.ability;
-        if (!ability) {
-          throw new BadRequestException('Pokemon must have an ability');
-        }
-
-        // Get Pokemon instance from game state
-        let pokemon: CardInstance | null = null;
-        if (actionData.target === 'ACTIVE') {
-          if (!playerState.activePokemon) {
-            throw new BadRequestException('No active Pokemon found');
-          }
-          pokemon = playerState.activePokemon;
-        } else {
-          const benchIndex = parseInt(actionData.target.replace('BENCH_', ''));
-          if (
-            isNaN(benchIndex) ||
-            benchIndex < 0 ||
-            benchIndex >= playerState.bench.length
-          ) {
-            throw new BadRequestException(
-              `Invalid bench position: ${actionData.target}`,
-            );
-          }
-          pokemon = playerState.bench[benchIndex];
-        }
-
-        if (!pokemon) {
-          throw new BadRequestException(
-            'Pokemon not found at specified position',
-          );
-        }
-
-        // Validate Pokemon matches cardId (or instanceId if provided)
-        if (actionData.pokemonInstanceId) {
-          if (pokemon.instanceId !== actionData.pokemonInstanceId) {
-            throw new BadRequestException('Pokemon instanceId does not match');
-          }
-        } else {
-          // Validate cardId matches
-          if (pokemon.cardId !== actionData.cardId) {
-            throw new BadRequestException('Pokemon cardId does not match');
-          }
-        }
-
-        // Validate ability can be used
-        const validation =
-          await this.abilityEffectValidator.validateAbilityUsage(
-            ability,
-            actionData,
-            pokemon,
-            gameState,
-            playerIdentifier,
-            this.cardsMap,
-          );
-
-        if (!validation.isValid) {
-          throw new BadRequestException(
-            `Invalid ability usage: ${validation.errors.join(', ')}`,
-          );
-        }
-
-        // Execute ability effects
-        const result = await this.abilityEffectExecutor.executeEffects(
-          ability,
-          actionData,
-          gameState,
-          playerIdentifier,
-          this.cardsMap,
-        );
-
-        // Update game state
-        const updatedGameState =
-          playerIdentifier === PlayerIdentifier.PLAYER1
-            ? gameState
-                .withPlayer1State(result.playerState)
-                .withPlayer2State(result.opponentState)
-            : gameState
-                .withPlayer2State(result.playerState)
-                .withPlayer1State(result.opponentState);
-
-        // Mark ability as used (for ONCE_PER_TURN tracking)
-        const gameStateWithUsage = updatedGameState.markAbilityUsed(
-          playerIdentifier,
-          actionData.cardId,
-        );
-
-        const actionSummary = new ActionSummary(
-          uuidv4(),
-          playerIdentifier,
-          PlayerActionType.USE_ABILITY,
-          new Date(),
-          actionData as unknown as Record<string, unknown>,
-        );
-
-        const finalGameState = gameStateWithUsage.withAction(actionSummary);
-        match.updateGameState(finalGameState);
-
-        return await this.matchRepository.save(match);
-      }
+      // SELECT_PRIZE and USE_ABILITY are handled by handlers - no fallback needed
 
       // Handle RETREAT action (placeholder for future implementation)
       if (dto.actionType === PlayerActionType.RETREAT) {
