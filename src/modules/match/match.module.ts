@@ -27,6 +27,9 @@ import {
   CoinFlipResolverService,
   AttackCoinFlipParserService,
   AttackEnergyValidatorService,
+  AttackDamageCalculatorService,
+  AttackTextParserService,
+  EffectConditionEvaluatorService,
   TrainerEffectExecutorService,
   TrainerEffectValidatorService,
   AbilityEffectExecutorService,
@@ -39,6 +42,12 @@ import {
   PlayPokemonExecutionService,
   AttackExecutionService,
   CoinFlipExecutionService,
+  CardHelperService,
+  SetActivePokemonPlayerTurnService,
+  AttachEnergyPlayerTurnService,
+  PlayPokemonPlayerTurnService,
+  EvolvePokemonPlayerTurnService,
+  RetreatExecutionService,
 } from './application/services';
 import { DeckModule } from '../deck/deck.module';
 import { CardModule } from '../card/card.module';
@@ -102,6 +111,9 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     CoinFlipResolverService,
     AttackCoinFlipParserService,
     AttackEnergyValidatorService,
+    AttackDamageCalculatorService,
+    AttackTextParserService,
+    EffectConditionEvaluatorService,
     TrainerEffectExecutorService,
     TrainerEffectValidatorService,
     AbilityEffectExecutorService,
@@ -113,6 +125,13 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     PlayPokemonExecutionService,
     AttackExecutionService,
     CoinFlipExecutionService,
+    CardHelperService,
+    // Player Turn Services
+    SetActivePokemonPlayerTurnService,
+    AttachEnergyPlayerTurnService,
+    PlayPokemonPlayerTurnService,
+    EvolvePokemonPlayerTurnService,
+    RetreatExecutionService,
     // Action Handlers (Strategy Pattern)
     ActionHandlerFactory,
     ConcedeActionHandler,

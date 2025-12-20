@@ -36,6 +36,7 @@ import { AbilityEffectExecutorService } from '../../domain/services/ability-effe
 import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
 import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
 import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
+import { AttackActionHandler } from '../handlers/handlers/attack-action-handler';
 import { PlayerActionType } from '../../domain/enums/player-action-type.enum';
 import {
   EnergyAttachmentExecutionService,
@@ -43,10 +44,22 @@ import {
   PlayPokemonExecutionService,
   AttackExecutionService,
   CoinFlipExecutionService,
+  CardHelperService,
+  SetActivePokemonPlayerTurnService,
+  AttachEnergyPlayerTurnService,
+  PlayPokemonPlayerTurnService,
+  EvolvePokemonPlayerTurnService,
+  RetreatExecutionService,
 } from '../services';
 import { EvolutionExecutionService as RealEvolutionExecutionService } from '../services/evolution-execution.service';
+import {
+  AttackDamageCalculatorService,
+  AttackTextParserService,
+  EffectConditionEvaluatorService,
+} from '../../domain/services';
 import { CardMapper } from '../../../card/presentation/mappers/card.mapper';
 import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.value-object';
+import { ActionSummary } from '../../domain/value-objects/action-summary.value-object';
 
 describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
   let useCase: ExecuteTurnActionUseCase;
@@ -251,15 +264,225 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         },
         {
           provide: AttackExecutionService,
-          useValue: {
-            executeAttack: jest.fn(),
-            checkCoinFlipRequired: jest.fn(),
+          useFactory: (
+            getCardUseCase: IGetCardByIdUseCase,
+            attackCoinFlipParser: AttackCoinFlipParserService,
+            attackEnergyValidator: AttackEnergyValidatorService,
+          ) => {
+            return new AttackExecutionService(
+              getCardUseCase,
+              attackCoinFlipParser,
+              attackEnergyValidator,
+            );
           },
+          inject: [
+            IGetCardByIdUseCase,
+            AttackCoinFlipParserService,
+            AttackEnergyValidatorService,
+          ],
         },
         {
           provide: CoinFlipExecutionService,
           useValue: {
             generateCoinFlip: jest.fn(),
+          },
+        },
+        {
+          provide: CardHelperService,
+          useValue: {
+            getCardEntity: jest.fn().mockImplementation(async (cardId, cardsMap) => {
+              return mockGetCardByIdUseCase.getCardEntity(cardId);
+            }),
+            getCardHp: jest.fn().mockImplementation(async (cardId, cardsMap) => {
+              const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
+              return card?.hp || 0;
+            }),
+            collectCardIds: jest.fn().mockImplementation((dto, gameState, playerIdentifier) => {
+              const cardIds = new Set<string>();
+              const actionData = dto.actionData as any;
+              
+              // Collect from actionData
+              if (actionData?.cardId) cardIds.add(actionData.cardId);
+              if (actionData?.evolutionCardId) cardIds.add(actionData.evolutionCardId);
+              if (actionData?.attackerCardId) cardIds.add(actionData.attackerCardId);
+              if (actionData?.defenderCardId) cardIds.add(actionData.defenderCardId);
+              if (actionData?.currentPokemonCardId) cardIds.add(actionData.currentPokemonCardId);
+              if (actionData?.energyId) cardIds.add(actionData.energyId);
+              if (Array.isArray(actionData?.energyIds)) {
+                actionData.energyIds.forEach((id: string) => cardIds.add(id));
+              }
+              if (Array.isArray(actionData?.cardIds)) {
+                actionData.cardIds.forEach((id: string) => cardIds.add(id));
+              }
+              
+              // Collect from gameState (matching real implementation)
+              if (gameState) {
+                const playerState = gameState.getPlayerState(playerIdentifier);
+                const opponentState = gameState.getOpponentState(playerIdentifier);
+                
+                // Player's Pokemon
+                if (playerState.activePokemon) {
+                  cardIds.add(playerState.activePokemon.cardId);
+                  if (playerState.activePokemon.attachedEnergy) {
+                    playerState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                  }
+                }
+                playerState.bench.forEach((pokemon) => {
+                  cardIds.add(pokemon.cardId);
+                  if (pokemon.attachedEnergy) {
+                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                  }
+                });
+                
+                // Player's hand, deck, discard, prize cards
+                if (playerState.hand) playerState.hand.forEach((id) => cardIds.add(id));
+                if (playerState.deck) playerState.deck.forEach((id) => cardIds.add(id));
+                if (playerState.discardPile) playerState.discardPile.forEach((id) => cardIds.add(id));
+                if (playerState.prizeCards) playerState.prizeCards.forEach((id) => cardIds.add(id));
+                
+                // Opponent's Pokemon
+                if (opponentState.activePokemon) {
+                  cardIds.add(opponentState.activePokemon.cardId);
+                  if (opponentState.activePokemon.attachedEnergy) {
+                    opponentState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                  }
+                }
+                opponentState.bench.forEach((pokemon) => {
+                  cardIds.add(pokemon.cardId);
+                  if (pokemon.attachedEnergy) {
+                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                  }
+                });
+                
+                // Opponent's hand, deck, discard, prize cards
+                if (opponentState.hand) opponentState.hand.forEach((id) => cardIds.add(id));
+                if (opponentState.deck) opponentState.deck.forEach((id) => cardIds.add(id));
+                if (opponentState.discardPile) opponentState.discardPile.forEach((id) => cardIds.add(id));
+                if (opponentState.prizeCards) opponentState.prizeCards.forEach((id) => cardIds.add(id));
+              }
+              
+              return cardIds;
+            }),
+          },
+        },
+        {
+          provide: AttackDamageCalculatorService,
+          useValue: {
+            calculateDamage: jest.fn(),
+            calculatePlusDamageBonus: jest.fn(),
+            calculateMinusDamageReduction: jest.fn().mockImplementation((damage, attack, attackText, attackerName, playerState, opponentState) => {
+              return damage; // Return damage unchanged by default
+            }),
+          },
+        },
+        {
+          provide: AttackTextParserService,
+          useValue: {
+            parseStatusEffectFromAttackText: jest.fn(),
+            parseSelfDamage: jest.fn().mockReturnValue(0),
+            parseBenchDamage: jest.fn().mockReturnValue(0),
+          },
+        },
+        {
+          provide: EffectConditionEvaluatorService,
+          useValue: {
+            evaluateEffectConditions: jest.fn().mockImplementation(async (conditions, gameState, playerIdentifier, playerState, opponentState, coinFlipResults, getCardEntity) => {
+              // If no conditions, always return true
+              if (!conditions || conditions.length === 0) {
+                return true;
+              }
+              
+              // Check coin flip conditions
+              for (const condition of conditions) {
+                if (condition.type === 'COIN_FLIP_SUCCESS' || condition.type === 'COIN_FLIP_FAILURE') {
+                  // If no coin flip results provided, generate one using the resolver
+                  let results = coinFlipResults;
+                  if (!results || results.length === 0) {
+                    // Generate coin flip using the resolver
+                    const coinFlipResult = mockCoinFlipResolver.generateCoinFlip();
+                    results = [coinFlipResult];
+                  }
+                  
+                  // Check if any coin flip result matches the condition
+                  const isHeads = results.some(r => r.isHeads());
+                  const isTails = results.some(r => r.isTails());
+                  
+                  if (condition.type === 'COIN_FLIP_SUCCESS' && !isHeads) {
+                    return false;
+                  }
+                  if (condition.type === 'COIN_FLIP_FAILURE' && !isTails) {
+                    return false;
+                  }
+                }
+              }
+              
+              return true;
+            }),
+          },
+        },
+        {
+          provide: SetActivePokemonPlayerTurnService,
+          useValue: {
+            executeSetActivePokemon: jest.fn(),
+          },
+        },
+        {
+          provide: AttachEnergyPlayerTurnService,
+          useValue: {
+            executeAttachEnergy: jest.fn(),
+          },
+        },
+        {
+          provide: PlayPokemonPlayerTurnService,
+          useValue: {
+            executePlayPokemon: jest.fn(),
+          },
+        },
+        {
+          provide: EvolvePokemonPlayerTurnService,
+          useFactory: (matchRepo: IMatchRepository) => {
+            return {
+              executeEvolvePokemon: jest.fn().mockImplementation(async (params) => {
+                // Use the real evolution service
+                const result = await mockEvolutionExecutionService.executeEvolvePokemon({
+                  evolutionCardId: params.dto.actionData.evolutionCardId,
+                  target: params.dto.actionData.target,
+                  gameState: params.gameState,
+                  playerIdentifier: params.playerIdentifier,
+                  cardsMap: params.cardsMap,
+                  validatePokemonNotEvolvedThisTurn: params.validatePokemonNotEvolvedThisTurn,
+                  validateEvolution: params.validateEvolution,
+                  getCardHp: params.getCardHp,
+                });
+                
+                // Create action summary (matching real implementation)
+                const actionSummary = new ActionSummary(
+                  'test-action-id',
+                  params.playerIdentifier,
+                  PlayerActionType.EVOLVE_POKEMON,
+                  new Date(),
+                  {
+                    evolutionCardId: params.dto.actionData.evolutionCardId,
+                    target: params.dto.actionData.target,
+                    targetInstanceId: result.targetInstanceId,
+                  },
+                );
+                
+                // Update match with action summary
+                const finalGameState = result.updatedGameState.withAction(actionSummary);
+                params.match.updateGameState(finalGameState);
+                
+                // Return saved match
+                return await matchRepo.save(params.match);
+              }),
+            };
+          },
+          inject: [IMatchRepository],
+        },
+        {
+          provide: RetreatExecutionService,
+          useValue: {
+            executeRetreat: jest.fn(),
           },
         },
         {
@@ -269,6 +492,14 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
             stateMachine: MatchStateMachineService,
             getCardUseCase: IGetCardByIdUseCase,
             statusEffectProcessor: StatusEffectProcessorService,
+            attackEnergyValidator: AttackEnergyValidatorService,
+            coinFlipResolver: CoinFlipResolverService,
+            attackCoinFlipParser: AttackCoinFlipParserService,
+            attackExecutionService: AttackExecutionService,
+            cardHelper: CardHelperService,
+            attackDamageCalculator: AttackDamageCalculatorService,
+            attackTextParser: AttackTextParserService,
+            effectConditionEvaluator: EffectConditionEvaluatorService,
           ) => {
             const factory = new ActionHandlerFactory();
             // Create real END_TURN handler for tests
@@ -279,13 +510,23 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
               statusEffectProcessor,
             );
             factory.registerHandler(PlayerActionType.END_TURN, endTurnHandler);
-            // For other actions, return false (use old code)
-            const originalHasHandler = factory.hasHandler.bind(factory);
+            // Create real ATTACK handler with all dependencies
+            const attackHandler = new AttackActionHandler(
+              matchRepo,
+              stateMachine,
+              getCardUseCase,
+              attackEnergyValidator,
+              coinFlipResolver,
+              attackCoinFlipParser,
+              attackExecutionService,
+              cardHelper,
+              attackDamageCalculator,
+              attackTextParser,
+              effectConditionEvaluator,
+            );
+            factory.registerHandler(PlayerActionType.ATTACK, attackHandler);
             factory.hasHandler = jest.fn().mockImplementation((actionType) => {
-              if (actionType === PlayerActionType.END_TURN) {
-                return true;
-              }
-              return false; // Use old code for other actions
+              return actionType === PlayerActionType.END_TURN || actionType === PlayerActionType.ATTACK;
             });
             return factory;
           },
@@ -294,6 +535,14 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
             MatchStateMachineService,
             IGetCardByIdUseCase,
             StatusEffectProcessorService,
+            AttackEnergyValidatorService,
+            CoinFlipResolverService,
+            AttackCoinFlipParserService,
+            AttackExecutionService,
+            CardHelperService,
+            AttackDamageCalculatorService,
+            AttackTextParserService,
+            EffectConditionEvaluatorService,
           ],
         },
       ],

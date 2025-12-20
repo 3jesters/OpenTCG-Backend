@@ -32,6 +32,7 @@ import { ConditionType } from '../../../card/domain/enums/condition-type.enum';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
 import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
+import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
 import { AttackExecutionResult } from '../../domain/services/attack-execution-result.interface';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -406,6 +407,12 @@ export class AttackExecutionService {
 
     // Track status effects and coin flip results
     let attackCoinFlipResults: CoinFlipResult[] = [];
+    
+    // Get coin flip results from game state if available (for ATTACK context coin flips)
+    if (gameState.coinFlipState?.context === CoinFlipContext.ATTACK && gameState.coinFlipState.results.length > 0) {
+      attackCoinFlipResults = gameState.coinFlipState.results;
+    }
+    
     let attackStatusEffectApplied = false;
     let attackAppliedStatus: StatusEffect | null = null;
 
@@ -422,11 +429,15 @@ export class AttackExecutionService {
             c.type === ConditionType.COIN_FLIP_FAILURE,
         );
 
-        // If coin flip is required but results not provided, skip
-        // (This should be handled by coin flip service)
-        if (hasCoinFlipCondition && attackCoinFlipResults.length === 0) {
-          continue;
-        }
+        // If coin flip is required but results not provided, the evaluateEffectConditions
+        // callback should handle generating coin flips (as it does in tests via mocks)
+        // For production, coin flips for effect conditions should be generated before
+        // attack execution via GENERATE_COIN_FLIP action, but we allow on-the-fly generation
+        // via the callback for backward compatibility
+        // Note: The callback receives coinFlipResults and can generate them if needed,
+        // but cannot modify attackCoinFlipResults directly. The callback's return value
+        // (true/false) indicates if conditions were met, which may include generating
+        // coin flips internally.
 
         const conditionsMet = await evaluateEffectConditions(
           statusEffect.requiredConditions || [],
@@ -443,8 +454,14 @@ export class AttackExecutionService {
             statusEffect.statusCondition,
           );
           if (statusToApply) {
+            // Use withStatusEffectAdded to preserve existing status effects
+            // Pokemon can have multiple status effects simultaneously (e.g., CONFUSED + POISONED)
+            // Default poison damage is 10 if not specified
             updatedOpponentActive =
-              updatedOpponentActive.withStatusEffect(statusToApply);
+              updatedOpponentActive.withStatusEffectAdded(
+                statusToApply,
+                statusToApply === StatusEffect.POISONED ? 10 : undefined,
+              );
             attackStatusEffectApplied = true;
             attackAppliedStatus = statusToApply;
           }
@@ -456,8 +473,9 @@ export class AttackExecutionService {
     if (!attackStatusEffectApplied) {
       const parsedStatus = parseStatusEffectFromAttackText(attackText);
       if (parsedStatus) {
+        // Use withStatusEffectAdded to preserve existing status effects
         updatedOpponentActive =
-          updatedOpponentActive.withStatusEffect(parsedStatus);
+          updatedOpponentActive.withStatusEffectAdded(parsedStatus);
         attackStatusEffectApplied = true;
         attackAppliedStatus = parsedStatus;
       }

@@ -16,6 +16,9 @@ import { IMatchRepository } from '../../../domain/repositories';
 import {
   MatchStateMachineService,
   CoinFlipResolverService,
+  AttackDamageCalculatorService,
+  AttackTextParserService,
+  EffectConditionEvaluatorService,
 } from '../../../domain/services';
 import { IGetCardByIdUseCase } from '../../../../card/application/ports/card-use-cases.interface';
 import { CoinFlipStatus } from '../../../domain/enums/coin-flip-status.enum';
@@ -23,7 +26,17 @@ import { CoinFlipContext } from '../../../domain/enums/coin-flip-context.enum';
 import {
   CoinFlipCountType,
   CoinFlipState,
+  PlayerGameState,
+  CardInstance,
+  CoinFlipResult,
 } from '../../../domain/value-objects';
+import { CoinFlipExecutionService } from '../../services/coin-flip-execution.service';
+import { CardHelperService } from '../../services/card-helper.service';
+import { Attack } from '../../../../card/domain/value-objects/attack.value-object';
+import {
+  DiscardEnergyEffect,
+} from '../../../../card/domain/value-objects/attack-effect.value-object';
+import { TargetType } from '../../../../card/domain/enums/target-type.enum';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -45,6 +58,11 @@ export class GenerateCoinFlipActionHandler
     @Inject(IGetCardByIdUseCase)
     protected readonly getCardByIdUseCase: IGetCardByIdUseCase,
     private readonly coinFlipResolver: CoinFlipResolverService,
+    private readonly coinFlipExecutionService: CoinFlipExecutionService,
+    private readonly cardHelper: CardHelperService,
+    private readonly attackDamageCalculator: AttackDamageCalculatorService,
+    private readonly attackTextParser: AttackTextParserService,
+    private readonly effectConditionEvaluator: EffectConditionEvaluatorService,
   ) {
     super(matchRepository, stateMachineService, getCardByIdUseCase);
   }
@@ -56,155 +74,223 @@ export class GenerateCoinFlipActionHandler
     playerIdentifier: PlayerIdentifier,
     cardsMap: Map<string, Card>,
   ): Promise<Match> {
-    // Validate coin flip state exists
-    if (!gameState.coinFlipState) {
-      throw new BadRequestException('No coin flip in progress');
-    }
-
-    const coinFlipState = gameState.coinFlipState;
-
-    // For ATTACK context, allow both players to approve (no player restriction)
-    // For other contexts, maintain original behavior
-    if (
-      coinFlipState.context !== CoinFlipContext.ATTACK &&
-      gameState.currentPlayer !== playerIdentifier
-    ) {
-      throw new BadRequestException('Not your turn to flip coin');
-    }
-
-    // Validate status
-    if (coinFlipState.status !== CoinFlipStatus.READY_TO_FLIP) {
-      throw new BadRequestException(
-        `Coin flip not ready. Current status: ${coinFlipState.status}`,
-      );
-    }
-
-    // Check if coin flip already has results (already generated)
-    // If so, this is just an approval tracking update
-    if (coinFlipState.results.length > 0) {
-      // Coin flip already generated, just track approval
-      let updatedCoinFlipState = coinFlipState;
-      if (playerIdentifier === PlayerIdentifier.PLAYER1) {
-        if (coinFlipState.player1HasApproved) {
-          throw new BadRequestException(
-            'Player 1 has already approved this coin flip',
-          );
+    // Use CoinFlipExecutionService to generate coin flip
+    const result = await this.coinFlipExecutionService.generateCoinFlip({
+      gameState,
+      playerIdentifier,
+      matchId: match.id,
+      cardsMap,
+      getCardEntity: (cardId: string) =>
+        this.cardHelper.getCardEntity(cardId, cardsMap),
+      getCardHp: (cardId: string) =>
+        this.cardHelper.getCardHp(cardId, cardsMap),
+      calculateMinusDamageReduction: (
+        damage: number,
+        attack: Attack,
+        attackText: string,
+        attackerName: string,
+        playerState: PlayerGameState,
+        opponentState: PlayerGameState,
+      ) =>
+        this.attackDamageCalculator.calculateMinusDamageReduction(
+          damage,
+          attack,
+          attackText,
+          attackerName,
+          playerState,
+          opponentState,
+        ),
+      calculatePlusDamageBonus: (
+        attack: Attack,
+        attackerName: string,
+        playerState: PlayerGameState,
+        opponentState: PlayerGameState,
+        attackText: string,
+        gameState: GameState,
+        playerIdentifier: PlayerIdentifier,
+      ) =>
+        this.attackDamageCalculator.calculatePlusDamageBonus(
+          attack,
+          attackerName,
+          playerState,
+          opponentState,
+          attackText,
+          gameState,
+          playerIdentifier,
+          (cardId: string) => this.cardHelper.getCardEntity(cardId, cardsMap),
+        ),
+      evaluateEffectConditions: (
+        conditions: any[],
+        gameState: GameState,
+        playerIdentifier: PlayerIdentifier,
+        playerState: PlayerGameState,
+        opponentState: PlayerGameState,
+        coinFlipResults?: CoinFlipResult[],
+      ) =>
+        this.effectConditionEvaluator.evaluateEffectConditions(
+          conditions,
+          gameState,
+          playerIdentifier,
+          playerState,
+          opponentState,
+          coinFlipResults,
+          (cardId: string) => this.cardHelper.getCardEntity(cardId, cardsMap),
+        ),
+      parseSelfDamage: (attackText: string, attackerName: string) =>
+        this.attackTextParser.parseSelfDamage(attackText, attackerName),
+      parseBenchDamage: (attackText: string) =>
+        this.attackTextParser.parseBenchDamage(attackText),
+      parseStatusEffectFromAttackText: (attackText: string) =>
+        this.attackTextParser.parseStatusEffectFromAttackText(attackText, false),
+      validateEnergySelection: async (
+        selectedEnergyIds: string[],
+        discardEffect: DiscardEnergyEffect,
+        pokemon: CardInstance,
+      ) => {
+        // Check that all selected energy IDs are actually attached
+        for (const energyId of selectedEnergyIds) {
+          if (!pokemon.attachedEnergy.includes(energyId)) {
+            return `Energy card ${energyId} is not attached to this Pokemon`;
+          }
         }
-        updatedCoinFlipState = coinFlipState.withPlayer1Approval();
-      } else {
-        if (coinFlipState.player2HasApproved) {
-          throw new BadRequestException(
-            'Player 2 has already approved this coin flip',
-          );
+
+        // Check amount
+        if (discardEffect.amount !== 'all') {
+          if (selectedEnergyIds.length !== discardEffect.amount) {
+            return `Must select exactly ${discardEffect.amount} energy card(s), but ${selectedEnergyIds.length} were selected`;
+          }
         }
-        updatedCoinFlipState = coinFlipState.withPlayer2Approval();
-      }
 
-      // Update game state with approval
-      const updatedGameState =
-        gameState.withCoinFlipState(updatedCoinFlipState);
-      match.updateGameState(updatedGameState);
-      return await this.matchRepository.save(match);
-    }
-
-    // Track which player approved (first approval triggers coin flip generation)
-    let updatedCoinFlipState = coinFlipState;
-    if (playerIdentifier === PlayerIdentifier.PLAYER1) {
-      if (coinFlipState.player1HasApproved) {
-        throw new BadRequestException(
-          'Player 1 has already approved this coin flip',
-        );
-      }
-      updatedCoinFlipState = coinFlipState.withPlayer1Approval();
-    } else {
-      if (coinFlipState.player2HasApproved) {
-        throw new BadRequestException(
-          'Player 2 has already approved this coin flip',
-        );
-      }
-      updatedCoinFlipState = coinFlipState.withPlayer2Approval();
-    }
-
-    // For ATTACK context, use the attacking player's state for coin flip calculation
-    const attackingPlayer =
-      coinFlipState.context === CoinFlipContext.ATTACK
-        ? gameState.currentPlayer
-        : playerIdentifier;
-    const playerState = gameState.getPlayerState(attackingPlayer);
-    const opponentState = gameState.getOpponentState(attackingPlayer);
-
-    // Calculate number of coins to flip
-    const activePokemon = playerState.activePokemon;
-    const coinCount = this.coinFlipResolver.calculateCoinCount(
-      coinFlipState.configuration,
-      playerState,
-      activePokemon,
-    );
-
-    // Generate coin flips (deterministic - same for both players)
-    const actionId = coinFlipState.actionId || uuidv4();
-    const results: any[] = [];
-
-    // Handle "until tails" pattern - generate all flips until tails (or max limit)
-    if (
-      updatedCoinFlipState.configuration.countType ===
-      CoinFlipCountType.UNTIL_TAILS
-    ) {
-      let flipIndex = 0;
-      while (flipIndex < coinCount) {
-        const result = this.coinFlipResolver.generateCoinFlip(
-          match.id,
-          gameState.turnNumber,
-          actionId,
-          flipIndex,
-        );
-        updatedCoinFlipState = updatedCoinFlipState.withResult(result);
-        results.push({
-          flipIndex: result.flipIndex,
-          result: result.result,
-        });
-
-        // Stop if we got tails
-        if (result.isTails()) {
-          break;
+        // Check energy type if specified in effect
+        if (discardEffect.energyType) {
+          for (const energyId of selectedEnergyIds) {
+            try {
+              const energyCard = await this.cardHelper.getCardEntity(
+                energyId,
+                cardsMap,
+              );
+              if (energyCard.energyType !== discardEffect.energyType) {
+                return `Selected energy card ${energyId} is not ${discardEffect.energyType} Energy`;
+              }
+            } catch {
+              return `Could not validate energy card ${energyId}`;
+            }
+          }
         }
-        flipIndex++;
-      }
-    } else {
-      // Fixed number of coins - generate all flips at once
-      for (let i = 0; i < coinCount; i++) {
-        const result = this.coinFlipResolver.generateCoinFlip(
-          match.id,
-          gameState.turnNumber,
-          actionId,
-          i,
-        );
-        updatedCoinFlipState = updatedCoinFlipState.withResult(result);
-        results.push({
-          flipIndex: result.flipIndex,
-          result: result.result,
-        });
-      }
-    }
+
+        return null;
+      },
+      applyDiscardEnergyEffects: async (
+        discardEffects: DiscardEnergyEffect[],
+        gameState: GameState,
+        playerIdentifier: PlayerIdentifier,
+        playerState: PlayerGameState,
+        opponentState: PlayerGameState,
+      ) => {
+        let updatedPlayerState = playerState;
+        let updatedOpponentState = opponentState;
+
+        for (const discardEffect of discardEffects) {
+          const conditionsMet =
+            await this.effectConditionEvaluator.evaluateEffectConditions(
+              discardEffect.requiredConditions || [],
+              gameState,
+              playerIdentifier,
+              playerState,
+              opponentState,
+              undefined,
+              (cardId: string) => this.cardHelper.getCardEntity(cardId, cardsMap),
+            );
+
+          if (conditionsMet) {
+            if (
+              discardEffect.target === TargetType.DEFENDING &&
+              updatedOpponentState.activePokemon
+            ) {
+              // Simple implementation: discard first matching energy
+              const energyToDiscard: string[] = [];
+              const attachedEnergy =
+                updatedOpponentState.activePokemon.attachedEnergy;
+
+              if (discardEffect.amount === 'all') {
+                if (discardEffect.energyType) {
+                  for (const energyId of attachedEnergy) {
+                    const energyCard = await this.cardHelper.getCardEntity(
+                      energyId,
+                      cardsMap,
+                    );
+                    if (energyCard.energyType === discardEffect.energyType) {
+                      energyToDiscard.push(energyId);
+                    }
+                  }
+                } else {
+                  energyToDiscard.push(...attachedEnergy);
+                }
+              } else {
+                const amount = discardEffect.amount as number;
+                let count = 0;
+                for (const energyId of attachedEnergy) {
+                  if (count >= amount) break;
+                  if (discardEffect.energyType) {
+                    const energyCard = await this.cardHelper.getCardEntity(
+                      energyId,
+                      cardsMap,
+                    );
+                    if (energyCard.energyType === discardEffect.energyType) {
+                      energyToDiscard.push(energyId);
+                      count++;
+                    }
+                  } else {
+                    energyToDiscard.push(energyId);
+                    count++;
+                  }
+                }
+              }
+
+              if (energyToDiscard.length > 0) {
+                const updatedAttachedEnergy = attachedEnergy.filter(
+                  (energyId) => !energyToDiscard.includes(energyId),
+                );
+                const updatedDefender =
+                  updatedOpponentState.activePokemon.withAttachedEnergy(
+                    updatedAttachedEnergy,
+                  );
+                const updatedDiscardPile = [
+                  ...updatedOpponentState.discardPile,
+                  ...energyToDiscard,
+                ];
+                updatedOpponentState = updatedOpponentState
+                  .withActivePokemon(updatedDefender)
+                  .withDiscardPile(updatedDiscardPile);
+              }
+            }
+          }
+        }
+
+        return { updatedPlayerState, updatedOpponentState };
+      },
+    });
 
     // Handle STATUS_CHECK context (sleep wake-up, confusion)
-    if (updatedCoinFlipState.context === CoinFlipContext.STATUS_CHECK) {
+    if (
+      result.updatedGameState.coinFlipState?.context ===
+      CoinFlipContext.STATUS_CHECK
+    ) {
       return await this.handleStatusCheckCoinFlip(
         dto,
         match,
-        gameState,
+        result.updatedGameState,
         playerIdentifier,
-        updatedCoinFlipState,
-        results,
+        result.updatedGameState.coinFlipState!,
+        result.updatedGameState.coinFlipState.results.map((r) => ({
+          flipIndex: r.flipIndex,
+          result: r.result,
+        })),
       );
     }
 
-    // For ATTACK context, the coin flip generation is done
-    // Attack execution logic is complex and will be handled in Phase 5 (ATTACK handler)
-    // For now, update state and return - attack execution continues in use case
-    // TODO: Extract ATTACK context coin flip + attack execution to AttackExecutionService in Phase 5
-    const updatedGameState = gameState.withCoinFlipState(updatedCoinFlipState);
-    match.updateGameState(updatedGameState);
+    // Update match with result
+    match.updateGameState(result.updatedGameState);
     return await this.matchRepository.save(match);
   }
 
@@ -330,12 +416,56 @@ export class GenerateCoinFlipActionHandler
       return await this.matchRepository.save(match);
     }
 
-    // Confusion handling is complex and involves attack execution
-    // For now, delegate back to use case for confusion + attack flow
-    // TODO: Extract confusion + attack execution logic in Phase 5
-    throw new BadRequestException(
-      'Confusion coin flip handling requires attack execution - delegating to use case',
+    // Confusion handling: if tails, apply self-damage (handled in AttackActionHandler)
+    // If heads, attack can proceed (AttackActionHandler will handle it)
+    // For now, just clear the coin flip state and let AttackActionHandler handle the result
+    const hasHeads = coinFlipState.results.some((r) => r.isHeads());
+    
+    if (!hasHeads) {
+      // Tails - confusion failed, but self-damage is handled in AttackActionHandler
+      // Just clear coin flip state here
+      const finalGameState = gameState
+        .withCoinFlipState(null)
+        .withPhase(TurnPhase.MAIN_PHASE);
+
+      const actionSummary = new ActionSummary(
+        uuidv4(),
+        playerIdentifier,
+        PlayerActionType.GENERATE_COIN_FLIP,
+        new Date(),
+        {
+          context: CoinFlipContext.STATUS_CHECK,
+          statusEffect: StatusEffect.CONFUSED,
+          pokemonInstanceId: coinFlipState.pokemonInstanceId,
+          confusionFailed: true,
+        },
+      );
+
+      match.updateGameState(finalGameState.withAction(actionSummary));
+      return await this.matchRepository.save(match);
+    }
+
+    // Heads - confusion passed, clear coin flip state
+    // AttackActionHandler will handle the actual attack
+    const finalGameState = gameState
+      .withCoinFlipState(null)
+      .withPhase(TurnPhase.MAIN_PHASE);
+
+    const actionSummary = new ActionSummary(
+      uuidv4(),
+      playerIdentifier,
+      PlayerActionType.GENERATE_COIN_FLIP,
+      new Date(),
+      {
+        context: CoinFlipContext.STATUS_CHECK,
+        statusEffect: StatusEffect.CONFUSED,
+        pokemonInstanceId: coinFlipState.pokemonInstanceId,
+        confusionPassed: true,
+      },
     );
+
+    match.updateGameState(finalGameState.withAction(actionSummary));
+    return await this.matchRepository.save(match);
   }
 }
 

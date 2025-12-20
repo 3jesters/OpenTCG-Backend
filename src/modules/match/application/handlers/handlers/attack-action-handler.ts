@@ -10,7 +10,14 @@ import {
   PlayerActionType,
   ActionSummary,
   StatusEffect,
+  MatchResult,
+  WinCondition,
 } from '../../../domain';
+import {
+  PlayerGameState,
+  CardInstance,
+  CoinFlipResult,
+} from '../../../domain/value-objects';
 import { Card } from '../../../../card/domain/entities';
 import { IMatchRepository } from '../../../domain/repositories';
 import {
@@ -18,10 +25,22 @@ import {
   AttackEnergyValidatorService,
   CoinFlipResolverService,
   AttackCoinFlipParserService,
+  AttackDamageCalculatorService,
+  AttackTextParserService,
+  EffectConditionEvaluatorService,
 } from '../../../domain/services';
 import { IGetCardByIdUseCase } from '../../../../card/application/ports/card-use-cases.interface';
 import { CoinFlipStatus } from '../../../domain/enums/coin-flip-status.enum';
 import { CoinFlipContext } from '../../../domain/enums/coin-flip-context.enum';
+import { AttackExecutionService } from '../../services/attack-execution.service';
+import { CardHelperService } from '../../services/card-helper.service';
+import { Attack } from '../../../../card/domain/value-objects/attack.value-object';
+import {
+  DiscardEnergyEffect,
+  StatusConditionEffect,
+} from '../../../../card/domain/value-objects/attack-effect.value-object';
+import { AttackEffectType } from '../../../../card/domain/enums/attack-effect-type.enum';
+import { TargetType } from '../../../../card/domain/enums/target-type.enum';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -48,6 +67,11 @@ export class AttackActionHandler
     private readonly attackEnergyValidator: AttackEnergyValidatorService,
     private readonly coinFlipResolver: CoinFlipResolverService,
     private readonly attackCoinFlipParser: AttackCoinFlipParserService,
+    private readonly attackExecutionService: AttackExecutionService,
+    private readonly cardHelper: CardHelperService,
+    private readonly attackDamageCalculator: AttackDamageCalculatorService,
+    private readonly attackTextParser: AttackTextParserService,
+    private readonly effectConditionEvaluator: EffectConditionEvaluatorService,
   ) {
     super(matchRepository, stateMachineService, getCardByIdUseCase);
   }
@@ -249,21 +273,337 @@ export class AttackActionHandler
       );
     }
 
-    // ATTACK execution is extremely complex (~2900 lines in use case)
-    // It involves:
-    // - Coin flip handling (if attack requires coin flips)
-    // - Damage calculation with modifiers (+ damage, - damage, etc.)
-    // - Weakness/resistance application
-    // - Status effect application
-    // - Damage prevention/reduction effects
-    // - Knockout handling
-    // - Prize selection
-    // 
-    // For now, delegate back to use case for full attack execution
-    // TODO: Extract attack execution logic to AttackExecutionService
-    throw new BadRequestException(
-      'ATTACK handler not yet fully implemented - delegating to use case',
+    // Check if attack requires coin flip before execution
+    const coinFlipState = this.attackExecutionService.checkCoinFlipRequired(
+      attack,
+      match.id,
+      gameState,
+      attackIndex,
     );
+
+    // If coin flip is required, create coin flip state and wait for flip
+    if (coinFlipState) {
+      // Create action summary for attack initiation
+      const actionSummary = new ActionSummary(
+        coinFlipState.actionId || uuidv4(),
+        playerIdentifier,
+        PlayerActionType.ATTACK,
+        new Date(),
+        { attackIndex, coinFlipRequired: true },
+      );
+
+      // Update game state with coin flip state (immutable update)
+      const updatedGameState = gameState
+        .withCoinFlipState(coinFlipState)
+        .withAction(actionSummary)
+        .withPhase(TurnPhase.ATTACK);
+
+      match.updateGameState(updatedGameState);
+      return await this.matchRepository.save(match);
+    }
+
+    // No coin flip required - execute attack immediately
+    const actionData = dto.actionData as any;
+    const selectedEnergyIds = actionData?.selectedEnergyIds || [];
+
+    // Execute attack using AttackExecutionService
+    const result = await this.attackExecutionService.executeAttack({
+      attackIndex,
+      gameState,
+      playerIdentifier,
+      attackerCard,
+      attack,
+      cardsMap,
+      getCardEntity: (cardId: string) =>
+        this.cardHelper.getCardEntity(cardId, cardsMap),
+      getCardHp: (cardId: string) =>
+        this.cardHelper.getCardHp(cardId, cardsMap),
+      calculateMinusDamageReduction: (
+        damage: number,
+        attack: Attack,
+        attackText: string,
+        attackerName: string,
+        playerState: PlayerGameState,
+        opponentState: PlayerGameState,
+      ) =>
+        this.attackDamageCalculator.calculateMinusDamageReduction(
+          damage,
+          attack,
+          attackText,
+          attackerName,
+          playerState,
+          opponentState,
+        ),
+      calculatePlusDamageBonus: (
+        attack: Attack,
+        attackerName: string,
+        playerState: PlayerGameState,
+        opponentState: PlayerGameState,
+        attackText: string,
+        gameState: GameState,
+        playerIdentifier: PlayerIdentifier,
+      ) =>
+        this.attackDamageCalculator.calculatePlusDamageBonus(
+          attack,
+          attackerName,
+          playerState,
+          opponentState,
+          attackText,
+          gameState,
+          playerIdentifier,
+          (cardId: string) => this.cardHelper.getCardEntity(cardId, cardsMap),
+        ),
+      evaluateEffectConditions: (
+        conditions: any[],
+        gameState: GameState,
+        playerIdentifier: PlayerIdentifier,
+        playerState: PlayerGameState,
+        opponentState: PlayerGameState,
+        coinFlipResults?: CoinFlipResult[],
+      ) =>
+        this.effectConditionEvaluator.evaluateEffectConditions(
+          conditions,
+          gameState,
+          playerIdentifier,
+          playerState,
+          opponentState,
+          coinFlipResults,
+          (cardId: string) => this.cardHelper.getCardEntity(cardId, cardsMap),
+        ),
+      parseSelfDamage: (attackText: string, attackerName: string) =>
+        this.attackTextParser.parseSelfDamage(attackText, attackerName),
+      parseBenchDamage: (attackText: string) =>
+        this.attackTextParser.parseBenchDamage(attackText),
+      parseStatusEffectFromAttackText: (attackText: string) => {
+        const statusCondition = this.attackTextParser.parseStatusEffectFromAttackText(attackText, false);
+        if (!statusCondition) return null;
+        // Map StatusConditionEffect to StatusEffect enum
+        switch (statusCondition.statusCondition) {
+          case StatusEffect.PARALYZED:
+          case 'PARALYZED':
+            return StatusEffect.PARALYZED;
+          case StatusEffect.POISONED:
+          case 'POISONED':
+            return StatusEffect.POISONED;
+          case StatusEffect.BURNED:
+          case 'BURNED':
+            return StatusEffect.BURNED;
+          case StatusEffect.ASLEEP:
+          case 'ASLEEP':
+            return StatusEffect.ASLEEP;
+          case StatusEffect.CONFUSED:
+          case 'CONFUSED':
+            return StatusEffect.CONFUSED;
+          default:
+            return null;
+        }
+      },
+      validateEnergySelection: async (
+        selectedEnergyIds: string[],
+        discardEffect: DiscardEnergyEffect,
+        pokemon: CardInstance,
+      ) => {
+        // Check that all selected energy IDs are actually attached
+        for (const energyId of selectedEnergyIds) {
+          if (!pokemon.attachedEnergy.includes(energyId)) {
+            return `Energy card ${energyId} is not attached to this Pokemon`;
+          }
+        }
+
+        // Check amount
+        if (discardEffect.amount !== 'all') {
+          if (selectedEnergyIds.length !== discardEffect.amount) {
+            return `Must select exactly ${discardEffect.amount} energy card(s), but ${selectedEnergyIds.length} were selected`;
+          }
+        }
+
+        // Check energy type if specified in effect
+        if (discardEffect.energyType) {
+          for (const energyId of selectedEnergyIds) {
+            try {
+              const energyCard = await this.cardHelper.getCardEntity(
+                energyId,
+                cardsMap,
+              );
+              if (energyCard.energyType !== discardEffect.energyType) {
+                return `Selected energy card ${energyId} is not ${discardEffect.energyType} Energy`;
+              }
+            } catch {
+              return `Could not validate energy card ${energyId}`;
+            }
+          }
+        }
+
+        return null;
+      },
+      applyDiscardEnergyEffects: async (
+        discardEffects: DiscardEnergyEffect[],
+        gameState: GameState,
+        playerIdentifier: PlayerIdentifier,
+        playerState: PlayerGameState,
+        opponentState: PlayerGameState,
+      ) => {
+        let updatedPlayerState = playerState;
+        let updatedOpponentState = opponentState;
+
+        for (const discardEffect of discardEffects) {
+          const conditionsMet =
+            await this.effectConditionEvaluator.evaluateEffectConditions(
+              discardEffect.requiredConditions || [],
+              gameState,
+              playerIdentifier,
+              playerState,
+              opponentState,
+              undefined,
+              (cardId: string) => this.cardHelper.getCardEntity(cardId, cardsMap),
+            );
+
+          if (conditionsMet) {
+            if (
+              discardEffect.target === TargetType.DEFENDING &&
+              updatedOpponentState.activePokemon
+            ) {
+              // Simple implementation: discard first matching energy
+              // TODO: Extract to a service for proper energy selection logic
+              const energyToDiscard: string[] = [];
+              const attachedEnergy =
+                updatedOpponentState.activePokemon.attachedEnergy;
+
+              if (discardEffect.amount === 'all') {
+                if (discardEffect.energyType) {
+                  // Filter by type
+                  for (const energyId of attachedEnergy) {
+                    const energyCard = await this.cardHelper.getCardEntity(
+                      energyId,
+                      cardsMap,
+                    );
+                    if (energyCard.energyType === discardEffect.energyType) {
+                      energyToDiscard.push(energyId);
+                    }
+                  }
+                } else {
+                  energyToDiscard.push(...attachedEnergy);
+                }
+              } else {
+                // Select specific amount
+                const amount = discardEffect.amount as number;
+                let count = 0;
+                for (const energyId of attachedEnergy) {
+                  if (count >= amount) break;
+                  if (discardEffect.energyType) {
+                    const energyCard = await this.cardHelper.getCardEntity(
+                      energyId,
+                      cardsMap,
+                    );
+                    if (energyCard.energyType === discardEffect.energyType) {
+                      energyToDiscard.push(energyId);
+                      count++;
+                    }
+                  } else {
+                    energyToDiscard.push(energyId);
+                    count++;
+                  }
+                }
+              }
+
+              if (energyToDiscard.length > 0) {
+                const updatedAttachedEnergy = attachedEnergy.filter(
+                  (energyId) => !energyToDiscard.includes(energyId),
+                );
+                const updatedDefender =
+                  updatedOpponentState.activePokemon.withAttachedEnergy(
+                    updatedAttachedEnergy,
+                  );
+                const updatedDiscardPile = [
+                  ...updatedOpponentState.discardPile,
+                  ...energyToDiscard,
+                ];
+                updatedOpponentState = updatedOpponentState
+                  .withActivePokemon(updatedDefender)
+                  .withDiscardPile(updatedDiscardPile);
+              }
+            }
+          }
+        }
+
+        return { updatedPlayerState, updatedOpponentState };
+      },
+      selectedEnergyIds,
+    });
+
+    // Reconstruct game state from result
+    const updatedGameState =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? gameState
+            .withPlayer1State(result.updatedPlayerState)
+            .withPlayer2State(result.updatedOpponentState)
+        : gameState
+            .withPlayer1State(result.updatedOpponentState)
+            .withPlayer2State(result.updatedPlayerState);
+
+    // Clear confusion coin flip state if it exists (attack succeeded)
+    let finalGameState = updatedGameState;
+    if (
+      gameState.coinFlipState?.context === CoinFlipContext.STATUS_CHECK &&
+      gameState.coinFlipState.statusEffect === StatusEffect.CONFUSED
+    ) {
+      finalGameState = finalGameState.withCoinFlipState(null);
+    }
+
+    // Transition to END phase after attack
+    const nextPhaseGameState = finalGameState.withPhase(TurnPhase.END);
+
+    // Build actionData with coin flip results if applicable
+    const actionDataResult: any = {
+      attackIndex,
+      damage: result.finalDamage,
+      isKnockedOut: result.isKnockedOut,
+    };
+
+    // Add coin flip results if coin flip was performed
+    if (result.coinFlipResults && result.coinFlipResults.length > 0) {
+      actionDataResult.coinFlipResults = result.coinFlipResults.map((r) => ({
+        flipIndex: r.flipIndex,
+        result: r.result, // 'heads' | 'tails'
+      }));
+      actionDataResult.statusEffectApplied = result.statusEffectApplied;
+      if (result.appliedStatus) {
+        actionDataResult.statusEffect = result.appliedStatus;
+      }
+    }
+
+    const actionSummary = new ActionSummary(
+      uuidv4(),
+      playerIdentifier,
+      PlayerActionType.ATTACK,
+      new Date(),
+      actionDataResult,
+    );
+
+    const finalGameStateWithAction =
+      nextPhaseGameState.withAction(actionSummary);
+    match.updateGameState(finalGameStateWithAction);
+
+    // Check win conditions after attack (e.g., opponent has no Pokemon left)
+    const winCheck = this.stateMachineService.checkWinConditions(
+      finalGameState.player1State,
+      finalGameState.player2State,
+    );
+    if (winCheck.hasWinner && winCheck.winner) {
+      const winnerId =
+        winCheck.winner === PlayerIdentifier.PLAYER1
+          ? match.player1Id!
+          : match.player2Id!;
+      match.endMatch(
+        winnerId,
+        winCheck.winner === PlayerIdentifier.PLAYER1
+          ? MatchResult.PLAYER1_WIN
+          : MatchResult.PLAYER2_WIN,
+        winCheck.winCondition as WinCondition,
+      );
+    }
+
+    return await this.matchRepository.save(match);
   }
 }
 

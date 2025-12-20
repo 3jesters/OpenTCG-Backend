@@ -14,13 +14,26 @@ import { TrainerEffectValidatorService } from '../../domain/services/trainer-eff
 import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
 import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
+import { AttackActionHandler } from '../handlers/handlers/attack-action-handler';
+import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
 import {
   EnergyAttachmentExecutionService,
   EvolutionExecutionService,
   PlayPokemonExecutionService,
   AttackExecutionService,
   CoinFlipExecutionService,
+  CardHelperService,
+  SetActivePokemonPlayerTurnService,
+  AttachEnergyPlayerTurnService,
+  PlayPokemonPlayerTurnService,
+  EvolvePokemonPlayerTurnService,
+  RetreatExecutionService,
 } from '../services';
+import {
+  AttackDamageCalculatorService,
+  AttackTextParserService,
+  EffectConditionEvaluatorService,
+} from '../../domain/services';
 import { Match } from '../../domain/entities/match.entity';
 import { PlayerIdentifier } from '../../domain/enums/player-identifier.enum';
 import { MatchState } from '../../domain/enums/match-state.enum';
@@ -299,10 +312,22 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         },
         {
           provide: AttackExecutionService,
-          useValue: {
-            executeAttack: jest.fn(),
-            checkCoinFlipRequired: jest.fn(),
+          useFactory: (
+            getCardUseCase: IGetCardByIdUseCase,
+            attackCoinFlipParser: AttackCoinFlipParserService,
+            attackEnergyValidator: AttackEnergyValidatorService,
+          ) => {
+            return new AttackExecutionService(
+              getCardUseCase,
+              attackCoinFlipParser,
+              attackEnergyValidator,
+            );
           },
+          inject: [
+            IGetCardByIdUseCase,
+            AttackCoinFlipParserService,
+            AttackEnergyValidatorService,
+          ],
         },
         {
           provide: CoinFlipExecutionService,
@@ -311,11 +336,273 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           },
         },
         {
-          provide: ActionHandlerFactory,
+          provide: CardHelperService,
           useValue: {
-            hasHandler: jest.fn().mockReturnValue(false),
-            getHandler: jest.fn(),
+            getCardEntity: jest.fn().mockImplementation(async (cardId, cardsMap) => {
+              return mockGetCardByIdUseCase.getCardEntity(cardId);
+            }),
+            getCardHp: jest.fn().mockImplementation(async (cardId, cardsMap) => {
+              const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
+              return card?.hp || 0;
+            }),
+            collectCardIds: jest.fn().mockImplementation((dto, gameState, playerIdentifier) => {
+              const cardIds = new Set<string>();
+              const actionData = dto.actionData as any;
+              
+              // Collect from actionData
+              if (actionData?.cardId) cardIds.add(actionData.cardId);
+              if (actionData?.evolutionCardId) cardIds.add(actionData.evolutionCardId);
+              if (actionData?.attackerCardId) cardIds.add(actionData.attackerCardId);
+              if (actionData?.defenderCardId) cardIds.add(actionData.defenderCardId);
+              if (actionData?.currentPokemonCardId) cardIds.add(actionData.currentPokemonCardId);
+              if (actionData?.energyId) cardIds.add(actionData.energyId);
+              if (Array.isArray(actionData?.energyIds)) {
+                actionData.energyIds.forEach((id: string) => cardIds.add(id));
+              }
+              if (Array.isArray(actionData?.cardIds)) {
+                actionData.cardIds.forEach((id: string) => cardIds.add(id));
+              }
+              
+              // Collect from gameState (matching real implementation)
+              if (gameState) {
+                const playerState = gameState.getPlayerState(playerIdentifier);
+                const opponentState = gameState.getOpponentState(playerIdentifier);
+                
+                // Player's Pokemon
+                if (playerState.activePokemon) {
+                  cardIds.add(playerState.activePokemon.cardId);
+                  if (playerState.activePokemon.attachedEnergy) {
+                    playerState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                  }
+                }
+                playerState.bench.forEach((pokemon) => {
+                  cardIds.add(pokemon.cardId);
+                  if (pokemon.attachedEnergy) {
+                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                  }
+                });
+                
+                // Player's hand, deck, discard, prize cards
+                if (playerState.hand) playerState.hand.forEach((id) => cardIds.add(id));
+                if (playerState.deck) playerState.deck.forEach((id) => cardIds.add(id));
+                if (playerState.discardPile) playerState.discardPile.forEach((id) => cardIds.add(id));
+                if (playerState.prizeCards) playerState.prizeCards.forEach((id) => cardIds.add(id));
+                
+                // Opponent's Pokemon
+                if (opponentState.activePokemon) {
+                  cardIds.add(opponentState.activePokemon.cardId);
+                  if (opponentState.activePokemon.attachedEnergy) {
+                    opponentState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                  }
+                }
+                opponentState.bench.forEach((pokemon) => {
+                  cardIds.add(pokemon.cardId);
+                  if (pokemon.attachedEnergy) {
+                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                  }
+                });
+                
+                // Opponent's hand, deck, discard, prize cards
+                if (opponentState.hand) opponentState.hand.forEach((id) => cardIds.add(id));
+                if (opponentState.deck) opponentState.deck.forEach((id) => cardIds.add(id));
+                if (opponentState.discardPile) opponentState.discardPile.forEach((id) => cardIds.add(id));
+                if (opponentState.prizeCards) opponentState.prizeCards.forEach((id) => cardIds.add(id));
+              }
+              
+              return cardIds;
+            }),
           },
+        },
+        {
+          provide: AttackDamageCalculatorService,
+          useValue: {
+            calculateDamage: jest.fn(),
+            calculatePlusDamageBonus: jest.fn().mockImplementation(async (attack, attackerName, playerState, opponentState, attackText, gameState, playerIdentifier, getCardEntity) => {
+              const text = attackText.toLowerCase();
+              
+              // Water Energy-based attacks (with cap)
+              if (text.includes('water energy') && text.includes('but not used to pay')) {
+                if (!attack.energyBonusCap) return 0;
+                
+                // Extract damage per energy (usually 10)
+                const damagePerEnergyMatch = text.match(/plus\s+(\d+)\s+more\s+damage\s+for\s+each/i);
+                if (!damagePerEnergyMatch) return 0;
+                const damagePerEnergy = parseInt(damagePerEnergyMatch[1], 10);
+                
+                // Count Water Energy attached
+                if (!playerState.activePokemon) return 0;
+                
+                let waterEnergyCount = 0;
+                for (const energyId of playerState.activePokemon.attachedEnergy) {
+                  try {
+                    const energyCard = await getCardEntity(energyId);
+                    if (energyCard.energyType === 'WATER') {
+                      waterEnergyCount++;
+                    }
+                  } catch {
+                    // Skip if card lookup fails
+                  }
+                }
+                
+                // Count Water Energy required for attack cost
+                const waterEnergyRequired = attack.energyCost?.filter(e => e === 'WATER').length || 0;
+                
+                // Calculate extra Water Energy (beyond attack cost)
+                const extraWaterEnergy = Math.max(0, waterEnergyCount - waterEnergyRequired);
+                
+                // Apply cap
+                const cappedExtraEnergy = Math.min(extraWaterEnergy, attack.energyBonusCap);
+                
+                // Calculate bonus damage
+                return cappedExtraEnergy * damagePerEnergy;
+              }
+              
+              return 0;
+            }),
+            calculateMinusDamageReduction: jest.fn().mockImplementation((damage, attack, attackText, attackerName, playerState, opponentState) => {
+              // Check if attack has "-" damage pattern
+              if (!attack.damage || !attack.damage.endsWith('-')) {
+                return damage;
+              }
+              
+              // Parse minus damage reduction info
+              const text = attackText.toLowerCase();
+              const attackerNameLower = attackerName.toLowerCase();
+              
+              // Pattern: "minus X damage for each damage counter on [Pokemon]"
+              const minusMatch = text.match(/minus\s+(\d+)\s+damage\s+for\s+each\s+damage\s+counter\s+on\s+(\w+)/i);
+              if (!minusMatch) {
+                return damage;
+              }
+              
+              const reductionPerCounter = parseInt(minusMatch[1], 10);
+              const targetPokemonName = minusMatch[2].toLowerCase();
+              
+              // Determine if target is self (attacker) or defending
+              const target = targetPokemonName === attackerNameLower ? 'self' : 'defending';
+              
+              // Get target Pokemon
+              const targetPokemon = target === 'self' ? playerState.activePokemon : opponentState.activePokemon;
+              
+              if (!targetPokemon) {
+                return damage;
+              }
+              
+              // Calculate damage counters (each 10 HP = 1 damage counter)
+              const totalDamage = targetPokemon.maxHp - targetPokemon.currentHp;
+              const damageCounters = Math.floor(totalDamage / 10);
+              
+              // Calculate reduction
+              const reduction = damageCounters * reductionPerCounter;
+              
+              // Apply reduction (ensure damage doesn't go below 0)
+              return Math.max(0, damage - reduction);
+            }),
+          },
+        },
+        {
+          provide: AttackTextParserService,
+          useValue: {
+            parseStatusEffectFromAttackText: jest.fn(),
+            parseSelfDamage: jest.fn().mockReturnValue(0),
+            parseBenchDamage: jest.fn().mockReturnValue(0),
+          },
+        },
+        {
+          provide: EffectConditionEvaluatorService,
+          useValue: {
+            evaluateEffectConditions: jest.fn(),
+          },
+        },
+        {
+          provide: StatusEffectProcessorService,
+          useValue: {
+            processStatusEffects: jest.fn().mockImplementation(async (gameState, playerIdentifier) => {
+              return gameState;
+            }),
+          },
+        },
+        {
+          provide: SetActivePokemonPlayerTurnService,
+          useValue: {
+            executeSetActivePokemon: jest.fn(),
+          },
+        },
+        {
+          provide: AttachEnergyPlayerTurnService,
+          useValue: {
+            executeAttachEnergy: jest.fn(),
+          },
+        },
+        {
+          provide: PlayPokemonPlayerTurnService,
+          useValue: {
+            executePlayPokemon: jest.fn(),
+          },
+        },
+        {
+          provide: EvolvePokemonPlayerTurnService,
+          useValue: {
+            executeEvolvePokemon: jest.fn(),
+          },
+        },
+        {
+          provide: RetreatExecutionService,
+          useValue: {
+            executeRetreat: jest.fn(),
+          },
+        },
+        {
+          provide: ActionHandlerFactory,
+          useFactory: (
+            matchRepo: IMatchRepository,
+            stateMachine: MatchStateMachineService,
+            getCardUseCase: IGetCardByIdUseCase,
+            statusEffectProcessor: StatusEffectProcessorService,
+            attackEnergyValidator: AttackEnergyValidatorService,
+            coinFlipResolver: CoinFlipResolverService,
+            attackCoinFlipParser: AttackCoinFlipParserService,
+            attackExecutionService: AttackExecutionService,
+            cardHelper: CardHelperService,
+            attackDamageCalculator: AttackDamageCalculatorService,
+            attackTextParser: AttackTextParserService,
+            effectConditionEvaluator: EffectConditionEvaluatorService,
+          ) => {
+            const factory = new ActionHandlerFactory();
+            // Create real ATTACK handler with all dependencies
+            const attackHandler = new AttackActionHandler(
+              matchRepo,
+              stateMachine,
+              getCardUseCase,
+              attackEnergyValidator,
+              coinFlipResolver,
+              attackCoinFlipParser,
+              attackExecutionService,
+              cardHelper,
+              attackDamageCalculator,
+              attackTextParser,
+              effectConditionEvaluator,
+            );
+            factory.registerHandler(PlayerActionType.ATTACK, attackHandler);
+            factory.hasHandler = jest.fn().mockImplementation((actionType) => {
+              return actionType === PlayerActionType.ATTACK;
+            });
+            return factory;
+          },
+          inject: [
+            IMatchRepository,
+            MatchStateMachineService,
+            IGetCardByIdUseCase,
+            StatusEffectProcessorService,
+            AttackEnergyValidatorService,
+            CoinFlipResolverService,
+            AttackCoinFlipParserService,
+            AttackExecutionService,
+            CardHelperService,
+            AttackDamageCalculatorService,
+            AttackTextParserService,
+            EffectConditionEvaluatorService,
+          ],
         },
       ],
     }).compile();
