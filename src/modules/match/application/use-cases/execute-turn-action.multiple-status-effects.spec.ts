@@ -50,6 +50,7 @@ import {
   PlayPokemonPlayerTurnService,
   EvolvePokemonPlayerTurnService,
   RetreatExecutionService,
+  AvailableActionsService,
 } from '../services';
 import { EvolutionExecutionService as RealEvolutionExecutionService } from '../services/evolution-execution.service';
 import {
@@ -90,6 +91,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       checkWinConditions: jest
         .fn()
         .mockReturnValue({ hasWinner: false, winner: null }),
+      getAvailableActions: jest.fn().mockReturnValue([]),
     } as any;
 
     // Create mock CardHelperService for RealEvolutionExecutionService
@@ -498,6 +500,13 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
           },
         },
         {
+          provide: AvailableActionsService,
+          useFactory: (stateMachine: MatchStateMachineService) => {
+            return new AvailableActionsService(stateMachine);
+          },
+          inject: [MatchStateMachineService],
+        },
+        {
           provide: ActionHandlerFactory,
           useFactory: (
             matchRepo: IMatchRepository,
@@ -767,7 +776,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         new CoinFlipResult(0, 'heads', 12345),
       );
 
-      const result1 = await useCase.execute({
+      const { match: result1 } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'test-player-1',
         actionType: 'ATTACK',
@@ -854,7 +863,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       updatedMatch2.updateGameState(updatedGameState2);
       mockMatchRepository.findById.mockResolvedValue(updatedMatch2);
 
-      const result2 = await useCase.execute({
+      const { match: result2 } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'test-player-1',
         actionType: 'ATTACK',
@@ -984,7 +993,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       mockMatchRepository.save.mockImplementation(async (m) => m);
 
       // Act 1: Apply POISONED
-      const result1 = await useCase.execute({
+      const { match: result1 } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'test-player-1',
         actionType: 'ATTACK',
@@ -1067,7 +1076,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       updatedMatch2.updateGameState(updatedGameState2);
       mockMatchRepository.findById.mockResolvedValue(updatedMatch2);
 
-      const result2 = await useCase.execute({
+      const { match: result2 } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'test-player-1',
         actionType: 'ATTACK',
@@ -1153,7 +1162,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       mockMatchRepository.save.mockImplementation(async (m) => m);
 
       // Act: End turn (triggers between-turns processing)
-      const result = await useCase.execute({
+      const { match: result } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'test-player-1',
         actionType: 'END_TURN',
@@ -1393,7 +1402,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       mockMatchRepository.save.mockImplementation(async (m) => m);
 
       // Act: Evolve Pokemon
-      const result = await useCase.execute({
+      const { match: result } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'test-player-1',
         actionType: 'EVOLVE_POKEMON',

@@ -15,6 +15,7 @@ import {
   DrawInitialCardsUseCase,
   SetPrizeCardsUseCase,
   CancelMatchUseCase,
+  ProcessActionUseCase,
 } from './application/use-cases';
 import { IMatchRepository } from './domain/repositories';
 import { FileSystemMatchRepository } from './infrastructure/persistence/filesystem-match.repository';
@@ -48,6 +49,8 @@ import {
   PlayPokemonPlayerTurnService,
   EvolvePokemonPlayerTurnService,
   RetreatExecutionService,
+  AvailableActionsService,
+  PlayerTypeService,
 } from './application/services';
 import { DeckModule } from '../deck/deck.module';
 import { CardModule } from '../card/card.module';
@@ -71,6 +74,10 @@ import {
   AttackActionHandler,
 } from './application/handlers/handlers';
 import { PlayerActionType } from './domain/enums';
+import {
+  IAiActionGeneratorService,
+} from './application/ports/ai-action-generator.interface';
+import { SimpleAiActionGeneratorService } from './infrastructure/ai/simple-ai-action-generator.service';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
 const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
@@ -105,6 +112,7 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     DrawInitialCardsUseCase,
     SetPrizeCardsUseCase,
     CancelMatchUseCase,
+    ProcessActionUseCase,
     // Domain Services
     MatchStateMachineService,
     StartGameRulesValidatorService,
@@ -132,6 +140,9 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     PlayPokemonPlayerTurnService,
     EvolvePokemonPlayerTurnService,
     RetreatExecutionService,
+    // Action Services
+    AvailableActionsService,
+    PlayerTypeService,
     // Action Handlers (Strategy Pattern)
     ActionHandlerFactory,
     ConcedeActionHandler,
@@ -240,6 +251,11 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
         GenerateCoinFlipActionHandler,
         AttackActionHandler,
       ],
+    },
+    // AI Service (stub implementation for now)
+    {
+      provide: IAiActionGeneratorService,
+      useClass: SimpleAiActionGeneratorService,
     },
     // Repository - conditionally provide based on NODE_ENV
     {

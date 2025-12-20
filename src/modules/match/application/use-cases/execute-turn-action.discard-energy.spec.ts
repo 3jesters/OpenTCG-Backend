@@ -28,6 +28,7 @@ import {
   PlayPokemonPlayerTurnService,
   EvolvePokemonPlayerTurnService,
   RetreatExecutionService,
+  AvailableActionsService,
 } from '../services';
 import {
   AttackDamageCalculatorService,
@@ -206,6 +207,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
     mockStateMachineService = {
       validateAction: jest.fn().mockReturnValue({ isValid: true }),
       checkWinConditions: jest.fn().mockReturnValue({ hasWinner: false }),
+      getAvailableActions: jest.fn().mockReturnValue([]),
     } as any;
 
     mockGetCardByIdUseCase = {
@@ -468,6 +470,13 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
           },
         },
         {
+          provide: AvailableActionsService,
+          useFactory: (stateMachine: MatchStateMachineService) => {
+            return new AvailableActionsService(stateMachine);
+          },
+          inject: [MatchStateMachineService],
+        },
+        {
           provide: ActionHandlerFactory,
           useFactory: (
             matchRepo: IMatchRepository,
@@ -650,7 +659,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
 
-      const result = await useCase.execute({
+      const { match: result } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'player1',
         actionType: PlayerActionType.ATTACK,
@@ -805,7 +814,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
 
-      const result = await useCase.execute({
+      const { match: result } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'player1',
         actionType: PlayerActionType.ATTACK,
@@ -953,7 +962,7 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
 
-      const result = await useCase.execute({
+      const { match: result } = await useCase.execute({
         matchId: 'match-1',
         playerId: 'player1',
         actionType: PlayerActionType.ATTACK,

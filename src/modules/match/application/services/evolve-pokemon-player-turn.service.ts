@@ -99,7 +99,7 @@ export class EvolvePokemonPlayerTurnService {
       {
         evolutionCardId,
         target,
-        targetInstanceId: result.targetInstanceId,
+        instanceId: result.targetInstanceId,
       },
     );
 

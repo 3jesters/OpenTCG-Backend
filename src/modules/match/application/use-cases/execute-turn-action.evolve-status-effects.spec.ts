@@ -26,6 +26,7 @@ import {
   PlayPokemonPlayerTurnService,
   EvolvePokemonPlayerTurnService,
   RetreatExecutionService,
+  AvailableActionsService,
 } from '../services';
 import { EvolutionExecutionService as RealEvolutionExecutionService } from '../services/evolution-execution.service';
 import {
@@ -201,6 +202,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
             canTransition: jest.fn().mockReturnValue(true),
             transition: jest.fn(),
             validateAction: jest.fn().mockReturnValue({ isValid: true }),
+            getAvailableActions: jest.fn().mockReturnValue([]),
           },
         },
         {
@@ -427,6 +429,13 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
           },
         },
         {
+          provide: AvailableActionsService,
+          useFactory: (stateMachine: MatchStateMachineService) => {
+            return new AvailableActionsService(stateMachine);
+          },
+          inject: [MatchStateMachineService],
+        },
+        {
           provide: ActionHandlerFactory,
           useValue: {
             hasHandler: jest.fn().mockReturnValue(false),
@@ -504,7 +513,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify status effect is cleared, poison damage amount is cleared, but damage is preserved
       const evolvedPokemon = result.gameState?.player1State.activePokemon;
@@ -572,7 +581,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify confused status is cleared, damage and energy preserved
       const evolvedPokemon = result.gameState?.player1State.activePokemon;
@@ -642,7 +651,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify asleep status is cleared, damage preserved
       const evolvedPokemon = result.gameState?.player1State.activePokemon;
@@ -706,7 +715,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify paralyzed status is cleared, damage preserved
       const evolvedPokemon = result.gameState?.player1State.activePokemon;
@@ -770,7 +779,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify burned status is cleared, damage preserved
       const evolvedPokemon = result.gameState?.player1State.activePokemon;
@@ -839,7 +848,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify status effect is cleared on bench Pokemon
       const evolvedPokemon = result.gameState?.player1State.bench[0];
@@ -905,7 +914,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify status effect is cleared, Pokemon has full HP after evolution
       const evolvedPokemon = result.gameState?.player1State.activePokemon;
@@ -971,7 +980,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify status effect is cleared, damage preserved (knocked out)
       const evolvedPokemon = result.gameState?.player1State.activePokemon;

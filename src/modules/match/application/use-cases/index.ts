@@ -11,3 +11,4 @@ export * from './validate-match-decks.use-case';
 export * from './draw-initial-cards.use-case';
 export * from './set-prize-cards.use-case';
 export * from './cancel-match.use-case';
+export * from './process-action.use-case';

@@ -37,6 +37,7 @@ import {
   PlayPokemonPlayerTurnService,
   EvolvePokemonPlayerTurnService,
   RetreatExecutionService,
+  AvailableActionsService,
 } from '../services';
 import {
   EffectConditionEvaluatorService,
@@ -65,6 +66,7 @@ export class ExecuteTurnActionUseCase {
     private readonly playPokemonPlayerTurnService: PlayPokemonPlayerTurnService,
     private readonly evolvePokemonPlayerTurnService: EvolvePokemonPlayerTurnService,
     private readonly retreatExecutionService: RetreatExecutionService,
+    private readonly availableActionsService: AvailableActionsService,
   ) {}
 
   // ============================================================================
@@ -75,7 +77,9 @@ export class ExecuteTurnActionUseCase {
    * Main entry point for executing player actions
    * Routes actions to appropriate handlers based on match state
    */
-  async execute(dto: ExecuteActionDto): Promise<Match> {
+  async execute(
+    dto: ExecuteActionDto,
+  ): Promise<{ match: Match; availableActions: PlayerActionType[] }> {
     // Find match
     const match = await this.matchRepository.findById(dto.matchId);
     if (!match) {
@@ -123,13 +127,14 @@ export class ExecuteTurnActionUseCase {
     if (this.actionHandlerFactory.hasHandler(dto.actionType)) {
       const handler = this.actionHandlerFactory.getHandler(dto.actionType);
       try {
-        return await handler.execute(
+        const updatedMatch = await handler.execute(
           dto,
           match,
           gameState,
           playerIdentifier,
           this.cardsMap,
         );
+        return this.wrapWithAvailableActions(updatedMatch, playerIdentifier);
       } catch (error) {
         // ATTACK handler delegates back - allow fallthrough
         if (
@@ -145,40 +150,51 @@ export class ExecuteTurnActionUseCase {
     }
 
     // State machine router - route to state-specific handlers
+    let updatedMatch: Match;
     switch (match.state) {
       case MatchState.SELECT_ACTIVE_POKEMON:
-        return this.handleSelectActivePokemonState(
+        updatedMatch = await this.handleSelectActivePokemonState(
           dto,
           match,
           gameState,
-        playerIdentifier,
+          playerIdentifier,
         );
+        break;
 
       case MatchState.SELECT_BENCH_POKEMON:
-        return this.handleSelectBenchPokemonState(
+        updatedMatch = await this.handleSelectBenchPokemonState(
           dto,
           match,
           gameState,
           playerIdentifier,
         );
+        break;
 
       case MatchState.FIRST_PLAYER_SELECTION:
-        return this.handleFirstPlayerSelectionState(
+        updatedMatch = await this.handleFirstPlayerSelectionState(
           dto,
           match,
           playerIdentifier,
         );
+        break;
 
       case MatchState.INITIAL_SETUP:
-        return this.handleInitialSetupState(dto, match, gameState, playerIdentifier);
-
-      case MatchState.PLAYER_TURN:
-        return this.handlePlayerTurnState(
+        updatedMatch = await this.handleInitialSetupState(
           dto,
           match,
           gameState,
           playerIdentifier,
         );
+        break;
+
+      case MatchState.PLAYER_TURN:
+        updatedMatch = await this.handlePlayerTurnState(
+          dto,
+          match,
+          gameState,
+          playerIdentifier,
+        );
+        break;
 
       // Other states are handled by action handlers (MATCH_APPROVAL, DRAWING_CARDS, SET_PRIZE_CARDS, etc.)
       default:
@@ -186,6 +202,23 @@ export class ExecuteTurnActionUseCase {
           `Action ${dto.actionType} could not be processed in state ${match.state}`,
         );
     }
+
+    return this.wrapWithAvailableActions(updatedMatch, playerIdentifier);
+  }
+
+  /**
+   * Helper method to wrap match with available actions
+   */
+  private wrapWithAvailableActions(
+    match: Match,
+    playerIdentifier: PlayerIdentifier,
+  ): { match: Match; availableActions: PlayerActionType[] } {
+    const availableActions =
+      this.availableActionsService.getFilteredAvailableActions(
+        match,
+        playerIdentifier,
+      );
+    return { match, availableActions };
   }
 
   // ============================================================================

@@ -9,4 +9,6 @@ export * from './attach-energy-player-turn.service';
 export * from './play-pokemon-player-turn.service';
 export * from './evolve-pokemon-player-turn.service';
 export * from './retreat-execution.service';
+export * from './available-actions.service';
+export * from './player-type.service';
 

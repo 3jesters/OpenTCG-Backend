@@ -29,6 +29,7 @@ import {
   PlayPokemonPlayerTurnService,
   EvolvePokemonPlayerTurnService,
   RetreatExecutionService,
+  AvailableActionsService,
 } from '../services';
 import { EvolutionExecutionService as RealEvolutionExecutionService } from '../services/evolution-execution.service';
 import {
@@ -162,6 +163,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
     mockStateMachineService = {
       validateAction: jest.fn().mockReturnValue({ isValid: true }),
       checkWinConditions: jest.fn().mockReturnValue({ hasWinner: false }),
+      getAvailableActions: jest.fn().mockReturnValue([]),
     } as any;
 
     mockGetCardByIdUseCase = {
@@ -484,6 +486,13 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
           },
         },
         {
+          provide: AvailableActionsService,
+          useFactory: (stateMachine: MatchStateMachineService) => {
+            return new AvailableActionsService(stateMachine);
+          },
+          inject: [MatchStateMachineService],
+        },
+        {
           provide: ActionHandlerFactory,
           useFactory: (
             matchRepo: IMatchRepository,
@@ -574,7 +583,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert
       expect(result).toBeDefined();
@@ -641,7 +650,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert
       expect(result).toBeDefined();
@@ -701,7 +710,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert
       expect(result).toBeDefined();
@@ -759,7 +768,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert
       expect(result).toBeDefined();
@@ -815,7 +824,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert
       expect(result).toBeDefined();
@@ -871,7 +880,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Act
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert
       expect(result).toBeDefined();
@@ -1613,7 +1622,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Execute first evolution
-      const matchAfterFirstEvolution = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterFirstEvolution } = await useCase.execute(firstEvolutionDto);
 
       // Verify that after first evolution, evolvedAt is set to current turn number
       expect(
@@ -1733,7 +1742,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Execute first evolution
-      const matchAfterFirstEvolution = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterFirstEvolution } = await useCase.execute(firstEvolutionDto);
 
       // Now evolve a different Pokemon (Bulbasaur -> Ivysaur)
       // This should be allowed since it's a different instanceId
@@ -1756,7 +1765,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Act & Assert - should succeed
-      const result = await useCase.execute(secondEvolutionDto);
+      const { match: result } = await useCase.execute(secondEvolutionDto);
       expect(result).toBeDefined();
     });
   });
@@ -1825,7 +1834,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Execute first evolution
-      const matchAfterFirstEvolution = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterFirstEvolution } = await useCase.execute(firstEvolutionDto);
 
       // Verify that lastAction contains the evolution
       expect(matchAfterFirstEvolution.gameState?.lastAction).toBeDefined();
@@ -1937,7 +1946,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const matchAfterEvolution = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterEvolution } = await useCase.execute(firstEvolutionDto);
 
       // Step 2: Attach energy (this becomes the new lastAction)
       // This means the evolution is now in actionHistory, not lastAction
@@ -1959,7 +1968,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const matchAfterEnergy = await useCase.execute(attachEnergyDto);
+      const { match: matchAfterEnergy } = await useCase.execute(attachEnergyDto);
 
       // Verify that lastAction is now ATTACH_ENERGY, not EVOLVE_POKEMON
       expect(matchAfterEnergy.gameState?.lastAction).toBeDefined();
@@ -2062,7 +2071,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const matchAfterEvolution = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterEvolution } = await useCase.execute(firstEvolutionDto);
 
       // Step 2: End turn (creates END_TURN action boundary)
       mockMatchRepository.findById.mockResolvedValue(matchAfterEvolution);
@@ -2075,7 +2084,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         actionData: {},
       };
 
-      const matchAfterEndTurn = await useCase.execute(endTurnDto);
+      const { match: matchAfterEndTurn } = await useCase.execute(endTurnDto);
 
       // Verify that lastAction is END_TURN
       expect(matchAfterEndTurn.gameState?.lastAction).toBeDefined();
@@ -2256,7 +2265,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert
       expect(result.gameState?.player1State.activePokemon?.cardId).toBe(
@@ -2412,7 +2421,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const result1 = await useCase.execute(dto1);
+      const { match: result1 } = await useCase.execute(dto1);
       expect(result1.gameState?.player1State.bench[0]?.cardId).toBe(
         'charizard-id',
       );
@@ -2465,7 +2474,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const result2 = await useCase.execute(dto2);
+      const { match: result2 } = await useCase.execute(dto2);
       expect(result2.gameState?.player1State.bench[1]?.cardId).toBe(
         'charizard-id',
       );
@@ -2536,7 +2545,7 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const result = await useCase.execute(dto);
+      const { match: result } = await useCase.execute(dto);
 
       // Assert: Verify that evolved Pokemon has evolvedAt = 5
       expect(result.gameState?.player1State.activePokemon?.evolvedAt).toBe(5);
