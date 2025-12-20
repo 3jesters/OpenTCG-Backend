@@ -4,8 +4,8 @@ import {
   TurnPhase,
   PlayerActionType,
   ActionValidationError,
-} from '../enums';
-import { GameState } from '../value-objects';
+} from '../../enums';
+import { GameState } from '../../value-objects';
 
 /**
  * Match State Machine Service

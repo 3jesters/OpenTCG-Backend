@@ -11,8 +11,8 @@ import {
 } from '../../../domain';
 import { Card } from '../../../../card/domain/entities';
 import { AbilityActionData } from '../../../domain/types/ability-action-data.types';
-import { AbilityEffectExecutorService } from '../../../domain/services/ability-effect-executor.service';
-import { AbilityEffectValidatorService } from '../../../domain/services/ability-effect-validator.service';
+import { AbilityEffectExecutorService } from '../../../domain/services/effects/ability/ability-effect-executor.service';
+import { AbilityEffectValidatorService } from '../../../domain/services/effects/ability/ability-effect-validator.service';
 import { IMatchRepository } from '../../../domain/repositories';
 import { MatchStateMachineService } from '../../../domain/services';
 import { IGetCardByIdUseCase } from '../../../../card/application/ports/card-use-cases.interface';

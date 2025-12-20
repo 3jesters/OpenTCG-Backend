@@ -1,5 +1,5 @@
 import { AttackCoinFlipParserService } from './attack-coin-flip-parser.service';
-import { DamageCalculationType } from '../value-objects/coin-flip-configuration.value-object';
+import { DamageCalculationType } from '../../../value-objects/coin-flip-configuration.value-object';
 
 describe('AttackCoinFlipParserService - STATUS_EFFECT_ONLY Validation', () => {
   let parser: AttackCoinFlipParserService;

@@ -35,7 +35,14 @@ import {
   TrainerEffectValidatorService,
   AbilityEffectExecutorService,
   AbilityEffectValidatorService,
-    StatusEffectProcessorService,
+  StatusEffectProcessorService,
+  AttackEnergyCostService,
+  AttackDamageCalculationService,
+  WeaknessResistanceService,
+  DamagePreventionService,
+  AttackStatusEffectService,
+  AttackDamageApplicationService,
+  AttackKnockoutService,
 } from './domain/services';
 import {
   EnergyAttachmentExecutionService,
@@ -127,6 +134,14 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     AbilityEffectExecutorService,
     AbilityEffectValidatorService,
     StatusEffectProcessorService,
+    // Attack Domain Services
+    AttackEnergyCostService,
+    AttackDamageCalculationService,
+    WeaknessResistanceService,
+    DamagePreventionService,
+    AttackStatusEffectService,
+    AttackDamageApplicationService,
+    AttackKnockoutService,
     // Execution Services
     EnergyAttachmentExecutionService,
     EvolutionExecutionService,
@@ -160,7 +175,6 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     EndTurnActionHandler,
     GenerateCoinFlipActionHandler,
     AttackActionHandler,
-    StatusEffectProcessorService,
     // Register handlers in factory
     {
       provide: 'ACTION_HANDLER_REGISTRATION',

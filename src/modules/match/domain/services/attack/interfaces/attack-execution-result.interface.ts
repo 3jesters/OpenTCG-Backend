@@ -1,6 +1,6 @@
-import { PlayerGameState } from '../value-objects';
-import { StatusEffect } from '../enums/status-effect.enum';
-import { CoinFlipResult } from '../value-objects/coin-flip-result.value-object';
+import { PlayerGameState } from '../../../value-objects';
+import { StatusEffect } from '../../../enums/status-effect.enum';
+import { CoinFlipResult } from '../../../value-objects/coin-flip-result.value-object';
 
 /**
  * Result of attack execution

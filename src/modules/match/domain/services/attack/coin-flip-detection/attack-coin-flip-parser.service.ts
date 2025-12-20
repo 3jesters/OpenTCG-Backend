@@ -2,7 +2,7 @@ import {
   CoinFlipConfiguration,
   CoinFlipCountType,
   DamageCalculationType,
-} from '../value-objects/coin-flip-configuration.value-object';
+} from '../../../value-objects/coin-flip-configuration.value-object';
 
 /**
  * Attack Coin Flip Parser Service

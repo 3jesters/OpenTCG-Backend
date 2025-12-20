@@ -1,7 +1,7 @@
 import { AttackEnergyValidatorService } from './attack-energy-validator.service';
-import { Attack } from '../../../card/domain/value-objects/attack.value-object';
-import { EnergyType, CardType } from '../../../card/domain/enums';
-import { EnergyProvision } from '../../../card/domain/value-objects/energy-provision.value-object';
+import { Attack } from '../../../../../card/domain/value-objects/attack.value-object';
+import { EnergyType, CardType } from '../../../../../card/domain/enums';
+import { EnergyProvision } from '../../../../../card/domain/value-objects/energy-provision.value-object';
 
 describe('AttackEnergyValidatorService', () => {
   let service: AttackEnergyValidatorService;

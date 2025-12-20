@@ -23,18 +23,27 @@ import { Attack } from '../../../card/domain/value-objects/attack.value-object';
 import { AttackEffectFactory } from '../../../card/domain/value-objects/attack-effect.value-object';
 import { ConditionFactory } from '../../../card/domain/value-objects/condition.value-object';
 import { IMatchRepository } from '../../domain/repositories/match.repository.interface';
-import { MatchStateMachineService } from '../../domain/services/match-state-machine.service';
+import { MatchStateMachineService } from '../../domain/services/game-state/match-state-machine.service';
 import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
-import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
-import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
-import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
-import { TrainerEffectExecutorService } from '../../domain/services/trainer-effect-executor.service';
-import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
-import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
-import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
-import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
+import { CoinFlipResolverService } from '../../domain/services/coin-flip/coin-flip-resolver.service';
+import { AttackCoinFlipParserService } from '../../domain/services/attack/coin-flip-detection/attack-coin-flip-parser.service';
+import { AttackEnergyValidatorService } from '../../domain/services/attack/energy-requirements/attack-energy-validator.service';
+import { TrainerEffectExecutorService } from '../../domain/services/effects/trainer/trainer-effect-executor.service';
+import { TrainerEffectValidatorService } from '../../domain/services/effects/trainer/trainer-effect-validator.service';
+import { AbilityEffectExecutorService } from '../../domain/services/effects/ability/ability-effect-executor.service';
+import { AbilityEffectValidatorService } from '../../domain/services/effects/ability/ability-effect-validator.service';
+import { StatusEffectProcessorService } from '../../domain/services/status/status-effect-processor.service';
+import { AttackEnergyCostService } from '../../domain/services/attack/energy-costs/attack-energy-cost.service';
+import { AttackDamageCalculationService } from '../../domain/services/attack/attack-damage-calculation.service';
+import { AttackStatusEffectService } from '../../domain/services/attack/status-effects/attack-status-effect.service';
+import { AttackDamageApplicationService } from '../../domain/services/attack/damage-application/attack-damage-application.service';
+import { AttackKnockoutService } from '../../domain/services/attack/damage-application/attack-knockout.service';
+import { AttackDamageCalculatorService } from '../../domain/services/attack/damage-bonuses/attack-damage-calculator.service';
+import { AttackTextParserService } from '../../domain/services/attack/damage-bonuses/attack-text-parser.service';
+import { WeaknessResistanceService } from '../../domain/services/attack/damage-modifiers/weakness-resistance.service';
+import { DamagePreventionService } from '../../domain/services/attack/damage-modifiers/damage-prevention.service';
 import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
 import { AttackActionHandler } from '../handlers/handlers/attack-action-handler';
 import { PlayerActionType } from '../../domain/enums/player-action-type.enum';
@@ -277,22 +286,226 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
           },
         },
         {
+          provide: AttackEnergyCostService,
+          useValue: {
+            processEnergyCost: jest.fn().mockImplementation(async (params) => {
+              // Get the current player state from gameState
+              const playerState = params.gameState.getPlayerState(params.playerIdentifier);
+              
+              // If there are selectedEnergyIds, discard them
+              if (params.selectedEnergyIds && params.selectedEnergyIds.length > 0 && playerState.activePokemon) {
+                const updatedAttachedEnergy = playerState.activePokemon.attachedEnergy.filter(
+                  (id) => !params.selectedEnergyIds.includes(id),
+                );
+                const updatedAttacker = playerState.activePokemon.withAttachedEnergy(updatedAttachedEnergy);
+                const updatedDiscardPile = [...playerState.discardPile, ...params.selectedEnergyIds];
+                const updatedPlayerState = playerState
+                  .withActivePokemon(updatedAttacker)
+                  .withDiscardPile(updatedDiscardPile);
+                
+                const updatedGameState =
+                  params.playerIdentifier === PlayerIdentifier.PLAYER1
+                    ? params.gameState.withPlayer1State(updatedPlayerState)
+                    : params.gameState.withPlayer2State(updatedPlayerState);
+                
+                return {
+                  updatedGameState,
+                  updatedPlayerState,
+                };
+              }
+              
+              // No energy to discard, return unchanged
+              return {
+                updatedGameState: params.gameState,
+                updatedPlayerState: playerState,
+              };
+            }),
+          },
+        },
+        {
+          provide: AttackDamageCalculationService,
+          useFactory: (
+            attackDamageCalculator: AttackDamageCalculatorService,
+            weaknessResistance: WeaknessResistanceService,
+            damagePrevention: DamagePreventionService,
+          ) => {
+            return new AttackDamageCalculationService(
+              attackDamageCalculator,
+              weaknessResistance,
+              damagePrevention,
+            );
+          },
+          inject: [
+            AttackDamageCalculatorService,
+            WeaknessResistanceService,
+            DamagePreventionService,
+          ],
+        },
+        {
+          provide: AttackStatusEffectService,
+          useValue: {
+            applyStatusEffects: jest.fn().mockImplementation(async (params) => {
+              let updatedPokemon = params.targetPokemon;
+              let statusApplied = false;
+              let appliedStatus: StatusEffect | null = null;
+
+              // Check for structured status effects in attack
+              if (params.attack?.hasEffects?.()) {
+                const statusEffects = params.attack.getEffectsByType?.(
+                  AttackEffectType.STATUS_CONDITION,
+                ) || [];
+                for (const statusEffect of statusEffects) {
+                  // Check if conditions are met
+                  const conditionsMet = await params.evaluateEffectConditions?.(
+                    statusEffect.requiredConditions || [],
+                    params.gameState,
+                    params.playerIdentifier,
+                    params.playerState,
+                    params.opponentState,
+                  ) ?? true;
+
+                  if (conditionsMet && statusEffect.statusCondition) {
+                    // Map status condition to StatusEffect enum
+                    let statusToApply: StatusEffect | null = null;
+                    const statusCondition = statusEffect.statusCondition.toString().toUpperCase();
+                    if (statusCondition === 'POISONED' || statusCondition === StatusEffect.POISONED) {
+                      statusToApply = StatusEffect.POISONED;
+                    } else if (statusCondition === 'CONFUSED' || statusCondition === StatusEffect.CONFUSED) {
+                      statusToApply = StatusEffect.CONFUSED;
+                    } else if (statusCondition === 'BURNED' || statusCondition === StatusEffect.BURNED) {
+                      statusToApply = StatusEffect.BURNED;
+                    } else if (statusCondition === 'PARALYZED' || statusCondition === StatusEffect.PARALYZED) {
+                      statusToApply = StatusEffect.PARALYZED;
+                    } else if (statusCondition === 'ASLEEP' || statusCondition === StatusEffect.ASLEEP) {
+                      statusToApply = StatusEffect.ASLEEP;
+                    }
+
+                    if (statusToApply && updatedPokemon && typeof updatedPokemon.withStatusEffectAdded === 'function') {
+                      updatedPokemon = updatedPokemon.withStatusEffectAdded(
+                        statusToApply,
+                        statusToApply === StatusEffect.POISONED ? 10 : undefined,
+                      );
+                      statusApplied = true;
+                      appliedStatus = statusToApply;
+                    }
+                  }
+                }
+              }
+
+              // Fallback: parse from attack text if no structured effects applied
+              if (!statusApplied && params.parseStatusEffectFromAttackText) {
+                const parsedStatus = params.parseStatusEffectFromAttackText(params.attackText);
+                if (parsedStatus && updatedPokemon && typeof updatedPokemon.withStatusEffectAdded === 'function') {
+                  updatedPokemon = updatedPokemon.withStatusEffectAdded(parsedStatus);
+                  statusApplied = true;
+                  appliedStatus = parsedStatus;
+                }
+              }
+
+              return {
+                updatedPokemon: updatedPokemon || params.targetPokemon || {} as any,
+                statusApplied,
+                appliedStatus,
+              };
+            }),
+          },
+        },
+        {
+          provide: AttackDamageApplicationService,
+          useValue: {
+            applyActiveDamage: jest.fn().mockImplementation((params) => {
+              // Use the actual CardInstance method to preserve all methods
+              if (params.pokemon && typeof params.pokemon.withHp === 'function') {
+                const newHp = Math.max(0, (params.pokemon.currentHp || 0) - (params.damage || 0));
+                return params.pokemon.withHp(newHp);
+              }
+              // Fallback if pokemon is not a CardInstance
+              const newHp = Math.max(0, ((params.pokemon as any)?.currentHp || 0) - (params.damage || 0));
+              return {
+                ...params.pokemon,
+                currentHp: newHp,
+              } as any;
+            }),
+            applySelfDamage: jest.fn().mockImplementation((params) => {
+              const newHp = Math.max(0, (params.attackerPokemon?.currentHp || 0) - (params.selfDamage || 0));
+              return {
+                updatedPokemon: newHp === 0 ? null : {
+                  ...params.attackerPokemon,
+                  currentHp: newHp,
+                },
+                isKnockedOut: newHp === 0,
+              };
+            }),
+            applyBenchDamage: jest.fn().mockReturnValue({
+              updatedBench: [],
+              knockedOutBench: [],
+            }),
+          },
+        },
+        {
+          provide: AttackKnockoutService,
+          useValue: {
+            handleActiveKnockout: jest.fn().mockImplementation((params) => {
+              if (!params.pokemon) {
+                return {
+                  updatedState: params.playerState,
+                  cardsToDiscard: [],
+                };
+              }
+              const cardsToDiscard = params.pokemon.getAllCardsToDiscard?.() || [];
+              const discardPile = [...params.playerState.discardPile, ...cardsToDiscard];
+              const updatedState = params.playerState
+                .withActivePokemon(null)
+                .withDiscardPile(discardPile);
+              return {
+                updatedState,
+                cardsToDiscard,
+              };
+            }),
+            handleBenchKnockout: jest.fn().mockImplementation((knockedOutBench, playerState) => {
+              if (knockedOutBench.length === 0) {
+                return playerState;
+              }
+              const cardsToDiscard = knockedOutBench.flatMap((p) =>
+                p.getAllCardsToDiscard?.() || [],
+              );
+              const discardPile = [...playerState.discardPile, ...cardsToDiscard];
+              return playerState.withDiscardPile(discardPile);
+            }),
+          },
+        },
+        {
           provide: AttackExecutionService,
           useFactory: (
             getCardUseCase: IGetCardByIdUseCase,
             attackCoinFlipParser: AttackCoinFlipParserService,
             attackEnergyValidator: AttackEnergyValidatorService,
+            attackEnergyCost: AttackEnergyCostService,
+            attackDamageCalculation: AttackDamageCalculationService,
+            attackStatusEffect: AttackStatusEffectService,
+            attackDamageApplication: AttackDamageApplicationService,
+            attackKnockout: AttackKnockoutService,
           ) => {
             return new AttackExecutionService(
               getCardUseCase,
               attackCoinFlipParser,
               attackEnergyValidator,
+              attackEnergyCost,
+              attackDamageCalculation,
+              attackStatusEffect,
+              attackDamageApplication,
+              attackKnockout,
             );
           },
           inject: [
             IGetCardByIdUseCase,
             AttackCoinFlipParserService,
             AttackEnergyValidatorService,
+            AttackEnergyCostService,
+            AttackDamageCalculationService,
+            AttackStatusEffectService,
+            AttackDamageApplicationService,
+            AttackKnockoutService,
           ],
         },
         {
@@ -395,6 +608,49 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
             parseStatusEffectFromAttackText: jest.fn(),
             parseSelfDamage: jest.fn().mockReturnValue(0),
             parseBenchDamage: jest.fn().mockReturnValue(0),
+          },
+        },
+        {
+          provide: WeaknessResistanceService,
+          useValue: {
+            applyWeakness: jest.fn().mockImplementation((damage, attackerCard, defenderCard) => {
+              // Apply weakness: ×2 if attacker type matches defender weakness
+              if (defenderCard.weakness && attackerCard.pokemonType) {
+                if (defenderCard.weakness.type.toString() === attackerCard.pokemonType.toString()) {
+                  const modifier = defenderCard.weakness.modifier;
+                  if (modifier === '×2') {
+                    return damage * 2;
+                  }
+                }
+              }
+              return damage;
+            }),
+            applyResistance: jest.fn().mockImplementation((damage, attackerCard, defenderCard) => {
+              // Apply resistance: -20 if attacker type matches defender resistance
+              if (defenderCard.resistance && attackerCard.pokemonType) {
+                if (defenderCard.resistance.type.toString() === attackerCard.pokemonType.toString()) {
+                  const modifier = defenderCard.resistance.modifier;
+                  const reduction = parseInt(modifier, 10);
+                  if (!isNaN(reduction)) {
+                    return Math.max(0, damage + reduction); // Note: resistance modifier is negative, so we add it
+                  }
+                }
+              }
+              return damage;
+            }),
+          },
+        },
+        {
+          provide: DamagePreventionService,
+          useValue: {
+            applyDamagePrevention: jest.fn().mockImplementation((damage, gameState, opponentIdentifier, pokemonInstanceId) => {
+              // No damage prevention by default
+              return damage;
+            }),
+            applyDamageReduction: jest.fn().mockImplementation((damage, gameState, opponentIdentifier, pokemonInstanceId) => {
+              // No damage reduction by default
+              return damage;
+            }),
           },
         },
         {

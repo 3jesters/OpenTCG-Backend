@@ -1,6 +1,6 @@
-import { EnergyType, CardType } from '../../../card/domain/enums';
-import { Attack } from '../../../card/domain/value-objects/attack.value-object';
-import { EnergyProvision } from '../../../card/domain/value-objects/energy-provision.value-object';
+import { EnergyType, CardType } from '../../../../../card/domain/enums';
+import { Attack } from '../../../../../card/domain/value-objects/attack.value-object';
+import { EnergyProvision } from '../../../../../card/domain/value-objects/energy-provision.value-object';
 
 /**
  * Interface for energy card data used in validation

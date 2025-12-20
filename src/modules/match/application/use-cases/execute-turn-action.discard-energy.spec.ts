@@ -6,16 +6,21 @@ import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
-import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
-import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
-import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
-import { TrainerEffectExecutorService } from '../../domain/services/trainer-effect-executor.service';
-import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
-import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
-import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
+import { CoinFlipResolverService } from '../../domain/services/coin-flip/coin-flip-resolver.service';
+import { AttackCoinFlipParserService } from '../../domain/services/attack/coin-flip-detection/attack-coin-flip-parser.service';
+import { AttackEnergyValidatorService } from '../../domain/services/attack/energy-requirements/attack-energy-validator.service';
+import { TrainerEffectExecutorService } from '../../domain/services/effects/trainer/trainer-effect-executor.service';
+import { TrainerEffectValidatorService } from '../../domain/services/effects/trainer/trainer-effect-validator.service';
+import { AbilityEffectExecutorService } from '../../domain/services/effects/ability/ability-effect-executor.service';
+import { AbilityEffectValidatorService } from '../../domain/services/effects/ability/ability-effect-validator.service';
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
 import { AttackActionHandler } from '../handlers/handlers/attack-action-handler';
-import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
+import { StatusEffectProcessorService } from '../../domain/services/status/status-effect-processor.service';
+import { AttackEnergyCostService } from '../../domain/services/attack/energy-costs/attack-energy-cost.service';
+import { AttackDamageCalculationService } from '../../domain/services/attack/attack-damage-calculation.service';
+import { AttackStatusEffectService } from '../../domain/services/attack/status-effects/attack-status-effect.service';
+import { AttackDamageApplicationService } from '../../domain/services/attack/damage-application/attack-damage-application.service';
+import { AttackKnockoutService } from '../../domain/services/attack/damage-application/attack-knockout.service';
 import {
   EnergyAttachmentExecutionService,
   EvolutionExecutionService,
@@ -305,22 +310,136 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
           },
         },
         {
+          provide: AttackEnergyCostService,
+          useValue: {
+            processEnergyCost: jest.fn().mockImplementation(async (params) => {
+              // Get the current player state from gameState
+              const playerState = params.gameState.getPlayerState(params.playerIdentifier);
+              
+              // If there are selectedEnergyIds, discard them
+              if (params.selectedEnergyIds && params.selectedEnergyIds.length > 0 && playerState.activePokemon) {
+                const updatedAttachedEnergy = playerState.activePokemon.attachedEnergy.filter(
+                  (id) => !params.selectedEnergyIds.includes(id),
+                );
+                const updatedAttacker = playerState.activePokemon.withAttachedEnergy(updatedAttachedEnergy);
+                const updatedDiscardPile = [...playerState.discardPile, ...params.selectedEnergyIds];
+                const updatedPlayerState = playerState
+                  .withActivePokemon(updatedAttacker)
+                  .withDiscardPile(updatedDiscardPile);
+                
+                const updatedGameState =
+                  params.playerIdentifier === PlayerIdentifier.PLAYER1
+                    ? params.gameState.withPlayer1State(updatedPlayerState)
+                    : params.gameState.withPlayer2State(updatedPlayerState);
+                
+                return {
+                  updatedGameState,
+                  updatedPlayerState,
+                };
+              }
+              
+              // No energy to discard, return unchanged
+              return {
+                updatedGameState: params.gameState,
+                updatedPlayerState: playerState,
+              };
+            }),
+          },
+        },
+        {
+          provide: AttackDamageCalculationService,
+          useValue: {
+            calculateFinalDamage: jest.fn().mockImplementation(async (params) => {
+              // Return the base damage (tests can override this if needed)
+              return params.baseDamage || 0;
+            }),
+          },
+        },
+        {
+          provide: AttackStatusEffectService,
+          useValue: {
+            applyStatusEffects: jest.fn().mockImplementation(async (params) => {
+              // Return the targetPokemon as updatedPokemon (no status effect applied by default)
+              // Preserve the original CardInstance
+              return {
+                updatedPokemon: params.targetPokemon || {} as any,
+                statusApplied: false,
+                appliedStatus: null,
+              };
+            }),
+          },
+        },
+        {
+          provide: AttackDamageApplicationService,
+          useValue: {
+            applyActiveDamage: jest.fn().mockImplementation((params) => {
+              // Use the actual CardInstance method to preserve all methods
+              if (params.pokemon && typeof params.pokemon.withHp === 'function') {
+                const newHp = Math.max(0, (params.pokemon.currentHp || 0) - (params.damage || 0));
+                return params.pokemon.withHp(newHp);
+              }
+              // Fallback if pokemon is not a CardInstance
+              const newHp = Math.max(0, ((params.pokemon as any)?.currentHp || 0) - (params.damage || 0));
+              return {
+                ...params.pokemon,
+                currentHp: newHp,
+              } as any;
+            }),
+            applySelfDamage: jest.fn().mockImplementation((params) => {
+              const newHp = Math.max(0, (params.attackerPokemon?.currentHp || 0) - (params.selfDamage || 0));
+              return {
+                updatedPokemon: newHp === 0 ? null : {
+                  ...params.attackerPokemon,
+                  currentHp: newHp,
+                },
+                isKnockedOut: newHp === 0,
+              };
+            }),
+            applyBenchDamage: jest.fn().mockReturnValue({
+              updatedBench: [],
+              knockedOutBench: [],
+            }),
+          },
+        },
+        {
+          provide: AttackKnockoutService,
+          useValue: {
+            handleActiveKnockout: jest.fn(),
+            handleBenchKnockout: jest.fn(),
+          },
+        },
+        {
           provide: AttackExecutionService,
           useFactory: (
             getCardUseCase: IGetCardByIdUseCase,
             attackCoinFlipParser: AttackCoinFlipParserService,
             attackEnergyValidator: AttackEnergyValidatorService,
+            attackEnergyCost: AttackEnergyCostService,
+            attackDamageCalculation: AttackDamageCalculationService,
+            attackStatusEffect: AttackStatusEffectService,
+            attackDamageApplication: AttackDamageApplicationService,
+            attackKnockout: AttackKnockoutService,
           ) => {
             return new AttackExecutionService(
               getCardUseCase,
               attackCoinFlipParser,
               attackEnergyValidator,
+              attackEnergyCost,
+              attackDamageCalculation,
+              attackStatusEffect,
+              attackDamageApplication,
+              attackKnockout,
             );
           },
           inject: [
             IGetCardByIdUseCase,
             AttackCoinFlipParserService,
             AttackEnergyValidatorService,
+            AttackEnergyCostService,
+            AttackDamageCalculationService,
+            AttackStatusEffectService,
+            AttackDamageApplicationService,
+            AttackKnockoutService,
           ],
         },
         {

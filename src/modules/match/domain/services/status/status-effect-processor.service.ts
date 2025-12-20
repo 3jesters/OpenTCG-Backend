@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerIdentifier } from '../enums';
-import { StatusEffect } from '../enums/status-effect.enum';
+import { PlayerIdentifier } from '../../enums';
+import { StatusEffect } from '../../enums/status-effect.enum';
 import {
   CoinFlipConfiguration,
   CoinFlipState,
   GameState,
-} from '../value-objects';
-import { CoinFlipStatus } from '../enums/coin-flip-status.enum';
-import { CoinFlipContext } from '../enums/coin-flip-context.enum';
-import { CoinFlipCountType } from '../value-objects/coin-flip-configuration.value-object';
-import { DamageCalculationType } from '../value-objects/coin-flip-configuration.value-object';
+} from '../../value-objects';
+import { CoinFlipStatus } from '../../enums/coin-flip-status.enum';
+import { CoinFlipContext } from '../../enums/coin-flip-context.enum';
+import { CoinFlipCountType } from '../../value-objects/coin-flip-configuration.value-object';
+import { DamageCalculationType } from '../../value-objects/coin-flip-configuration.value-object';
 
 /**
  * Status Effect Processor Service

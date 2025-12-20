@@ -1,21 +1,21 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
-import { Ability } from '../../../card/domain/value-objects/ability.value-object';
-import { AbilityActivationType } from '../../../card/domain/enums/ability-activation-type.enum';
-import { UsageLimit } from '../../../card/domain/enums/usage-limit.enum';
-import { StatusEffect } from '../enums/status-effect.enum';
-import { GameState } from '../value-objects/game-state.value-object';
-import { PlayerIdentifier } from '../enums/player-identifier.enum';
-import { AbilityActionData } from '../types/ability-action-data.types';
-import { CardInstance } from '../value-objects/card-instance.value-object';
-import { AbilityEffectType } from '../../../card/domain/enums/ability-effect-type.enum';
-import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
-import { Card } from '../../../card/domain/entities';
-import { EnergySource } from '../../../card/domain/enums/energy-source.enum';
-import { EnergyType } from '../../../card/domain/enums/energy-type.enum';
-import { PokemonType } from '../../../card/domain/enums/pokemon-type.enum';
-import { CardType } from '../../../card/domain/enums/card-type.enum';
-import { TargetType } from '../../../card/domain/enums/target-type.enum';
-import { PokemonPosition } from '../enums/pokemon-position.enum';
+import { Ability } from '../../../../../card/domain/value-objects/ability.value-object';
+import { AbilityActivationType } from '../../../../../card/domain/enums/ability-activation-type.enum';
+import { UsageLimit } from '../../../../../card/domain/enums/usage-limit.enum';
+import { StatusEffect } from '../../../enums/status-effect.enum';
+import { GameState } from '../../../value-objects/game-state.value-object';
+import { PlayerIdentifier } from '../../../enums/player-identifier.enum';
+import { AbilityActionData } from '../../../types/ability-action-data.types';
+import { CardInstance } from '../../../value-objects/card-instance.value-object';
+import { AbilityEffectType } from '../../../../../card/domain/enums/ability-effect-type.enum';
+import { IGetCardByIdUseCase } from '../../../../../card/application/ports/card-use-cases.interface';
+import { Card } from '../../../../../card/domain/entities';
+import { EnergySource } from '../../../../../card/domain/enums/energy-source.enum';
+import { EnergyType } from '../../../../../card/domain/enums/energy-type.enum';
+import { PokemonType } from '../../../../../card/domain/enums/pokemon-type.enum';
+import { CardType } from '../../../../../card/domain/enums/card-type.enum';
+import { TargetType } from '../../../../../card/domain/enums/target-type.enum';
+import { PokemonPosition } from '../../../enums/pokemon-position.enum';
 
 /**
  * Validation result

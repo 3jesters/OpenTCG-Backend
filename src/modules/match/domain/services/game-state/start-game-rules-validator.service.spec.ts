@@ -1,11 +1,11 @@
 import { StartGameRulesValidatorService } from './start-game-rules-validator.service';
-import { GetCardByIdUseCase } from '../../../card/application/use-cases/get-card-by-id.use-case';
+import { GetCardByIdUseCase } from '../../../../card/application/use-cases/get-card-by-id.use-case';
 import {
   StartGameRules,
   StartGameRuleType,
-} from '../../../tournament/domain/value-objects';
-import { CardType, EvolutionStage } from '../../../card/domain/enums';
-import { CardDetailDto } from '../../../card/presentation/dto/card-detail.dto';
+} from '../../../../tournament/domain/value-objects';
+import { CardType, EvolutionStage } from '../../../../card/domain/enums';
+import { CardDetailDto } from '../../../../card/presentation/dto/card-detail.dto';
 import { NotFoundException } from '@nestjs/common';
 
 describe('StartGameRulesValidatorService', () => {

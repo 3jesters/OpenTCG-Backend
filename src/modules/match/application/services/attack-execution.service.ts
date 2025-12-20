@@ -30,10 +30,15 @@ import { AttackEffectType } from '../../../card/domain/enums/attack-effect-type.
 import { TargetType } from '../../../card/domain/enums/target-type.enum';
 import { ConditionType } from '../../../card/domain/enums/condition-type.enum';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
-import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
-import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
-import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
-import { AttackExecutionResult } from '../../domain/services/attack-execution-result.interface';
+import { AttackCoinFlipParserService } from '../../domain/services/attack/coin-flip-detection/attack-coin-flip-parser.service';
+import { AttackEnergyValidatorService } from '../../domain/services/attack/energy-requirements/attack-energy-validator.service';
+import { CoinFlipResolverService } from '../../domain/services/coin-flip/coin-flip-resolver.service';
+import { AttackExecutionResult } from '../../domain/services/attack/interfaces/attack-execution-result.interface';
+import { AttackEnergyCostService } from '../../domain/services/attack/energy-costs/attack-energy-cost.service';
+import { AttackDamageCalculationService } from '../../domain/services/attack/attack-damage-calculation.service';
+import { AttackStatusEffectService } from '../../domain/services/attack/status-effects/attack-status-effect.service';
+import { AttackDamageApplicationService } from '../../domain/services/attack/damage-application/attack-damage-application.service';
+import { AttackKnockoutService } from '../../domain/services/attack/damage-application/attack-knockout.service';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface ExecuteAttackParams {
@@ -100,6 +105,11 @@ export class AttackExecutionService {
     private readonly getCardByIdUseCase: IGetCardByIdUseCase,
     private readonly attackCoinFlipParser: AttackCoinFlipParserService,
     private readonly attackEnergyValidator: AttackEnergyValidatorService,
+    private readonly attackEnergyCost: AttackEnergyCostService,
+    private readonly attackDamageCalculation: AttackDamageCalculationService,
+    private readonly attackStatusEffect: AttackStatusEffectService,
+    private readonly attackDamageApplication: AttackDamageApplicationService,
+    private readonly attackKnockout: AttackKnockoutService,
   ) {}
 
   /**
@@ -196,87 +206,19 @@ export class AttackExecutionService {
     }
 
     // Handle energy discard as cost (before attack executes)
-    let updatedPlayerState = playerState;
-    let updatedOpponentState = opponentState;
-    let currentGameState = gameState;
-
-    const discardEnergyCostEffects = attack.hasEffects()
-      ? attack
-          .getEffectsByType(AttackEffectType.DISCARD_ENERGY)
-          .filter(
-            (effect) =>
-              (effect as DiscardEnergyEffect).target === TargetType.SELF,
-          )
-      : [];
-
-    if (discardEnergyCostEffects.length > 0) {
-      const discardEffect =
-        discardEnergyCostEffects[0] as DiscardEnergyEffect;
-
-      if (!selectedEnergyIds || selectedEnergyIds.length === 0) {
-        throw new BadRequestException(
-          JSON.stringify({
-            error: 'ENERGY_SELECTION_REQUIRED',
-            message: `This attack requires discarding ${discardEffect.amount === 'all' ? 'all' : discardEffect.amount} ${discardEffect.energyType ? discardEffect.energyType + ' ' : ''}Energy card(s)`,
-            requirement: {
-              amount: discardEffect.amount,
-              energyType: discardEffect.energyType,
-              target: 'self',
-            },
-            availableEnergy: playerState.activePokemon.attachedEnergy,
-          }),
-        );
-      }
-
-      const validationError = await validateEnergySelection(
-        selectedEnergyIds,
-        discardEffect,
-        playerState.activePokemon,
-      );
-      if (validationError) {
-        throw new BadRequestException(validationError);
-      }
-
-      // Discard energy BEFORE attack executes (this is a cost)
-      const updatedAttachedEnergy = [
-        ...playerState.activePokemon.attachedEnergy,
-      ];
-      for (const energyId of selectedEnergyIds) {
-        const energyIndex = updatedAttachedEnergy.indexOf(energyId);
-        if (energyIndex === -1) {
-          throw new BadRequestException(
-            `Energy card ${energyId} is not attached to this Pokemon`,
-          );
-        }
-        updatedAttachedEnergy.splice(energyIndex, 1);
-      }
-
-      const updatedAttacker = playerState.activePokemon.withAttachedEnergy(
-        updatedAttachedEnergy,
-      );
-      const updatedDiscardPile = [...playerState.discardPile, ...selectedEnergyIds];
-      updatedPlayerState = playerState
-        .withActivePokemon(updatedAttacker)
-        .withDiscardPile(updatedDiscardPile);
-
-      currentGameState =
-        playerIdentifier === PlayerIdentifier.PLAYER1
-          ? currentGameState.withPlayer1State(updatedPlayerState)
-          : currentGameState.withPlayer2State(updatedPlayerState);
-    }
-
-    // Calculate damage
-    let damage = parseInt(attack.damage || '0', 10);
-
-    // Apply minus damage reduction
-    damage = calculateMinusDamageReduction(
-      damage,
+    const energyCostResult = await this.attackEnergyCost.processEnergyCost({
+      gameState,
+      playerIdentifier,
       attack,
-      attack.text,
-      attackerCard.name,
-      updatedPlayerState,
-      updatedOpponentState,
-    );
+      selectedEnergyIds,
+      validateEnergySelection,
+    });
+    let updatedPlayerState = energyCostResult.updatedPlayerState;
+    let updatedOpponentState = opponentState;
+    let currentGameState = energyCostResult.updatedGameState;
+
+    // Calculate final damage
+    const baseDamage = parseInt(attack.damage || '0', 10);
 
     // Get defender card
     if (!updatedOpponentState.activePokemon) {
@@ -289,105 +231,22 @@ export class AttackExecutionService {
       );
     }
 
-    // Apply damage modifiers
-    let finalDamage = damage;
-
-    // Handle "+" damage attacks
-    if (attack.damage && attack.damage.endsWith('+')) {
-      const plusDamageBonus = await calculatePlusDamageBonus(
+    // Calculate final damage using damage calculation service
+    const finalDamage = await this.attackDamageCalculation.calculateFinalDamage(
+      {
+        baseDamage,
         attack,
-        attackerCard.name,
-        updatedPlayerState,
-        updatedOpponentState,
-        attack.text,
-        currentGameState,
+        attackerCard,
+        defenderCard,
+        gameState: currentGameState,
         playerIdentifier,
-      );
-      finalDamage += plusDamageBonus;
-    }
-
-    // Apply structured damage modifiers from attack effects
-    if (attack.hasEffects()) {
-      const damageModifiers = attack.getEffectsByType(
-        AttackEffectType.DAMAGE_MODIFIER,
-      );
-      for (const modifierEffect of damageModifiers as DamageModifierEffect[]) {
-        const conditionsMet = await evaluateEffectConditions(
-          modifierEffect.requiredConditions || [],
-          currentGameState,
-          playerIdentifier,
-          updatedPlayerState,
-          updatedOpponentState,
-        );
-        if (conditionsMet) {
-          finalDamage += modifierEffect.modifier;
-        }
-      }
-    }
-
-    finalDamage = Math.max(0, finalDamage);
-
-    // Apply weakness
-    if (defenderCard.weakness && attackerCard.pokemonType) {
-      if (
-        defenderCard.weakness.type.toString() ===
-        attackerCard.pokemonType.toString()
-      ) {
-        const modifier = defenderCard.weakness.modifier;
-        if (modifier === '×2') {
-          finalDamage = finalDamage * 2;
-        }
-      }
-    }
-
-    // Apply resistance
-    if (defenderCard.resistance && attackerCard.pokemonType) {
-      if (
-        defenderCard.resistance.type.toString() ===
-        attackerCard.pokemonType.toString()
-      ) {
-        const modifier = defenderCard.resistance.modifier;
-        const reduction = parseInt(modifier, 10);
-        if (!isNaN(reduction)) {
-          finalDamage = Math.max(0, finalDamage + reduction);
-        }
-      }
-    }
-
-    // Apply damage prevention
-    if (!updatedOpponentState.activePokemon) {
-      throw new BadRequestException('Opponent active Pokemon is null');
-    }
-    const preventionEffect = currentGameState.getDamagePrevention(
-      playerIdentifier === PlayerIdentifier.PLAYER1
-        ? PlayerIdentifier.PLAYER2
-        : PlayerIdentifier.PLAYER1,
-      updatedOpponentState.activePokemon.instanceId,
+        playerState: updatedPlayerState,
+        opponentState: updatedOpponentState,
+        calculateMinusDamageReduction,
+        calculatePlusDamageBonus,
+        evaluateEffectConditions,
+      },
     );
-
-    if (preventionEffect) {
-      if (preventionEffect.amount === 'all') {
-        finalDamage = 0;
-      } else if (typeof preventionEffect.amount === 'number') {
-        if (finalDamage <= preventionEffect.amount) {
-          finalDamage = 0;
-        }
-      }
-    }
-
-    // Apply damage reduction
-    if (!updatedOpponentState.activePokemon) {
-      throw new BadRequestException('Opponent active Pokemon is null');
-    }
-    const reductionAmount = currentGameState.getDamageReduction(
-      playerIdentifier === PlayerIdentifier.PLAYER1
-        ? PlayerIdentifier.PLAYER2
-        : PlayerIdentifier.PLAYER1,
-      updatedOpponentState.activePokemon.instanceId,
-    );
-    if (reductionAmount > 0) {
-      finalDamage = Math.max(0, finalDamage - reductionAmount);
-    }
 
     // Parse self-damage and bench damage
     const attackText = attack.text || '';
@@ -398,102 +257,47 @@ export class AttackExecutionService {
     if (!updatedOpponentState.activePokemon) {
       throw new BadRequestException('Opponent active Pokemon is null');
     }
-    const newHp = Math.max(
-      0,
-      updatedOpponentState.activePokemon.currentHp - finalDamage,
-    );
-    let updatedOpponentActive =
-      updatedOpponentState.activePokemon.withHp(newHp);
+    let updatedOpponentActive = this.attackDamageApplication.applyActiveDamage({
+      pokemon: updatedOpponentState.activePokemon,
+      damage: finalDamage,
+    });
 
-    // Track status effects and coin flip results
+    // Track coin flip results
     let attackCoinFlipResults: CoinFlipResult[] = [];
-    
-    // Get coin flip results from game state if available (for ATTACK context coin flips)
-    if (gameState.coinFlipState?.context === CoinFlipContext.ATTACK && gameState.coinFlipState.results.length > 0) {
+    if (
+      gameState.coinFlipState?.context === CoinFlipContext.ATTACK &&
+      gameState.coinFlipState.results.length > 0
+    ) {
       attackCoinFlipResults = gameState.coinFlipState.results;
     }
-    
-    let attackStatusEffectApplied = false;
-    let attackAppliedStatus: StatusEffect | null = null;
 
     // Apply status effects from attack
-    if (attack.hasEffects()) {
-      const statusEffects = attack.getEffectsByType(
-        AttackEffectType.STATUS_CONDITION,
-      );
-      for (const statusEffect of statusEffects as StatusConditionEffect[]) {
-        // Check if coin flip condition is required
-        const hasCoinFlipCondition = statusEffect.requiredConditions?.some(
-          (c) =>
-            c.type === ConditionType.COIN_FLIP_SUCCESS ||
-            c.type === ConditionType.COIN_FLIP_FAILURE,
-        );
-
-        // If coin flip is required but results not provided, the evaluateEffectConditions
-        // callback should handle generating coin flips (as it does in tests via mocks)
-        // For production, coin flips for effect conditions should be generated before
-        // attack execution via GENERATE_COIN_FLIP action, but we allow on-the-fly generation
-        // via the callback for backward compatibility
-        // Note: The callback receives coinFlipResults and can generate them if needed,
-        // but cannot modify attackCoinFlipResults directly. The callback's return value
-        // (true/false) indicates if conditions were met, which may include generating
-        // coin flips internally.
-
-        const conditionsMet = await evaluateEffectConditions(
-          statusEffect.requiredConditions || [],
-          currentGameState,
-          playerIdentifier,
-          updatedPlayerState,
-          updatedOpponentState,
-          attackCoinFlipResults,
-        );
-
-        if (conditionsMet) {
-          // Map string literal to StatusEffect enum
-          const statusToApply = this.mapStatusConditionToStatusEffect(
-            statusEffect.statusCondition,
-          );
-          if (statusToApply) {
-            // Use withStatusEffectAdded to preserve existing status effects
-            // Pokemon can have multiple status effects simultaneously (e.g., CONFUSED + POISONED)
-            // Default poison damage is 10 if not specified
-            updatedOpponentActive =
-              updatedOpponentActive.withStatusEffectAdded(
-                statusToApply,
-                statusToApply === StatusEffect.POISONED ? 10 : undefined,
-              );
-            attackStatusEffectApplied = true;
-            attackAppliedStatus = statusToApply;
-          }
-        }
-      }
-    }
-
-    // Fallback: parse status effect from attack text if not in structured effects
-    if (!attackStatusEffectApplied) {
-      const parsedStatus = parseStatusEffectFromAttackText(attackText);
-      if (parsedStatus) {
-        // Use withStatusEffectAdded to preserve existing status effects
-        updatedOpponentActive =
-          updatedOpponentActive.withStatusEffectAdded(parsedStatus);
-        attackStatusEffectApplied = true;
-        attackAppliedStatus = parsedStatus;
-      }
-    }
+    const statusEffectResult = await this.attackStatusEffect.applyStatusEffects({
+      attack,
+      attackText,
+      gameState: currentGameState,
+      playerIdentifier,
+      playerState: updatedPlayerState,
+      opponentState: updatedOpponentState,
+      targetPokemon: updatedOpponentActive,
+      evaluateEffectConditions,
+      parseStatusEffectFromAttackText,
+    });
+    updatedOpponentActive = statusEffectResult.updatedPokemon;
+    const attackStatusEffectApplied = statusEffectResult.statusApplied;
+    const attackAppliedStatus = statusEffectResult.appliedStatus;
 
     // Check for knockout
     const isKnockedOut = updatedOpponentActive.currentHp === 0;
 
     // Apply self-damage if needed
     if (selfDamage > 0 && updatedPlayerState.activePokemon) {
-      const attackerNewHp = Math.max(
-        0,
-        updatedPlayerState.activePokemon.currentHp - selfDamage,
-      );
-      const updatedAttacker =
-        updatedPlayerState.activePokemon.withHp(attackerNewHp);
+      const selfDamageResult = this.attackDamageApplication.applySelfDamage({
+        attackerPokemon: updatedPlayerState.activePokemon,
+        selfDamage,
+      });
 
-      if (attackerNewHp === 0) {
+      if (selfDamageResult.isKnockedOut) {
         const attackerCardsToDiscard =
           updatedPlayerState.activePokemon.getAllCardsToDiscard();
         const attackerDiscardPile = [
@@ -503,54 +307,39 @@ export class AttackExecutionService {
         updatedPlayerState = updatedPlayerState
           .withActivePokemon(null)
           .withDiscardPile(attackerDiscardPile);
-      } else {
+      } else if (selfDamageResult.updatedPokemon) {
         updatedPlayerState = updatedPlayerState.withActivePokemon(
-          updatedAttacker,
+          selfDamageResult.updatedPokemon,
         );
       }
     }
 
     // Apply bench damage if needed
     if (benchDamage > 0 && updatedOpponentState.bench.length > 0) {
-      const updatedBench = updatedOpponentState.bench.map((benchPokemon) => {
-        const benchNewHp = Math.max(0, benchPokemon.currentHp - benchDamage);
-        const updatedBenchPokemon = benchPokemon.withHp(benchNewHp);
+      const benchDamageResult =
+        this.attackDamageApplication.applyBenchDamage({
+          bench: updatedOpponentState.bench,
+          benchDamage,
+        });
 
-        if (benchNewHp === 0) {
-          // Knockout - will be handled separately
-        }
-
-        return updatedBenchPokemon;
-      });
-
-      // Filter out knocked out bench Pokemon and add to discard
-      const knockedOutBench = updatedBench.filter((p) => p.currentHp === 0);
-      const remainingBench = updatedBench.filter((p) => p.currentHp > 0);
-
-      if (knockedOutBench.length > 0) {
-        const cardsToDiscard = knockedOutBench.flatMap((p) =>
-          p.getAllCardsToDiscard(),
+      if (benchDamageResult.knockedOutBench.length > 0) {
+        updatedOpponentState = this.attackKnockout.handleBenchKnockout(
+          benchDamageResult.knockedOutBench,
+          updatedOpponentState,
         );
-        const discardPile = [...updatedOpponentState.discardPile, ...cardsToDiscard];
-        updatedOpponentState = updatedOpponentState
-          .withBench(remainingBench)
-          .withDiscardPile(discardPile);
-      } else {
-        updatedOpponentState = updatedOpponentState.withBench(updatedBench);
       }
+      updatedOpponentState = updatedOpponentState.withBench(
+        benchDamageResult.updatedBench,
+      );
     }
 
     // Update opponent state with damaged/knocked out active Pokemon
     if (isKnockedOut) {
-      const cardsToDiscard =
-        updatedOpponentActive.getAllCardsToDiscard();
-      const discardPile = [
-        ...updatedOpponentState.discardPile,
-        ...cardsToDiscard,
-      ];
-      updatedOpponentState = updatedOpponentState
-        .withActivePokemon(null)
-        .withDiscardPile(discardPile);
+      const knockoutResult = this.attackKnockout.handleActiveKnockout({
+        pokemon: updatedOpponentActive,
+        playerState: updatedOpponentState,
+      });
+      updatedOpponentState = knockoutResult.updatedState;
     } else {
       updatedOpponentState = updatedOpponentState.withActivePokemon(
         updatedOpponentActive,
@@ -608,32 +397,5 @@ export class AttackExecutionService {
     };
   }
 
-  /**
-   * Map status condition string to StatusEffect enum
-   */
-  private mapStatusConditionToStatusEffect(
-    statusCondition: string,
-  ): StatusEffect | null {
-    // Map string literal to StatusEffect enum
-    switch (statusCondition) {
-      case StatusEffect.PARALYZED:
-      case 'PARALYZED':
-        return StatusEffect.PARALYZED;
-      case StatusEffect.POISONED:
-      case 'POISONED':
-        return StatusEffect.POISONED;
-      case StatusEffect.BURNED:
-      case 'BURNED':
-        return StatusEffect.BURNED;
-      case StatusEffect.ASLEEP:
-      case 'ASLEEP':
-        return StatusEffect.ASLEEP;
-      case StatusEffect.CONFUSED:
-      case 'CONFUSED':
-        return StatusEffect.CONFUSED;
-      default:
-        return null;
-    }
-  }
 }
 

@@ -1,10 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { IGetCardByIdUseCase } from '../../../../card/application/ports/card-use-cases.interface';
 import {
   StartGameRules,
   StartGameRuleType,
-} from '../../../tournament/domain/value-objects';
-import { CardType, EvolutionStage } from '../../../card/domain/enums';
+} from '../../../../tournament/domain/value-objects';
+import { CardType, EvolutionStage } from '../../../../card/domain/enums';
 
 /**
  * Start Game Rules Validator Service

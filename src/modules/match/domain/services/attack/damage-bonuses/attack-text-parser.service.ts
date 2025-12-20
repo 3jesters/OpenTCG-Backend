@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type {
   StatusConditionEffect,
-} from '../../../card/domain/value-objects/attack-effect.value-object';
-import { AttackEffectFactory } from '../../../card/domain/value-objects/attack-effect.value-object';
-import { ConditionFactory } from '../../../card/domain/value-objects/condition.value-object';
+} from '../../../../../card/domain/value-objects/attack-effect.value-object';
+import { AttackEffectFactory } from '../../../../../card/domain/value-objects/attack-effect.value-object';
+import { ConditionFactory } from '../../../../../card/domain/value-objects/condition.value-object';
 
 /**
  * Attack Text Parser Service

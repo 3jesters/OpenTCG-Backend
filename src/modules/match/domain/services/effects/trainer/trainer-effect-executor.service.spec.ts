@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { TrainerEffectExecutorService } from './trainer-effect-executor.service';
-import { TrainerEffectDto } from '../../../card/presentation/dto/trainer-effect.dto';
-import { TrainerEffectType } from '../../../card/domain/enums/trainer-effect-type.enum';
-import { TargetType } from '../../../card/domain/enums/target-type.enum';
-import { GameState } from '../value-objects/game-state.value-object';
-import { PlayerGameState } from '../value-objects/player-game-state.value-object';
-import { CardInstance } from '../value-objects/card-instance.value-object';
-import { PlayerIdentifier } from '../enums/player-identifier.enum';
-import { TurnPhase } from '../enums/turn-phase.enum';
-import { StatusEffect } from '../enums/status-effect.enum';
+import { TrainerEffectDto } from '../../../../../card/presentation/dto/trainer-effect.dto';
+import { TrainerEffectType } from '../../../../../card/domain/enums/trainer-effect-type.enum';
+import { TargetType } from '../../../../../card/domain/enums/target-type.enum';
+import { GameState } from '../../../value-objects/game-state.value-object';
+import { PlayerGameState } from '../../../value-objects/player-game-state.value-object';
+import { CardInstance } from '../../../value-objects/card-instance.value-object';
+import { PlayerIdentifier } from '../../../enums/player-identifier.enum';
+import { TurnPhase } from '../../../enums/turn-phase.enum';
+import { StatusEffect } from '../../../enums/status-effect.enum';
 import {
   TrainerActionData,
   HealActionData,
@@ -17,7 +17,7 @@ import {
   RetrieveEnergyActionData,
   DiscardHandActionData,
   PutIntoPlayActionData,
-} from '../types/trainer-action-data.types';
+} from '../../../types/trainer-action-data.types';
 
 describe('TrainerEffectExecutorService', () => {
   let service: TrainerEffectExecutorService;

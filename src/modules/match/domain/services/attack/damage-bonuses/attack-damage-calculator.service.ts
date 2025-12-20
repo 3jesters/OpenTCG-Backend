@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Attack } from '../../../card/domain/value-objects/attack.value-object';
-import { PlayerGameState, CardInstance, GameState } from '../value-objects';
-import { PlayerIdentifier } from '../enums';
-import { EnergyType } from '../../../card/domain/enums/energy-type.enum';
-import { Card } from '../../../card/domain/entities';
+import { Attack } from '../../../../../card/domain/value-objects/attack.value-object';
+import { PlayerGameState, CardInstance, GameState } from '../../../value-objects';
+import { PlayerIdentifier } from '../../../enums';
+import { EnergyType } from '../../../../../card/domain/enums/energy-type.enum';
+import { Card } from '../../../../../card/domain/entities';
 import { AttackTextParserService } from './attack-text-parser.service';
 
 /**

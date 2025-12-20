@@ -14,8 +14,8 @@ import {
   CoinFlipCountType,
   DamageCalculationType,
 } from '../../domain/value-objects/coin-flip-configuration.value-object';
-import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
-import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
+import { CoinFlipResolverService } from '../../domain/services/coin-flip/coin-flip-resolver.service';
+import { AttackCoinFlipParserService } from '../../domain/services/attack/coin-flip-detection/attack-coin-flip-parser.service';
 import { AttackExecutionService } from './attack-execution.service';
 import { Card } from '../../../card/domain/entities';
 import { Attack } from '../../../card/domain/value-objects/attack.value-object';

@@ -7,16 +7,16 @@ import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
-import { CoinFlipResolverService } from '../../domain/services/coin-flip-resolver.service';
-import { AttackCoinFlipParserService } from '../../domain/services/attack-coin-flip-parser.service';
-import { AttackEnergyValidatorService } from '../../domain/services/attack-energy-validator.service';
-import { TrainerEffectExecutorService } from '../../domain/services/trainer-effect-executor.service';
-import { TrainerEffectValidatorService } from '../../domain/services/trainer-effect-validator.service';
-import { AbilityEffectExecutorService } from '../../domain/services/ability-effect-executor.service';
-import { AbilityEffectValidatorService } from '../../domain/services/ability-effect-validator.service';
+import { CoinFlipResolverService } from '../../domain/services/coin-flip/coin-flip-resolver.service';
+import { AttackCoinFlipParserService } from '../../domain/services/attack/coin-flip-detection/attack-coin-flip-parser.service';
+import { AttackEnergyValidatorService } from '../../domain/services/attack/energy-requirements/attack-energy-validator.service';
+import { TrainerEffectExecutorService } from '../../domain/services/effects/trainer/trainer-effect-executor.service';
+import { TrainerEffectValidatorService } from '../../domain/services/effects/trainer/trainer-effect-validator.service';
+import { AbilityEffectExecutorService } from '../../domain/services/effects/ability/ability-effect-executor.service';
+import { AbilityEffectValidatorService } from '../../domain/services/effects/ability/ability-effect-validator.service';
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
 import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
-import { StatusEffectProcessorService } from '../../domain/services/status-effect-processor.service';
+import { StatusEffectProcessorService } from '../../domain/services/status/status-effect-processor.service';
 import {
   EnergyAttachmentExecutionService,
   EvolutionExecutionService,

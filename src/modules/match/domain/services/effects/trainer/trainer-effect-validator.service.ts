@@ -1,10 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { TrainerEffectDto } from '../../../card/presentation/dto/trainer-effect.dto';
-import { TrainerEffectType } from '../../../card/domain/enums/trainer-effect-type.enum';
-import { GameState } from '../value-objects/game-state.value-object';
-import { PlayerIdentifier } from '../enums/player-identifier.enum';
-import { TrainerActionData } from '../types/trainer-action-data.types';
-import { PlayerGameState } from '../value-objects/player-game-state.value-object';
+import { TrainerEffectDto } from '../../../../../card/presentation/dto/trainer-effect.dto';
+import { TrainerEffectType } from '../../../../../card/domain/enums/trainer-effect-type.enum';
+import { GameState } from '../../../value-objects/game-state.value-object';
+import { PlayerIdentifier } from '../../../enums/player-identifier.enum';
+import { TrainerActionData } from '../../../types/trainer-action-data.types';
+import { PlayerGameState } from '../../../value-objects/player-game-state.value-object';
 
 /**
  * Validation result

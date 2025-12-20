@@ -3,10 +3,10 @@ import {
   CoinFlipCountType,
   VariableCoinCountSource,
   DamageCalculationType,
-} from '../value-objects/coin-flip-configuration.value-object';
-import { CoinFlipResult } from '../value-objects/coin-flip-result.value-object';
-import { PlayerGameState } from '../value-objects/player-game-state.value-object';
-import { EnergyType } from '../../../card/domain/enums';
+} from '../../value-objects/coin-flip-configuration.value-object';
+import { CoinFlipResult } from '../../value-objects/coin-flip-result.value-object';
+import { PlayerGameState } from '../../value-objects/player-game-state.value-object';
+import { EnergyType } from '../../../../card/domain/enums';
 
 /**
  * Coin Flip Resolver Service

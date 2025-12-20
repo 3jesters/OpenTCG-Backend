@@ -1,13 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { TrainerEffectDto } from '../../../card/presentation/dto/trainer-effect.dto';
-import { TrainerEffectType } from '../../../card/domain/enums/trainer-effect-type.enum';
-import { TargetType } from '../../../card/domain/enums/target-type.enum';
-import { GameState } from '../value-objects/game-state.value-object';
-import { PlayerGameState } from '../value-objects/player-game-state.value-object';
-import { PlayerIdentifier } from '../enums/player-identifier.enum';
-import { PlayerActionType } from '../enums/player-action-type.enum';
-import { CardInstance } from '../value-objects/card-instance.value-object';
-import { Card } from '../../../card/domain/entities';
+import { TrainerEffectDto } from '../../../../../card/presentation/dto/trainer-effect.dto';
+import { TrainerEffectType } from '../../../../../card/domain/enums/trainer-effect-type.enum';
+import { TargetType } from '../../../../../card/domain/enums/target-type.enum';
+import { GameState } from '../../../value-objects/game-state.value-object';
+import { PlayerGameState } from '../../../value-objects/player-game-state.value-object';
+import { PlayerIdentifier } from '../../../enums/player-identifier.enum';
+import { PlayerActionType } from '../../../enums/player-action-type.enum';
+import { CardInstance } from '../../../value-objects/card-instance.value-object';
+import { Card } from '../../../../../card/domain/entities';
 import {
   TrainerActionData,
   HealActionData,
@@ -29,9 +29,9 @@ import {
   PutIntoPlayActionData,
   AttachToPokemonActionData,
   TradeCardsActionData,
-} from '../types/trainer-action-data.types';
-import { StatusEffect } from '../enums/status-effect.enum';
-import { PokemonPosition } from '../enums/pokemon-position.enum';
+} from '../../../types/trainer-action-data.types';
+import { StatusEffect } from '../../../enums/status-effect.enum';
+import { PokemonPosition } from '../../../enums/pokemon-position.enum';
 
 /**
  * Result of executing trainer effects
