@@ -16,6 +16,7 @@ import {
   EvolutionStage,
 } from '../../../card/domain/enums';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { CardHelperService } from './card-helper.service';
 
 export interface EvolvePokemonParams {
   evolutionCardId: string;
@@ -23,17 +24,6 @@ export interface EvolvePokemonParams {
   gameState: GameState;
   playerIdentifier: PlayerIdentifier;
   cardsMap: Map<string, Card>;
-  validatePokemonNotEvolvedThisTurn: (
-    gameState: GameState,
-    playerIdentifier: PlayerIdentifier,
-    instanceId: string,
-    cardId: string,
-  ) => void;
-  validateEvolution: (
-    currentPokemonCardId: string,
-    evolutionCardId: string,
-  ) => Promise<void>;
-  getCardHp: (cardId: string) => Promise<number>;
 }
 
 export interface EvolvePokemonResult {
@@ -46,6 +36,7 @@ export class EvolutionExecutionService {
   constructor(
     @Inject(IGetCardByIdUseCase)
     private readonly getCardByIdUseCase: IGetCardByIdUseCase,
+    private readonly cardHelper: CardHelperService,
   ) {}
 
   /**
@@ -59,9 +50,7 @@ export class EvolutionExecutionService {
       target,
       gameState,
       playerIdentifier,
-      validatePokemonNotEvolvedThisTurn,
-      validateEvolution,
-      getCardHp,
+      cardsMap,
     } = params;
 
     // Validate phase
@@ -96,19 +85,8 @@ export class EvolutionExecutionService {
       targetPokemon = playerState.bench[benchIndex];
     }
 
-    // Validate that this Pokemon hasn't been evolved this turn
-    validatePokemonNotEvolvedThisTurn(
-      gameState,
-      playerIdentifier,
-      targetPokemon.instanceId,
-      targetPokemon.cardId,
-    );
-
-    // Validate evolution chain
-    await validateEvolution(targetPokemon.cardId, evolutionCardId);
-
     // Load evolution card details to get HP
-    const evolutionCardHp = await getCardHp(evolutionCardId);
+    const evolutionCardHp = await this.cardHelper.getCardHp(evolutionCardId, cardsMap);
 
     // Calculate damage taken (preserve absolute damage amount)
     const damageTaken = targetPokemon.maxHp - targetPokemon.currentHp;

@@ -92,9 +92,21 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         .mockReturnValue({ hasWinner: false, winner: null }),
     } as any;
 
+    // Create mock CardHelperService for RealEvolutionExecutionService
+    const mockCardHelperForEvolution = {
+      getCardEntity: jest.fn().mockImplementation(async (cardId, cardsMap) => {
+        return mockGetCardByIdUseCase.getCardEntity(cardId);
+      }),
+      getCardHp: jest.fn().mockImplementation(async (cardId, cardsMap) => {
+        const cardDetail = await mockGetCardByIdUseCase.execute(cardId);
+        return cardDetail.hp ?? 100;
+      }),
+    } as any;
+
     // Use real service for tests that need actual evolution logic
     const realEvolutionService = new RealEvolutionExecutionService(
       mockGetCardByIdUseCase,
+      mockCardHelperForEvolution,
     );
     mockEvolutionExecutionService = {
       executeEvolvePokemon: jest.fn().mockImplementation(async (params) => {

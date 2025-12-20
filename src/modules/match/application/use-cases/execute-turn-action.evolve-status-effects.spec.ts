@@ -155,9 +155,25 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
       getCardsByIds: jest.fn().mockResolvedValue(new Map()),
     } as any;
 
+    // Create mock CardHelperService for RealEvolutionExecutionService
+    const mockCardHelperForEvolution = {
+      getCardEntity: jest.fn().mockImplementation(async (cardId, cardsMap) => {
+        return mockGetCardByIdUseCase.getCardEntity(cardId);
+      }),
+      getCardHp: jest.fn().mockImplementation(async (cardId, cardsMap) => {
+        const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
+        if (card?.hp) {
+          return card.hp;
+        }
+        const cardDto = await mockGetCardByIdUseCase.execute(cardId);
+        return cardDto?.hp || 100;
+      }),
+    } as any;
+
     // Use real service for tests that need actual evolution logic
     const realEvolutionService = new RealEvolutionExecutionService(
       mockGetCardByIdUseCase,
+      mockCardHelperForEvolution,
     );
     mockEvolutionExecutionService = {
       executeEvolvePokemon: jest.fn().mockImplementation(async (params) => {
@@ -272,13 +288,17 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
             }),
             getCardHp: jest.fn().mockImplementation(async (cardId, cardsMap) => {
               // Try to get HP from card entity first
-              const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
-              if (card?.hp) {
-                return card.hp;
+              try {
+                const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
+                if (card?.hp) {
+                  return card.hp;
+                }
+              } catch {
+                // Fall through to execute method
               }
               // Fallback to execute method if getCardEntity doesn't have hp
               const cardDto = await mockGetCardByIdUseCase.execute(cardId);
-              return cardDto?.hp || 100; // Default to 100 if not found
+              return cardDto?.hp ?? 100; // Default to 100 if not found
             }),
             collectCardIds: jest.fn().mockImplementation((dto, gameState, playerIdentifier) => {
               const cardIds = new Set<string>();
@@ -387,45 +407,18 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         },
         {
           provide: EvolvePokemonPlayerTurnService,
-          useFactory: (matchRepo: IMatchRepository) => {
-            return {
-              executeEvolvePokemon: jest.fn().mockImplementation(async (params) => {
-                // Use the real evolution service
-                const result = await mockEvolutionExecutionService.executeEvolvePokemon({
-                  evolutionCardId: params.dto.actionData.evolutionCardId,
-                  target: params.dto.actionData.target,
-                  gameState: params.gameState,
-                  playerIdentifier: params.playerIdentifier,
-                  cardsMap: params.cardsMap,
-                  validatePokemonNotEvolvedThisTurn: params.validatePokemonNotEvolvedThisTurn,
-                  validateEvolution: params.validateEvolution,
-                  getCardHp: params.getCardHp,
-                });
-                
-                // Create action summary (matching real implementation)
-                const actionSummary = new ActionSummary(
-                  'test-action-id',
-                  params.playerIdentifier,
-                  PlayerActionType.EVOLVE_POKEMON,
-                  new Date(),
-                  {
-                    evolutionCardId: params.dto.actionData.evolutionCardId,
-                    target: params.dto.actionData.target,
-                    targetInstanceId: result.targetInstanceId,
-                    instanceId: result.targetInstanceId, // Also include instanceId for backward compatibility with tests
-                  },
-                );
-                
-                // Update match with action summary
-                const finalGameState = result.updatedGameState.withAction(actionSummary);
-                params.match.updateGameState(finalGameState);
-                
-                // Return saved match
-                return await matchRepo.save(params.match);
-              }),
-            };
+          useFactory: (
+            matchRepo: IMatchRepository,
+            evolutionService: EvolutionExecutionService,
+            cardHelper: CardHelperService,
+          ) => {
+            return new EvolvePokemonPlayerTurnService(
+              evolutionService,
+              matchRepo,
+              cardHelper,
+            );
           },
-          inject: [IMatchRepository],
+          inject: [IMatchRepository, EvolutionExecutionService, CardHelperService],
         },
         {
           provide: RetreatExecutionService,
