@@ -231,14 +231,24 @@ export class AttackExecutionService {
       );
     }
 
+    // Track coin flip results from current game state (after energy processing)
+    // Ensure we use the game state with coin flip state preserved
+    // If processEnergyCost didn't preserve it, merge the coin flip state from original gameState
+    const gameStateWithCoinFlip = currentGameState.coinFlipState
+      ? currentGameState
+      : gameState.coinFlipState
+        ? currentGameState.withCoinFlipState(gameState.coinFlipState)
+        : currentGameState;
+
     // Calculate final damage using damage calculation service
+    // Use gameStateWithCoinFlip to ensure coin flip results are available for damage calculation
     const finalDamage = await this.attackDamageCalculation.calculateFinalDamage(
       {
         baseDamage,
         attack,
         attackerCard,
         defenderCard,
-        gameState: currentGameState,
+        gameState: gameStateWithCoinFlip,
         playerIdentifier,
         playerState: updatedPlayerState,
         opponentState: updatedOpponentState,
@@ -261,21 +271,20 @@ export class AttackExecutionService {
       pokemon: updatedOpponentState.activePokemon,
       damage: finalDamage,
     });
-
-    // Track coin flip results
+    
     let attackCoinFlipResults: CoinFlipResult[] = [];
     if (
-      gameState.coinFlipState?.context === CoinFlipContext.ATTACK &&
-      gameState.coinFlipState.results.length > 0
+      gameStateWithCoinFlip.coinFlipState?.context === CoinFlipContext.ATTACK &&
+      gameStateWithCoinFlip.coinFlipState.results.length > 0
     ) {
-      attackCoinFlipResults = gameState.coinFlipState.results;
+      attackCoinFlipResults = gameStateWithCoinFlip.coinFlipState.results;
     }
 
-    // Apply status effects from attack
+    // Apply status effects from attack - use game state with coin flip state
     const statusEffectResult = await this.attackStatusEffect.applyStatusEffects({
       attack,
       attackText,
-      gameState: currentGameState,
+      gameState: gameStateWithCoinFlip,
       playerIdentifier,
       playerState: updatedPlayerState,
       opponentState: updatedOpponentState,

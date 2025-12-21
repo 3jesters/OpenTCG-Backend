@@ -134,11 +134,19 @@ export class CoinFlipExecutionService {
         updatedCoinFlipState = updatedCoinFlipState.withPlayer2Approval();
       }
 
-      // Check if both players have approved
+      // For ATTACK context, complete immediately after first approval (no need to wait for both)
+      // For other contexts, also complete immediately after first approval
+      // Note: This path is only reached when results already exist, so this is the second approval
+      // For ATTACK context, we want to complete immediately, so this handles the case where
+      // the second player approves after the first player already generated results
       if (
-        updatedCoinFlipState.player1HasApproved &&
-        updatedCoinFlipState.player2HasApproved
+        updatedCoinFlipState.context === CoinFlipContext.ATTACK
       ) {
+        // ATTACK context: complete immediately after any approval
+        updatedCoinFlipState =
+          updatedCoinFlipState.withStatus(CoinFlipStatus.COMPLETED);
+      } else {
+        // Non-ATTACK context: complete immediately after first approval (consistent with first approval path)
         updatedCoinFlipState =
           updatedCoinFlipState.withStatus(CoinFlipStatus.COMPLETED);
       }
@@ -146,11 +154,12 @@ export class CoinFlipExecutionService {
       const updatedGameState = gameState.withCoinFlipState(
         updatedCoinFlipState,
       );
-
-      // For ATTACK context, apply results immediately after both approvals
+      // For ATTACK context, apply results immediately after first approval
+      // Must check: results are complete AND status is COMPLETED
       if (
         updatedCoinFlipState.context === CoinFlipContext.ATTACK &&
-        updatedCoinFlipState.isComplete()
+        updatedCoinFlipState.isComplete() &&
+        updatedCoinFlipState.status === CoinFlipStatus.COMPLETED
       ) {
         return this.resolveAttackCoinFlip(
           updatedGameState,
@@ -158,7 +167,6 @@ export class CoinFlipExecutionService {
           params,
         );
       }
-
       return {
         updatedGameState,
         shouldResolveAttack: false,
@@ -224,28 +232,21 @@ export class CoinFlipExecutionService {
       updatedCoinFlipState = updatedCoinFlipState.withPlayer2Approval();
     }
 
-    // Check if both players have approved (for ATTACK context)
-    if (
-      updatedCoinFlipState.context === CoinFlipContext.ATTACK &&
-      updatedCoinFlipState.player1HasApproved &&
-      updatedCoinFlipState.player2HasApproved
-    ) {
-      updatedCoinFlipState =
-        updatedCoinFlipState.withStatus(CoinFlipStatus.COMPLETED);
-    } else if (updatedCoinFlipState.context !== CoinFlipContext.ATTACK) {
-      // For non-ATTACK contexts, complete immediately after first approval
-      updatedCoinFlipState =
-        updatedCoinFlipState.withStatus(CoinFlipStatus.COMPLETED);
-    }
+    // For ATTACK context, complete immediately after first approval (no need to wait for both)
+    // For other contexts, also complete immediately after first approval
+    updatedCoinFlipState =
+      updatedCoinFlipState.withStatus(CoinFlipStatus.COMPLETED);
 
     const updatedGameState = gameState.withCoinFlipState(
       updatedCoinFlipState,
     );
 
-    // For ATTACK context, apply results immediately after both approvals
+    // For ATTACK context, apply results immediately after first approval
+    // Must check: results are complete AND status is COMPLETED
     if (
       updatedCoinFlipState.context === CoinFlipContext.ATTACK &&
-      updatedCoinFlipState.isComplete()
+      updatedCoinFlipState.isComplete() &&
+      updatedCoinFlipState.status === CoinFlipStatus.COMPLETED
     ) {
       return this.resolveAttackCoinFlip(
         updatedGameState,
@@ -253,7 +254,6 @@ export class CoinFlipExecutionService {
         params,
       );
     }
-
     return {
       updatedGameState,
       shouldResolveAttack: false,
@@ -274,8 +274,14 @@ export class CoinFlipExecutionService {
       throw new BadRequestException('Attack index not found in coin flip state');
     }
 
-    const playerState = gameState.getPlayerState(playerIdentifier);
-    const opponentState = gameState.getOpponentState(playerIdentifier);
+    // For ATTACK context, use currentPlayer (the attacker), not playerIdentifier (who approved)
+    const attackingPlayer =
+      coinFlipState.context === CoinFlipContext.ATTACK
+        ? gameState.currentPlayer
+        : playerIdentifier;
+
+    const playerState = gameState.getPlayerState(attackingPlayer);
+    const opponentState = gameState.getOpponentState(attackingPlayer);
 
     if (!playerState.activePokemon) {
       throw new BadRequestException('No active Pokemon to attack with');
@@ -327,8 +333,13 @@ export class CoinFlipExecutionService {
     // Execute attack with coin flip damage
     // This is a simplified version - the full attack execution should be handled by AttackExecutionService
     // For now, we'll return a flag indicating attack should be resolved
+    // Ensure coin flip state has COMPLETED status for attack handler to detect it
+    const completedCoinFlipState = coinFlipState.status === CoinFlipStatus.COMPLETED
+      ? coinFlipState
+      : coinFlipState.withStatus(CoinFlipStatus.COMPLETED);
+    
     return {
-      updatedGameState: gameState,
+      updatedGameState: gameState.withCoinFlipState(completedCoinFlipState), // Keep coin flip state with COMPLETED status for attack execution
       shouldResolveAttack: true,
     };
   }

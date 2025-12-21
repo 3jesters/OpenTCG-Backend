@@ -103,7 +103,12 @@ export class AttackStatusEffectService {
     }
 
     // Fallback: parse status effect from attack text if not in structured effects
-    if (!statusApplied) {
+    // Only use fallback if there are no structured effects with conditions
+    // (if structured effects exist but conditions failed, don't apply via fallback)
+    const hasStructuredStatusEffects = attack.hasEffects() &&
+      attack.getEffectsByType(AttackEffectType.STATUS_CONDITION).length > 0;
+    
+    if (!statusApplied && !hasStructuredStatusEffects) {
       const parsedStatus = parseStatusEffectFromAttackText(attackText);
       if (parsedStatus) {
         // Use withStatusEffectAdded to preserve existing status effects

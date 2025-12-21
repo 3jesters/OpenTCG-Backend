@@ -274,32 +274,45 @@ export class AttackActionHandler
     }
 
     // Check if attack requires coin flip before execution
-    const coinFlipState = this.attackExecutionService.checkCoinFlipRequired(
-      attack,
-      match.id,
-      gameState,
-      attackIndex,
-    );
+    // First check if there's already a completed coin flip state for this attack
+    const existingCoinFlipState = gameState.coinFlipState;
+    const hasCompletedCoinFlip =
+      existingCoinFlipState &&
+      existingCoinFlipState.context === CoinFlipContext.ATTACK &&
+      existingCoinFlipState.attackIndex === attackIndex &&
+      existingCoinFlipState.status === CoinFlipStatus.COMPLETED &&
+      existingCoinFlipState.results.length > 0;
 
-    // If coin flip is required, create coin flip state and wait for flip
-    if (coinFlipState) {
-      // Create action summary for attack initiation
-      const actionSummary = new ActionSummary(
-        coinFlipState.actionId || uuidv4(),
-        playerIdentifier,
-        PlayerActionType.ATTACK,
-        new Date(),
-        { attackIndex, coinFlipRequired: true },
+    // If coin flip is already completed, proceed with attack execution
+    // Otherwise, check if coin flip is required
+    if (!hasCompletedCoinFlip) {
+      const coinFlipState = this.attackExecutionService.checkCoinFlipRequired(
+        attack,
+        match.id,
+        gameState,
+        attackIndex,
       );
 
-      // Update game state with coin flip state (immutable update)
-      const updatedGameState = gameState
-        .withCoinFlipState(coinFlipState)
-        .withAction(actionSummary)
-        .withPhase(TurnPhase.ATTACK);
+      // If coin flip is required, create coin flip state and wait for flip
+      if (coinFlipState) {
+        // Create action summary for attack initiation
+        const actionSummary = new ActionSummary(
+          coinFlipState.actionId || uuidv4(),
+          playerIdentifier,
+          PlayerActionType.ATTACK,
+          new Date(),
+          { attackIndex, coinFlipRequired: true },
+        );
 
-      match.updateGameState(updatedGameState);
-      return await this.matchRepository.save(match);
+        // Update game state with coin flip state (immutable update)
+        const updatedGameState = gameState
+          .withCoinFlipState(coinFlipState)
+          .withAction(actionSummary)
+          .withPhase(TurnPhase.ATTACK);
+
+        match.updateGameState(updatedGameState);
+        return await this.matchRepository.save(match);
+      }
     }
 
     // No coin flip required - execute attack immediately
@@ -541,12 +554,19 @@ export class AttackActionHandler
             .withPlayer1State(result.updatedOpponentState)
             .withPlayer2State(result.updatedPlayerState);
 
-    // Clear confusion coin flip state if it exists (attack succeeded)
+    // Clear coin flip state after attack execution
     let finalGameState = updatedGameState;
     if (
       gameState.coinFlipState?.context === CoinFlipContext.STATUS_CHECK &&
       gameState.coinFlipState.statusEffect === StatusEffect.CONFUSED
     ) {
+      // Clear confusion coin flip state (attack succeeded)
+      finalGameState = finalGameState.withCoinFlipState(null);
+    } else if (
+      gameState.coinFlipState?.context === CoinFlipContext.ATTACK &&
+      gameState.coinFlipState.status === CoinFlipStatus.COMPLETED
+    ) {
+      // Clear ATTACK coin flip state after attack execution
       finalGameState = finalGameState.withCoinFlipState(null);
     }
 

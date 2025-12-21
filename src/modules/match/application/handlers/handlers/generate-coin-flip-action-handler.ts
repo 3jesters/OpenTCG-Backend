@@ -10,6 +10,7 @@ import {
   PlayerActionType,
   ActionSummary,
   StatusEffect,
+  MatchState,
 } from '../../../domain';
 import { Card } from '../../../../card/domain/entities';
 import { IMatchRepository } from '../../../domain/repositories';
@@ -37,6 +38,7 @@ import {
   DiscardEnergyEffect,
 } from '../../../../card/domain/value-objects/attack-effect.value-object';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
+import { ActionHandlerFactory } from '../action-handler-factory';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -63,6 +65,7 @@ export class GenerateCoinFlipActionHandler
     private readonly attackDamageCalculator: AttackDamageCalculatorService,
     private readonly attackTextParser: AttackTextParserService,
     private readonly effectConditionEvaluator: EffectConditionEvaluatorService,
+    private readonly actionHandlerFactory: ActionHandlerFactory,
   ) {
     super(matchRepository, stateMachineService, getCardByIdUseCase);
   }
@@ -75,7 +78,7 @@ export class GenerateCoinFlipActionHandler
     cardsMap: Map<string, Card>,
   ): Promise<Match> {
     // Use CoinFlipExecutionService to generate coin flip
-    const result = await this.coinFlipExecutionService.generateCoinFlip({
+      const result = await this.coinFlipExecutionService.generateCoinFlip({
       gameState,
       playerIdentifier,
       matchId: match.id,
@@ -271,6 +274,86 @@ export class GenerateCoinFlipActionHandler
       },
     });
 
+    // Handle ATTACK context - check if attack should be resolved
+    if (
+      result.updatedGameState.coinFlipState?.context === CoinFlipContext.ATTACK &&
+      result.shouldResolveAttack
+    ) {
+      // Update match state first with coin flip results
+      match.updateGameState(result.updatedGameState);
+      await this.matchRepository.save(match);
+
+      // Now trigger attack execution by re-invoking ATTACK handler
+      // The AttackActionHandler will detect the completed coin flip and execute
+      const attackHandler = this.actionHandlerFactory.getHandler(
+        PlayerActionType.ATTACK,
+      );
+
+      // Create a new DTO for the attack with the attack index from coin flip state
+      const coinFlipState = result.updatedGameState.coinFlipState;
+      if (!coinFlipState || coinFlipState.attackIndex === undefined) {
+        throw new BadRequestException(
+          'Attack index not found in coin flip state',
+        );
+      }
+
+      // For ATTACK context, use currentPlayer (the attacker) instead of playerIdentifier (who approved)
+      const attackingPlayer =
+        coinFlipState.context === CoinFlipContext.ATTACK
+          ? result.updatedGameState.currentPlayer
+          : playerIdentifier;
+
+      const attackDto: ExecuteActionDto = {
+        matchId: match.id,
+        playerId: dto.playerId,
+        actionType: PlayerActionType.ATTACK,
+        actionData: {
+          attackIndex: coinFlipState.attackIndex,
+        },
+      };
+
+      // Use result.updatedGameState which has the completed coin flip state
+      // Update match's game state to match before calling attack handler
+      match.updateGameState(result.updatedGameState);
+      await this.matchRepository.save(match);
+      
+      // Store original match state before attack handler execution
+      const originalMatchState = match.state;
+      
+      // Execute attack handler - this will update the match with attack results
+      const attackResult = await attackHandler.execute(
+        attackDto,
+        match,
+        result.updatedGameState,
+        attackingPlayer,
+        cardsMap,
+      );
+      
+      // When attack handler is called internally from coin flip flow,
+      // we need to preserve PLAYER_TURN state to allow the flow to continue
+      // Only allow MATCH_ENDED if it was already ended before the attack
+      if (attackResult.state === MatchState.MATCH_ENDED && originalMatchState === MatchState.PLAYER_TURN) {
+        // Restore PLAYER_TURN state - the match ending will be handled by the normal flow
+        // This allows the coin flip flow to complete properly
+        Object.defineProperty(attackResult, '_state', {
+          value: MatchState.PLAYER_TURN,
+          writable: true,
+          configurable: true,
+        });
+      } else if (attackResult.state !== MatchState.PLAYER_TURN && 
+          attackResult.state !== MatchState.MATCH_ENDED &&
+          attackResult.state !== MatchState.BETWEEN_TURNS) {
+        // If match state changed unexpectedly, restore it to PLAYER_TURN
+        Object.defineProperty(attackResult, '_state', {
+          value: MatchState.PLAYER_TURN,
+          writable: true,
+          configurable: true,
+        });
+      }
+      
+      return attackResult;
+    }
+
     // Handle STATUS_CHECK context (sleep wake-up, confusion)
     if (
       result.updatedGameState.coinFlipState?.context ===
@@ -289,7 +372,7 @@ export class GenerateCoinFlipActionHandler
       );
     }
 
-    // Update match with result
+    // Update match with result (for non-ATTACK contexts or when shouldResolveAttack is false)
     match.updateGameState(result.updatedGameState);
     return await this.matchRepository.save(match);
   }
