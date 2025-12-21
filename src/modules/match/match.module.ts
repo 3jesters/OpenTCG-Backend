@@ -58,6 +58,15 @@ import {
   RetreatExecutionService,
   AvailableActionsService,
   PlayerTypeService,
+  ActionFilterRegistry,
+  PlayerTurnActionFilter,
+  DrawingCardsActionFilter,
+  SetPrizeCardsActionFilter,
+  SelectActivePokemonActionFilter,
+  SelectBenchPokemonActionFilter,
+  FirstPlayerSelectionActionFilter,
+  InitialSetupActionFilter,
+  DefaultActionFilter,
 } from './application/services';
 import { DeckModule } from '../deck/deck.module';
 import { CardModule } from '../card/card.module';
@@ -158,6 +167,46 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     // Action Services
     AvailableActionsService,
     PlayerTypeService,
+    // Action Filters (Strategy Pattern)
+    ActionFilterRegistry,
+    PlayerTurnActionFilter,
+    DrawingCardsActionFilter,
+    SetPrizeCardsActionFilter,
+    SelectActivePokemonActionFilter,
+    SelectBenchPokemonActionFilter,
+    FirstPlayerSelectionActionFilter,
+    InitialSetupActionFilter,
+    DefaultActionFilter,
+    // Register action filters for injection
+    {
+      provide: 'ACTION_FILTERS',
+      useFactory: (
+        playerTurnFilter: PlayerTurnActionFilter,
+        drawingCardsFilter: DrawingCardsActionFilter,
+        setPrizeCardsFilter: SetPrizeCardsActionFilter,
+        selectActivePokemonFilter: SelectActivePokemonActionFilter,
+        selectBenchPokemonFilter: SelectBenchPokemonActionFilter,
+        firstPlayerSelectionFilter: FirstPlayerSelectionActionFilter,
+        initialSetupFilter: InitialSetupActionFilter,
+      ) => [
+        playerTurnFilter,
+        drawingCardsFilter,
+        setPrizeCardsFilter,
+        selectActivePokemonFilter,
+        selectBenchPokemonFilter,
+        firstPlayerSelectionFilter,
+        initialSetupFilter,
+      ],
+      inject: [
+        PlayerTurnActionFilter,
+        DrawingCardsActionFilter,
+        SetPrizeCardsActionFilter,
+        SelectActivePokemonActionFilter,
+        SelectBenchPokemonActionFilter,
+        FirstPlayerSelectionActionFilter,
+        InitialSetupActionFilter,
+      ],
+    },
     // Action Handlers (Strategy Pattern)
     ActionHandlerFactory,
     ConcedeActionHandler,

@@ -60,6 +60,15 @@ import {
   EvolvePokemonPlayerTurnService,
   RetreatExecutionService,
   AvailableActionsService,
+  ActionFilterRegistry,
+  PlayerTurnActionFilter,
+  DrawingCardsActionFilter,
+  SetPrizeCardsActionFilter,
+  SelectActivePokemonActionFilter,
+  SelectBenchPokemonActionFilter,
+  FirstPlayerSelectionActionFilter,
+  InitialSetupActionFilter,
+  DefaultActionFilter,
 } from '../services';
 import { EvolutionExecutionService as RealEvolutionExecutionService } from '../services/evolution-execution.service';
 import {
@@ -755,12 +764,54 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
             executeRetreat: jest.fn(),
           },
         },
+        // Action Filters
+        PlayerTurnActionFilter,
+        DrawingCardsActionFilter,
+        SetPrizeCardsActionFilter,
+        SelectActivePokemonActionFilter,
+        SelectBenchPokemonActionFilter,
+        FirstPlayerSelectionActionFilter,
+        InitialSetupActionFilter,
+        DefaultActionFilter,
+        {
+          provide: 'ACTION_FILTERS',
+          useFactory: (
+            playerTurnFilter: PlayerTurnActionFilter,
+            drawingCardsFilter: DrawingCardsActionFilter,
+            setPrizeCardsFilter: SetPrizeCardsActionFilter,
+            selectActivePokemonFilter: SelectActivePokemonActionFilter,
+            selectBenchPokemonFilter: SelectBenchPokemonActionFilter,
+            firstPlayerSelectionFilter: FirstPlayerSelectionActionFilter,
+            initialSetupFilter: InitialSetupActionFilter,
+          ) => [
+            playerTurnFilter,
+            drawingCardsFilter,
+            setPrizeCardsFilter,
+            selectActivePokemonFilter,
+            selectBenchPokemonFilter,
+            firstPlayerSelectionFilter,
+            initialSetupFilter,
+          ],
+          inject: [
+            PlayerTurnActionFilter,
+            DrawingCardsActionFilter,
+            SetPrizeCardsActionFilter,
+            SelectActivePokemonActionFilter,
+            SelectBenchPokemonActionFilter,
+            FirstPlayerSelectionActionFilter,
+            InitialSetupActionFilter,
+          ],
+        },
+        ActionFilterRegistry,
         {
           provide: AvailableActionsService,
-          useFactory: (stateMachine: MatchStateMachineService) => {
-            return new AvailableActionsService(stateMachine);
+          useFactory: (
+            stateMachine: MatchStateMachineService,
+            actionFilterRegistry: ActionFilterRegistry,
+          ) => {
+            return new AvailableActionsService(stateMachine, actionFilterRegistry);
           },
-          inject: [MatchStateMachineService],
+          inject: [MatchStateMachineService, ActionFilterRegistry],
         },
         {
           provide: ActionHandlerFactory,
