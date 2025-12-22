@@ -104,6 +104,7 @@ export interface CardInstanceJson {
   evolutionChain?: string[]; // Optional for backward compatibility
   poisonDamageAmount?: number; // Optional, poison damage amount (10 or 20)
   evolvedAt?: number; // Optional, turn number when this Pokemon was evolved
+  paralysisClearsAtTurn?: number; // Optional, turn number when PARALYZED status should be cleared
 }
 
 /**
@@ -356,6 +357,7 @@ export class MatchMapper {
       evolutionChain: card.evolutionChain || [],
       poisonDamageAmount: card.poisonDamageAmount,
       evolvedAt: card.evolvedAt,
+      paralysisClearsAtTurn: card.paralysisClearsAtTurn,
     };
   }
 
@@ -400,6 +402,7 @@ export class MatchMapper {
       json.evolutionChain || [],
       json.poisonDamageAmount,
       json.evolvedAt, // Default to undefined for backward compatibility
+      json.paralysisClearsAtTurn, // Optional, turn number when PARALYZED should clear
     );
   }
 

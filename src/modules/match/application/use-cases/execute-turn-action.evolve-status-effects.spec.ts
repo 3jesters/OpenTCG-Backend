@@ -207,11 +207,8 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         },
         {
           provide: MatchStateMachineService,
-          useValue: {
-            canTransition: jest.fn().mockReturnValue(true),
-            transition: jest.fn(),
-            validateAction: jest.fn().mockReturnValue({ isValid: true }),
-            getAvailableActions: jest.fn().mockReturnValue([]),
+          useFactory: () => {
+            return new MatchStateMachineService();
           },
         },
         {
@@ -236,33 +233,47 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         },
         {
           provide: CoinFlipResolverService,
-          useValue: {
-            generateCoinFlip: jest.fn(),
+          useFactory: () => {
+            return new CoinFlipResolverService();
           },
         },
         {
           provide: AttackCoinFlipParserService,
-          useValue: {},
+          useFactory: () => {
+            return new AttackCoinFlipParserService();
+          },
         },
         {
           provide: AttackEnergyValidatorService,
-          useValue: {},
+          useFactory: () => {
+            return new AttackEnergyValidatorService();
+          },
         },
         {
           provide: TrainerEffectExecutorService,
-          useValue: {},
+          useFactory: () => {
+            return new TrainerEffectExecutorService();
+          },
         },
         {
           provide: TrainerEffectValidatorService,
-          useValue: {},
+          useFactory: () => {
+            return new TrainerEffectValidatorService();
+          },
         },
         {
           provide: AbilityEffectExecutorService,
-          useValue: {},
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectExecutorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: AbilityEffectValidatorService,
-          useValue: {},
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectValidatorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: EnergyAttachmentExecutionService,
@@ -718,6 +729,7 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
 
     it('should clear PARALYZED status while preserving damage counters', async () => {
       // Arrange: Create a paralyzed Pokemon
+      // Note: paralysisClearsAtTurn is set but won't matter since evolution clears all status effects
       const charmander = new CardInstance(
         'instance-1',
         'charmander-id',
@@ -727,6 +739,9 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         [],
         [StatusEffect.PARALYZED], // Has paralyzed status
         [],
+        undefined, // poisonDamageAmount
+        undefined, // evolvedAt
+        3, // paralysisClearsAtTurn (arbitrary, will be cleared by evolution)
       );
 
       const charmanderCard = createPokemonCard(

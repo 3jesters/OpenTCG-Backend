@@ -38,7 +38,8 @@ export class EffectConditionEvaluatorService {
             return false;
           }
           // Check if any flip is heads
-          return coinFlipResults.some((result) => result.isHeads());
+          const hasHeads = coinFlipResults.some((result) => result.isHeads());
+          return hasHeads;
 
         case ConditionType.COIN_FLIP_FAILURE:
           if (!coinFlipResults || coinFlipResults.length === 0) {

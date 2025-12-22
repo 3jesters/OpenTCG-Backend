@@ -137,10 +137,13 @@ export class ExecuteTurnActionUseCase {
         return this.wrapWithAvailableActions(updatedMatch, playerIdentifier);
       } catch (error) {
         // ATTACK handler delegates back - allow fallthrough
+        // Also allow fallthrough when handler rejects current state (e.g., PLAY_POKEMON in different states)
         if (
           error instanceof BadRequestException &&
           (error.message.includes('not yet implemented') ||
-            error.message.includes('delegating to use case'))
+            error.message.includes('delegating to use case') ||
+            error.message.includes('This handler only handles') ||
+            error.message.includes('Current state:'))
         ) {
           // Fall through to state-specific handler
         } else {
@@ -606,6 +609,19 @@ export class ExecuteTurnActionUseCase {
           PlayerActionType.GENERATE_COIN_FLIP,
         );
         return await coinFlipHandler.execute(
+          dto,
+          match,
+          gameState,
+          playerIdentifier,
+          this.cardsMap,
+        );
+
+      case PlayerActionType.DRAW_CARD:
+        // Use handler directly (no delegation)
+        const drawCardHandler = this.actionHandlerFactory.getHandler(
+          PlayerActionType.DRAW_CARD,
+        );
+        return await drawCardHandler.execute(
           dto,
           match,
           gameState,

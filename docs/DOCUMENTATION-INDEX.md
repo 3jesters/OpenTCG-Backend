@@ -294,6 +294,49 @@ if (matchState.coinFlipState?.status === 'READY_TO_FLIP') {
 
 ---
 
+### [CLIENT_STATUS_EFFECT_COIN_FLIP_FIX.md](./CLIENT_STATUS_EFFECT_COIN_FLIP_FIX.md)
+**Client documentation for status effect coin flip bug fix**
+
+**Contains:**
+- Explanation of the bug fix (status effects now respect coin flip results)
+- Before/after behavior comparison
+- Affected attack patterns ("if heads", "if tails")
+- API response changes with examples
+- Client-side implementation recommendations
+- TypeScript code examples for status effect display logic
+- Testing recommendations
+- Migration notes
+
+**Use this when:**
+- Updating client code to handle status effects correctly
+- Understanding why status effects may not apply after coin flips
+- Implementing status effect display logic
+- Verifying coin flip results match status effect requirements
+- Testing attacks with coin flip status effects
+
+**Quick Example:**
+```typescript
+// Check if status effect should be displayed
+function shouldShowStatusEffect(
+  actionData: AttackActionData,
+  opponentPokemon: PokemonState
+): boolean {
+  const hasStatusEffect = opponentPokemon.statusEffects.length > 0;
+  
+  // If coin flip was involved, verify it succeeded
+  if (actionData.coinFlipResults?.length > 0) {
+    const requiresHeads = attackText.toLowerCase().includes('if heads');
+    const coinFlipResult = actionData.coinFlipResults[0].result;
+    const conditionMet = requiresHeads ? coinFlipResult === 'heads' : coinFlipResult === 'tails';
+    return conditionMet && hasStatusEffect;
+  }
+  
+  return hasStatusEffect;
+}
+```
+
+---
+
 ### [MATCH-STATE-MACHINE-DIAGRAM.md](./MATCH-STATE-MACHINE-DIAGRAM.md)
 **Visual state machine diagram for match states**
 

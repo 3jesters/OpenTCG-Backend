@@ -74,18 +74,10 @@ import { AttackEffectFactory } from '../../../card/domain/value-objects/attack-e
 describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
   let useCase: ExecuteTurnActionUseCase;
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
-  let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
   let mockGetCardByIdUseCase: jest.Mocked<IGetCardByIdUseCase>;
   let mockDrawInitialCardsUseCase: jest.Mocked<DrawInitialCardsUseCase>;
   let mockSetPrizeCardsUseCase: jest.Mocked<SetPrizeCardsUseCase>;
   let mockPerformCoinTossUseCase: jest.Mocked<PerformCoinTossUseCase>;
-  let mockCoinFlipResolver: jest.Mocked<CoinFlipResolverService>;
-  let mockAttackCoinFlipParser: jest.Mocked<AttackCoinFlipParserService>;
-  let mockAttackEnergyValidator: jest.Mocked<AttackEnergyValidatorService>;
-  let mockTrainerEffectExecutor: jest.Mocked<TrainerEffectExecutorService>;
-  let mockTrainerEffectValidator: jest.Mocked<TrainerEffectValidatorService>;
-  let mockAbilityEffectExecutor: jest.Mocked<AbilityEffectExecutorService>;
-  let mockAbilityEffectValidator: jest.Mocked<AbilityEffectValidatorService>;
 
   // Helper to create Pokemon cards
   const createPokemonCard = (
@@ -218,11 +210,6 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
       save: jest.fn(),
     } as any;
 
-    mockStateMachineService = {
-      validateAction: jest.fn().mockReturnValue({ isValid: true }),
-      checkWinConditions: jest.fn().mockReturnValue({ hasWinner: false }),
-      getAvailableActions: jest.fn().mockReturnValue([]),
-    } as any;
 
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
@@ -233,17 +220,6 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
     mockDrawInitialCardsUseCase = {} as any;
     mockSetPrizeCardsUseCase = {} as any;
     mockPerformCoinTossUseCase = {} as any;
-    mockCoinFlipResolver = {} as any;
-    mockAttackCoinFlipParser = {
-      parseCoinFlipFromAttack: jest.fn().mockReturnValue(null),
-    } as any;
-    mockAttackEnergyValidator = {
-      validateEnergyRequirements: jest.fn().mockReturnValue({ isValid: true }),
-    } as any;
-    mockTrainerEffectExecutor = {} as any;
-    mockTrainerEffectValidator = {} as any;
-    mockAbilityEffectExecutor = {} as any;
-    mockAbilityEffectValidator = {} as any;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -254,7 +230,9 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         },
         {
           provide: MatchStateMachineService,
-          useValue: mockStateMachineService,
+          useFactory: () => {
+            return new MatchStateMachineService();
+          },
         },
         {
           provide: IGetCardByIdUseCase,
@@ -274,31 +252,47 @@ describe('ExecuteTurnActionUseCase - Discard Energy Effects', () => {
         },
         {
           provide: CoinFlipResolverService,
-          useValue: mockCoinFlipResolver,
+          useFactory: () => {
+            return new CoinFlipResolverService();
+          },
         },
         {
           provide: AttackCoinFlipParserService,
-          useValue: mockAttackCoinFlipParser,
+          useFactory: () => {
+            return new AttackCoinFlipParserService();
+          },
         },
         {
           provide: AttackEnergyValidatorService,
-          useValue: mockAttackEnergyValidator,
+          useFactory: () => {
+            return new AttackEnergyValidatorService();
+          },
         },
         {
           provide: TrainerEffectExecutorService,
-          useValue: mockTrainerEffectExecutor,
+          useFactory: () => {
+            return new TrainerEffectExecutorService();
+          },
         },
         {
           provide: TrainerEffectValidatorService,
-          useValue: mockTrainerEffectValidator,
+          useFactory: () => {
+            return new TrainerEffectValidatorService();
+          },
         },
         {
           provide: AbilityEffectExecutorService,
-          useValue: mockAbilityEffectExecutor,
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectExecutorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: AbilityEffectValidatorService,
-          useValue: mockAbilityEffectValidator,
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectValidatorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: EnergyAttachmentExecutionService,

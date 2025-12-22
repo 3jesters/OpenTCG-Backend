@@ -46,6 +46,7 @@ import { WeaknessResistanceService } from '../../domain/services/attack/damage-m
 import { DamagePreventionService } from '../../domain/services/attack/damage-modifiers/damage-prevention.service';
 import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
 import { AttackActionHandler } from '../handlers/handlers/attack-action-handler';
+import { DrawCardActionHandler } from '../handlers/handlers/draw-card-action-handler';
 import { PlayerActionType } from '../../domain/enums/player-action-type.enum';
 import {
   EnergyAttachmentExecutionService,
@@ -78,13 +79,21 @@ import {
 } from '../../domain/services';
 import { CardMapper } from '../../../card/presentation/mappers/card.mapper';
 import { CoinFlipResult } from '../../domain/value-objects/coin-flip-result.value-object';
+import { CoinFlipState } from '../../domain/value-objects/coin-flip-state.value-object';
+import {
+  CoinFlipConfiguration,
+  CoinFlipCountType,
+  DamageCalculationType,
+} from '../../domain/value-objects/coin-flip-configuration.value-object';
+import { CoinFlipStatus } from '../../domain/enums/coin-flip-status.enum';
+import { CoinFlipContext } from '../../domain/enums/coin-flip-context.enum';
 import { ActionSummary } from '../../domain/value-objects/action-summary.value-object';
+import { ExecuteActionDto } from '../dto/execute-action.dto';
 
 describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
   let useCase: ExecuteTurnActionUseCase;
   let mockGetCardByIdUseCase: jest.Mocked<IGetCardByIdUseCase>;
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
-  let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
   let mockCoinFlipResolver: jest.Mocked<CoinFlipResolverService>;
   let mockEvolutionExecutionService: any;
 
@@ -102,15 +111,6 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       findByPlayerId: jest.fn(),
     } as any;
 
-    mockStateMachineService = {
-      validateAction: jest.fn().mockReturnValue({ isValid: true }),
-      transition: jest.fn(),
-      getCurrentState: jest.fn(),
-      checkWinConditions: jest
-        .fn()
-        .mockReturnValue({ hasWinner: false, winner: null }),
-      getAvailableActions: jest.fn().mockReturnValue([]),
-    } as any;
 
     // Create mock CardHelperService for RealEvolutionExecutionService
     const mockCardHelperForEvolution = {
@@ -143,7 +143,9 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         },
         {
           provide: MatchStateMachineService,
-          useValue: mockStateMachineService,
+          useFactory: () => {
+            return new MatchStateMachineService();
+          },
         },
         {
           provide: DrawInitialCardsUseCase,
@@ -163,40 +165,52 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         },
         {
           provide: CoinFlipResolverService,
-          useValue: {
-            generateCoinFlip: jest.fn(),
-            generateMultipleCoinFlips: jest.fn(),
-          } as any,
+          useFactory: () => {
+            const mockService = {
+              generateCoinFlip: jest.fn().mockReturnValue(new CoinFlipResult(0, 'heads', 12345)),
+              generateMultipleCoinFlips: jest.fn().mockReturnValue([new CoinFlipResult(0, 'heads', 12345)]),
+              calculateCoinCount: jest.fn().mockReturnValue(1),
+            };
+            return mockService;
+          },
         },
         {
           provide: AttackCoinFlipParserService,
-          useValue: {
-            parseCoinFlipFromAttack: jest.fn().mockReturnValue(null),
+          useFactory: () => {
+            return new AttackCoinFlipParserService();
           },
         },
         {
           provide: AttackEnergyValidatorService,
-          useValue: {
-            validateEnergyRequirements: jest
-              .fn()
-              .mockReturnValue({ isValid: true }),
+          useFactory: () => {
+            return new AttackEnergyValidatorService();
           },
         },
         {
           provide: TrainerEffectExecutorService,
-          useValue: {},
+          useFactory: () => {
+            return new TrainerEffectExecutorService();
+          },
         },
         {
           provide: TrainerEffectValidatorService,
-          useValue: {},
+          useFactory: () => {
+            return new TrainerEffectValidatorService();
+          },
         },
         {
           provide: AbilityEffectExecutorService,
-          useValue: {},
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectExecutorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: AbilityEffectValidatorService,
-          useValue: {},
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectValidatorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: StatusEffectProcessorService,
@@ -231,9 +245,18 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
                       hpChanged = true;
                     }
                     
-                    // Clear paralyzed status
+                    // Clear paralyzed status based on turn number tracking
+                    // Paralysis is removed at the end of the affected player's next turn
+                    // We check if the current turn number > the expected clear turn
+                    // (using > instead of >= because we clear at the END of the turn, not the START)
                     if (updatedActive.hasStatusEffect(StatusEffect.PARALYZED)) {
-                      updatedActive = updatedActive.withStatusEffectRemoved(StatusEffect.PARALYZED);
+                      const shouldClear =
+                        updatedActive.paralysisClearsAtTurn !== undefined &&
+                        gameState.turnNumber > updatedActive.paralysisClearsAtTurn;
+                      
+                      if (shouldClear) {
+                        updatedActive = updatedActive.withStatusEffectRemoved(StatusEffect.PARALYZED);
+                      }
                     }
                     
                     if (hpChanged || updatedActive !== playerState.activePokemon) {
@@ -390,9 +413,28 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
                     }
 
                     if (statusToApply && updatedPokemon && typeof updatedPokemon.withStatusEffectAdded === 'function') {
+                      // Calculate paralysis clear turn if applying PARALYZED
+                      // The target Pokemon belongs to the opponent (not the attacker)
+                      const targetPlayer = params.playerIdentifier === PlayerIdentifier.PLAYER1
+                        ? PlayerIdentifier.PLAYER2
+                        : PlayerIdentifier.PLAYER1;
+                      const paralysisClearsAtTurn = statusToApply === StatusEffect.PARALYZED
+                        ? (() => {
+                            const currentTurn = params.gameState.turnNumber;
+                            if (targetPlayer === PlayerIdentifier.PLAYER1) {
+                              // Player 1's next turn is the next odd turn >= currentTurn + 1
+                              return currentTurn % 2 === 1 ? currentTurn + 2 : currentTurn + 1;
+                            } else {
+                              // Player 2's next turn is the next even turn >= currentTurn + 1
+                              return currentTurn % 2 === 0 ? currentTurn + 2 : currentTurn + 1;
+                            }
+                          })()
+                        : undefined;
+                      
                       updatedPokemon = updatedPokemon.withStatusEffectAdded(
                         statusToApply,
                         statusToApply === StatusEffect.POISONED ? 10 : undefined,
+                        paralysisClearsAtTurn,
                       );
                       statusApplied = true;
                       appliedStatus = statusToApply;
@@ -405,7 +447,29 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
               if (!statusApplied && params.parseStatusEffectFromAttackText) {
                 const parsedStatus = params.parseStatusEffectFromAttackText(params.attackText);
                 if (parsedStatus && updatedPokemon && typeof updatedPokemon.withStatusEffectAdded === 'function') {
-                  updatedPokemon = updatedPokemon.withStatusEffectAdded(parsedStatus);
+                  // Calculate paralysis clear turn if applying PARALYZED
+                  // The target Pokemon belongs to the opponent (not the attacker)
+                  const targetPlayer = params.playerIdentifier === PlayerIdentifier.PLAYER1
+                    ? PlayerIdentifier.PLAYER2
+                    : PlayerIdentifier.PLAYER1;
+                  const paralysisClearsAtTurn = parsedStatus === StatusEffect.PARALYZED
+                    ? (() => {
+                        const currentTurn = params.gameState.turnNumber;
+                        if (targetPlayer === PlayerIdentifier.PLAYER1) {
+                          // Player 1's next turn is the next odd turn >= currentTurn + 1
+                          return currentTurn % 2 === 1 ? currentTurn + 2 : currentTurn + 1;
+                        } else {
+                          // Player 2's next turn is the next even turn >= currentTurn + 1
+                          return currentTurn % 2 === 0 ? currentTurn + 2 : currentTurn + 1;
+                        }
+                      })()
+                    : undefined;
+                  
+                  updatedPokemon = updatedPokemon.withStatusEffectAdded(
+                    parsedStatus,
+                    undefined,
+                    paralysisClearsAtTurn,
+                  );
                   statusApplied = true;
                   appliedStatus = parsedStatus;
                 }
@@ -853,8 +917,17 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
               effectConditionEvaluator,
             );
             factory.registerHandler(PlayerActionType.ATTACK, attackHandler);
+            // Create real DRAW_CARD handler for tests
+            const drawCardHandler = new DrawCardActionHandler(
+              matchRepo,
+              stateMachine,
+              getCardUseCase,
+            );
+            factory.registerHandler(PlayerActionType.DRAW_CARD, drawCardHandler);
             factory.hasHandler = jest.fn().mockImplementation((actionType) => {
-              return actionType === PlayerActionType.END_TURN || actionType === PlayerActionType.ATTACK;
+              return actionType === PlayerActionType.END_TURN || 
+                     actionType === PlayerActionType.ATTACK ||
+                     actionType === PlayerActionType.DRAW_CARD;
             });
             return factory;
           },
@@ -1049,13 +1122,31 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         },
       );
 
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        async (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'attacker-id') {
+              cardsMap.set(cardId, attackerCard);
+            } else if (cardId === 'poisoner-id') {
+              cardsMap.set(cardId, poisonerCard);
+            } else if (cardId === 'defender-id') {
+              cardsMap.set(cardId, defenderCard);
+            } else if (cardId === 'energy-fire-1') {
+              cardsMap.set(cardId, createEnergyCard('FIRE'));
+            }
+          }
+          return cardsMap;
+        },
+      );
+
       const attacker = new CardInstance(
         'attacker-instance',
         'attacker-id',
         PokemonPosition.ACTIVE,
         100,
         100,
-        [],
+        ['energy-fire-1'], // Add energy for attack
         [],
         [],
         undefined,
@@ -1073,14 +1164,44 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         undefined,
       );
 
-      const match = createMatchWithGameState(attacker, [], defender, []);
+      let match = createMatchWithGameState(attacker, [], defender, []);
+      
+      // Set up coin flip state in game state with heads result for CONFUSED status
+      // The attack handler now checks for existing completed coin flip state
+      const coinFlipResult = new CoinFlipResult(0, 'heads', 12345);
+      const coinFlipConfig = new CoinFlipConfiguration(
+        CoinFlipCountType.FIXED,
+        1,
+        undefined,
+        undefined,
+        DamageCalculationType.STATUS_EFFECT_ONLY,
+        20,
+      );
+      const coinFlipState = new CoinFlipState(
+        CoinFlipStatus.COMPLETED,
+        CoinFlipContext.ATTACK,
+        coinFlipConfig,
+        [coinFlipResult],
+        0, // attackIndex
+        undefined,
+        undefined,
+        'test-action-id',
+        true,
+        true,
+      );
+      const gameStateWithCoinFlip = match.gameState!.withCoinFlipState(coinFlipState);
+      match.updateGameState(gameStateWithCoinFlip);
+      
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockImplementation(async (m) => m);
 
       // Act 1: Apply CONFUSED status (with coin flip heads)
-      // Mock generateCoinFlip to return CoinFlipResult (synchronous method)
-      mockCoinFlipResolver.generateCoinFlip.mockReturnValue(
-        new CoinFlipResult(0, 'heads', 12345),
+      // Mock generateCoinFlip and generateMultipleCoinFlips to return heads
+      (mockCoinFlipResolver.generateCoinFlip as jest.Mock).mockReturnValue(
+        coinFlipResult,
+      );
+      (mockCoinFlipResolver.generateMultipleCoinFlips as jest.Mock).mockReturnValue(
+        [coinFlipResult],
       );
 
       const { match: result1 } = await useCase.execute({
@@ -1132,7 +1253,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         PokemonPosition.ACTIVE,
         100,
         100,
-        [],
+        ['energy-fire-1'], // Add energy for attack
         [],
         [],
         undefined,
@@ -1271,13 +1392,31 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         },
       );
 
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        async (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'poisoner-id') {
+              cardsMap.set(cardId, poisonerCard);
+            } else if (cardId === 'burner-id') {
+              cardsMap.set(cardId, burnerCard);
+            } else if (cardId === 'defender-id') {
+              cardsMap.set(cardId, defenderCard);
+            } else if (cardId === 'energy-fire-1') {
+              cardsMap.set(cardId, createEnergyCardHelper('FIRE'));
+            }
+          }
+          return cardsMap;
+        },
+      );
+
       const poisoner = new CardInstance(
         'poisoner-instance',
         'poisoner-id',
         PokemonPosition.ACTIVE,
         100,
         100,
-        [],
+        ['energy-fire-1'], // Add energy for attack
         [],
         [],
         undefined,
@@ -1733,6 +1872,281 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       // Evolved: 80 maxHp - 10 damage = 70 currentHp
       expect(evolvedPokemon?.currentHp).toBe(70); // Damage preserved (10 damage from 80 maxHp)
       expect(evolvedPokemon?.maxHp).toBe(80); // New max HP from evolution
+    });
+  });
+
+  describe('Paralysis Clearing Behavior', () => {
+    it('should clear paralysis only at the end of the opponent\'s turn (affected player\'s next turn)', async () => {
+      // Arrange: Player 1's Pokemon is paralyzed on turn 1
+      // Player 1's next turn is turn 3 (after Player 2's turn 2)
+      // So paralysis should clear at the end of turn 3
+      const paralyzedPokemon = new CardInstance(
+        'instance-1',
+        'pikachu-id',
+        PokemonPosition.ACTIVE,
+        50,
+        50,
+        [],
+        [StatusEffect.PARALYZED],
+        [],
+        undefined, // poisonDamageAmount
+        undefined, // evolvedAt
+        3, // paralysisClearsAtTurn (Player 1's next turn after turn 1)
+      );
+
+      const pikachuCard = createPokemonCard(
+        'pikachu-id',
+        'Pikachu',
+        50,
+        [], // No attacks
+      );
+
+      // Create match with Player 1's turn (currentPlayer = PLAYER1)
+      // Add cards to decks to prevent DECK_OUT win condition
+      const gameState = new GameState(
+        new PlayerGameState(
+          ['card-1', 'card-2', 'card-3'], // deck (non-empty to prevent DECK_OUT)
+          [], // hand
+          paralyzedPokemon, // activePokemon
+          [], // bench
+          ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'], // prizeCards (6 prizes to prevent PRIZE_CARDS win)
+          [], // discardPile
+          false, // hasAttachedEnergyThisTurn
+        ),
+        new PlayerGameState(
+          ['card-1', 'card-2', 'card-3'], // deck (non-empty to prevent DECK_OUT)
+          [], // hand
+          new CardInstance(
+            'instance-2',
+            'charmander-id',
+            PokemonPosition.ACTIVE,
+            50,
+            50,
+            [],
+            [],
+            [],
+          ), // activePokemon
+          [], // bench
+          ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'], // prizeCards (6 prizes to prevent PRIZE_CARDS win)
+          [], // discardPile
+          false, // hasAttachedEnergyThisTurn
+        ),
+        1, // turnNumber
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1, // currentPlayer
+        null,
+        [],
+        null,
+      );
+
+      const match = new Match('match-1', 'tournament-1');
+      match.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      match.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      // Transition to PLAYER_TURN state first (for testing purposes)
+      Object.defineProperty(match, '_state', {
+        value: MatchState.PLAYER_TURN,
+        writable: true,
+        configurable: true,
+      });
+      match.updateGameState(gameState);
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockImplementation((m) => Promise.resolve(m));
+      mockGetCardByIdUseCase.getCardEntity.mockResolvedValue(pikachuCard);
+
+      // Step 1: Player 1 ends their turn
+      // Paralysis should NOT be cleared (it's Player 1's turn that ended, not Player 2's)
+      const endTurnDto1: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: PlayerActionType.END_TURN,
+        actionData: {},
+      };
+
+      const { match: matchAfterPlayer1Turn } = await useCase.execute(endTurnDto1);
+
+      // Verify paralysis is still present (Player 1's turn ended, so Player 1's paralysis should remain)
+      const player1PokemonAfterTurn1 =
+        matchAfterPlayer1Turn.gameState?.player1State.activePokemon;
+      expect(player1PokemonAfterTurn1?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(
+        true,
+      );
+
+      // Verify it's now Player 2's turn
+      expect(matchAfterPlayer1Turn.gameState?.currentPlayer).toBe(
+        PlayerIdentifier.PLAYER2,
+      );
+
+      // Step 2: Player 2 draws a card (required before END_TURN in DRAW phase)
+      mockMatchRepository.findById.mockResolvedValue(matchAfterPlayer1Turn);
+      const drawCardDto: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'test-player-2',
+        actionType: PlayerActionType.DRAW_CARD,
+        actionData: {},
+      };
+      const { match: matchAfterDraw } = await useCase.execute(drawCardDto);
+
+      // Step 3: Player 2 ends their turn
+      // Paralysis should NOT be cleared yet (we're transitioning to turn 3, but paralysis clears at end of turn 3)
+      mockMatchRepository.findById.mockResolvedValue(matchAfterDraw);
+      const endTurnDto2: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'test-player-2',
+        actionType: PlayerActionType.END_TURN,
+        actionData: {},
+      };
+
+      const { match: matchAfterPlayer2Turn } = await useCase.execute(endTurnDto2);
+
+      // Verify paralysis is still present (we're at start of turn 3, paralysis clears at end of turn 3)
+      const player1PokemonAfterTurn2 =
+        matchAfterPlayer2Turn.gameState?.player1State.activePokemon;
+      expect(player1PokemonAfterTurn2?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(
+        true,
+      );
+
+      // Verify it's now Player 1's turn (turn 3)
+      expect(matchAfterPlayer2Turn.gameState?.currentPlayer).toBe(
+        PlayerIdentifier.PLAYER1,
+      );
+      expect(matchAfterPlayer2Turn.gameState?.turnNumber).toBe(3);
+
+      // Step 4: Player 1 draws a card (required before END_TURN in DRAW phase)
+      mockMatchRepository.findById.mockResolvedValue(matchAfterPlayer2Turn);
+      const drawCardDto3: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: PlayerActionType.DRAW_CARD,
+        actionData: {},
+      };
+      const { match: matchAfterDraw3 } = await useCase.execute(drawCardDto3);
+
+      // Step 5: Player 1 ends their turn (turn 3)
+      // Paralysis SHOULD be cleared now (it's the end of Player 1's turn 3, which is the affected player's next turn)
+      mockMatchRepository.findById.mockResolvedValue(matchAfterDraw3);
+      const endTurnDto3: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: PlayerActionType.END_TURN,
+        actionData: {},
+      };
+
+      const { match: matchAfterPlayer1Turn3 } = await useCase.execute(endTurnDto3);
+
+      // Verify paralysis is now cleared (end of turn 3, so paralysis should be cleared)
+      const player1PokemonAfterTurn3 =
+        matchAfterPlayer1Turn3.gameState?.player1State.activePokemon;
+      expect(player1PokemonAfterTurn3?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(
+        false,
+      );
+      expect(player1PokemonAfterTurn3?.statusEffects).toEqual([]);
+
+      // Verify it's now Player 2's turn (turn 4)
+      expect(matchAfterPlayer1Turn3.gameState?.currentPlayer).toBe(
+        PlayerIdentifier.PLAYER2,
+      );
+      expect(matchAfterPlayer1Turn3.gameState?.turnNumber).toBe(4);
+    });
+
+    it('should not clear paralysis for the current player when they end their turn', async () => {
+      // Arrange: Player 2's Pokemon is paralyzed on turn 1
+      // Player 2's next turn is turn 2 (the next even turn)
+      // So paralysis should clear at the end of turn 2
+      // But Player 1 ends their turn first, so paralysis should NOT be cleared yet
+      const paralyzedPokemon = new CardInstance(
+        'instance-2',
+        'charmander-id',
+        PokemonPosition.ACTIVE,
+        50,
+        50,
+        [],
+        [StatusEffect.PARALYZED],
+        [],
+        undefined, // poisonDamageAmount
+        undefined, // evolvedAt
+        2, // paralysisClearsAtTurn (Player 2's next turn after turn 1)
+      );
+
+      const charmanderCard = createPokemonCard(
+        'charmander-id',
+        'Charmander',
+        50,
+        [], // No attacks
+      );
+
+      // Create match with Player 1's turn (currentPlayer = PLAYER1)
+      // Add cards to decks to prevent DECK_OUT win condition
+      const gameState = new GameState(
+        new PlayerGameState(
+          ['card-1', 'card-2', 'card-3'], // deck (non-empty to prevent DECK_OUT)
+          [], // hand
+          new CardInstance(
+            'instance-1',
+            'pikachu-id',
+            PokemonPosition.ACTIVE,
+            50,
+            50,
+            [],
+            [],
+            [],
+          ), // activePokemon
+          [], // bench
+          ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'], // prizeCards (6 prizes to prevent PRIZE_CARDS win)
+          [], // discardPile
+          false, // hasAttachedEnergyThisTurn
+        ),
+        new PlayerGameState(
+          ['card-1', 'card-2', 'card-3'], // deck (non-empty to prevent DECK_OUT)
+          [], // hand
+          paralyzedPokemon, // activePokemon
+          [], // bench
+          ['prize-1', 'prize-2', 'prize-3', 'prize-4', 'prize-5', 'prize-6'], // prizeCards (6 prizes to prevent PRIZE_CARDS win)
+          [], // discardPile
+          false, // hasAttachedEnergyThisTurn
+        ),
+        1, // turnNumber
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1, // currentPlayer
+        null,
+        [],
+        null,
+      );
+
+      const match = new Match('match-1', 'tournament-1');
+      match.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      match.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      // Transition to PLAYER_TURN state first (for testing purposes)
+      Object.defineProperty(match, '_state', {
+        value: MatchState.PLAYER_TURN,
+        writable: true,
+        configurable: true,
+      });
+      match.updateGameState(gameState);
+
+      mockMatchRepository.findById.mockResolvedValue(match);
+      mockMatchRepository.save.mockImplementation((m) => Promise.resolve(m));
+      mockGetCardByIdUseCase.getCardEntity.mockResolvedValue(charmanderCard);
+
+      // Player 1 ends their turn
+      // Player 2's paralysis should NOT be cleared (it's Player 1's turn that ended, not Player 2's)
+      const endTurnDto: ExecuteActionDto = {
+        matchId: 'match-1',
+        playerId: 'test-player-1',
+        actionType: PlayerActionType.END_TURN,
+        actionData: {},
+      };
+
+      const { match: matchAfterTurn } = await useCase.execute(endTurnDto);
+
+      // Verify Player 2's paralysis is still present
+      const player2Pokemon = matchAfterTurn.gameState?.player2State.activePokemon;
+      expect(player2Pokemon?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(true);
+
+      // Verify it's now Player 2's turn
+      expect(matchAfterTurn.gameState?.currentPlayer).toBe(
+        PlayerIdentifier.PLAYER2,
+      );
     });
   });
 });

@@ -22,7 +22,10 @@ export class StatusEffectProcessorService {
    * Process status effects between turns
    * - Apply poison/burn damage
    * - Create sleep wake-up coin flips
-   * - Clear paralyzed status
+   * - Clear paralyzed status based on turn number tracking
+   * 
+   * Note: Paralysis is removed at the end of the affected player's next turn.
+   * We use turn number tracking to determine when to clear paralysis.
    */
   async processBetweenTurnsStatusEffects(
     gameState: GameState,
@@ -57,11 +60,20 @@ export class StatusEffectProcessorService {
           updatedActive = updatedActive.withHp(newHp);
         }
 
-        // Clear paralyzed status at end of turn
+        // Clear paralyzed status based on turn number tracking
+        // Paralysis is removed at the end of the affected player's next turn
+        // We check if the current turn number > the expected clear turn
+        // (using > instead of >= because we clear at the END of the turn, not the START)
         if (activePokemon.hasStatusEffect(StatusEffect.PARALYZED)) {
-          updatedActive = updatedActive.withStatusEffectRemoved(
-            StatusEffect.PARALYZED,
-          );
+          const shouldClear =
+            activePokemon.paralysisClearsAtTurn !== undefined &&
+            gameState.turnNumber > activePokemon.paralysisClearsAtTurn;
+          
+          if (shouldClear) {
+            updatedActive = updatedActive.withStatusEffectRemoved(
+              StatusEffect.PARALYZED,
+            );
+          }
         }
 
         // Create sleep wake-up coin flip if asleep

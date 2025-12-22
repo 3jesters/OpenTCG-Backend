@@ -76,18 +76,10 @@ import { Resistance } from '../../../card/domain/value-objects/resistance.value-
 describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
   let useCase: ExecuteTurnActionUseCase;
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
-  let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
   let mockGetCardByIdUseCase: jest.Mocked<GetCardByIdUseCase>;
   let mockDrawInitialCardsUseCase: jest.Mocked<DrawInitialCardsUseCase>;
   let mockSetPrizeCardsUseCase: jest.Mocked<SetPrizeCardsUseCase>;
   let mockPerformCoinTossUseCase: jest.Mocked<PerformCoinTossUseCase>;
-  let mockCoinFlipResolver: jest.Mocked<CoinFlipResolverService>;
-  let mockAttackCoinFlipParser: jest.Mocked<AttackCoinFlipParserService>;
-  let mockAttackEnergyValidator: jest.Mocked<AttackEnergyValidatorService>;
-  let mockTrainerEffectExecutor: jest.Mocked<TrainerEffectExecutorService>;
-  let mockTrainerEffectValidator: jest.Mocked<TrainerEffectValidatorService>;
-  let mockAbilityEffectExecutor: jest.Mocked<AbilityEffectExecutorService>;
-  let mockAbilityEffectValidator: jest.Mocked<AbilityEffectValidatorService>;
 
   // Helper to create Pokemon cards
   const createPokemonCard = (
@@ -228,11 +220,6 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
       save: jest.fn(),
     } as any;
 
-    mockStateMachineService = {
-      validateAction: jest.fn().mockReturnValue({ isValid: true }),
-      checkWinConditions: jest.fn().mockReturnValue({ hasWinner: false }),
-      getAvailableActions: jest.fn().mockReturnValue([]),
-    } as any;
 
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
@@ -243,17 +230,6 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
     mockDrawInitialCardsUseCase = {} as any;
     mockSetPrizeCardsUseCase = {} as any;
     mockPerformCoinTossUseCase = {} as any;
-    mockCoinFlipResolver = {} as any;
-    mockAttackCoinFlipParser = {
-      parseCoinFlipFromAttack: jest.fn().mockReturnValue(null),
-    } as any;
-    mockAttackEnergyValidator = {
-      validateEnergyRequirements: jest.fn().mockReturnValue({ isValid: true }),
-    } as any;
-    mockTrainerEffectExecutor = {} as any;
-    mockTrainerEffectValidator = {} as any;
-    mockAbilityEffectExecutor = {} as any;
-    mockAbilityEffectValidator = {} as any;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -264,7 +240,9 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         },
         {
           provide: MatchStateMachineService,
-          useValue: mockStateMachineService,
+          useFactory: () => {
+            return new MatchStateMachineService();
+          },
         },
         {
           provide: IGetCardByIdUseCase,
@@ -284,31 +262,47 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         },
         {
           provide: CoinFlipResolverService,
-          useValue: mockCoinFlipResolver,
+          useFactory: () => {
+            return new CoinFlipResolverService();
+          },
         },
         {
           provide: AttackCoinFlipParserService,
-          useValue: mockAttackCoinFlipParser,
+          useFactory: () => {
+            return new AttackCoinFlipParserService();
+          },
         },
         {
           provide: AttackEnergyValidatorService,
-          useValue: mockAttackEnergyValidator,
+          useFactory: () => {
+            return new AttackEnergyValidatorService();
+          },
         },
         {
           provide: TrainerEffectExecutorService,
-          useValue: mockTrainerEffectExecutor,
+          useFactory: () => {
+            return new TrainerEffectExecutorService();
+          },
         },
         {
           provide: TrainerEffectValidatorService,
-          useValue: mockTrainerEffectValidator,
+          useFactory: () => {
+            return new TrainerEffectValidatorService();
+          },
         },
         {
           provide: AbilityEffectExecutorService,
-          useValue: mockAbilityEffectExecutor,
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectExecutorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: AbilityEffectValidatorService,
-          useValue: mockAbilityEffectValidator,
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectValidatorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: EnergyAttachmentExecutionService,
@@ -1983,6 +1977,25 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         },
       );
 
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'poliwrath') {
+              cardsMap.set(cardId, poliwrathCard);
+            } else if (cardId === 'charmeleon') {
+              cardsMap.set(cardId, charmeleonCard);
+            } else if (cardId.startsWith('energy-')) {
+              const energyType = cardId.includes('water')
+                ? EnergyType.WATER
+                : EnergyType.COLORLESS;
+              cardsMap.set(cardId, createEnergyCard(energyType));
+            }
+          }
+          return Promise.resolve(cardsMap);
+        },
+      );
+
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockResolvedValue(match);
 
@@ -2305,6 +2318,25 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
             return Promise.resolve(createEnergyCard(energyType));
           }
           return Promise.resolve(null);
+        },
+      );
+
+      mockGetCardByIdUseCase.getCardsByIds.mockImplementation(
+        (cardIds: string[]) => {
+          const cardsMap = new Map();
+          for (const cardId of cardIds) {
+            if (cardId === 'poliwrath') {
+              cardsMap.set(cardId, poliwrathCard);
+            } else if (cardId === 'charmeleon') {
+              cardsMap.set(cardId, charmeleonCard);
+            } else if (cardId.startsWith('energy-')) {
+              const energyType = cardId.includes('water')
+                ? EnergyType.WATER
+                : EnergyType.COLORLESS;
+              cardsMap.set(cardId, createEnergyCard(energyType));
+            }
+          }
+          return Promise.resolve(cardsMap);
         },
       );
 

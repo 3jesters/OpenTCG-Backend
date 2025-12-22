@@ -17,6 +17,7 @@ export class CardInstance {
     public readonly evolutionChain: string[] = [], // Array of card IDs that this Pokemon evolved from (for reference)
     public readonly poisonDamageAmount?: number, // Poison damage amount (10 or 20), only set if POISONED
     public readonly evolvedAt?: number, // Turn number when this Pokemon was evolved (undefined if never evolved or evolved in previous turn)
+    public readonly paralysisClearsAtTurn?: number, // Turn number when PARALYZED status should be cleared (undefined if not paralyzed)
   ) {
     this.validate();
   }
@@ -134,6 +135,7 @@ export class CardInstance {
       this.evolutionChain,
       this.poisonDamageAmount,
       this.evolvedAt,
+      this.paralysisClearsAtTurn,
     );
   }
 
@@ -152,6 +154,7 @@ export class CardInstance {
       this.evolutionChain,
       this.poisonDamageAmount,
       this.evolvedAt,
+      this.paralysisClearsAtTurn,
     );
   }
 
@@ -162,6 +165,7 @@ export class CardInstance {
   withStatusEffectAdded(
     status: StatusEffect,
     poisonDamageAmount?: number,
+    paralysisClearsAtTurn?: number,
   ): CardInstance {
     if (status === StatusEffect.NONE) {
       return this; // Cannot add NONE
@@ -176,6 +180,11 @@ export class CardInstance {
       status === StatusEffect.POISONED && poisonDamageAmount !== undefined
         ? poisonDamageAmount
         : this.poisonDamageAmount;
+    // Update paralysisClearsAtTurn if adding PARALYZED and turn is provided
+    const newParalysisClearsAtTurn =
+      status === StatusEffect.PARALYZED && paralysisClearsAtTurn !== undefined
+        ? paralysisClearsAtTurn
+        : this.paralysisClearsAtTurn;
     return new CardInstance(
       this.instanceId,
       this.cardId,
@@ -187,6 +196,7 @@ export class CardInstance {
       this.evolutionChain,
       newPoisonDamageAmount,
       this.evolvedAt,
+      newParalysisClearsAtTurn,
     );
   }
 
@@ -201,6 +211,9 @@ export class CardInstance {
     // Clear poisonDamageAmount if removing POISONED
     const newPoisonDamageAmount =
       status === StatusEffect.POISONED ? undefined : this.poisonDamageAmount;
+    // Clear paralysisClearsAtTurn if removing PARALYZED
+    const newParalysisClearsAtTurn =
+      status === StatusEffect.PARALYZED ? undefined : this.paralysisClearsAtTurn;
     return new CardInstance(
       this.instanceId,
       this.cardId,
@@ -212,6 +225,7 @@ export class CardInstance {
       this.evolutionChain,
       newPoisonDamageAmount,
       this.evolvedAt,
+      newParalysisClearsAtTurn,
     );
   }
 
@@ -230,6 +244,7 @@ export class CardInstance {
       this.evolutionChain,
       undefined, // Clear poison damage amount
       this.evolvedAt,
+      undefined, // Clear paralysis clear turn
     );
   }
 
@@ -257,6 +272,26 @@ export class CardInstance {
       this.evolutionChain,
       poisonDamageAmount,
       this.evolvedAt,
+      undefined, // Clear paralysis clear turn when using deprecated method
+    );
+  }
+
+  /**
+   * Create a new CardInstance with updated paralysis clear turn
+   */
+  withParalysisClearsAtTurn(turnNumber: number | undefined): CardInstance {
+    return new CardInstance(
+      this.instanceId,
+      this.cardId,
+      this.position,
+      this.currentHp,
+      this.maxHp,
+      this.attachedEnergy,
+      this.statusEffects,
+      this.evolutionChain,
+      this.poisonDamageAmount,
+      this.evolvedAt,
+      turnNumber,
     );
   }
 
@@ -275,6 +310,7 @@ export class CardInstance {
       this.evolutionChain,
       this.poisonDamageAmount,
       this.evolvedAt,
+      this.paralysisClearsAtTurn,
     );
   }
 

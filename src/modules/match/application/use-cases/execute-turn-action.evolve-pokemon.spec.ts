@@ -70,18 +70,10 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
   let useCase: ExecuteTurnActionUseCase;
   let module: TestingModule;
   let mockMatchRepository: jest.Mocked<IMatchRepository>;
-  let mockStateMachineService: jest.Mocked<MatchStateMachineService>;
   let mockGetCardByIdUseCase: jest.Mocked<IGetCardByIdUseCase>;
   let mockDrawInitialCardsUseCase: jest.Mocked<DrawInitialCardsUseCase>;
   let mockSetPrizeCardsUseCase: jest.Mocked<SetPrizeCardsUseCase>;
   let mockPerformCoinTossUseCase: jest.Mocked<PerformCoinTossUseCase>;
-  let mockCoinFlipResolver: jest.Mocked<CoinFlipResolverService>;
-  let mockAttackCoinFlipParser: jest.Mocked<AttackCoinFlipParserService>;
-  let mockAttackEnergyValidator: jest.Mocked<AttackEnergyValidatorService>;
-  let mockTrainerEffectExecutor: jest.Mocked<TrainerEffectExecutorService>;
-  let mockTrainerEffectValidator: jest.Mocked<TrainerEffectValidatorService>;
-  let mockAbilityEffectExecutor: jest.Mocked<AbilityEffectExecutorService>;
-  let mockAbilityEffectValidator: jest.Mocked<AbilityEffectValidatorService>;
   let mockCardHelperService: jest.Mocked<CardHelperService>;
 
   // Helper to create Pokemon cards
@@ -169,11 +161,6 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       save: jest.fn(),
     } as any;
 
-    mockStateMachineService = {
-      validateAction: jest.fn().mockReturnValue({ isValid: true }),
-      checkWinConditions: jest.fn().mockReturnValue({ hasWinner: false }),
-      getAvailableActions: jest.fn().mockReturnValue([]),
-    } as any;
 
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
@@ -184,13 +171,6 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
     mockDrawInitialCardsUseCase = {} as any;
     mockSetPrizeCardsUseCase = {} as any;
     mockPerformCoinTossUseCase = {} as any;
-    mockCoinFlipResolver = {} as any;
-    mockAttackCoinFlipParser = {} as any;
-    mockAttackEnergyValidator = {} as any;
-    mockTrainerEffectExecutor = {} as any;
-    mockTrainerEffectValidator = {} as any;
-    mockAbilityEffectExecutor = {} as any;
-    mockAbilityEffectValidator = {} as any;
 
     const mockEnergyAttachmentExecutionService = {
       executeAttachEnergy: jest.fn().mockImplementation((params) => {
@@ -331,7 +311,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
         {
           provide: MatchStateMachineService,
-          useValue: mockStateMachineService,
+          useFactory: () => {
+            return new MatchStateMachineService();
+          },
         },
         {
           provide: IGetCardByIdUseCase,
@@ -351,31 +333,47 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
         {
           provide: CoinFlipResolverService,
-          useValue: mockCoinFlipResolver,
+          useFactory: () => {
+            return new CoinFlipResolverService();
+          },
         },
         {
           provide: AttackCoinFlipParserService,
-          useValue: mockAttackCoinFlipParser,
+          useFactory: () => {
+            return new AttackCoinFlipParserService();
+          },
         },
         {
           provide: AttackEnergyValidatorService,
-          useValue: mockAttackEnergyValidator,
+          useFactory: () => {
+            return new AttackEnergyValidatorService();
+          },
         },
         {
           provide: TrainerEffectExecutorService,
-          useValue: mockTrainerEffectExecutor,
+          useFactory: () => {
+            return new TrainerEffectExecutorService();
+          },
         },
         {
           provide: TrainerEffectValidatorService,
-          useValue: mockTrainerEffectValidator,
+          useFactory: () => {
+            return new TrainerEffectValidatorService();
+          },
         },
         {
           provide: AbilityEffectExecutorService,
-          useValue: mockAbilityEffectExecutor,
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectExecutorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: AbilityEffectValidatorService,
-          useValue: mockAbilityEffectValidator,
+          useFactory: (getCardUseCase: IGetCardByIdUseCase) => {
+            return new AbilityEffectValidatorService(getCardUseCase);
+          },
+          inject: [IGetCardByIdUseCase],
         },
         {
           provide: StatusEffectProcessorService,
@@ -387,16 +385,24 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
         {
           provide: EnergyAttachmentExecutionService,
-          useValue: mockEnergyAttachmentExecutionService,
+          useFactory: () => {
+            return new EnergyAttachmentExecutionService();
+          },
         },
         {
           provide: EvolutionExecutionService,
-          useValue: mockEvolutionExecutionService,
+          useFactory: (
+            getCardUseCase: IGetCardByIdUseCase,
+            cardHelper: CardHelperService,
+          ) => {
+            return new EvolutionExecutionService(getCardUseCase, cardHelper);
+          },
+          inject: [IGetCardByIdUseCase, CardHelperService],
         },
         {
           provide: PlayPokemonExecutionService,
-          useValue: {
-            executePlayPokemon: jest.fn(),
+          useFactory: () => {
+            return new PlayPokemonExecutionService();
           },
         },
         {
