@@ -821,17 +821,41 @@ export class AbilityEffectExecutorService {
         updatedDiscardPile.splice(index, 1);
       }
     } else if (source === EnergySource.SELF) {
-      // Move energy from the Pokemon using the ability
-      // Find the source Pokemon (the one using the ability)
-      if (actionData.target === PokemonPosition.ACTIVE) {
-        sourcePokemon = playerState.activePokemon;
+      // Determine source Pokemon based on sourcePokemonTarget metadata
+      const sourcePokemonTarget = effect.sourcePokemonTarget || TargetType.SELF;
+
+      if (sourcePokemonTarget === TargetType.SELF) {
+        // Default behavior: Use the Pokemon with the ability
+        if (actionData.target === PokemonPosition.ACTIVE) {
+          sourcePokemon = playerState.activePokemon;
+        } else {
+          const sourceBenchIndex = this.parseBenchIndex(actionData.target);
+          if (
+            sourceBenchIndex >= 0 &&
+            sourceBenchIndex < playerState.bench.length
+          ) {
+            sourcePokemon = playerState.bench[sourceBenchIndex];
+          }
+        }
       } else {
-        const sourceBenchIndex = this.parseBenchIndex(actionData.target);
-        if (
-          sourceBenchIndex >= 0 &&
-          sourceBenchIndex < playerState.bench.length
-        ) {
-          sourcePokemon = playerState.bench[sourceBenchIndex];
+        // Use sourcePokemon from actionData (client selected it)
+        const sourcePokemonPosition = energyActionData.sourcePokemon;
+        if (!sourcePokemonPosition) {
+          throw new BadRequestException(
+            'sourcePokemon is required when sourcePokemonTarget is not SELF',
+          );
+        }
+
+        if (sourcePokemonPosition === PokemonPosition.ACTIVE) {
+          sourcePokemon = playerState.activePokemon;
+        } else {
+          const sourceBenchIndex = this.parseBenchIndex(sourcePokemonPosition);
+          if (
+            sourceBenchIndex >= 0 &&
+            sourceBenchIndex < playerState.bench.length
+          ) {
+            sourcePokemon = playerState.bench[sourceBenchIndex];
+          }
         }
       }
 
@@ -867,10 +891,19 @@ export class AbilityEffectExecutorService {
       energyCards = energyActionData.selectedCardIds.slice(0, count);
 
       // Validate energy cards are attached to source Pokemon
+      // Count occurrences to handle duplicate IDs correctly
+      const energyCounts = new Map<string, number>();
       for (const cardId of energyCards) {
-        if (!sourcePokemon.attachedEnergy.includes(cardId)) {
+        energyCounts.set(cardId, (energyCounts.get(cardId) || 0) + 1);
+      }
+
+      for (const [cardId, requiredCount] of energyCounts.entries()) {
+        const availableCount = sourcePokemon.attachedEnergy.filter(
+          (id) => id === cardId,
+        ).length;
+        if (availableCount < requiredCount) {
           throw new BadRequestException(
-            `Selected energy card ${cardId} is not attached to source Pokemon`,
+            `Not enough instances of energy card ${cardId} attached to source Pokemon. Required: ${requiredCount}, Available: ${availableCount}`,
           );
         }
       }
@@ -893,17 +926,33 @@ export class AbilityEffectExecutorService {
       }
 
       // Remove energy from source Pokemon
-      const updatedSourceEnergy = sourcePokemon.attachedEnergy.filter(
-        (id) => !energyCards.includes(id),
-      );
+      // Remove energy one by one to handle duplicates correctly
+      // This ensures we only remove the first occurrence of each selected energy ID
+      const updatedSourceEnergy = [...sourcePokemon.attachedEnergy];
+      for (const energyId of energyCards) {
+        const energyIndex = updatedSourceEnergy.indexOf(energyId);
+        if (energyIndex === -1) {
+          throw new BadRequestException(
+            `Energy card ${energyId} is not attached to source Pokemon`,
+          );
+        }
+        updatedSourceEnergy.splice(energyIndex, 1);
+      }
       const updatedSourcePokemon =
         sourcePokemon.withAttachedEnergy(updatedSourceEnergy);
 
       // Update source Pokemon in state
-      if (actionData.target === PokemonPosition.ACTIVE) {
+      // Determine source Pokemon position based on sourcePokemonTarget
+      const sourcePokemonPosition =
+        effect.sourcePokemonTarget === TargetType.SELF ||
+        !effect.sourcePokemonTarget
+          ? actionData.target // Use ability user position when sourcePokemonTarget is SELF
+          : energyActionData.sourcePokemon; // Use selected source Pokemon position
+
+      if (sourcePokemonPosition === PokemonPosition.ACTIVE) {
         playerState = playerState.withActivePokemon(updatedSourcePokemon);
       } else {
-        const sourceBenchIndex = this.parseBenchIndex(actionData.target);
+        const sourceBenchIndex = this.parseBenchIndex(sourcePokemonPosition);
         const updatedBench = [...playerState.bench];
         updatedBench[sourceBenchIndex] = updatedSourcePokemon;
         playerState = playerState.withBench(updatedBench);

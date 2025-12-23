@@ -657,7 +657,7 @@
             "source": "SELF",
             "count": 1,
             "energyType": "GRASS",
-            "sourcePokemonType": "GRASS"
+            "sourcePokemonTarget": "ALL_YOURS"
           }
         ]
       },

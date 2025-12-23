@@ -138,6 +138,9 @@ export class CardMapper {
         if (effect.sourcePokemonType !== undefined) {
           dto.sourcePokemonType = effect.sourcePokemonType;
         }
+        if (effect.sourcePokemonTarget !== undefined) {
+          dto.sourcePokemonTarget = effect.sourcePokemonTarget;
+        }
         if (effect.selector !== undefined) {
           dto.selector = effect.selector;
         }

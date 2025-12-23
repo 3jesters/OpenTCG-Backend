@@ -50,7 +50,8 @@ export interface RetrieveFromDiscardAbilityActionData
 export interface EnergyAccelerationAbilityActionData
   extends BaseAbilityActionData {
   targetPokemon?: PokemonPosition; // Optional: Target Pokemon position for attaching energy
-  selectedCardIds?: string[]; // Optional: Energy cards selected (if source is hand/discard)
+  sourcePokemon?: PokemonPosition; // Optional: Source Pokemon position when sourcePokemonTarget is not SELF
+  selectedCardIds?: string[]; // Optional: Energy cards selected (if source is hand/discard/self)
 }
 
 /**

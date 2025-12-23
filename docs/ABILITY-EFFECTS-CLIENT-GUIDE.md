@@ -42,15 +42,28 @@ Attach energy cards from a source (deck, hand, discard, or self) to Pokémon.
 - `cardId`: The Pokémon using the ability
 - `target`: Position of the Pokémon using the ability (ACTIVE, BENCH_0, etc.)
 - `targetPokemon` (optional): Which Pokémon to attach energy to (if `target` is not SELF)
-- `selectedCardIds` (required if `source` is HAND or DISCARD): Array of energy card IDs to attach
+- `sourcePokemon` (optional, **required** when `sourcePokemonTarget !== SELF`): Which Pokémon to take energy from (when `source === SELF` and `sourcePokemonTarget` is not SELF)
+- `selectedCardIds` (required if `source` is HAND, DISCARD, or SELF): Array of energy card IDs to attach
 
 **UI Flow:**
-1. If `source` is `HAND` or `DISCARD`: Show modal to select energy cards
+1. If `source` is `SELF`:
+   - Check `sourcePokemonTarget` field:
+     - If `sourcePokemonTarget !== SELF` (or undefined defaults to SELF): 
+       - **Step 1**: Show Pokemon selection modal to select source Pokemon
+       - Filter by `sourcePokemonTarget` (ALL_YOURS, BENCHED_YOURS, ACTIVE_YOURS)
+       - **Step 2**: Show energy selection from selected source Pokemon
+     - If `sourcePokemonTarget === SELF` (default):
+       - Show energy selection from Pokemon using the ability
+   - Filter energy by `energyType` if specified
+   - Limit selection to `count` cards
+2. If `source` is `HAND` or `DISCARD`: Show modal to select energy cards
    - Filter cards by `energyType` if specified
    - Limit selection to `count` cards
-2. If `target` is not `SELF`: Show selection for which Pokémon to attach to
+3. If `target` is not `SELF`: Show selection for which Pokémon to attach to
    - Filter Pokémon by `targetPokemonType` if specified
-3. Build `actionData` with selections and submit
+4. Build `actionData` with selections and submit
+
+**See:** [CLIENT-ENERGY-ACCELERATION-SOURCE-SELECTION.md](./CLIENT-ENERGY-ACCELERATION-SOURCE-SELECTION.md) for complete details on `sourcePokemonTarget` feature.
 
 **Example:**
 ```json

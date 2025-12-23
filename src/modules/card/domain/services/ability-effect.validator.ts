@@ -247,6 +247,29 @@ export class AbilityEffectValidator {
       );
     }
 
+    // Validate sourcePokemonTarget
+    if (effect.sourcePokemonTarget !== undefined) {
+      // Only valid when source is SELF
+      if (effect.source !== EnergySource.SELF) {
+        throw new Error(
+          'sourcePokemonTarget can only be specified when source is SELF',
+        );
+      }
+
+      // Must be one of: SELF, ALL_YOURS, BENCHED_YOURS, ACTIVE_YOURS
+      const validTargets = [
+        TargetType.SELF,
+        TargetType.ALL_YOURS,
+        TargetType.BENCHED_YOURS,
+        TargetType.ACTIVE_YOURS,
+      ];
+      if (!validTargets.includes(effect.sourcePokemonTarget)) {
+        throw new Error(
+          `sourcePokemonTarget must be one of: ${validTargets.join(', ')}`,
+        );
+      }
+    }
+
     if (effect.selector && !Object.values(Selector).includes(effect.selector)) {
       throw new Error('Selector must be a valid Selector enum value');
     }

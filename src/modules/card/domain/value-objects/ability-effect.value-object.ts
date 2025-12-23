@@ -83,6 +83,7 @@ export interface EnergyAccelerationAbilityEffect extends AbilityEffect {
   energyType?: EnergyType; // Restrict energy type (e.g., WATER)
   targetPokemonType?: PokemonType; // Restrict target Pokemon type (e.g., WATER)
   sourcePokemonType?: PokemonType; // Restrict source Pokemon type (for SELF source)
+  sourcePokemonTarget?: TargetType; // When source is SELF, specifies which Pokemon(s) can be selected as source (SELF, ALL_YOURS, BENCHED_YOURS, ACTIVE_YOURS)
   selector?: Selector;
 }
 
@@ -303,6 +304,7 @@ export class AbilityEffectFactory {
     params?: {
       targetPokemonType?: PokemonType;
       sourcePokemonType?: PokemonType;
+      sourcePokemonTarget?: TargetType;
       selector?: Selector;
     },
     conditions?: Condition[],
@@ -315,6 +317,7 @@ export class AbilityEffectFactory {
       energyType,
       targetPokemonType: params?.targetPokemonType,
       sourcePokemonType: params?.sourcePokemonType,
+      sourcePokemonTarget: params?.sourcePokemonTarget,
       selector: params?.selector,
       requiredConditions: conditions,
     };

@@ -740,6 +740,9 @@ describe('AbilityEffectValidatorService', () => {
             EnergySource.SELF,
             1,
             EnergyType.GRASS,
+            {
+              sourcePokemonTarget: TargetType.ALL_YOURS,
+            },
           ),
         ],
         undefined,
@@ -752,6 +755,7 @@ describe('AbilityEffectValidatorService', () => {
         const actionData: AbilityActionData = {
           cardId,
           target: PokemonPosition.ACTIVE,
+          sourcePokemon: PokemonPosition.ACTIVE, // Required when sourcePokemonTarget is ALL_YOURS
           selectedCardIds: ['pokemon-base-set-v1.0-grass-energy--98'],
           targetPokemon: PokemonPosition.BENCH_0,
         };
@@ -1362,6 +1366,9 @@ describe('AbilityEffectValidatorService', () => {
             EnergySource.SELF,
             1,
             EnergyType.GRASS,
+            {
+              sourcePokemonTarget: TargetType.ALL_YOURS,
+            },
           ),
         ],
         undefined,
@@ -1375,6 +1382,7 @@ describe('AbilityEffectValidatorService', () => {
         const actionData: AbilityActionData = {
           cardId,
           target: PokemonPosition.ACTIVE,
+          sourcePokemon: PokemonPosition.ACTIVE, // Required when sourcePokemonTarget is ALL_YOURS
           selectedCardIds: [grassEnergy],
           targetPokemon: PokemonPosition.BENCH_0,
         };
@@ -1563,6 +1571,50 @@ describe('AbilityEffectValidatorService', () => {
         expect(result.isValid).toBe(false);
         expect(result.errors).toContain(
           `Selected energy card ${waterEnergy} must be GRASS Energy, but is WATER`,
+        );
+      });
+
+      it('should require sourcePokemon when sourcePokemonTarget is not SELF', async () => {
+        const gameState = createGameState();
+        const pokemon = createPokemon(cardId);
+        const grassEnergy = 'pokemon-base-set-v1.0-grass-energy--98';
+        const actionData: AbilityActionData = {
+          cardId,
+          target: PokemonPosition.ACTIVE,
+          // Missing sourcePokemon - should fail validation
+          selectedCardIds: [grassEnergy],
+          targetPokemon: PokemonPosition.BENCH_0,
+        };
+
+        const grassEnergyCard = Card.createEnergyCard(
+          'energy-1',
+          grassEnergy,
+          'N/A',
+          'Grass Energy',
+          'base-set',
+          '98',
+          Rarity.COMMON,
+          'Basic Grass Energy',
+          '',
+          '',
+        );
+        grassEnergyCard.setEnergyType(EnergyType.GRASS);
+
+        mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(
+          grassEnergyCard,
+        );
+
+        const result = await service.validateAbilityUsage(
+          ability,
+          actionData,
+          pokemon,
+          gameState,
+          PlayerIdentifier.PLAYER1,
+        );
+
+        expect(result.isValid).toBe(false);
+        expect(result.errors).toContain(
+          'sourcePokemon is required for ENERGY_ACCELERATION effect when sourcePokemonTarget is not SELF',
         );
       });
     });

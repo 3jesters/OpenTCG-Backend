@@ -691,6 +691,9 @@ describe('AbilityEffectExecutorService', () => {
             EnergySource.SELF,
             1,
             EnergyType.GRASS,
+            {
+              sourcePokemonTarget: TargetType.ALL_YOURS,
+            },
           ),
         ],
         undefined,
@@ -746,6 +749,7 @@ describe('AbilityEffectExecutorService', () => {
         const actionData: AbilityActionData = {
           cardId,
           target: PokemonPosition.ACTIVE,
+          sourcePokemon: PokemonPosition.ACTIVE, // Venusaur selects itself as source
           targetPokemon: PokemonPosition.BENCH_0,
           selectedCardIds: [grassEnergy],
         };
@@ -1583,6 +1587,9 @@ describe('AbilityEffectExecutorService', () => {
             EnergySource.SELF,
             1,
             EnergyType.GRASS,
+            {
+              sourcePokemonTarget: TargetType.ALL_YOURS,
+            },
           ),
         ],
         undefined,
@@ -1668,6 +1675,7 @@ describe('AbilityEffectExecutorService', () => {
         const actionData: AbilityActionData = {
           cardId,
           target: PokemonPosition.ACTIVE,
+          sourcePokemon: PokemonPosition.ACTIVE, // Venusaur selects itself as source
           targetPokemon: PokemonPosition.BENCH_0,
           selectedCardIds: [grassEnergy],
         };
@@ -1768,6 +1776,7 @@ describe('AbilityEffectExecutorService', () => {
         const actionData: AbilityActionData = {
           cardId,
           target: PokemonPosition.ACTIVE,
+          sourcePokemon: PokemonPosition.ACTIVE, // Venusaur selects itself as source
           targetPokemon: PokemonPosition.BENCH_0,
           selectedCardIds: [fireEnergy],
         };
@@ -1780,6 +1789,263 @@ describe('AbilityEffectExecutorService', () => {
             PlayerIdentifier.PLAYER1,
           ),
         ).rejects.toThrow('Selected energy card');
+      });
+    });
+
+    describe('sourcePokemonTarget - Select source Pokemon', () => {
+      const cardId = 'pokemon-base-set-v1.0-venusaur--15';
+      const grassEnergy = 'pokemon-base-set-v1.0-grass-energy--98';
+
+      it('should require sourcePokemon when sourcePokemonTarget is not SELF', async () => {
+        const ability = new Ability(
+          'Energy Trans',
+          'Test ability',
+          AbilityActivationType.ACTIVATED,
+          [
+            AbilityEffectFactory.energyAcceleration(
+              TargetType.BENCHED_YOURS,
+              EnergySource.SELF,
+              1,
+              EnergyType.GRASS,
+              {
+                sourcePokemonTarget: TargetType.ALL_YOURS,
+              },
+            ),
+          ],
+        );
+
+        const venusaur = new CardInstance(
+          'instance-1',
+          cardId,
+          PokemonPosition.ACTIVE,
+          100,
+          100,
+          [grassEnergy],
+          [],
+          0,
+        );
+
+        const benchPokemon = new CardInstance(
+          'instance-2',
+          'pokemon-base-set-v1.0-bulbasaur--44',
+          PokemonPosition.BENCH_0,
+          40,
+          100,
+          [],
+          [],
+          0,
+        );
+
+        const gameState = createGameState(venusaur, [benchPokemon]);
+
+        const actionData: AbilityActionData = {
+          cardId,
+          target: PokemonPosition.ACTIVE,
+          // Missing sourcePokemon - should fail
+          targetPokemon: PokemonPosition.BENCH_0,
+          selectedCardIds: [grassEnergy],
+        };
+
+        await expect(
+          service.executeEffects(
+            ability,
+            actionData,
+            gameState,
+            PlayerIdentifier.PLAYER1,
+          ),
+        ).rejects.toThrow(
+          'sourcePokemon is required when sourcePokemonTarget is not SELF',
+        );
+      });
+
+      it('should move energy from selected source Pokemon (not ability user)', async () => {
+        const ability = new Ability(
+          'Energy Trans',
+          'Test ability',
+          AbilityActivationType.ACTIVATED,
+          [
+            AbilityEffectFactory.energyAcceleration(
+              TargetType.BENCHED_YOURS,
+              EnergySource.SELF,
+              1,
+              EnergyType.GRASS,
+              {
+                sourcePokemonTarget: TargetType.ALL_YOURS,
+              },
+            ),
+          ],
+        );
+
+        // Venusaur on bench (using ability)
+        const venusaur = new CardInstance(
+          'instance-1',
+          cardId,
+          PokemonPosition.BENCH_0,
+          100,
+          100,
+          [],
+          [],
+          0,
+        );
+
+        // Another Pokemon on bench with energy
+        const benchPokemonWithEnergy = new CardInstance(
+          'instance-2',
+          'pokemon-base-set-v1.0-bulbasaur--44',
+          PokemonPosition.BENCH_1,
+          40,
+          100,
+          [grassEnergy],
+          [],
+          0,
+        );
+
+        // Target Pokemon
+        const targetPokemon = new CardInstance(
+          'instance-3',
+          'pokemon-base-set-v1.0-charmander--46',
+          PokemonPosition.ACTIVE,
+          50,
+          100,
+          [],
+          [],
+          0,
+        );
+
+        const gameState = createGameState(targetPokemon, [
+          venusaur,
+          benchPokemonWithEnergy,
+        ]);
+
+        // Mock energy card
+        const grassEnergyCard = Card.createEnergyCard(
+          'energy-1',
+          grassEnergy,
+          'N/A',
+          'Grass Energy',
+          'base-set',
+          '98',
+          Rarity.COMMON,
+          'Basic Grass Energy',
+          '',
+          '',
+        );
+        grassEnergyCard.setEnergyType(EnergyType.GRASS);
+        mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(
+          grassEnergyCard,
+        );
+
+        const actionData: AbilityActionData = {
+          cardId,
+          target: PokemonPosition.BENCH_0, // Venusaur using ability
+          sourcePokemon: PokemonPosition.BENCH_1, // Select bench Pokemon with energy as source
+          targetPokemon: PokemonPosition.ACTIVE, // Target active Pokemon
+          selectedCardIds: [grassEnergy],
+        };
+
+        const result = await service.executeEffects(
+          ability,
+          actionData,
+          gameState,
+          PlayerIdentifier.PLAYER1,
+        );
+
+        // Energy should be removed from BENCH_1 (source)
+        expect(
+          result.playerState.bench.find((p) => p.instanceId === 'instance-2')
+            ?.attachedEnergy,
+        ).not.toContain(grassEnergy);
+
+        // Energy should be attached to ACTIVE (target)
+        expect(result.playerState.activePokemon?.attachedEnergy).toContain(
+          grassEnergy,
+        );
+      });
+
+      it('should use Pokemon with ability when sourcePokemonTarget is SELF (default)', async () => {
+        const ability = new Ability(
+          'Energy Trans',
+          'Test ability',
+          AbilityActivationType.ACTIVATED,
+          [
+            AbilityEffectFactory.energyAcceleration(
+              TargetType.BENCHED_YOURS,
+              EnergySource.SELF,
+              1,
+              EnergyType.GRASS,
+              {
+                sourcePokemonTarget: TargetType.SELF, // Explicit SELF
+              },
+            ),
+          ],
+        );
+
+        const venusaur = new CardInstance(
+          'instance-1',
+          cardId,
+          PokemonPosition.ACTIVE,
+          100,
+          100,
+          [grassEnergy],
+          [],
+          0,
+        );
+
+        const benchPokemon = new CardInstance(
+          'instance-2',
+          'pokemon-base-set-v1.0-bulbasaur--44',
+          PokemonPosition.BENCH_0,
+          40,
+          100,
+          [],
+          [],
+          0,
+        );
+
+        const gameState = createGameState(venusaur, [benchPokemon]);
+
+        const grassEnergyCard = Card.createEnergyCard(
+          'energy-1',
+          grassEnergy,
+          'N/A',
+          'Grass Energy',
+          'base-set',
+          '98',
+          Rarity.COMMON,
+          'Basic Grass Energy',
+          '',
+          '',
+        );
+        grassEnergyCard.setEnergyType(EnergyType.GRASS);
+        mockGetCardByIdUseCase.getCardEntity.mockResolvedValueOnce(
+          grassEnergyCard,
+        );
+
+        const actionData: AbilityActionData = {
+          cardId,
+          target: PokemonPosition.ACTIVE, // Venusaur using ability
+          // No sourcePokemon - should use ability user (ACTIVE)
+          targetPokemon: PokemonPosition.BENCH_0,
+          selectedCardIds: [grassEnergy],
+        };
+
+        const result = await service.executeEffects(
+          ability,
+          actionData,
+          gameState,
+          PlayerIdentifier.PLAYER1,
+        );
+
+        // Energy should be removed from ACTIVE (ability user)
+        expect(result.playerState.activePokemon?.attachedEnergy).not.toContain(
+          grassEnergy,
+        );
+
+        // Energy should be attached to BENCH_0 (target)
+        expect(
+          result.playerState.bench.find((p) => p.instanceId === 'instance-2')
+            ?.attachedEnergy,
+        ).toContain(grassEnergy);
       });
     });
   });

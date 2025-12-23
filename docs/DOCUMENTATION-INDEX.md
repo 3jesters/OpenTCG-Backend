@@ -298,6 +298,63 @@ if (retreatCost > 0) {
 
 ---
 
+### [CLIENT-ENERGY-ACCELERATION-SOURCE-SELECTION.md](./CLIENT-ENERGY-ACCELERATION-SOURCE-SELECTION.md)
+**Complete guide for implementing source Pokemon selection for ENERGY_ACCELERATION abilities**
+
+**Contains:**
+- New `sourcePokemonTarget` field in ability effect metadata
+- New `sourcePokemon` field in USE_ABILITY action data
+- Multi-step selection flow for abilities like Venusaur's "Energy Trans"
+- API response examples with new fields
+- Complete selection flow diagrams
+- Validation rules and error handling
+- Backward compatibility notes
+- TypeScript type definitions
+
+**Use this when:**
+- Implementing abilities that allow selecting source Pokemon (e.g., Venusaur Energy Trans)
+- Understanding the new `sourcePokemonTarget` metadata field
+- Building multi-step selection UI for energy acceleration abilities
+- Handling `sourcePokemon` in USE_ABILITY action data
+- Understanding when source Pokemon selection is required vs optional
+
+**Quick Example:**
+```typescript
+// Check if sourcePokemonTarget requires Pokemon selection
+const effect = ability.effects[0];
+const sourcePokemonTarget = effect.sourcePokemonTarget || TargetType.SELF;
+
+if (sourcePokemonTarget !== TargetType.SELF) {
+  // Step 1: Select source Pokemon
+  const sourcePokemon = await showPokemonSelectionModal({
+    filter: sourcePokemonTarget, // ALL_YOURS, BENCHED_YOURS, etc.
+  });
+  
+  // Step 2: Select energy from source Pokemon
+  const selectedCardIds = await showEnergySelectionModal({
+    targetPokemon: sourcePokemon,
+    energyType: effect.energyType,
+    count: effect.count,
+  });
+  
+  // Step 3: Select target Pokemon (if needed)
+  const targetPokemon = await showPokemonSelectionModal({
+    filter: effect.target,
+  });
+  
+  // Submit with sourcePokemon
+  await executeAction(matchId, playerId, 'USE_ABILITY', {
+    cardId: abilityCardId,
+    target: abilityUserPosition,
+    sourcePokemon: sourcePokemon,
+    targetPokemon: targetPokemon,
+    selectedCardIds: selectedCardIds,
+  });
+}
+```
+
+---
+
 ### [CLIENT-COIN-FLIP-SYSTEM.md](./CLIENT-COIN-FLIP-SYSTEM.md)
 **Complete guide for coin flip system and client interaction**
 

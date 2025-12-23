@@ -60,6 +60,10 @@ export class AbilityEffectImportDto {
   sourcePokemonType?: PokemonType;
 
   @IsOptional()
+  @IsEnum(TargetType)
+  sourcePokemonTarget?: TargetType;
+
+  @IsOptional()
   @IsEnum(StatusCondition)
   statusCondition?: StatusCondition;
 

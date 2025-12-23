@@ -638,6 +638,32 @@ export class ExecuteTurnActionUseCase {
           cardsMap: this.cardsMap,
         });
 
+      case PlayerActionType.PLAY_TRAINER:
+        // Use handler directly (no delegation)
+        const playTrainerHandler = this.actionHandlerFactory.getHandler(
+          PlayerActionType.PLAY_TRAINER,
+        );
+        return await playTrainerHandler.execute(
+          dto,
+          match,
+          gameState,
+          playerIdentifier,
+          this.cardsMap,
+        );
+
+      case PlayerActionType.USE_ABILITY:
+        // Use handler directly (no delegation)
+        const useAbilityHandler = this.actionHandlerFactory.getHandler(
+          PlayerActionType.USE_ABILITY,
+        );
+        return await useAbilityHandler.execute(
+          dto,
+          match,
+          gameState,
+          playerIdentifier,
+          this.cardsMap,
+        );
+
       default:
           throw new BadRequestException(
           `Action ${dto.actionType} is not yet implemented in PLAYER_TURN state`,

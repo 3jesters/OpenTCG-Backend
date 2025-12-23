@@ -82,6 +82,15 @@ export class AbilityEffectDto {
   sourcePokemonType?: PokemonType;
 
   @ApiProperty({
+    description:
+      'Source Pokemon target restriction (for SELF source energy acceleration). When source is SELF, specifies which Pokemon(s) can be selected as source. Defaults to SELF (use Pokemon with ability).',
+    enum: TargetType,
+    required: false,
+    example: TargetType.ALL_YOURS,
+  })
+  sourcePokemonTarget?: TargetType;
+
+  @ApiProperty({
     description: 'Status condition to apply (for STATUS_CONDITION effects)',
     enum: StatusCondition,
     required: false,

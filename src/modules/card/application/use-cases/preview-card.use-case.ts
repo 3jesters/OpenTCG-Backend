@@ -327,6 +327,8 @@ export class PreviewCardUseCase {
                   effect.targetPokemonType = e.targetPokemonType;
                 if (e.sourcePokemonType !== undefined)
                   effect.sourcePokemonType = e.sourcePokemonType;
+                if (e.sourcePokemonTarget !== undefined)
+                  effect.sourcePokemonTarget = e.sourcePokemonTarget;
                 if (e.selector !== undefined) effect.selector = e.selector;
                 break;
               case 'SWITCH_POKEMON':
