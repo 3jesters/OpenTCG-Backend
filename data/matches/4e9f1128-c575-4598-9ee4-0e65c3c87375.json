@@ -6,7 +6,7 @@
   "player1DeckId": "classic-grass-starter-deck",
   "player2DeckId": "classic-water-starter-deck",
   "state": "PLAYER_TURN",
-  "currentPlayer": "PLAYER1",
+  "currentPlayer": "PLAYER2",
   "firstPlayer": "PLAYER1",
   "player1HasDrawnValidHand": true,
   "player2HasDrawnValidHand": true,
@@ -19,7 +19,7 @@
   "player1HasApprovedMatch": true,
   "player2HasApprovedMatch": true,
   "createdAt": "2025-12-16T12:38:24.394Z",
-  "updatedAt": "2025-12-16T12:51:12.465Z",
+  "updatedAt": "2025-12-23T19:09:34.074Z",
   "startedAt": null,
   "endedAt": null,
   "winnerId": null,
@@ -29,19 +29,6 @@
   "gameState": {
     "player1State": {
       "deck": [
-        "pokemon-base-set-v1.0-weedle--71",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-bulbasaur--46",
-        "pokemon-base-set-v1.0-potion--90",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-bulbasaur--46",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-potion--90",
-        "pokemon-base-set-v1.0-bill--92",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-tangela--68",
-        "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
@@ -58,7 +45,6 @@
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-venusaur--15",
         "pokemon-base-set-v1.0-bulbasaur--46",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-switch--96",
@@ -75,25 +61,29 @@
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
       "hand": [
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-ivysaur--30",
-        "pokemon-base-set-v1.0-switch--96",
-        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-caterpie--47",
         "pokemon-base-set-v1.0-grass-energy--100",
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
       "activePokemon": {
-        "instanceId": "e9cd96d7-ad42-4b9d-8908-726749cc46d9",
-        "cardId": "pokemon-base-set-v1.0-tangela--68",
+        "instanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9",
+        "cardId": "pokemon-base-set-v1.0-venusaur--15",
         "position": "ACTIVE",
-        "currentHp": 50,
-        "maxHp": 50,
+        "currentHp": 70,
+        "maxHp": 100,
         "attachedEnergy": [
+          "pokemon-base-set-v1.0-grass-energy--100",
+          "pokemon-base-set-v1.0-grass-energy--100",
+          "pokemon-base-set-v1.0-grass-energy--100",
           "pokemon-base-set-v1.0-grass-energy--100"
         ],
         "statusEffect": "NONE",
-        "damageCounters": 0,
-        "evolutionChain": []
+        "damageCounters": 30,
+        "evolutionChain": [
+          "pokemon-base-set-v1.0-ivysaur--30",
+          "pokemon-base-set-v1.0-bulbasaur--46"
+        ],
+        "evolvedAt": 23
       },
       "bench": [
         {
@@ -106,39 +96,66 @@
           "statusEffect": "NONE",
           "damageCounters": 0,
           "evolutionChain": []
+        },
+        {
+          "instanceId": "3a895c3d-4ba6-45af-b289-113b74cb100f",
+          "cardId": "pokemon-base-set-v1.0-weedle--71",
+          "position": "BENCH_1",
+          "currentHp": 40,
+          "maxHp": 40,
+          "attachedEnergy": [],
+          "statusEffect": "NONE",
+          "damageCounters": 0,
+          "evolutionChain": []
+        },
+        {
+          "instanceId": "d909724f-728e-4ce6-bc1e-7200fdfa9553",
+          "cardId": "pokemon-base-set-v1.0-bulbasaur--46",
+          "position": "BENCH_2",
+          "currentHp": 40,
+          "maxHp": 40,
+          "attachedEnergy": [
+            "pokemon-base-set-v1.0-grass-energy--100",
+            "pokemon-base-set-v1.0-grass-energy--100"
+          ],
+          "statusEffect": "NONE",
+          "damageCounters": 0,
+          "evolutionChain": []
+        },
+        {
+          "instanceId": "79ec3238-3e88-46d5-8559-a0bc56b2814c",
+          "cardId": "pokemon-base-set-v1.0-tangela--68",
+          "position": "BENCH_3",
+          "currentHp": 50,
+          "maxHp": 50,
+          "attachedEnergy": [
+            "pokemon-base-set-v1.0-grass-energy--100"
+          ],
+          "statusEffect": "NONE",
+          "damageCounters": 0,
+          "evolutionChain": []
         }
       ],
       "prizeCards": [
-        "pokemon-base-set-v1.0-energy-removal--93",
-        "pokemon-base-set-v1.0-grass-energy--100",
-        "pokemon-base-set-v1.0-caterpie--47",
         "pokemon-base-set-v1.0-nidoran--57",
         "pokemon-base-set-v1.0-ivysaur--30",
         "pokemon-base-set-v1.0-grass-energy--100"
       ],
       "discardPile": [
-        "pokemon-base-set-v1.0-bill--92"
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-switch--96",
+        "pokemon-base-set-v1.0-energy-removal--93",
+        "pokemon-base-set-v1.0-potion--90",
+        "pokemon-base-set-v1.0-tangela--68",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-grass-energy--100",
+        "pokemon-base-set-v1.0-potion--90"
       ],
-      "hasAttachedEnergyThisTurn": true
+      "hasAttachedEnergyThisTurn": false
     },
     "player2State": {
       "deck": [
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-bill--92",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-energy-removal--93",
-        "pokemon-base-set-v1.0-squirtle--65",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-poliwag--39",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-squirtle--65",
-        "pokemon-base-set-v1.0-starmie--66",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-pokemon-breeder--78",
         "pokemon-base-set-v1.0-bill--92",
         "pokemon-base-set-v1.0-poliwag--39",
         "pokemon-base-set-v1.0-water-energy--103",
@@ -148,7 +165,6 @@
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-blastoise--2",
         "pokemon-base-set-v1.0-poliwhirl--40",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-water-energy--103",
@@ -165,54 +181,88 @@
         "pokemon-base-set-v1.0-energy-retrieval--83",
         "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-seel--43",
-        "pokemon-base-set-v1.0-wartortle--44",
         "pokemon-base-set-v1.0-bill--92",
         "pokemon-base-set-v1.0-switch--96",
         "pokemon-base-set-v1.0-staryu--67"
       ],
       "hand": [
-        "pokemon-base-set-v1.0-staryu--67",
         "pokemon-base-set-v1.0-pokemon-breeder--78",
-        "pokemon-base-set-v1.0-water-energy--103",
-        "pokemon-base-set-v1.0-water-energy--103",
         "pokemon-base-set-v1.0-energy-retrieval--83",
+        "pokemon-base-set-v1.0-potion--90",
         "pokemon-base-set-v1.0-starmie--66",
-        "pokemon-base-set-v1.0-gust-of-wind--94"
+        "pokemon-base-set-v1.0-pokemon-breeder--78"
       ],
       "activePokemon": {
-        "instanceId": "6cbe6b87-2be3-4e5b-b133-1a6f8591a259",
-        "cardId": "pokemon-base-set-v1.0-seel--43",
+        "instanceId": "3e8cd9b1-d019-4b88-83e4-38460cfbea24",
+        "cardId": "pokemon-base-set-v1.0-blastoise--2",
         "position": "ACTIVE",
-        "currentHp": 60,
-        "maxHp": 60,
-        "attachedEnergy": [],
+        "currentHp": 70,
+        "maxHp": 100,
+        "attachedEnergy": [
+          "pokemon-base-set-v1.0-water-energy--103",
+          "pokemon-base-set-v1.0-water-energy--103",
+          "pokemon-base-set-v1.0-water-energy--103",
+          "pokemon-base-set-v1.0-water-energy--103"
+        ],
         "statusEffect": "NONE",
-        "damageCounters": 0,
-        "evolutionChain": []
+        "damageCounters": 30,
+        "evolutionChain": [
+          "pokemon-base-set-v1.0-wartortle--44",
+          "pokemon-base-set-v1.0-squirtle--65"
+        ],
+        "evolvedAt": 24
       },
-      "bench": [],
+      "bench": [
+        {
+          "instanceId": "e784aee8-efd1-4608-b392-3913fc1b653d",
+          "cardId": "pokemon-base-set-v1.0-squirtle--65",
+          "position": "BENCH_0",
+          "currentHp": 40,
+          "maxHp": 40,
+          "attachedEnergy": [
+            "pokemon-base-set-v1.0-water-energy--103",
+            "pokemon-base-set-v1.0-water-energy--103"
+          ],
+          "statusEffect": "NONE",
+          "damageCounters": 0,
+          "evolutionChain": []
+        }
+      ],
       "prizeCards": [
-        "pokemon-base-set-v1.0-potion--90",
         "pokemon-base-set-v1.0-potion--90",
         "pokemon-base-set-v1.0-seel--43",
         "pokemon-base-set-v1.0-wartortle--44",
         "pokemon-base-set-v1.0-squirtle--65",
         "pokemon-base-set-v1.0-bill--92"
       ],
-      "discardPile": [],
-      "hasAttachedEnergyThisTurn": false
+      "discardPile": [
+        "pokemon-base-set-v1.0-bill--92",
+        "pokemon-base-set-v1.0-gust-of-wind--94",
+        "pokemon-base-set-v1.0-seel--43",
+        "pokemon-base-set-v1.0-energy-removal--93",
+        "pokemon-base-set-v1.0-starmie--66",
+        "pokemon-base-set-v1.0-staryu--67",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-poliwag--39",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-water-energy--103",
+        "pokemon-base-set-v1.0-bill--92"
+      ],
+      "hasAttachedEnergyThisTurn": true
     },
-    "turnNumber": 1,
+    "turnNumber": 24,
     "phase": "MAIN_PHASE",
-    "currentPlayer": "PLAYER1",
+    "currentPlayer": "PLAYER2",
     "lastAction": {
-      "actionId": "e1e0e343-a9fc-450e-96a7-f810f4701701",
-      "playerId": "PLAYER1",
+      "actionId": "70dff888-adfe-46d5-9505-189ba1338f9d",
+      "playerId": "PLAYER2",
       "actionType": "ATTACH_ENERGY",
-      "timestamp": "2025-12-16T12:51:12.465Z",
+      "timestamp": "2025-12-23T19:09:34.074Z",
       "actionData": {
-        "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
-        "target": "ACTIVE"
+        "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+        "target": "BENCH_0",
+        "targetInstanceId": "e784aee8-efd1-4608-b392-3913fc1b653d"
       }
     },
     "actionHistory": [
@@ -251,12 +301,1279 @@
           "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
           "target": "ACTIVE"
         }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn1-action4",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T16:57:10.316Z",
+        "actionData": {
+          "attackIndex": 0,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "204ebe83-74de-4359-8ff7-8a4d5b3e7686",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T16:57:11.991Z",
+        "actionData": {
+          "attackIndex": 0,
+          "damage": 20,
+          "isKnockedOut": false,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "tails"
+            }
+          ],
+          "statusEffectApplied": false
+        }
+      },
+      {
+        "actionId": "f46d0fa3-ae2a-402f-af7f-ce607eb9640b",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T16:57:18.894Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "188faf5b-842b-40d6-9e02-2d6c1702a5b1",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T16:57:36.333Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-water-energy--103"
+        }
+      },
+      {
+        "actionId": "1fc3f4a9-84bd-472f-bd3e-c4e7e8969382",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-22T17:11:45.856Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-staryu--67",
+          "benchPosition": "BENCH_0",
+          "instanceId": "36c2aca4-20d3-4362-bb97-25db1f5ddbf9"
+        }
+      },
+      {
+        "actionId": "94af6ffe-755f-466e-9e43-7e1938f0509e",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T17:11:54.247Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "BENCH_0",
+          "targetInstanceId": "36c2aca4-20d3-4362-bb97-25db1f5ddbf9"
+        }
+      },
+      {
+        "actionId": "e4730ce9-5558-4bce-bd83-d9be86ffe3b8",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T17:12:08.273Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "bbe37ea7-54d3-44c9-9846-fa9881eefbe6",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T17:12:33.388Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-weedle--71"
+        }
+      },
+      {
+        "actionId": "1582cf76-3644-435d-a00a-22c2ae4b80bd",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T17:12:41.752Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "BENCH_0",
+          "targetInstanceId": "e94c6d92-affc-4c1d-827d-ce50f654384a"
+        }
+      },
+      {
+        "actionId": "1c1da303-eccf-4f26-8783-517328fdff03",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-22T17:12:44.883Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-weedle--71",
+          "benchPosition": "BENCH_1",
+          "instanceId": "3a895c3d-4ba6-45af-b289-113b74cb100f"
+        }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn3-action14",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T17:12:50.673Z",
+        "actionData": {
+          "attackIndex": 0,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "fb1eef2a-f95b-4109-a664-020aa111a56b",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T17:12:52.640Z",
+        "actionData": {
+          "attackIndex": 0,
+          "damage": 20,
+          "isKnockedOut": false,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "heads"
+            }
+          ],
+          "statusEffectApplied": true,
+          "statusEffect": "PARALYZED"
+        }
+      },
+      {
+        "actionId": "fedc0cbb-ea7d-420a-9e54-60535483357b",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T17:13:04.363Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "74916f4a-d695-44c3-8f3b-6cf0c4f3aab0",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T17:13:06.774Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bill--92"
+        }
+      },
+      {
+        "actionId": "e1db2020-1a23-473b-bf89-540140446fde",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-22T17:13:15.277Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bill--92",
+          "instanceId": "1287cbd6-4414-4c79-ab0a-ce1a9f14e1aa"
+        }
+      },
+      {
+        "actionId": "de7489e5-1d3f-4aa1-abbb-716c6a27cf04",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T17:13:18.720Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "BENCH_0",
+          "targetInstanceId": "36c2aca4-20d3-4362-bb97-25db1f5ddbf9"
+        }
+      },
+      {
+        "actionId": "877fa003-c338-4a7e-9812-07a41374ee3c",
+        "playerId": "PLAYER2",
+        "actionType": "EVOLVE_POKEMON",
+        "timestamp": "2025-12-22T17:13:24.958Z",
+        "actionData": {
+          "evolutionCardId": "pokemon-base-set-v1.0-starmie--66",
+          "target": "BENCH_0",
+          "instanceId": "36c2aca4-20d3-4362-bb97-25db1f5ddbf9"
+        }
+      },
+      {
+        "actionId": "9d6e906c-5b7d-4150-93cc-0d9059b7be6b",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-22T17:13:31.669Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-gust-of-wind--94",
+          "targetPlayer": "PLAYER1",
+          "benchPosition": "BENCH_1",
+          "instanceId": "efd19bb4-b709-4100-ac26-ab57d4d4ff7f"
+        }
+      },
+      {
+        "actionId": "604f56c2-1817-4c26-8c74-180e741f2915",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T17:13:58.380Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "4ace19a6-a73d-4ce3-8f73-35b60195630c",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T17:14:03.745Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-grass-energy--100"
+        }
+      },
+      {
+        "actionId": "eed560be-0ce2-42e5-940d-481c53922b92",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T17:14:08.960Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "BENCH_1",
+          "targetInstanceId": "e9cd96d7-ad42-4b9d-8908-726749cc46d9"
+        }
+      },
+      {
+        "actionId": "afda6ff5-ead4-467f-a654-9f283da5bfcc",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-22T17:14:15.222Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-switch--96",
+          "targetPlayer": "PLAYER1",
+          "benchPosition": "BENCH_1",
+          "instanceId": "83b60895-cbcf-44de-abc0-dbc1f9d44d96"
+        }
+      },
+      {
+        "actionId": "86b3009b-33c9-4462-8b06-cdef69789026",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T17:14:21.190Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 20,
+          "isKnockedOut": true
+        }
+      },
+      {
+        "actionId": "f6179060-44f0-4b78-923f-d6e38e60a09d",
+        "playerId": "PLAYER1",
+        "actionType": "SELECT_PRIZE",
+        "timestamp": "2025-12-22T17:14:29.334Z",
+        "actionData": {
+          "prizeCard": "pokemon-base-set-v1.0-energy-removal--93",
+          "prizeIndex": 0
+        }
+      },
+      {
+        "actionId": "8c32a23b-d0f7-40d2-a642-390ff7adb6e4",
+        "playerId": "PLAYER2",
+        "actionType": "SET_ACTIVE_POKEMON",
+        "timestamp": "2025-12-22T17:21:01.986Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-starmie--66",
+          "instanceId": "36c2aca4-20d3-4362-bb97-25db1f5ddbf9",
+          "source": "BENCH_0"
+        }
+      },
+      {
+        "actionId": "cb7770a2-be6d-4112-a079-f4ac3357a589",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T17:21:13.425Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "40b391a5-63fd-49a0-8d46-1f6abbac7af9",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T17:21:17.245Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-energy-removal--93"
+        }
+      },
+      {
+        "actionId": "8f045c96-c880-443c-b516-28763cb504d3",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-22T17:21:26.487Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-energy-removal--93",
+          "targetPlayer": "PLAYER1",
+          "pokemonInstanceId": "e9cd96d7-ad42-4b9d-8908-726749cc46d9",
+          "target": "ACTIVE",
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "instanceId": "cc975b10-7221-4185-af54-edc12265470d"
+        }
+      },
+      {
+        "actionId": "a8465b12-982f-44a3-8b84-fd5ae9a257ff",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T17:21:33.020Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "ACTIVE",
+          "targetInstanceId": "36c2aca4-20d3-4362-bb97-25db1f5ddbf9"
+        }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn6-action33",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T17:21:46.518Z",
+        "actionData": {
+          "attackIndex": 1,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "1017b841-627b-4556-807f-bc1d1b26807c",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T17:21:48.615Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 20,
+          "isKnockedOut": false,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "heads"
+            }
+          ],
+          "statusEffectApplied": true,
+          "statusEffect": "PARALYZED"
+        }
+      },
+      {
+        "actionId": "6f53c750-83ce-4e88-8ebc-8b2dbcc99197",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T17:22:01.361Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "dbe34e77-6426-4296-a908-782a4d9bdc4b",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T17:22:06.352Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bulbasaur--46"
+        }
+      },
+      {
+        "actionId": "4f4efe17-41f3-4606-b6b7-58145210cd1d",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-22T17:22:12.958Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-energy-removal--93",
+          "targetPlayer": "PLAYER2",
+          "pokemonInstanceId": "36c2aca4-20d3-4362-bb97-25db1f5ddbf9",
+          "target": "ACTIVE",
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "instanceId": "aa71dafb-3b42-4001-b3bf-f60aea9eb572"
+        }
+      },
+      {
+        "actionId": "922052de-d5cd-4315-be45-566e34569733",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-22T17:22:15.462Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bulbasaur--46",
+          "benchPosition": "BENCH_2",
+          "instanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9"
+        }
+      },
+      {
+        "actionId": "e8aa12f1-ce2e-4a4c-a640-265cdc087b15",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T17:22:18.375Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "BENCH_2",
+          "targetInstanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9"
+        }
+      },
+      {
+        "actionId": "d4aca028-b776-45e3-9b63-4d0b12c316b2",
+        "playerId": "PLAYER1",
+        "actionType": "EVOLVE_POKEMON",
+        "timestamp": "2025-12-22T19:35:05.352Z",
+        "actionData": {
+          "evolutionCardId": "pokemon-base-set-v1.0-ivysaur--30",
+          "target": "BENCH_2",
+          "instanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9"
+        }
+      },
+      {
+        "actionId": "c71ab518-c170-439a-a02a-92caad8330f3",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:35:11.000Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "911a7e52-50ea-4768-8465-42a95209a221",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:35:14.644Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-squirtle--65"
+        }
+      },
+      {
+        "actionId": "30fd6c28-d8cf-40f5-8f8f-32b37eb28a2f",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-22T19:35:22.854Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-squirtle--65",
+          "benchPosition": "BENCH_0",
+          "instanceId": "3e8cd9b1-d019-4b88-83e4-38460cfbea24"
+        }
+      },
+      {
+        "actionId": "9095cf68-eb48-47c7-aa82-cdd62021ebcf",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:35:25.204Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "BENCH_0",
+          "targetInstanceId": "3e8cd9b1-d019-4b88-83e4-38460cfbea24"
+        }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn8-action45",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:35:32.308Z",
+        "actionData": {
+          "attackIndex": 1,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "1464df26-847f-4eaf-b53b-e44972f13de4",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:35:34.534Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 20,
+          "isKnockedOut": false,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "heads"
+            }
+          ],
+          "statusEffectApplied": true,
+          "statusEffect": "PARALYZED"
+        }
+      },
+      {
+        "actionId": "04eb2e37-7707-4cea-8d81-bbb444dbc4b9",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:35:46.430Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "015e17cb-5f96-4412-a90a-87431dc39d42",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:35:50.560Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-potion--90"
+        }
+      },
+      {
+        "actionId": "5d8bc80b-8b27-434a-aeeb-4285bfd25a3e",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-22T19:36:00.440Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-potion--90",
+          "targetPlayer": "PLAYER1",
+          "pokemonInstanceId": "e9cd96d7-ad42-4b9d-8908-726749cc46d9",
+          "target": "ACTIVE",
+          "instanceId": "da49227b-d05c-41b8-ac2c-1f1b948b285a"
+        }
+      },
+      {
+        "actionId": "0f1bb69f-e4b2-41e4-a9bc-508c3a45682a",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:36:03.582Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "BENCH_2",
+          "targetInstanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9"
+        }
+      },
+      {
+        "actionId": "e541036d-cfb9-4713-a976-10e1690d4c88",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:36:06.801Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "b51d3872-2b0e-43e9-91a6-56adfcaf22a1",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:36:10.492Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-water-energy--103"
+        }
+      },
+      {
+        "actionId": "62dbdf1d-29fd-4da9-8fae-09dedd6e7489",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:36:19.288Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "BENCH_0",
+          "targetInstanceId": "3e8cd9b1-d019-4b88-83e4-38460cfbea24"
+        }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn10-action54",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:36:24.991Z",
+        "actionData": {
+          "attackIndex": 1,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "fa3ecbcd-5435-45af-a82a-d166c6ed085d",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:36:26.717Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 20,
+          "isKnockedOut": false,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "tails"
+            }
+          ],
+          "statusEffectApplied": false
+        }
+      },
+      {
+        "actionId": "a5064865-cf66-4ae6-a5ba-c096c014021a",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:36:38.996Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "d3b2ed69-e163-4d51-8245-51023aa54360",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:36:42.408Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-grass-energy--100"
+        }
+      },
+      {
+        "actionId": "d4c894c5-25bb-4a1f-888d-1d6e5084d9b3",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:36:44.973Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "ACTIVE",
+          "targetInstanceId": "e9cd96d7-ad42-4b9d-8908-726749cc46d9"
+        }
+      },
+      {
+        "actionId": "4291ff15-77a1-41f5-a14b-0c8f5ba58477",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:36:48.899Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 20,
+          "isKnockedOut": false
+        }
+      },
+      {
+        "actionId": "e81ec406-b707-4efd-b4b0-31cb5ca23436",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:36:56.484Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "77a0b36b-d93b-47ed-82b9-c35783b63686",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:37:01.684Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-poliwag--39"
+        }
+      },
+      {
+        "actionId": "622b28c9-4325-44fd-a4d8-c3779911f3db",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-22T19:37:06.669Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-poliwag--39",
+          "benchPosition": "BENCH_1",
+          "instanceId": "dc6efd9c-e3fe-4419-9692-58120c6e2264"
+        }
+      },
+      {
+        "actionId": "d846f136-2985-4378-8462-a1553235efd7",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:37:33.919Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "BENCH_1",
+          "targetInstanceId": "dc6efd9c-e3fe-4419-9692-58120c6e2264"
+        }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn12-action64",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:37:54.648Z",
+        "actionData": {
+          "attackIndex": 1,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "ea113b78-b380-4d23-9c27-4386146172b7",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:37:56.571Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 20,
+          "isKnockedOut": true,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "heads"
+            }
+          ],
+          "statusEffectApplied": true,
+          "statusEffect": "PARALYZED"
+        }
+      },
+      {
+        "actionId": "517a4720-e703-4a6d-865c-720c5cf3e518",
+        "playerId": "PLAYER2",
+        "actionType": "SELECT_PRIZE",
+        "timestamp": "2025-12-22T19:38:08.662Z",
+        "actionData": {
+          "prizeCard": "pokemon-base-set-v1.0-potion--90",
+          "prizeIndex": 0
+        }
+      },
+      {
+        "actionId": "9fae5585-c1fe-4321-a6f8-bb8f1f400e5e",
+        "playerId": "PLAYER1",
+        "actionType": "SET_ACTIVE_POKEMON",
+        "timestamp": "2025-12-22T19:38:16.883Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-ivysaur--30",
+          "instanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9",
+          "source": "BENCH_2"
+        }
+      },
+      {
+        "actionId": "09b159d7-77a1-4ffc-bce5-709d23f4ea3a",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:38:22.741Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "7a0dc25e-556d-4938-8101-70c132f99010",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:38:30.369Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-grass-energy--100"
+        }
+      },
+      {
+        "actionId": "0ca12fcb-5e4b-4179-b4e6-eb174e8a623b",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:38:39.138Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "ACTIVE",
+          "targetInstanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9"
+        }
+      },
+      {
+        "actionId": "8115338c-2aed-4192-89e8-b12030ac1bbe",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:38:47.091Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 20,
+          "isKnockedOut": true
+        }
+      },
+      {
+        "actionId": "6e21f6cd-52c2-4b22-a71a-a5812aa825c1",
+        "playerId": "PLAYER1",
+        "actionType": "SELECT_PRIZE",
+        "timestamp": "2025-12-22T19:38:51.240Z",
+        "actionData": {
+          "prizeCard": "pokemon-base-set-v1.0-grass-energy--100",
+          "prizeIndex": 0
+        }
+      },
+      {
+        "actionId": "944dd5bd-7bc0-41d2-b5bd-7036d46d84b0",
+        "playerId": "PLAYER2",
+        "actionType": "SET_ACTIVE_POKEMON",
+        "timestamp": "2025-12-22T19:38:56.895Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-poliwag--39",
+          "instanceId": "dc6efd9c-e3fe-4419-9692-58120c6e2264",
+          "source": "BENCH_1"
+        }
+      },
+      {
+        "actionId": "59ff0d2b-fe79-4c69-b9c1-360b37a74063",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:39:05.654Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "f7ac225a-a0ad-4092-a88f-3c80b252892f",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:39:12.753Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-water-energy--103"
+        }
+      },
+      {
+        "actionId": "ba1a2bf0-a4f1-4f56-8812-2a5c67f07407",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:39:50.591Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "ACTIVE",
+          "targetInstanceId": "dc6efd9c-e3fe-4419-9692-58120c6e2264"
+        }
+      },
+      {
+        "actionId": "c4fa192c-3adc-4855-9ddc-69931fc1f0fa",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:39:54.652Z",
+        "actionData": {
+          "attackIndex": 0,
+          "damage": 20,
+          "isKnockedOut": false
+        }
+      },
+      {
+        "actionId": "ee24aade-66e1-4db4-ba9e-d8c48d965730",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:40:07.220Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "c5e9d787-3134-4b9d-adac-af77f67e636e",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:40:10.649Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bulbasaur--46"
+        }
+      },
+      {
+        "actionId": "0add5843-5483-4de7-95ad-569f70ec2387",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-22T19:40:13.650Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bulbasaur--46",
+          "benchPosition": "BENCH_2",
+          "instanceId": "d909724f-728e-4ce6-bc1e-7200fdfa9553"
+        }
+      },
+      {
+        "actionId": "431b0b49-bf55-4206-8a17-4de62ad4f0bb",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:40:15.803Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "BENCH_2",
+          "targetInstanceId": "d909724f-728e-4ce6-bc1e-7200fdfa9553"
+        }
+      },
+      {
+        "actionId": "d894d583-6d05-4fbb-bfc7-f2b1fec516b7",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:40:23.049Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 40,
+          "isKnockedOut": true
+        }
+      },
+      {
+        "actionId": "a8cf6a76-a485-43c3-ad43-fc6cbe053523",
+        "playerId": "PLAYER1",
+        "actionType": "SELECT_PRIZE",
+        "timestamp": "2025-12-22T19:40:29.928Z",
+        "actionData": {
+          "prizeCard": "pokemon-base-set-v1.0-caterpie--47",
+          "prizeIndex": 0
+        }
+      },
+      {
+        "actionId": "fe3176b5-c9fd-476e-988c-a63fc059b4f9",
+        "playerId": "PLAYER2",
+        "actionType": "SET_ACTIVE_POKEMON",
+        "timestamp": "2025-12-22T19:40:33.653Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-squirtle--65",
+          "instanceId": "3e8cd9b1-d019-4b88-83e4-38460cfbea24",
+          "source": "BENCH_0"
+        }
+      },
+      {
+        "actionId": "1fe46f37-79bc-4a54-8503-bf5f2c47bd15",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:40:37.152Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "20053e0e-3c32-4306-9954-21f038876cfb",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:40:40.411Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-water-energy--103"
+        }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn16-action87",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:40:48.825Z",
+        "actionData": {
+          "attackIndex": 0,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "1487d236-71ff-43ba-9380-207e3426230a",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T19:40:50.500Z",
+        "actionData": {
+          "attackIndex": 0,
+          "damage": 10,
+          "isKnockedOut": false,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "heads"
+            }
+          ],
+          "statusEffectApplied": true,
+          "statusEffect": "PARALYZED"
+        }
+      },
+      {
+        "actionId": "31dde275-6199-4e12-9cb8-9a21e4c2f6cc",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:41:01.416Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "d763aec0-f86f-49ac-80a4-464af8dc7a33",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:41:05.198Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-grass-energy--100"
+        }
+      },
+      {
+        "actionId": "84dc83e3-f317-44b1-ab44-5e0df327c406",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T19:41:11.627Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "BENCH_2",
+          "targetInstanceId": "d909724f-728e-4ce6-bc1e-7200fdfa9553"
+        }
+      },
+      {
+        "actionId": "b2e9bf37-1efe-424d-a76f-49f140e807cc",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T19:41:18.006Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "a7fa4d8a-c5be-4169-b7e0-80b69fcaf312",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T19:41:21.450Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-squirtle--65"
+        }
+      },
+      {
+        "actionId": "7fca0423-87c2-460d-a054-2b07fa21cbc4",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-22T19:41:24.447Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-squirtle--65",
+          "benchPosition": "BENCH_0",
+          "instanceId": "e784aee8-efd1-4608-b392-3913fc1b653d"
+        }
+      },
+      {
+        "actionId": "c8089d22-305d-48b4-9e36-314037b83499",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T20:04:43.260Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "BENCH_0",
+          "targetInstanceId": "e784aee8-efd1-4608-b392-3913fc1b653d"
+        }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn18-action96",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T20:04:48.702Z",
+        "actionData": {
+          "attackIndex": 0,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "a473778e-2671-45e9-8063-8140a6da0f1b",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T20:04:50.769Z",
+        "actionData": {
+          "attackIndex": 0,
+          "damage": 10,
+          "isKnockedOut": false,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "heads"
+            }
+          ],
+          "statusEffectApplied": true,
+          "statusEffect": "PARALYZED"
+        }
+      },
+      {
+        "actionId": "8ebc8cd5-e04c-4643-bac0-4759e0cf8edc",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T20:05:02.143Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "2acb02b9-3a59-4846-a4ef-9fc5ce7e0181",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T20:05:08.594Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-potion--90"
+        }
+      },
+      {
+        "actionId": "b1d6ffb1-ed6a-423d-9e47-ed4957706d03",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-22T20:05:18.452Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-potion--90",
+          "targetPlayer": "PLAYER1",
+          "pokemonInstanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9",
+          "target": "ACTIVE",
+          "instanceId": "0769cc83-b520-4093-8e3f-b2ac7119a6c2"
+        }
+      },
+      {
+        "actionId": "d3e9fa87-4df6-47f1-b9dc-5c99aac89f0a",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T20:05:23.060Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "77a1c847-0caa-4d52-9100-8993a07aeca3",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T20:05:27.072Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-starmie--66"
+        }
+      },
+      {
+        "actionId": "4e9f1128-c575-4598-9ee4-0e65c3c87375-turn20-action103",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T20:05:33.317Z",
+        "actionData": {
+          "attackIndex": 0,
+          "coinFlipRequired": true
+        }
+      },
+      {
+        "actionId": "427411f6-32b0-4e25-9b36-8ab850200d7b",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T20:05:37.981Z",
+        "actionData": {
+          "attackIndex": 0,
+          "damage": 10,
+          "isKnockedOut": false,
+          "coinFlipResults": [
+            {
+              "flipIndex": 0,
+              "result": "tails"
+            }
+          ],
+          "statusEffectApplied": false
+        }
+      },
+      {
+        "actionId": "35ddcd56-f340-41b6-96e0-462730f11039",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T20:05:51.012Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "7851794f-45a7-4ed3-ac50-5d5318e2d96f",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T20:05:54.250Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bill--92"
+        }
+      },
+      {
+        "actionId": "a131e088-59b3-44a7-8bc5-5af6f4fd08cf",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-22T20:06:01.013Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bill--92",
+          "instanceId": "9f89a47d-9f6d-462d-9e28-4f0f673084b0"
+        }
+      },
+      {
+        "actionId": "da8ca56b-d6ab-423c-b3ef-b1824831c71c",
+        "playerId": "PLAYER1",
+        "actionType": "PLAY_POKEMON",
+        "timestamp": "2025-12-22T20:06:03.780Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-tangela--68",
+          "benchPosition": "BENCH_3",
+          "instanceId": "79ec3238-3e88-46d5-8559-a0bc56b2814c"
+        }
+      },
+      {
+        "actionId": "e0121ff5-5b00-467e-b722-b21cc293794c",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-22T20:06:06.717Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-grass-energy--100",
+          "target": "BENCH_3",
+          "targetInstanceId": "79ec3238-3e88-46d5-8559-a0bc56b2814c"
+        }
+      },
+      {
+        "actionId": "bd9d9e69-4b0f-4b96-a859-e8de8f2c7918",
+        "playerId": "PLAYER1",
+        "actionType": "ATTACK",
+        "timestamp": "2025-12-22T20:06:10.798Z",
+        "actionData": {
+          "attackIndex": 1,
+          "damage": 20,
+          "isKnockedOut": false
+        }
+      },
+      {
+        "actionId": "81542f26-cc4e-4ffb-9f02-836df4847847",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-22T20:06:13.987Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "8866a022-81f7-44ea-8642-bb24d16e92b0",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-22T20:06:20.334Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-water-energy--103"
+        }
+      },
+      {
+        "actionId": "426cc837-12f3-4db2-90ee-21fbe0cd4e8f",
+        "playerId": "PLAYER2",
+        "actionType": "EVOLVE_POKEMON",
+        "timestamp": "2025-12-23T13:10:02.598Z",
+        "actionData": {
+          "evolutionCardId": "pokemon-base-set-v1.0-wartortle--44",
+          "target": "ACTIVE",
+          "instanceId": "3e8cd9b1-d019-4b88-83e4-38460cfbea24"
+        }
+      },
+      {
+        "actionId": "4ec4298a-ce5c-4741-886a-dc2ee390ba4c",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-23T13:10:06.363Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "ACTIVE",
+          "targetInstanceId": "3e8cd9b1-d019-4b88-83e4-38460cfbea24"
+        }
+      },
+      {
+        "actionId": "aaf6a6df-a910-4113-a2c0-d1fec8f404c2",
+        "playerId": "PLAYER2",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-23T13:10:24.768Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "ff40f7ca-d064-421d-9d72-3591be996d09",
+        "playerId": "PLAYER1",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-23T13:10:27.627Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-grass-energy--100"
+        }
+      },
+      {
+        "actionId": "4749e5fa-9a7c-4b9b-a613-118a8151996d",
+        "playerId": "PLAYER1",
+        "actionType": "EVOLVE_POKEMON",
+        "timestamp": "2025-12-23T13:10:44.122Z",
+        "actionData": {
+          "evolutionCardId": "pokemon-base-set-v1.0-venusaur--15",
+          "target": "ACTIVE",
+          "instanceId": "1d6c6e0f-2a09-4336-bbde-1ef2b6c736a9"
+        }
+      },
+      {
+        "actionId": "28aad1a1-09a4-489d-9dea-90fc416f317a",
+        "playerId": "PLAYER1",
+        "actionType": "USE_ABILITY",
+        "timestamp": "2025-12-23T18:56:47.785Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-venusaur--15",
+          "target": "ACTIVE",
+          "targetPokemon": "ACTIVE",
+          "sourcePokemon": "BENCH_0",
+          "selectedCardIds": [
+            "pokemon-base-set-v1.0-grass-energy--100"
+          ]
+        }
+      },
+      {
+        "actionId": "00b9056b-6023-4d58-8210-6065e778ee92",
+        "playerId": "PLAYER1",
+        "actionType": "END_TURN",
+        "timestamp": "2025-12-23T19:08:49.224Z",
+        "actionData": {}
+      },
+      {
+        "actionId": "955242e1-dd08-4028-b11a-fccb2f8cd48d",
+        "playerId": "PLAYER2",
+        "actionType": "DRAW_CARD",
+        "timestamp": "2025-12-23T19:08:55.091Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-water-energy--103"
+        }
+      },
+      {
+        "actionId": "65a02209-be26-42f9-ba95-a06b3b0af75d",
+        "playerId": "PLAYER2",
+        "actionType": "EVOLVE_POKEMON",
+        "timestamp": "2025-12-23T19:09:12.280Z",
+        "actionData": {
+          "evolutionCardId": "pokemon-base-set-v1.0-blastoise--2",
+          "target": "ACTIVE",
+          "instanceId": "3e8cd9b1-d019-4b88-83e4-38460cfbea24"
+        }
+      },
+      {
+        "actionId": "21590795-e1b6-49cb-b876-b335e9e78e6a",
+        "playerId": "PLAYER2",
+        "actionType": "PLAY_TRAINER",
+        "timestamp": "2025-12-23T19:09:16.615Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-bill--92",
+          "instanceId": "b05ba437-b5d4-4866-9496-74ef42612f8a"
+        }
+      },
+      {
+        "actionId": "ac138224-982c-425c-92e4-5560c8cab40b",
+        "playerId": "PLAYER2",
+        "actionType": "USE_ABILITY",
+        "timestamp": "2025-12-23T19:09:26.182Z",
+        "actionData": {
+          "cardId": "pokemon-base-set-v1.0-blastoise--2",
+          "target": "ACTIVE",
+          "targetPokemon": "ACTIVE",
+          "selectedCardIds": [
+            "pokemon-base-set-v1.0-water-energy--103"
+          ]
+        }
+      },
+      {
+        "actionId": "70dff888-adfe-46d5-9505-189ba1338f9d",
+        "playerId": "PLAYER2",
+        "actionType": "ATTACH_ENERGY",
+        "timestamp": "2025-12-23T19:09:34.074Z",
+        "actionData": {
+          "energyCardId": "pokemon-base-set-v1.0-water-energy--103",
+          "target": "BENCH_0",
+          "targetInstanceId": "e784aee8-efd1-4608-b392-3913fc1b653d"
+        }
       }
     ],
     "coinFlipState": null,
     "abilityUsageThisTurn": {
       "PLAYER1": [],
-      "PLAYER2": []
+      "PLAYER2": [
+        "pokemon-base-set-v1.0-blastoise--2"
+      ]
     }
   }
 }
