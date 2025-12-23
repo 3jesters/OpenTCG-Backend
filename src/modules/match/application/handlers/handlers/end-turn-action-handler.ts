@@ -185,11 +185,62 @@ export class EndTurnActionHandler
     const gameStateWithClearedEffects =
       gameStateWithStatusEffects.clearExpiredDamagePrevention(nextTurnNumber);
 
-    // Process between turns (transitions back to PLAYER_TURN)
-    match.processBetweenTurns(gameStateWithClearedEffects);
+    // Check for knockouts from status effects (poison/burn)
+    let finalGameState = gameStateWithClearedEffects;
+    const player1StateAfter = gameStateWithClearedEffects.player1State;
+    const player2StateAfter = gameStateWithClearedEffects.player2State;
+    const player1StateBefore = nextGameState.player1State;
+    const player2StateBefore = nextGameState.player2State;
+
+    // Check if any active Pokemon was knocked out by status effects
+    // Compare state before status effects with state after status effects
+    const player1KnockedOut =
+      player1StateBefore.activePokemon !== null &&
+      player1StateAfter.activePokemon === null;
+    const player2KnockedOut =
+      player2StateBefore.activePokemon !== null &&
+      player2StateAfter.activePokemon === null;
+
+    if (player1KnockedOut || player2KnockedOut) {
+      // Determine who gets the prize (the opponent of the player whose Pokemon was knocked out)
+      let prizeWinner: PlayerIdentifier | null = null;
+      if (player1KnockedOut) {
+        prizeWinner = PlayerIdentifier.PLAYER2; // Opponent gets prize
+      } else if (player2KnockedOut) {
+        prizeWinner = PlayerIdentifier.PLAYER1; // Opponent gets prize
+      }
+
+      // Create action summary for status effect knockout
+      const knockoutActionSummary = new ActionSummary(
+        uuidv4(),
+        prizeWinner!, // The player who gets the prize (opponent of knocked out player)
+        PlayerActionType.ATTACK, // Use ATTACK type to indicate knockout (similar to attack knockouts)
+        new Date(),
+        {
+          isKnockedOut: true,
+          knockoutSource: 'STATUS_EFFECT', // Indicate this was from status effect, not attack
+        },
+      );
+
+      // Add knockout action to history
+      // IMPORTANT: Set currentPlayer to prizeWinner (not nextPlayer) so prize winner can act first
+      finalGameState = finalGameState
+        .withAction(knockoutActionSummary)
+        .withPhase(TurnPhase.END) // Set to END phase to require prize selection before DRAW
+        .withCurrentPlayer(prizeWinner!); // Prize winner acts first, not nextPlayer
+
+      // Transition to PLAYER_TURN state so prize winner can select prize
+      // processBetweenTurns will set the state to PLAYER_TURN and use the game state we provide
+      // (which has phase END, not DRAW, so prize selection is required)
+      match.processBetweenTurns(finalGameState);
+    } else {
+      // No knockout, proceed normally
+      // Process between turns (transitions back to PLAYER_TURN)
+      match.processBetweenTurns(finalGameState);
+    }
 
     // Check win conditions
-    const winCheck = this.checkWinConditions(gameStateWithClearedEffects);
+    const winCheck = this.checkWinConditions(finalGameState);
     if (winCheck.hasWinner && winCheck.winner) {
       const winnerId =
         winCheck.winner === PlayerIdentifier.PLAYER1

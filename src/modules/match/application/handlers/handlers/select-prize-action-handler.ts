@@ -37,16 +37,23 @@ export class SelectPrizeActionHandler
       throw new BadRequestException('No prize cards remaining');
     }
 
-    // Validate that a knockout occurred and it's the attacker's turn
+    // Validate that a knockout occurred and it's the prize winner's turn
+    // Knockouts can come from attacks or status effects (poison/burn)
     const lastAction = gameState.lastAction;
     if (
       !lastAction ||
-      lastAction.actionType !== PlayerActionType.ATTACK ||
       !lastAction.actionData?.isKnockedOut ||
       lastAction.playerId !== playerIdentifier
     ) {
       throw new BadRequestException(
         'SELECT_PRIZE can only be used after knocking out an opponent Pokemon',
+      );
+    }
+
+    // Validate action type (can be ATTACK for attack knockouts or status effect knockouts)
+    if (lastAction.actionType !== PlayerActionType.ATTACK) {
+      throw new BadRequestException(
+        'SELECT_PRIZE can only be used after an attack or status effect knockout',
       );
     }
 

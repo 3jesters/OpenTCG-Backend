@@ -635,6 +635,7 @@ export class ExecuteTurnActionUseCase {
           match,
           gameState,
           playerIdentifier,
+          cardsMap: this.cardsMap,
         });
 
       default:

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PlayerIdentifier } from '../../enums';
 import { StatusEffect } from '../../enums/status-effect.enum';
 import {
+  CardInstance,
   CoinFlipConfiguration,
   CoinFlipState,
   GameState,
@@ -10,6 +11,7 @@ import { CoinFlipStatus } from '../../enums/coin-flip-status.enum';
 import { CoinFlipContext } from '../../enums/coin-flip-context.enum';
 import { CoinFlipCountType } from '../../value-objects/coin-flip-configuration.value-object';
 import { DamageCalculationType } from '../../value-objects/coin-flip-configuration.value-object';
+import { AttackKnockoutService } from '../attack/damage-application/attack-knockout.service';
 
 /**
  * Status Effect Processor Service
@@ -18,11 +20,16 @@ import { DamageCalculationType } from '../../value-objects/coin-flip-configurati
  */
 @Injectable()
 export class StatusEffectProcessorService {
+  constructor(
+    private readonly attackKnockout: AttackKnockoutService,
+  ) {}
+
   /**
    * Process status effects between turns
    * - Apply poison/burn damage
    * - Create sleep wake-up coin flips
    * - Clear paralyzed status based on turn number tracking
+   * - Handle knockouts from poison/burn damage
    * 
    * Note: Paralysis is removed at the end of the affected player's next turn.
    * We use turn number tracking to determine when to clear paralysis.
@@ -44,7 +51,7 @@ export class StatusEffectProcessorService {
       // Process active Pokemon
       if (playerState.activePokemon) {
         const activePokemon = playerState.activePokemon;
-        let updatedActive = activePokemon;
+        let updatedActive: CardInstance | null = activePokemon;
 
         // Apply poison damage
         if (activePokemon.hasStatusEffect(StatusEffect.POISONED)) {
@@ -60,50 +67,68 @@ export class StatusEffectProcessorService {
           updatedActive = updatedActive.withHp(newHp);
         }
 
-        // Clear paralyzed status based on turn number tracking
-        // Paralysis is removed at the end of the affected player's next turn
-        // We check if the current turn number > the expected clear turn
-        // (using > instead of >= because we clear at the END of the turn, not the START)
-        if (activePokemon.hasStatusEffect(StatusEffect.PARALYZED)) {
-          const shouldClear =
-            activePokemon.paralysisClearsAtTurn !== undefined &&
-            gameState.turnNumber > activePokemon.paralysisClearsAtTurn;
-          
-          if (shouldClear) {
-            updatedActive = updatedActive.withStatusEffectRemoved(
-              StatusEffect.PARALYZED,
-            );
+        // Check for knockout after applying poison/burn damage
+        if (updatedActive.currentHp === 0) {
+          // Handle knockout using AttackKnockoutService
+          const knockoutResult = this.attackKnockout.handleActiveKnockout({
+            pokemon: updatedActive,
+            playerState: updatedPlayerState,
+          });
+          updatedPlayerState = knockoutResult.updatedState;
+          updatedActive = null; // Pokemon is knocked out
+        }
+
+        // Only process other status effects if Pokemon wasn't knocked out
+        if (updatedActive !== null) {
+          // Clear paralyzed status based on turn number tracking
+          // Paralysis is removed at the end of the affected player's next turn
+          // We check if the current turn number > the expected clear turn
+          // (using > instead of >= because we clear at the END of the turn, not the START)
+          if (updatedActive.hasStatusEffect(StatusEffect.PARALYZED)) {
+            const shouldClear =
+              updatedActive.paralysisClearsAtTurn !== undefined &&
+              gameState.turnNumber > updatedActive.paralysisClearsAtTurn;
+            
+            if (shouldClear) {
+              updatedActive = updatedActive.withStatusEffectRemoved(
+                StatusEffect.PARALYZED,
+              );
+            }
           }
-        }
 
-        // Create sleep wake-up coin flip if asleep
-        if (activePokemon.hasStatusEffect(StatusEffect.ASLEEP)) {
-          // Create coin flip state for sleep wake-up check
-          const actionId = `${matchId}-turn${gameState.turnNumber}-sleep-wakeup-${activePokemon.instanceId}`;
-          const sleepCoinFlipConfig = new CoinFlipConfiguration(
-            CoinFlipCountType.FIXED,
-            1,
-            undefined,
-            undefined,
-            DamageCalculationType.BASE_DAMAGE,
-            0, // No damage calculation for sleep wake-up check
-          );
-          const coinFlipState = new CoinFlipState(
-            CoinFlipStatus.READY_TO_FLIP,
-            CoinFlipContext.STATUS_CHECK,
-            sleepCoinFlipConfig,
-            [],
-            undefined,
-            activePokemon.instanceId,
-            StatusEffect.ASLEEP,
-            actionId,
-          );
-          updatedGameState = updatedGameState.withCoinFlipState(coinFlipState);
-        }
+          // Create sleep wake-up coin flip if asleep
+          if (updatedActive.hasStatusEffect(StatusEffect.ASLEEP)) {
+            // Create coin flip state for sleep wake-up check
+            const actionId = `${matchId}-turn${gameState.turnNumber}-sleep-wakeup-${updatedActive.instanceId}`;
+            const sleepCoinFlipConfig = new CoinFlipConfiguration(
+              CoinFlipCountType.FIXED,
+              1,
+              undefined,
+              undefined,
+              DamageCalculationType.BASE_DAMAGE,
+              0, // No damage calculation for sleep wake-up check
+            );
+            const coinFlipState = new CoinFlipState(
+              CoinFlipStatus.READY_TO_FLIP,
+              CoinFlipContext.STATUS_CHECK,
+              sleepCoinFlipConfig,
+              [],
+              undefined,
+              updatedActive.instanceId,
+              StatusEffect.ASLEEP,
+              actionId,
+            );
+            updatedGameState = updatedGameState.withCoinFlipState(coinFlipState);
+          }
 
-        if (updatedActive !== activePokemon) {
-          updatedPlayerState =
-            updatedPlayerState.withActivePokemon(updatedActive);
+          // Update player state if Pokemon was modified
+          if (updatedActive !== activePokemon) {
+            updatedPlayerState =
+              updatedPlayerState.withActivePokemon(updatedActive);
+          }
+        } else {
+          // Pokemon was knocked out, updatedPlayerState already has activePokemon set to null
+          // No need to update again
         }
       }
 

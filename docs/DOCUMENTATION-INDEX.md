@@ -254,6 +254,50 @@ await executeAction(matchId, playerId, 'END_TURN', {});
 
 ---
 
+### [CLIENT-RETREAT-GUIDE.md](./CLIENT-RETREAT-GUIDE.md)
+**Complete guide for implementing retreat functionality**
+
+**Contains:**
+- RETREAT action API endpoint and request structure
+- Energy selection handling (similar to attack energy costs)
+- Pre-check retreat cost vs error handling approaches
+- Complete request/response examples
+- Error handling for all edge cases
+- Status effect clearing behavior
+- Validation rules and best practices
+- Complete TypeScript implementation examples
+
+**Use this when:**
+- Implementing retreat functionality in the client
+- Handling energy selection for retreat
+- Understanding retreat validation rules
+- Building retreat UI components
+- Handling retreat error responses
+- Understanding status effect clearing on retreat
+
+**Quick Example:**
+```typescript
+// Check retreat cost and attempt retreat
+const retreatCost = getRetreatCost(activePokemonCard);
+
+if (retreatCost > 0) {
+  // Show energy selection modal
+  const selectedEnergyIds = await showEnergySelectionModal({
+    amount: retreatCost,
+    energyType: null,
+    availableEnergy: activePokemon.attachedEnergy,
+  });
+  
+  // Submit retreat with energy selection
+  await submitRetreat(matchId, playerId, 'BENCH_0', selectedEnergyIds);
+} else {
+  // Free retreat
+  await submitRetreat(matchId, playerId, 'BENCH_0');
+}
+```
+
+---
+
 ### [CLIENT-COIN-FLIP-SYSTEM.md](./CLIENT-COIN-FLIP-SYSTEM.md)
 **Complete guide for coin flip system and client interaction**
 

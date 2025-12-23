@@ -124,9 +124,94 @@ export class SetActivePokemonPlayerTurnService {
     // In PLAYER_TURN state (after knockout), check if phase should transition
     const nextPhase = this.determineNextPhase(updatedGameState, playerIdentifier);
 
-    const finalGameState = updatedGameState
+    let finalGameState = updatedGameState
       .withPhase(nextPhase)
       .withAction(actionSummary);
+
+    // If transitioning from SELECT_ACTIVE_POKEMON to END phase after status effect knockout,
+    // we need to transition to DRAW phase for the next player's turn instead
+    if (nextPhase === TurnPhase.END) {
+      // Search for the status effect knockout action
+      // Check lastAction first, then search action history backwards
+      // (lastAction might be SELECT_PRIZE, so we need to look back in history)
+      let knockoutAction: ActionSummary | null = null;
+      
+      // First check if lastAction is the knockout action (from gameState, before SET_ACTIVE_POKEMON was added)
+      if (
+        gameState.lastAction &&
+        gameState.lastAction.actionType === PlayerActionType.ATTACK &&
+        gameState.lastAction.actionData?.isKnockedOut === true &&
+        gameState.lastAction.actionData?.knockoutSource === 'STATUS_EFFECT'
+      ) {
+        knockoutAction = gameState.lastAction;
+      } else {
+        // Search action history backwards for the status effect knockout action
+        // Search in gameState.actionHistory (before SET_ACTIVE_POKEMON was added)
+        for (let i = gameState.actionHistory.length - 1; i >= 0; i--) {
+          const action = gameState.actionHistory[i];
+          if (
+            action.actionType === PlayerActionType.ATTACK &&
+            action.actionData?.isKnockedOut === true &&
+            action.actionData?.knockoutSource === 'STATUS_EFFECT'
+          ) {
+            knockoutAction = action;
+            break;
+          }
+        }
+      }
+
+      if (knockoutAction) {
+        // This was a status effect knockout - transition to DRAW phase for the next player's turn
+        // We need to find who ended their turn to determine whose turn should start next
+        // The END_TURN action happened before the knockout action
+        let endTurnAction: ActionSummary | null = null;
+        
+        // Find the knockout action index in the history
+        // Use gameState.actionHistory since that's where the knockout action is
+        const knockoutActionIndex = gameState.actionHistory.findIndex(
+          (action) => action === knockoutAction,
+        );
+        
+        // Find the END_TURN action before the knockout action
+        // Search backwards from the knockout action position
+        if (knockoutActionIndex >= 0) {
+          for (let i = knockoutActionIndex - 1; i >= 0; i--) {
+            const action = gameState.actionHistory[i];
+            if (action.actionType === PlayerActionType.END_TURN) {
+              endTurnAction = action;
+              break;
+            }
+          }
+        }
+        
+        if (endTurnAction) {
+          // endTurnAction.playerId is already a PlayerIdentifier enum, not a string player ID
+          // So we can use it directly without calling match.getPlayerIdentifier()
+          const playerWhoEndedTurn = endTurnAction.playerId;
+          
+          // The next player is the opponent of the one who ended their turn
+          const nextPlayer =
+            playerWhoEndedTurn === PlayerIdentifier.PLAYER1
+              ? PlayerIdentifier.PLAYER2
+              : PlayerIdentifier.PLAYER1;
+          
+          finalGameState = finalGameState
+            .withPhase(TurnPhase.DRAW)
+            .withCurrentPlayer(nextPlayer);
+        } else {
+          // Fallback: use opponent of the one selecting active Pokemon
+          // (this shouldn't happen in normal flow, but provides a safe fallback)
+          const nextPlayer =
+            playerIdentifier === PlayerIdentifier.PLAYER1
+              ? PlayerIdentifier.PLAYER2
+              : PlayerIdentifier.PLAYER1;
+          finalGameState = finalGameState
+            .withPhase(TurnPhase.DRAW)
+            .withCurrentPlayer(nextPlayer);
+        }
+      }
+    }
+
     match.updateGameState(finalGameState);
     return await this.matchRepository.save(match);
   }

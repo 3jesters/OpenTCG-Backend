@@ -770,18 +770,35 @@ Evolve a Pokemon.
 
 #### RETREAT
 
-Retreat active Pokemon (switch with bench).
+Retreat active Pokemon (switch with bench). Requires discarding energy cards equal to the Pokemon's retreat cost.
 
 ```json
 {
   "actionType": "RETREAT",
   "actionData": {
-    "benchPosition": "BENCH_0"
+    "target": "BENCH_0",
+    "selectedEnergyIds": ["energy-card-id-1", "energy-card-id-2"]
   }
 }
 ```
 
+**Request Parameters:**
+- `target` (required): Bench position to switch with (`BENCH_0` through `BENCH_4`)
+- `selectedEnergyIds` (conditional): Array of energy card IDs to discard. Required if retreat cost > 0. Omit if retreat cost is 0 (free retreat).
+
 **Valid Phases:** MAIN_PHASE
+
+**Energy Selection:**
+- If retreat cost > 0 and `selectedEnergyIds` not provided, server returns `ENERGY_SELECTION_REQUIRED` error
+- Must select exactly `retreatCost` energy cards
+- Any energy type is accepted (unlike attacks)
+- Energy cards are discarded to the discard pile
+
+**Status Effects:**
+- Both Pokemon have status effects cleared after retreat
+- Paralyzed Pokemon cannot retreat
+
+**See:** [Client Retreat Guide](./CLIENT-RETREAT-GUIDE.md) for complete implementation details
 
 #### ATTACK
 
