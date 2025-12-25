@@ -8,7 +8,7 @@ import { PreconditionType } from '../../../../card/domain/enums/precondition-typ
 import { PokemonScoringService } from './pokemon-scoring.service';
 import { AttackDamageCalculationService } from '../../../domain/services/attack/attack-damage-calculation.service';
 import { AttackEnergyValidatorService } from '../../../domain/services/attack/energy-requirements/attack-energy-validator.service';
-import { PokemonScore, OpponentThreat } from '../../types/action-analysis.types';
+import { PokemonScore, OpponentThreat } from '../types/action-analysis.types';
 
 /**
  * Opponent Analysis Service
@@ -252,6 +252,9 @@ export class OpponentAnalysisService {
           [], // No energy attached
           [], // No status effects
           [], // No evolution chain
+          undefined, // poisonDamageAmount
+          undefined, // evolvedAt
+          undefined, // paralysisClearsAtTurn
         );
         const score = this.pokemonScoringService.scorePokemon(
           tempInstance,

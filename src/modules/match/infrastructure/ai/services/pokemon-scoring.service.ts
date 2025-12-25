@@ -8,7 +8,7 @@ import { PreconditionType } from '../../../../card/domain/enums/precondition-typ
 import {
   PokemonScore,
   SortedPokemonScoreList,
-} from '../../types/action-analysis.types';
+} from '../types/action-analysis.types';
 import { sortPokemonScores } from '../utils/sorting.utils';
 
 /**
