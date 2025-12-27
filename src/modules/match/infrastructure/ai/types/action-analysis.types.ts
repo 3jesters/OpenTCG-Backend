@@ -120,6 +120,8 @@ export interface TrainerCardImpact {
   preventsOurKnockout: boolean; // Whether this prevents our Pokemon from being knocked out
   improvesHandSize: boolean; // Whether this improves our hand size
   improvesOpponentHandSize: boolean; // Whether this improves opponent's hand size (bad for us)
+  reducesRoundsToKnockout?: boolean; // Whether this reduces the number of rounds needed to knockout opponent
+  increasesRoundsWeCanSurvive?: boolean; // Whether this increases the number of rounds we can survive
 }
 
 // ========================================
