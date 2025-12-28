@@ -1540,18 +1540,14 @@ export class TrainerCardAnalyzerService {
       );
 
       // Get Pokemon score
-      const score = await this.pokemonScoringService.scorePokemon(
+      const scoreResult = this.pokemonScoringService.scorePokemon(
         benchPokemon,
         benchCard,
-        gameState,
-        playerIdentifier,
-        cardsMap,
-        getCardEntity,
       );
 
       // Prioritize: can knockout > will survive > score
       const priorityScore =
-        (canKnockout ? 1000 : 0) + (willSurvive ? 100 : 0) + score;
+        (canKnockout ? 1000 : 0) + (willSurvive ? 100 : 0) + scoreResult.score;
 
       if (!bestBench || priorityScore > bestBench.score) {
         bestBench = {
