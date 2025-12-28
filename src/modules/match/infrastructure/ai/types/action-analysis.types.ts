@@ -124,6 +124,34 @@ export interface TrainerCardImpact {
   increasesRoundsWeCanSurvive?: boolean; // Whether this increases the number of rounds we can survive
 }
 
+/**
+ * Switch/Retreat Priority
+ * Priority levels for switch/retreat decisions
+ */
+export enum SwitchRetreatPriority {
+  HIGH = 1, // Free retreat or game-losing scenario
+  MEDIUM = 2, // Trainer card available or affordable energy retreat
+  LOW = 3, // Energy retreat with cost
+}
+
+/**
+ * Switch/Retreat Option
+ * Represents a switch/retreat decision with evaluation
+ */
+export interface SwitchRetreatOption {
+  shouldSwitch: boolean;
+  reason: string;
+  targetPokemon?: CardInstance;
+  targetCard?: Card;
+  shouldUseTrainerCard: boolean;
+  trainerCardId?: string;
+  retreatCost: number;
+  canAffordRetreat: boolean;
+  priority: SwitchRetreatPriority;
+  isGameLosingScenario?: boolean;
+  benchPokemonWillSurvive?: boolean;
+}
+
 // ========================================
 // Sorted List Types
 // ========================================

@@ -1,18 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
-import { PlayerIdentifier, PokemonPosition } from '../../../domain/enums';
+import { PlayerIdentifier, PokemonPosition, StatusEffect } from '../../../domain/enums';
 import { Card } from '../../../../card/domain/entities';
 import { TrainerEffect } from '../../../../card/domain/value-objects';
-import { TrainerEffectType } from '../../../../card/domain/enums';
+import { TrainerEffectType, CardType } from '../../../../card/domain/enums';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
+import { CardRuleType } from '../../../../card/domain/enums/card-rule-type.enum';
 import { ActionPrioritizationService } from './action-prioritization.service';
 import { OpponentAnalysisService } from './opponent-analysis.service';
 import { PokemonScoringService } from './pokemon-scoring.service';
+import { AttackEnergyValidatorService } from '../../../domain/services/attack/energy-requirements/attack-energy-validator.service';
+import { Attack } from '../../../../card/domain/value-objects';
+import { PreconditionType } from '../../../../card/domain/enums/precondition-type.enum';
 import {
   TrainerCardCategory,
   TrainerCardOption,
   TrainerCardImpact,
   SortedTrainerCardOptionList,
+  SwitchRetreatOption,
+  SwitchRetreatPriority,
 } from '../types/action-analysis.types';
 import { sortTrainerCardOptions } from '../utils/sorting.utils';
 
@@ -36,6 +42,7 @@ export class TrainerCardAnalyzerService {
     private readonly actionPrioritizationService: ActionPrioritizationService,
     private readonly opponentAnalysisService: OpponentAnalysisService,
     private readonly pokemonScoringService: PokemonScoringService,
+    private readonly attackEnergyValidatorService: AttackEnergyValidatorService,
   ) {}
 
   /**
@@ -581,8 +588,18 @@ export class TrainerCardAnalyzerService {
       };
     }
 
+    // Filter to only performable attacks
+    const performableAttacks = availableAttacks.filter((a) => a.canPerform);
+    if (performableAttacks.length === 0) {
+      return {
+        shouldPlay: false,
+        reason: 'No performable attacks',
+        impact,
+      };
+    }
+
     // Get best attack (highest damage)
-    const bestAttack = availableAttacks[0];
+    const bestAttack = performableAttacks[0];
     const baseDamage = bestAttack.baseDamage;
     const totalDamage = baseDamage + increaseAmount;
 
@@ -624,7 +641,7 @@ export class TrainerCardAnalyzerService {
       increaseAmount,
     );
 
-    if (roundsWithIncrease < roundsWithoutIncrease) {
+    if (isFinite(roundsWithoutIncrease) && isFinite(roundsWithIncrease) && roundsWithIncrease < roundsWithoutIncrease) {
       impact.reducesRoundsToKnockout = true;
       const activeCard = await getCardEntity(playerState.activePokemon.cardId);
       return {
@@ -1016,5 +1033,865 @@ export class TrainerCardAnalyzerService {
     const parsed = parseInt(cleanDamage, 10);
 
     return isNaN(parsed) ? 0 : parsed;
+  }
+
+  /**
+   * Evaluate switch/retreat strategy
+   * Determines if the player should switch their active Pokemon with a benched one
+   */
+  async evaluateSwitchRetreatStrategy(
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<SwitchRetreatOption | null> {
+    const playerState = gameState.getPlayerState(playerIdentifier);
+    const activePokemon = playerState.activePokemon;
+
+    // Must have an active Pokemon
+    if (!activePokemon) {
+      return null;
+    }
+
+    // Must have bench Pokemon to switch to
+    if (!playerState.bench || playerState.bench.length === 0) {
+      return null;
+    }
+
+    // Quick check: Can Pokemon retreat?
+    const canRetreat = await this.canPokemonRetreat(
+      activePokemon,
+      cardsMap,
+      getCardEntity,
+    );
+
+    if (!canRetreat.canRetreat) {
+      return {
+        shouldSwitch: false,
+        reason: canRetreat.reason,
+        shouldUseTrainerCard: false,
+        retreatCost: 0,
+        canAffordRetreat: false,
+        priority: SwitchRetreatPriority.HIGH,
+      };
+    }
+
+    // Get active Pokemon card
+    const activeCard = await getCardEntity(activePokemon.cardId);
+
+    // Evaluate if switching is beneficial
+    const shouldConsider = await this.shouldConsiderSwitching(
+      gameState,
+      playerIdentifier,
+      activePokemon,
+      activeCard,
+      playerState.bench,
+      cardsMap,
+      getCardEntity,
+    );
+
+    if (!shouldConsider.shouldConsider) {
+      return {
+        shouldSwitch: false,
+        reason: shouldConsider.reason,
+        shouldUseTrainerCard: false,
+        retreatCost: 0,
+        canAffordRetreat: false,
+        priority: SwitchRetreatPriority.LOW,
+      };
+    }
+
+    // Find best bench Pokemon for switching
+    const bestBench = shouldConsider.bestBenchOption;
+    if (!bestBench) {
+      return {
+        shouldSwitch: false,
+        reason: 'No suitable bench Pokemon found',
+        shouldUseTrainerCard: false,
+        retreatCost: 0,
+        canAffordRetreat: false,
+        priority: SwitchRetreatPriority.LOW,
+      };
+    }
+
+    const benchCard = await getCardEntity(bestBench.cardId);
+
+    // Check for trainer card switch assistance
+    const switchTrainerCard = await this.findSwitchTrainerCard(
+      playerState.hand,
+      cardsMap,
+    );
+
+    // Calculate retreat cost
+    const retreatCostInfo = await this.evaluateRetreatCost(
+      activePokemon,
+      activeCard,
+      switchTrainerCard,
+    );
+
+    // Determine priority
+    const priority = this.determinePriority(
+      retreatCostInfo,
+      shouldConsider.isGameLosingScenario,
+      switchTrainerCard !== null,
+    );
+
+    // Check if bench Pokemon will survive
+    const benchWillSurvive = await this.willBenchPokemonSurvive(
+      bestBench,
+      benchCard,
+      gameState,
+      playerIdentifier,
+      cardsMap,
+      getCardEntity,
+    );
+
+    return {
+      shouldSwitch: true,
+      reason: shouldConsider.reason,
+      targetPokemon: bestBench,
+      targetCard: benchCard,
+      shouldUseTrainerCard: switchTrainerCard !== null,
+      trainerCardId: switchTrainerCard?.cardId,
+      retreatCost: retreatCostInfo.cost,
+      canAffordRetreat: retreatCostInfo.canAfford,
+      priority,
+      isGameLosingScenario: shouldConsider.isGameLosingScenario,
+      benchPokemonWillSurvive: benchWillSurvive,
+    };
+  }
+
+  /**
+   * Check if Pokemon can retreat (status effects, card rules)
+   */
+  private async canPokemonRetreat(
+    pokemon: CardInstance,
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<{ canRetreat: boolean; reason: string }> {
+    // Check status effects
+    if (pokemon.hasStatusEffect(StatusEffect.PARALYZED)) {
+      return {
+        canRetreat: false,
+        reason: 'Cannot retreat while Paralyzed',
+      };
+    }
+
+    // Check card rules
+    const card = await getCardEntity(pokemon.cardId);
+    if (!card.canRetreat()) {
+      return {
+        canRetreat: false,
+        reason: 'This Pokemon cannot retreat due to card rule',
+      };
+    }
+
+    return { canRetreat: true, reason: '' };
+  }
+
+  /**
+   * Determine if switching should be considered
+   */
+  private async shouldConsiderSwitching(
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    activePokemon: CardInstance,
+    activeCard: Card,
+    bench: CardInstance[],
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<{
+    shouldConsider: boolean;
+    reason: string;
+    bestBenchOption?: CardInstance;
+    isGameLosingScenario?: boolean;
+  }> {
+    const opponentState = gameState.getOpponentState(playerIdentifier);
+    const opponentActive = opponentState.activePokemon;
+
+    if (!opponentActive) {
+      return {
+        shouldConsider: false,
+        reason: 'No opponent active Pokemon',
+      };
+    }
+
+    const opponentCard = await getCardEntity(opponentActive.cardId);
+
+    // Check if active will be knocked out next turn
+    const activeWillBeKnockedOut = await this.opponentAnalysisService.canOpponentKnockout(
+      gameState,
+      playerIdentifier,
+      cardsMap,
+      getCardEntity,
+    );
+
+    // Get player state for prize card checks
+    const playerState = gameState.getPlayerState(playerIdentifier);
+    
+    // Check game-losing scenario (next knockout would lose)
+    const prizeCardsRemaining = playerState.getPrizeCardsRemaining();
+    const isGameLosingScenario =
+      activeWillBeKnockedOut && prizeCardsRemaining === 1;
+
+    // Find best bench Pokemon
+    const bestBench = await this.findBestBenchPokemonForSwitch(
+      bench,
+      opponentActive,
+      opponentCard,
+      gameState,
+      playerIdentifier,
+      cardsMap,
+      getCardEntity,
+    );
+
+    if (!bestBench) {
+      return {
+        shouldConsider: false,
+        reason: 'No suitable bench Pokemon found',
+      };
+    }
+
+    // Check if bench can knockout opponent
+    const benchCanKnockout = await this.canPokemonKnockout(
+      bestBench.pokemon,
+      bestBench.card,
+      opponentActive,
+      opponentCard,
+      gameState,
+      playerIdentifier,
+      cardsMap,
+      getCardEntity,
+    );
+
+    // Check if active can knockout opponent
+    const activeCanKnockout = await this.canPokemonKnockout(
+      activePokemon,
+      activeCard,
+      opponentActive,
+      opponentCard,
+      gameState,
+      playerIdentifier,
+      cardsMap,
+      getCardEntity,
+    );
+
+    // Check win condition (knocking out opponent would win)
+    // If player has 1 prize card remaining, knocking out opponent = win
+    const playerPrizeCardsRemaining = playerState.getPrizeCardsRemaining();
+    const opponentPrizeCardsRemaining = opponentState.getPrizeCardsRemaining();
+    const wouldWin = playerPrizeCardsRemaining === 1;
+
+    // Priority scenarios:
+    // 1. Win condition - prefer faster win (check BEFORE game-losing scenario when wouldWin is true)
+    if (wouldWin) {
+      // If only bench can knockout, switch
+      if (benchCanKnockout && !activeCanKnockout) {
+        return {
+          shouldConsider: true,
+          reason: 'Switching to bench Pokemon for faster win (1 prize remaining)',
+          bestBenchOption: bestBench.pokemon,
+        };
+      }
+      // If only active can knockout, don't switch
+      if (activeCanKnockout && !benchCanKnockout) {
+        return {
+          shouldConsider: false,
+          reason: 'Active can win this turn (1 prize remaining), no need to switch',
+        };
+      }
+      // If both can knockout, compare rounds to knockout
+      if (activeCanKnockout && benchCanKnockout) {
+        const activeRounds = await this.calculateRoundsToKnockoutForPokemon(
+          activePokemon,
+          activeCard,
+          opponentActive,
+          opponentCard,
+          gameState,
+          playerIdentifier,
+          cardsMap,
+          getCardEntity,
+        );
+        const benchRounds = await this.calculateRoundsToKnockoutForPokemon(
+          bestBench.pokemon,
+          bestBench.card,
+          opponentActive,
+          opponentCard,
+          gameState,
+          playerIdentifier,
+          cardsMap,
+          getCardEntity,
+        );
+
+        // Check if bench requires coin toss
+        const benchRequiresCoinToss = await this.requiresCoinToss(
+          bestBench.pokemon,
+          bestBench.card,
+          opponentActive,
+          opponentCard,
+          gameState,
+          playerIdentifier,
+          cardsMap,
+          getCardEntity,
+        );
+
+        // If bench is faster (fewer rounds) and doesn't require coin toss, switch
+        if (benchRounds < activeRounds && !benchRequiresCoinToss) {
+          return {
+            shouldConsider: true,
+            reason: 'Switching to bench Pokemon for faster win (1 prize remaining)',
+            bestBenchOption: bestBench.pokemon,
+          };
+        }
+
+        // If active is faster or same speed, OR bench requires coin toss, prefer active
+        if (activeRounds <= benchRounds || benchRequiresCoinToss) {
+          return {
+            shouldConsider: false,
+            reason: benchRequiresCoinToss
+              ? 'Prefer guaranteed win from active over coin toss win from bench (1 prize remaining)'
+              : 'Active can win faster or same speed, prefer guaranteed win (1 prize remaining)',
+          };
+        }
+        // If bench is faster and doesn't require coin toss, switch (already handled above)
+        // This should never be reached, but add as safety
+        return {
+          shouldConsider: true,
+          reason: 'Switching to bench Pokemon for faster win (1 prize remaining)',
+          bestBenchOption: bestBench.pokemon,
+        };
+      }
+      // Safety check: if wouldWin is true and we have at least one knockout option,
+      // we should have returned above. If not, something went wrong.
+      // Default to not switching if active can knockout, switch if only bench can
+      if (activeCanKnockout) {
+        return {
+          shouldConsider: false,
+          reason: 'Active can win this turn (1 prize remaining), no need to switch',
+        };
+      }
+      if (benchCanKnockout) {
+        return {
+          shouldConsider: true,
+          reason: 'Switching to bench Pokemon for faster win (1 prize remaining)',
+          bestBenchOption: bestBench.pokemon,
+        };
+      }
+      // If wouldWin but neither can knockout, handle game-losing scenario if applicable
+      // (This should be rare - if we can't knockout, we can't win, but we might need to survive)
+      if (isGameLosingScenario && !activeCanKnockout && !benchCanKnockout) {
+        if (bestBench.willSurvive) {
+          return {
+            shouldConsider: true,
+            reason: 'Next knockout would lose the game, switching to bench Pokemon that will survive',
+            bestBenchOption: bestBench.pokemon,
+            isGameLosingScenario: true,
+          };
+        } else {
+          return {
+            shouldConsider: false,
+            reason: 'Bench Pokemon will also be knocked out next turn, no point switching',
+            isGameLosingScenario: true,
+          };
+        }
+      }
+      // If wouldWin and at least one can knockout, we should have returned above
+      // If we reach here, something unexpected happened - fall through to other checks
+    }
+
+    // 2. Game-losing scenario - must switch if bench will survive (only if not a win condition)
+    // Note: If wouldWin is true, win conditions are already handled above
+    if (isGameLosingScenario && !wouldWin) {
+      if (bestBench.willSurvive) {
+        return {
+          shouldConsider: true,
+          reason: 'Next knockout would lose the game, switching to bench Pokemon that will survive',
+          bestBenchOption: bestBench.pokemon,
+          isGameLosingScenario: true,
+        };
+      } else {
+        // Bench will also be knocked out - no point switching
+        return {
+          shouldConsider: false,
+          reason: 'Bench Pokemon will also be knocked out next turn, no point switching',
+          isGameLosingScenario: true,
+        };
+      }
+    }
+
+    // 3. Bench can knockout and active cannot
+    if (benchCanKnockout && !activeCanKnockout) {
+      return {
+        shouldConsider: true,
+        reason: wouldWin
+          ? 'Bench Pokemon can knockout opponent for win (1 prize remaining), active cannot'
+          : 'Bench Pokemon can knockout opponent, active cannot',
+        bestBenchOption: bestBench.pokemon,
+      };
+    }
+
+    // 4. Can knockout in 2 turns with active and not threatened - don't switch
+    // Check this before "active will be knocked out" to prioritize it
+    // Don't require activeCanKnockout (which only checks 1-round knockouts)
+    // Instead, calculate rounds directly to handle multi-round knockouts
+    if (!activeWillBeKnockedOut && !wouldWin) {
+      // Check if active has any attacks (can potentially knockout)
+      if (activeCard.attacks && activeCard.attacks.length > 0) {
+        const roundsToKnockout = await this.calculateRoundsToKnockoutForPokemon(
+          activePokemon,
+          activeCard,
+          opponentActive,
+          opponentCard,
+          gameState,
+          playerIdentifier,
+          cardsMap,
+          getCardEntity,
+        );
+        // If active can knockout in 2 rounds or less (finite number means can eventually knockout)
+        if (isFinite(roundsToKnockout) && roundsToKnockout <= 2) {
+          return {
+            shouldConsider: false,
+            reason: 'Can knockout opponent in 2 turns with active and not threatened',
+          };
+        }
+      }
+    }
+
+    // 5. Active will be knocked out and bench can do same or better damage
+    if (activeWillBeKnockedOut) {
+      const activeDamage = await this.getMaxDamage(
+        activePokemon,
+        activeCard,
+        opponentActive,
+        opponentCard,
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
+      const benchDamage = await this.getMaxDamage(
+        bestBench.pokemon,
+        bestBench.card,
+        opponentActive,
+        opponentCard,
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
+
+      if (benchDamage >= activeDamage) {
+        return {
+          shouldConsider: true,
+          reason: 'Active will be knocked out next turn, bench can do same or better damage (knockout)',
+          bestBenchOption: bestBench.pokemon,
+        };
+      }
+    }
+
+    return {
+      shouldConsider: false,
+      reason: 'No compelling reason to switch',
+    };
+  }
+
+  /**
+   * Find best bench Pokemon for switching
+   */
+  private async findBestBenchPokemonForSwitch(
+    bench: CardInstance[],
+    opponentActive: CardInstance,
+    opponentCard: Card,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<{ pokemon: CardInstance; card: Card; willSurvive: boolean } | null> {
+    let bestBench: {
+      pokemon: CardInstance;
+      card: Card;
+      willSurvive: boolean;
+      score: number;
+    } | null = null;
+
+    for (const benchPokemon of bench) {
+      const benchCard = await getCardEntity(benchPokemon.cardId);
+
+      // Check if can knockout
+      const canKnockout = await this.canPokemonKnockout(
+        benchPokemon,
+        benchCard,
+        opponentActive,
+        opponentCard,
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
+
+      // Check if will survive
+      const willSurvive = await this.willBenchPokemonSurvive(
+        benchPokemon,
+        benchCard,
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
+
+      // Get Pokemon score
+      const score = await this.pokemonScoringService.scorePokemon(
+        benchPokemon,
+        benchCard,
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
+
+      // Prioritize: can knockout > will survive > score
+      const priorityScore =
+        (canKnockout ? 1000 : 0) + (willSurvive ? 100 : 0) + score;
+
+      if (!bestBench || priorityScore > bestBench.score) {
+        bestBench = {
+          pokemon: benchPokemon,
+          card: benchCard,
+          willSurvive,
+          score: priorityScore,
+        };
+      }
+    }
+
+    return bestBench
+      ? {
+          pokemon: bestBench.pokemon,
+          card: bestBench.card,
+          willSurvive: bestBench.willSurvive,
+        }
+      : null;
+  }
+
+  /**
+   * Check if Pokemon can knockout opponent
+   */
+  private async canPokemonKnockout(
+    pokemon: CardInstance,
+    pokemonCard: Card,
+    targetPokemon: CardInstance,
+    targetCard: Card,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<boolean> {
+    if (!pokemonCard.attacks || pokemonCard.attacks.length === 0) {
+      return false;
+    }
+
+    // Get energy card data
+    const energyCardData = this.getEnergyCardData(
+      pokemon.attachedEnergy || [],
+      cardsMap,
+    );
+
+    // Check each attack
+    for (const attack of pokemonCard.attacks) {
+      // Check if attack can be performed (energy requirements)
+      const energyValidation =
+        this.attackEnergyValidatorService.validateEnergyRequirements(
+          attack,
+          energyCardData,
+        );
+
+      if (!energyValidation.isValid) {
+        continue; // Cannot perform this attack
+      }
+
+      // Parse base damage
+      const baseDamage = this.parseBaseDamage(attack.damage || '');
+
+      // Check if base damage can knockout (simplified - in full implementation would calculate final damage)
+      if (baseDamage >= targetPokemon.currentHp) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Get maximum damage Pokemon can deal
+   */
+  private async getMaxDamage(
+    pokemon: CardInstance,
+    pokemonCard: Card,
+    targetPokemon: CardInstance,
+    targetCard: Card,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<number> {
+    if (!pokemonCard.attacks || pokemonCard.attacks.length === 0) {
+      return 0;
+    }
+
+    // Get energy card data
+    const energyCardData = this.getEnergyCardData(
+      pokemon.attachedEnergy || [],
+      cardsMap,
+    );
+
+    let maxDamage = 0;
+
+    // Check each attack
+    for (const attack of pokemonCard.attacks) {
+      // Check if attack can be performed (energy requirements)
+      const energyValidation =
+        this.attackEnergyValidatorService.validateEnergyRequirements(
+          attack,
+          energyCardData,
+        );
+
+      if (!energyValidation.isValid) {
+        continue; // Cannot perform this attack
+      }
+
+      // Parse base damage
+      const baseDamage = this.parseBaseDamage(attack.damage || '');
+      maxDamage = Math.max(maxDamage, baseDamage);
+    }
+
+    return maxDamage;
+  }
+
+  /**
+   * Check if attack requires coin toss
+   */
+  private async requiresCoinToss(
+    pokemon: CardInstance,
+    pokemonCard: Card,
+    targetPokemon: CardInstance,
+    targetCard: Card,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<boolean> {
+    if (!pokemonCard.attacks || pokemonCard.attacks.length === 0) {
+      return false;
+    }
+
+    // Get energy card data
+    const energyCardData = this.getEnergyCardData(
+      pokemon.attachedEnergy || [],
+      cardsMap,
+    );
+
+    // Check each attack
+    for (const attack of pokemonCard.attacks) {
+      // Check if attack can be performed
+      const energyValidation =
+        this.attackEnergyValidatorService.validateEnergyRequirements(
+          attack,
+          energyCardData,
+        );
+
+      if (!energyValidation.isValid) {
+        continue;
+      }
+
+      // Check if attack has coin flip preconditions
+      if (attack.hasPreconditions()) {
+        const coinFlips = attack.getPreconditionsByType(PreconditionType.COIN_FLIP);
+        if (coinFlips.length > 0) {
+          return true;
+        }
+      }
+
+      // Also check attack text for coin flip keywords
+      const attackText = attack.text?.toLowerCase() || '';
+      if (
+        attackText.includes('flip') ||
+        attackText.includes('coin') ||
+        attackText.includes('heads') ||
+        attackText.includes('tails')
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Calculate rounds to knockout for a Pokemon against a target
+   * Uses Pokemon instances and game state to determine damage
+   */
+  private async calculateRoundsToKnockoutForPokemon(
+    pokemon: CardInstance,
+    pokemonCard: Card,
+    targetPokemon: CardInstance,
+    targetCard: Card,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<number> {
+    const maxDamage = await this.getMaxDamage(
+      pokemon,
+      pokemonCard,
+      targetPokemon,
+      targetCard,
+      gameState,
+      playerIdentifier,
+      cardsMap,
+      getCardEntity,
+    );
+
+    if (maxDamage <= 0) {
+      return Infinity;
+    }
+
+    return Math.ceil(targetPokemon.currentHp / maxDamage);
+  }
+
+  /**
+   * Check if bench Pokemon will survive opponent's next attack
+   */
+  private async willBenchPokemonSurvive(
+    benchPokemon: CardInstance,
+    benchCard: Card,
+    gameState: GameState,
+    playerIdentifier: PlayerIdentifier,
+    cardsMap: Map<string, Card>,
+    getCardEntity: (cardId: string) => Promise<Card>,
+  ): Promise<boolean> {
+    const opponentState = gameState.getOpponentState(playerIdentifier);
+    const opponentActive = opponentState.activePokemon;
+
+    if (!opponentActive) {
+      return true; // No opponent to attack
+    }
+
+    const opponentCard = await getCardEntity(opponentActive.cardId);
+
+    // Calculate opponent's max damage against bench Pokemon
+    // Get opponent's identifier
+    const opponentIdentifier =
+      playerIdentifier === PlayerIdentifier.PLAYER1
+        ? PlayerIdentifier.PLAYER2
+        : PlayerIdentifier.PLAYER1;
+
+    // Calculate opponent's max damage
+    const opponentMaxDamage = await this.getMaxDamage(
+      opponentActive,
+      opponentCard,
+      benchPokemon,
+      benchCard,
+      gameState,
+      opponentIdentifier,
+      cardsMap,
+      getCardEntity,
+    );
+
+    return opponentMaxDamage < benchPokemon.currentHp;
+  }
+
+  /**
+   * Find switch trainer card in hand
+   */
+  private async findSwitchTrainerCard(
+    hand: string[],
+    cardsMap: Map<string, Card>,
+  ): Promise<{ cardId: string; card: Card } | null> {
+    for (const cardId of hand) {
+      const card = cardsMap.get(cardId);
+      if (!card || !card.isTrainerCard()) {
+        continue;
+      }
+
+      // Check if card has SWITCH_ACTIVE effect
+      if (
+        card.trainerEffects?.some(
+          (effect) => effect.effectType === TrainerEffectType.SWITCH_ACTIVE,
+        )
+      ) {
+        return { cardId, card };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Evaluate retreat cost
+   */
+  private async evaluateRetreatCost(
+    activePokemon: CardInstance,
+    activeCard: Card,
+    switchTrainerCard: { cardId: string; card: Card } | null,
+  ): Promise<{ cost: number; canAfford: boolean }> {
+    // If trainer card available, retreat is free
+    if (switchTrainerCard) {
+      return { cost: 0, canAfford: true };
+    }
+
+    // Check for free retreat rule
+    if (activeCard.hasRuleType(CardRuleType.FREE_RETREAT)) {
+      return { cost: 0, canAfford: true };
+    }
+
+    // Get retreat cost from card
+    const retreatCost = activeCard.retreatCost || 0;
+    const attachedEnergyCount = activePokemon.attachedEnergy?.length || 0;
+    const canAfford = attachedEnergyCount >= retreatCost;
+
+    return { cost: retreatCost, canAfford };
+  }
+
+  /**
+   * Determine priority
+   */
+  private determinePriority(
+    retreatCostInfo: { cost: number; canAfford: boolean },
+    isGameLosingScenario?: boolean,
+    hasTrainerCard?: boolean,
+  ): SwitchRetreatPriority {
+    // High priority: free retreat or game-losing scenario
+    if (retreatCostInfo.cost === 0 || isGameLosingScenario) {
+      return SwitchRetreatPriority.HIGH;
+    }
+
+    // Medium priority: trainer card available or affordable energy retreat
+    if (hasTrainerCard || retreatCostInfo.canAfford) {
+      return SwitchRetreatPriority.MEDIUM;
+    }
+
+    // Low priority: energy retreat with cost
+    return SwitchRetreatPriority.LOW;
+  }
+
+  /**
+   * Get energy card data from energy card IDs
+   */
+  private getEnergyCardData(
+    energyCardIds: string[],
+    cardsMap: Map<string, Card>,
+  ): Array<{
+    cardType: CardType;
+    energyType?: any;
+    energyProvision?: any;
+  }> {
+    return energyCardIds
+      .map((cardId) => cardsMap.get(cardId))
+      .filter((card): card is Card => card !== undefined)
+      .filter((card) => card.cardType === CardType.ENERGY)
+      .map((card) => ({
+        cardType: card.cardType,
+        energyType: card.energyType,
+        energyProvision: card.energyProvision,
+      }));
   }
 }
