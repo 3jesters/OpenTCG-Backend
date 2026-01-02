@@ -6,3 +6,4 @@ export * from './start-match-request.dto';
 export * from './match-response.dto';
 export * from './match-state-response.dto';
 export * from './match-list-response.dto';
+export * from './ai-player-response.dto';

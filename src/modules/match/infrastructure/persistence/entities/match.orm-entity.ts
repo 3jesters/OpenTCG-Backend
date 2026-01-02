@@ -11,6 +11,7 @@ import {
   MatchResult,
   PlayerIdentifier,
   WinCondition,
+  PlayerType,
 } from '../../../domain/enums';
 import { GameStateJson } from '../match.mapper';
 
@@ -41,6 +42,20 @@ export class MatchOrmEntity {
 
   @Column({ type: 'varchar', nullable: true })
   player2DeckId: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: PlayerType,
+    nullable: true,
+  })
+  player1Type: PlayerType | null;
+
+  @Column({
+    type: 'enum',
+    enum: PlayerType,
+    nullable: true,
+  })
+  player2Type: PlayerType | null;
 
   @Column({
     type: 'enum',

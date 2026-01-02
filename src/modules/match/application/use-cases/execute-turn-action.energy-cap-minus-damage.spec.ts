@@ -6,6 +6,7 @@ import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { ILogger } from '../../../../shared/application/ports/logger.interface';
 import { CoinFlipResolverService } from '../../domain/services/coin-flip/coin-flip-resolver.service';
 import { AttackCoinFlipParserService } from '../../domain/services/attack/coin-flip-detection/attack-coin-flip-parser.service';
 import { AttackEnergyValidatorService } from '../../domain/services/attack/energy-requirements/attack-energy-validator.service';
@@ -856,6 +857,16 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
             AttackTextParserService,
             EffectConditionEvaluatorService,
           ],
+        },
+        {
+          provide: ILogger,
+          useValue: {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            verbose: jest.fn(),
+          },
         },
       ],
     }).compile();

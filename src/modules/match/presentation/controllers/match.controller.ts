@@ -19,6 +19,7 @@ import {
   ListMatchesUseCase,
   CancelMatchUseCase,
   ProcessActionUseCase,
+  GetAiPlayersUseCase,
 } from '../../application/use-cases';
 import {
   CreateMatchRequestDto,
@@ -29,6 +30,7 @@ import {
   MatchResponseDto,
   MatchStateResponseDto,
   MatchListResponseDto,
+  AiPlayerResponseDto,
 } from '../dto';
 import {
   CreateMatchDto,
@@ -53,6 +55,7 @@ export class MatchController {
     private readonly getMatchStateUseCase: GetMatchStateUseCase,
     private readonly listMatchesUseCase: ListMatchesUseCase,
     private readonly cancelMatchUseCase: CancelMatchUseCase,
+    private readonly getAiPlayersUseCase: GetAiPlayersUseCase,
   ) {}
 
   /**
@@ -73,6 +76,17 @@ export class MatchController {
       matchState,
     );
     return MatchListResponseDto.fromDomain(matches);
+  }
+
+  /**
+   * GET /api/v1/matches/ai-players
+   * Get list of available AI players
+   */
+  @Get('ai-players')
+  @HttpCode(HttpStatus.OK)
+  async getAiPlayers(): Promise<AiPlayerResponseDto[]> {
+    const aiPlayers = await this.getAiPlayersUseCase.execute();
+    return AiPlayerResponseDto.fromConfigArray(aiPlayers);
   }
 
   /**
@@ -100,6 +114,9 @@ export class MatchController {
       tournamentId: requestDto.tournamentId,
       player1Id: requestDto.player1Id,
       player1DeckId: requestDto.player1DeckId,
+      vsAi: requestDto.vsAi,
+      aiPlayerId: requestDto.aiPlayerId,
+      aiDeckId: requestDto.aiDeckId,
     };
 
     const match = await this.createMatchUseCase.execute(dto);

@@ -9,6 +9,7 @@ import { PokemonScoringService } from './pokemon-scoring.service';
 import { AttackDamageCalculationService } from '../../../domain/services/attack/attack-damage-calculation.service';
 import { AttackEnergyValidatorService } from '../../../domain/services/attack/energy-requirements/attack-energy-validator.service';
 import { PokemonScore, OpponentThreat } from '../types/action-analysis.types';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 
 /**
  * Opponent Analysis Service
@@ -20,6 +21,8 @@ export class OpponentAnalysisService {
     private readonly pokemonScoringService: PokemonScoringService,
     private readonly attackDamageCalculationService: AttackDamageCalculationService,
     private readonly attackEnergyValidatorService: AttackEnergyValidatorService,
+    @Inject(ILogger)
+    private readonly logger: ILogger,
   ) {}
 
   /**
@@ -32,10 +35,16 @@ export class OpponentAnalysisService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<number> {
+    this.logger.debug('calculateSureAttackDamage called', 'OpponentAnalysisService', {
+      playerIdentifier,
+      hasOpponentActive: !!gameState.getOpponentState(playerIdentifier).activePokemon,
+    });
+
     const opponentState = gameState.getOpponentState(playerIdentifier);
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     if (!opponentState.activePokemon) {
+      this.logger.debug('No opponent active Pokemon, returning 0', 'OpponentAnalysisService');
       return 0;
     }
 
@@ -100,8 +109,17 @@ export class OpponentAnalysisService {
       );
 
       maxDamage = Math.max(maxDamage, finalDamage);
+      this.logger.verbose('Attack damage calculated', 'OpponentAnalysisService', {
+        attackName: attack.name,
+        baseDamage,
+        finalDamage,
+        maxDamage,
+      });
     }
 
+    this.logger.debug('Sure attack damage calculated', 'OpponentAnalysisService', {
+      maxDamage,
+    });
     return maxDamage;
   }
 
@@ -115,10 +133,15 @@ export class OpponentAnalysisService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<number> {
+    this.logger.debug('calculateRiskAttackDamage called', 'OpponentAnalysisService', {
+      playerIdentifier,
+    });
+
     const opponentState = gameState.getOpponentState(playerIdentifier);
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     if (!opponentState.activePokemon) {
+      this.logger.debug('No opponent active Pokemon, returning 0', 'OpponentAnalysisService');
       return 0;
     }
 
@@ -302,9 +325,14 @@ export class OpponentAnalysisService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<boolean> {
+    this.logger.debug('canOpponentKnockout called', 'OpponentAnalysisService', {
+      playerIdentifier,
+      activeHp: gameState.getPlayerState(playerIdentifier).activePokemon?.currentHp,
+    });
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     if (!playerState.activePokemon) {
+      this.logger.debug('No active Pokemon, opponent cannot knockout', 'OpponentAnalysisService');
       return false; // No active Pokemon to knockout
     }
 
@@ -317,7 +345,13 @@ export class OpponentAnalysisService {
     );
 
     // Check if damage >= current HP
-    return riskDamage >= playerState.activePokemon.currentHp;
+    const canKnockout = riskDamage >= playerState.activePokemon.currentHp;
+    this.logger.info('Opponent knockout check result', 'OpponentAnalysisService', {
+      riskDamage,
+      currentHp: playerState.activePokemon.currentHp,
+      canKnockout,
+    });
+    return canKnockout;
   }
 
   /**

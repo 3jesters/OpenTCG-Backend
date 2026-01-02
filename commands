@@ -1,0 +1,24 @@
+go over all the uncommit code and
+try to ultrathink what needs to stay there, after you've found the issue and fixed it
+
+
+lsof -ti:3000 | xargs kill -9
+
+docker-compose up -d
+docker-compose up -d --build app
+
+npm run start:dev
+
+
+
+
+migration:
+
+# Basic migration
+npm run migrate:data
+
+# Dry run (preview only)
+npm run migrate:data -- --dry-run
+
+# Verbose output
+npm run migrate:data -- --verbose

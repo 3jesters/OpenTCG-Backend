@@ -16,6 +16,7 @@ import {
   SetPrizeCardsUseCase,
   CancelMatchUseCase,
   ProcessActionUseCase,
+  GetAiPlayersUseCase,
 } from './application/use-cases';
 import { IMatchRepository } from './domain/repositories';
 import { FileSystemMatchRepository } from './infrastructure/persistence/filesystem-match.repository';
@@ -93,7 +94,12 @@ import { PlayerActionType } from './domain/enums';
 import {
   IAiActionGeneratorService,
 } from './application/ports/ai-action-generator.interface';
-import { SimpleAiActionGeneratorService } from './infrastructure/ai/simple-ai-action-generator.service';
+import { AiActionGeneratorService } from './infrastructure/ai/ai-action-generator.service';
+import { PokemonScoringService } from './infrastructure/ai/services/pokemon-scoring.service';
+import { OpponentAnalysisService } from './infrastructure/ai/services/opponent-analysis.service';
+import { ActionPrioritizationService } from './infrastructure/ai/services/action-prioritization.service';
+import { EnergyAttachmentAnalyzerService } from './infrastructure/ai/services/energy-attachment-analyzer.service';
+import { TrainerCardAnalyzerService } from './infrastructure/ai/services/trainer-card-analyzer.service';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
 const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
@@ -129,6 +135,7 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     SetPrizeCardsUseCase,
     CancelMatchUseCase,
     ProcessActionUseCase,
+    GetAiPlayersUseCase,
     // Domain Services
     MatchStateMachineService,
     StartGameRulesValidatorService,
@@ -167,6 +174,12 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     // Action Services
     AvailableActionsService,
     PlayerTypeService,
+    // AI Services
+    PokemonScoringService,
+    OpponentAnalysisService,
+    ActionPrioritizationService,
+    EnergyAttachmentAnalyzerService,
+    TrainerCardAnalyzerService,
     // Action Filters (Strategy Pattern)
     ActionFilterRegistry,
     PlayerTurnActionFilter,
@@ -315,10 +328,10 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
         AttackActionHandler,
       ],
     },
-    // AI Service (stub implementation for now)
+    // AI Service
     {
       provide: IAiActionGeneratorService,
-      useClass: SimpleAiActionGeneratorService,
+      useClass: AiActionGeneratorService,
     },
     // Repository - conditionally provide based on NODE_ENV
     {

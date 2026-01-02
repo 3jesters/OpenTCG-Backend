@@ -19,7 +19,7 @@ export interface IActionHandler {
   execute(
     dto: ExecuteActionDto,
     match: Match,
-    gameState: GameState,
+    gameState: GameState | null,
     playerIdentifier: PlayerIdentifier,
     cardsMap: Map<string, Card>,
   ): Promise<Match>;

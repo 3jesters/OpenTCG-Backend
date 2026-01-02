@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
 import { PlayerIdentifier, PokemonPosition, StatusEffect } from '../../../domain/enums';
 import { Card } from '../../../../card/domain/entities';
@@ -21,6 +21,7 @@ import {
   SwitchRetreatPriority,
 } from '../types/action-analysis.types';
 import { sortTrainerCardOptions } from '../utils/sorting.utils';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 
 /**
  * Trainer Card Analyzer Service
@@ -43,6 +44,8 @@ export class TrainerCardAnalyzerService {
     private readonly opponentAnalysisService: OpponentAnalysisService,
     private readonly pokemonScoringService: PokemonScoringService,
     private readonly attackEnergyValidatorService: AttackEnergyValidatorService,
+    @Inject(ILogger)
+    private readonly logger: ILogger,
   ) {}
 
   /**
@@ -131,6 +134,10 @@ export class TrainerCardAnalyzerService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<SortedTrainerCardOptionList> {
+    this.logger.debug('evaluateTrainerCardOptions called', 'TrainerCardAnalyzerService', {
+      playerIdentifier,
+      handSize: gameState.getPlayerState(playerIdentifier).hand.length,
+    });
     const playerState = gameState.getPlayerState(playerIdentifier);
     const options: TrainerCardOption[] = [];
 
@@ -155,7 +162,12 @@ export class TrainerCardAnalyzerService {
       }
     }
 
-    return sortTrainerCardOptions(options);
+    const sorted = sortTrainerCardOptions(options);
+    this.logger.info('Trainer card options evaluated', 'TrainerCardAnalyzerService', {
+      optionsCount: sorted.length,
+      shouldPlayCount: sorted.filter(o => o.shouldPlay).length,
+    });
+    return sorted;
   }
 
   /**

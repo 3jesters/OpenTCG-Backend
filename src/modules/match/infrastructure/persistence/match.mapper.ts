@@ -5,6 +5,7 @@ import {
   PlayerIdentifier,
   WinCondition,
   TurnPhase,
+  PlayerType,
 } from '../../domain';
 import {
   GameState,
@@ -35,6 +36,8 @@ export interface MatchJson {
   player2Id: string | null;
   player1DeckId: string | null;
   player2DeckId: string | null;
+  player1Type?: PlayerType | null;
+  player2Type?: PlayerType | null;
   state: MatchState;
   currentPlayer: PlayerIdentifier | null;
   firstPlayer: PlayerIdentifier | null;
@@ -174,6 +177,8 @@ export class MatchMapper {
       player2Id: match.player2Id,
       player1DeckId: match.player1DeckId,
       player2DeckId: match.player2DeckId,
+      player1Type: match.player1Type,
+      player2Type: match.player2Type,
       state: match.state,
       currentPlayer: match.currentPlayer,
       firstPlayer: match.firstPlayer,
@@ -208,7 +213,7 @@ export class MatchMapper {
       ? this.gameStateFromJson(json.gameState)
       : null;
 
-    return Match.restore(
+    const match = Match.restore(
       json.id,
       json.tournamentId,
       new Date(json.createdAt),
@@ -239,6 +244,16 @@ export class MatchMapper {
       json.player1HasApprovedMatch,
       json.player2HasApprovedMatch,
     );
+
+    // Restore player types if present
+    if (json.player1Type !== undefined && json.player1Type !== null) {
+      match.setPlayerType(PlayerIdentifier.PLAYER1, json.player1Type);
+    }
+    if (json.player2Type !== undefined && json.player2Type !== null) {
+      match.setPlayerType(PlayerIdentifier.PLAYER2, json.player2Type);
+    }
+
+    return match;
   }
 
   /**

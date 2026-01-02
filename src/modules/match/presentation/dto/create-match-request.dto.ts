@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 /**
  * Create Match Request DTO
@@ -19,4 +19,16 @@ export class CreateMatchRequestDto {
   @IsString()
   @IsOptional()
   player1DeckId?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  vsAi?: boolean; // If true, automatically assign AI player as player2
+
+  @IsString()
+  @IsOptional()
+  aiPlayerId?: string; // Optional: specify which AI player to use
+
+  @IsString()
+  @IsOptional()
+  aiDeckId?: string; // Required when vsAi is true: specify which deck the AI player should use
 }

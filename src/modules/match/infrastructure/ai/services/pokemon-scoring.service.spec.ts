@@ -15,6 +15,7 @@ import { PokemonPosition } from '../../../domain/enums';
 import { AttackPreconditionFactory } from '../../../../card/domain/value-objects/attack-precondition.value-object';
 import { AttackEffectFactory } from '../../../../card/domain/value-objects/attack-effect.value-object';
 import { PokemonScore } from '../../types/action-analysis.types';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 
 describe('PokemonScoringService', () => {
   let service: PokemonScoringService;
@@ -66,8 +67,22 @@ describe('PokemonScoringService', () => {
   };
 
   beforeEach(async () => {
+    const mockLogger: ILogger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      verbose: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PokemonScoringService],
+      providers: [
+        PokemonScoringService,
+        {
+          provide: ILogger,
+          useValue: mockLogger,
+        },
+      ],
     }).compile();
 
     service = module.get<PokemonScoringService>(PokemonScoringService);

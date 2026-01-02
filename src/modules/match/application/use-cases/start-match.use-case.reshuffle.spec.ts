@@ -3,6 +3,8 @@ import { IMatchRepository } from '../../domain/repositories';
 import { IDeckRepository } from '../../../deck/domain/repositories';
 import { ITournamentRepository } from '../../../tournament/domain';
 import { StartGameRulesValidatorService } from '../../domain/services';
+import { ProcessActionUseCase } from './process-action.use-case';
+import { PlayerTypeService } from '../services/player-type.service';
 import { Match, MatchState, PlayerIdentifier } from '../../domain';
 import { Deck, DeckCard } from '../../../deck/domain';
 import { Tournament, DeckRules } from '../../../tournament/domain';
@@ -49,11 +51,21 @@ describe('StartMatchUseCase - Reshuffle Logic', () => {
       validateHand: jest.fn(),
     } as any;
 
+    mockProcessActionUseCase = {
+      execute: jest.fn(),
+    } as any;
+
+    mockPlayerTypeService = {
+      isAiPlayer: jest.fn().mockReturnValue(false),
+    } as any;
+
     useCase = new StartMatchUseCase(
       mockMatchRepository,
       mockDeckRepository,
       mockTournamentRepository,
       mockStartGameRulesValidator,
+      mockProcessActionUseCase,
+      mockPlayerTypeService,
     );
   });
 

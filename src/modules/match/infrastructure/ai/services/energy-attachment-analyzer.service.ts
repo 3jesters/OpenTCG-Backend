@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
 import { PlayerIdentifier, PokemonPosition } from '../../../domain/enums';
 import { Card } from '../../../../card/domain/entities';
@@ -14,6 +14,7 @@ import {
   SortedEnergyAttachmentOptionList,
 } from '../types/action-analysis.types';
 import { sortEnergyAttachmentOptions } from '../utils/sorting.utils';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 
 /**
  * Energy Attachment Analyzer Service
@@ -27,6 +28,8 @@ export class EnergyAttachmentAnalyzerService {
     private readonly attackDamageCalculationService: AttackDamageCalculationService,
     private readonly pokemonScoringService: PokemonScoringService,
     private readonly opponentAnalysisService: OpponentAnalysisService,
+    @Inject(ILogger)
+    private readonly logger: ILogger,
   ) {}
 
   /**
@@ -71,6 +74,11 @@ export class EnergyAttachmentAnalyzerService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<SortedEnergyAttachmentOptionList> {
+    this.logger.debug('evaluateAttachmentOptions called', 'EnergyAttachmentAnalyzerService', {
+      playerIdentifier,
+      handSize: gameState.getPlayerState(playerIdentifier).hand.length,
+    });
+
     const playerState = gameState.getPlayerState(playerIdentifier);
     const opponentState = gameState.getOpponentState(playerIdentifier);
 
@@ -80,7 +88,14 @@ export class EnergyAttachmentAnalyzerService {
       cardsMap,
       getCardEntity,
     );
+    
+    this.logger.debug('Unique energy types found', 'EnergyAttachmentAnalyzerService', {
+      uniqueEnergyTypes,
+      count: uniqueEnergyTypes.length,
+    });
+    
     if (uniqueEnergyTypes.length === 0) {
+      this.logger.debug('No energy types in hand, returning empty array', 'EnergyAttachmentAnalyzerService');
       return [];
     }
 
@@ -97,6 +112,7 @@ export class EnergyAttachmentAnalyzerService {
     }
 
     if (energyCardsInHand.length === 0) {
+      this.logger.debug('No energy cards in hand, returning empty array', 'EnergyAttachmentAnalyzerService');
       return [];
     }
 
@@ -183,7 +199,13 @@ export class EnergyAttachmentAnalyzerService {
     }
 
     // Sort options by priority
-    return sortEnergyAttachmentOptions(options);
+    const sorted = sortEnergyAttachmentOptions(options);
+    this.logger.info('Energy attachment options evaluated', 'EnergyAttachmentAnalyzerService', {
+      optionsCount: sorted.length,
+      topPriority: sorted[0]?.priority,
+      enablesKnockout: sorted[0]?.enablesKnockout,
+    });
+    return sorted;
   }
 
   /**

@@ -8,11 +8,12 @@ import { EnergyAttachmentAnalyzerService } from './services/energy-attachment-an
 import { TrainerCardAnalyzerService } from './services/trainer-card-analyzer.service';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { AttackEnergyValidatorService } from '../../domain/services/attack/energy-requirements/attack-energy-validator.service';
+import { ILogger } from '../../../../shared/application/ports/logger.interface';
 import { Match, PlayerIdentifier, MatchState, TurnPhase, PokemonPosition } from '../../domain';
-import { TrainerEffectType, CardType, EvolutionStage, EnergyType } from '../../../card/domain/enums';
+import { TrainerEffectType, CardType, EvolutionStage, EnergyType, Rarity } from '../../../card/domain/enums';
 import { TrainerCardOption, EnergyAttachmentOption, KnockoutAnalysis, AttackAnalysis } from './types/action-analysis.types';
 import { Card } from '../../../card/domain/entities';
-import { Attack } from '../../../card/domain/value-objects';
+import { Attack, EnergyProvision } from '../../../card/domain/value-objects';
 import { ActionSummary } from '../../domain/value-objects/action-summary.value-object';
 import { GameState, PlayerGameState, CardInstance } from '../../domain/value-objects';
 import { PlayerActionType } from '../../domain/enums';
@@ -35,6 +36,7 @@ describe('AiActionGeneratorService', () => {
   let actionPrioritizationService: jest.Mocked<ActionPrioritizationService>;
   let energyAttachmentAnalyzerService: jest.Mocked<EnergyAttachmentAnalyzerService>;
   let trainerCardAnalyzerService: jest.Mocked<TrainerCardAnalyzerService>;
+  let module: TestingModule;
 
   // Helper to create a Match entity
   const createMatch = (
@@ -151,7 +153,7 @@ describe('AiActionGeneratorService', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       providers: [
         AiActionGeneratorService,
         {
@@ -210,6 +212,16 @@ describe('AiActionGeneratorService', () => {
             canPerformAttack: jest.fn(), // Mock method that implementation expects
           },
         },
+        {
+          provide: ILogger,
+          useValue: {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            verbose: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -233,6 +245,12 @@ describe('AiActionGeneratorService', () => {
         evolvesFrom: undefined,
       } as unknown as Card;
     });
+  });
+
+  afterEach(async () => {
+    if (module) {
+      await module.close();
+    }
   });
 
   describe('Early Return Scenarios', () => {
@@ -464,9 +482,8 @@ describe('AiActionGeneratorService', () => {
 
         // Assert
         expect(result.actionType).toBe(PlayerActionType.SET_ACTIVE_POKEMON);
-        expect(result.actionData).toHaveProperty('instanceId');
-        // selectBestPokemonFromHand creates temp instances with 'temp-${cardId}' format
-        expect(result.actionData.instanceId).toBe('temp-card-1');
+        expect(result.actionData).toHaveProperty('cardId');
+        expect(result.actionData.cardId).toBe('card-1');
       });
 
       it('should return PLAY_POKEMON when in SELECT_BENCH_POKEMON state with Pokemon in hand', async () => {
@@ -497,8 +514,9 @@ describe('AiActionGeneratorService', () => {
 
         // Assert
         expect(result.actionType).toBe(PlayerActionType.PLAY_POKEMON);
-        expect(result.actionData).toHaveProperty('instanceId');
+        expect(result.actionData).toHaveProperty('cardId');
         expect(result.actionData).toHaveProperty('position');
+        expect(result.actionData.cardId).toBe('card-1');
         expect(result.actionData.position).toBe(0);
       });
 
@@ -739,7 +757,7 @@ describe('AiActionGeneratorService', () => {
 
         // Assert
         expect(result.actionType).toBe(PlayerActionType.PLAY_TRAINER);
-        expect(result.actionData).toHaveProperty('instanceId');
+        expect(result.actionData).toHaveProperty('cardId');
       });
     });
 
@@ -776,7 +794,7 @@ describe('AiActionGeneratorService', () => {
           // Assert
           // Should retreat if opponent can knockout active Pokemon
           expect(result.actionType).toBe(PlayerActionType.RETREAT);
-          expect(result.actionData).toHaveProperty('instanceId');
+          expect(result.actionData).toHaveProperty('target');
         });
       });
 
@@ -833,8 +851,8 @@ describe('AiActionGeneratorService', () => {
           // Assert
           // Should evolve first if damage would occur
           expect(result.actionType).toBe(PlayerActionType.EVOLVE_POKEMON);
-          expect(result.actionData).toHaveProperty('instanceId');
-          expect(result.actionData).toHaveProperty('evolutionInstanceId');
+          expect(result.actionData).toHaveProperty('target');
+          expect(result.actionData).toHaveProperty('evolutionCardId');
         });
 
         it('should evolve bench Pokemon if no damage concern', async () => {
@@ -889,8 +907,8 @@ describe('AiActionGeneratorService', () => {
 
           // Assert
           expect(result.actionType).toBe(PlayerActionType.EVOLVE_POKEMON);
-          expect(result.actionData).toHaveProperty('instanceId');
-          expect(result.actionData.instanceId).toBe('bench-1');
+          expect(result.actionData).toHaveProperty('target');
+          expect(result.actionData).toHaveProperty('evolutionCardId');
         });
       });
 
@@ -932,8 +950,8 @@ describe('AiActionGeneratorService', () => {
 
           // Assert
           expect(result.actionType).toBe(PlayerActionType.ATTACH_ENERGY);
-          expect(result.actionData).toHaveProperty('instanceId');
-          expect(result.actionData).toHaveProperty('energyInstanceId');
+          expect(result.actionData).toHaveProperty('target');
+          expect(result.actionData).toHaveProperty('energyCardId');
         });
       });
     });
@@ -977,7 +995,7 @@ describe('AiActionGeneratorService', () => {
 
         // Assert
         expect(result.actionType).toBe(PlayerActionType.PLAY_TRAINER);
-        expect(result.actionData).toHaveProperty('instanceId');
+        expect(result.actionData).toHaveProperty('cardId');
       });
     });
 
@@ -1038,8 +1056,9 @@ describe('AiActionGeneratorService', () => {
         // Assert
         // Should evolve if missing 0 or 1 energy
         expect(result.actionType).toBe(PlayerActionType.EVOLVE_POKEMON);
-        expect(result.actionData).toHaveProperty('instanceId');
-        expect(result.actionData.instanceId).toBe('bench-1');
+        expect(result.actionData).toHaveProperty('target');
+        expect(result.actionData).toHaveProperty('evolutionCardId');
+        expect(result.actionData.target).toBe(PokemonPosition.BENCH_0);
       });
 
       it('should NOT evolve bench Pokemon if missing 2 or more energies for lowest attack', async () => {
@@ -1269,7 +1288,7 @@ describe('AiActionGeneratorService', () => {
 
         // Assert
         expect(result.actionType).toBe(PlayerActionType.PLAY_POKEMON);
-        expect(result.actionData).toHaveProperty('instanceId');
+        expect(result.actionData).toHaveProperty('cardId');
         expect(result.actionData).toHaveProperty('position');
       });
 
@@ -1428,8 +1447,9 @@ describe('AiActionGeneratorService', () => {
 
       // Assert
       expect(result.actionType).toBe(PlayerActionType.SET_ACTIVE_POKEMON);
-      expect(result.actionData).toHaveProperty('instanceId');
-      expect(result.actionData.instanceId).toBe('bench-1');
+      expect(result.actionData).toHaveProperty('cardId');
+      // The cardId should match the bench Pokemon's cardId
+      expect(result.actionData.cardId).toBe('card-1');
     });
 
     it('should return END_TURN instead of CONCEDE when all Pokemon knocked out', async () => {
@@ -1501,6 +1521,437 @@ describe('AiActionGeneratorService', () => {
       // Assert
       // Should skip energy attachment and proceed to other actions
       expect(result.actionType).not.toBe(PlayerActionType.ATTACH_ENERGY);
+    });
+  });
+
+  describe('selectBestPokemonFromHand - Energy-Aware Selection', () => {
+    // Helper to create a Pokemon card
+    const createPokemonCard = (
+      cardId: string,
+      name: string,
+      hp: number,
+      attacks: Attack[] = [],
+      stage: EvolutionStage = EvolutionStage.BASIC,
+    ): Card => {
+      const card = Card.createPokemonCard(
+        `instance-${cardId}`,
+        cardId,
+        '001',
+        name,
+        'base-set',
+        '1',
+        Rarity.COMMON,
+        'Test Pokemon',
+        'Artist',
+        '',
+      );
+      card.setHp(hp);
+      card.setStage(stage);
+      attacks.forEach((attack) => card.addAttack(attack));
+      return card;
+    };
+
+    // Helper to create an Energy card
+    const createEnergyCard = (
+      cardId: string,
+      energyType: EnergyType,
+    ): Card => {
+      const card = Card.createEnergyCard(
+        `instance-${cardId}`,
+        cardId,
+        '001',
+        `${energyType} Energy`,
+        'base-set',
+        '1',
+        Rarity.COMMON,
+        'Energy card',
+        'Artist',
+        '',
+      );
+      card.setEnergyType(energyType);
+      return card;
+    };
+
+    // Helper to create a Double Colorless Energy card
+    const createDoubleColorlessEnergyCard = (cardId: string): Card => {
+      const card = Card.createEnergyCard(
+        `instance-${cardId}`,
+        cardId,
+        '001',
+        'Double Colorless Energy',
+        'base-set',
+        '1',
+        Rarity.UNCOMMON,
+        'Special Energy card',
+        'Artist',
+        '',
+      );
+      const energyProvision = new EnergyProvision([EnergyType.COLORLESS], 2, true);
+      card.setEnergyProvision(energyProvision);
+      return card;
+    };
+
+    // Helper to create getCardEntity mock that handles multiple calls per cardId
+    const createGetCardEntityMock = (cards: Array<{ cardId: string; card: Card }>) => {
+      const cardsMap = new Map<string, Card>();
+      cards.forEach(({ cardId, card }) => cardsMap.set(cardId, card));
+      return jest.fn((cardId: string) => Promise.resolve(cardsMap.get(cardId)!));
+    };
+
+    beforeEach(() => {
+      // Clear mock call history - this doesn't affect mockReturnValueOnce setups
+      jest.clearAllMocks();
+    });
+
+    it('should select highest-scoring Pokemon that has matching energy for lowest-cost attack', async () => {
+      // Arrange: Hand has 2 Pokemon and matching energy
+      // Pokemon 1: Score 100, requires FIRE energy
+      // Pokemon 2: Score 80, requires WATER energy
+      // Hand has FIRE energy but not WATER
+      const hand = ['pokemon-1', 'pokemon-2', 'fire-energy-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Charmander', 60, [
+        new Attack('Ember', [EnergyType.FIRE], '30', 'Deals 30 damage'),
+      ]);
+      const pokemon2Card = createPokemonCard('pokemon-2', 'Squirtle', 50, [
+        new Attack('Bubble', [EnergyType.WATER], '20', 'Deals 20 damage'),
+      ]);
+      const fireEnergyCard = createEnergyCard('fire-energy-1', EnergyType.FIRE);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'pokemon-2', card: pokemon2Card },
+        { cardId: 'fire-energy-1', card: fireEnergyCard },
+      ]);
+
+      pokemonScoringService.scorePokemon
+        .mockReturnValueOnce({ score: 100, cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'), card: pokemon1Card, position: PokemonPosition.BENCH_0 })
+        .mockReturnValueOnce({ score: 80, cardInstance: createCardInstance('temp-pokemon-2', 'pokemon-2'), card: pokemon2Card, position: PokemonPosition.BENCH_0 });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-1 (higher score + has matching energy)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-1');
+      // Called twice per card (once for Pokemon check, once for energy check)
+      expect(getCardEntity).toHaveBeenCalledTimes(6); // 3 cards * 2 iterations
+    });
+
+    it('should skip Pokemon without matching energy and select next highest with matching energy', async () => {
+      // Arrange: Hand has 3 Pokemon
+      // Pokemon 1: Score 100, requires FIRE (no matching energy)
+      // Pokemon 2: Score 80, requires WATER (has matching energy)
+      // Pokemon 3: Score 60, requires GRASS (has matching energy)
+      const hand = ['pokemon-1', 'pokemon-2', 'pokemon-3', 'water-energy-1', 'grass-energy-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Charmander', 60, [
+        new Attack('Ember', [EnergyType.FIRE], '30', 'Deals 30 damage'),
+      ]);
+      const pokemon2Card = createPokemonCard('pokemon-2', 'Squirtle', 50, [
+        new Attack('Bubble', [EnergyType.WATER], '20', 'Deals 20 damage'),
+      ]);
+      const pokemon3Card = createPokemonCard('pokemon-3', 'Bulbasaur', 40, [
+        new Attack('Vine Whip', [EnergyType.GRASS], '10', 'Deals 10 damage'),
+      ]);
+      const waterEnergyCard = createEnergyCard('water-energy-1', EnergyType.WATER);
+      const grassEnergyCard = createEnergyCard('grass-energy-1', EnergyType.GRASS);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'pokemon-2', card: pokemon2Card },
+        { cardId: 'pokemon-3', card: pokemon3Card },
+        { cardId: 'water-energy-1', card: waterEnergyCard },
+        { cardId: 'grass-energy-1', card: grassEnergyCard },
+      ]);
+
+      pokemonScoringService.scorePokemon
+        .mockReturnValueOnce({ score: 100, cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'), card: pokemon1Card, position: PokemonPosition.BENCH_0 })
+        .mockReturnValueOnce({ score: 80, cardInstance: createCardInstance('temp-pokemon-2', 'pokemon-2'), card: pokemon2Card, position: PokemonPosition.BENCH_0 })
+        .mockReturnValueOnce({ score: 60, cardInstance: createCardInstance('temp-pokemon-3', 'pokemon-3'), card: pokemon3Card, position: PokemonPosition.BENCH_0 });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-2 (highest score with matching energy)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-2');
+    });
+
+    it('should fall back to highest-scoring Pokemon if no Pokemon can be powered up', async () => {
+      // Arrange: Hand has 2 Pokemon but no matching energy
+      const hand = ['pokemon-1', 'pokemon-2', 'fire-energy-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Charmander', 60, [
+        new Attack('Ember', [EnergyType.WATER], '30', 'Deals 30 damage'), // Requires WATER but hand has FIRE
+      ]);
+      const pokemon2Card = createPokemonCard('pokemon-2', 'Squirtle', 50, [
+        new Attack('Bubble', [EnergyType.GRASS], '20', 'Deals 20 damage'), // Requires GRASS but hand has FIRE
+      ]);
+      const fireEnergyCard = createEnergyCard('fire-energy-1', EnergyType.FIRE);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'pokemon-2', card: pokemon2Card },
+        { cardId: 'fire-energy-1', card: fireEnergyCard },
+      ]);
+
+      pokemonScoringService.scorePokemon
+        .mockReturnValueOnce({ score: 100, cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'), card: pokemon1Card, position: PokemonPosition.BENCH_0 })
+        .mockReturnValueOnce({ score: 80, cardInstance: createCardInstance('temp-pokemon-2', 'pokemon-2'), card: pokemon2Card, position: PokemonPosition.BENCH_0 });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should fall back to highest-scoring Pokemon (pokemon-1)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-1');
+    });
+
+    it('should select Pokemon with zero-cost attack immediately', async () => {
+      // Arrange: Pokemon with no energy cost attack
+      const hand = ['pokemon-1', 'pokemon-2'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Pikachu', 60, [
+        new Attack('Thunder Shock', [], '20', 'Deals 20 damage'), // No energy cost
+      ]);
+      const pokemon2Card = createPokemonCard('pokemon-2', 'Charmander', 50, [
+        new Attack('Ember', [EnergyType.FIRE], '30', 'Deals 30 damage'),
+      ]);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'pokemon-2', card: pokemon2Card },
+      ]);
+
+      pokemonScoringService.scorePokemon
+        .mockReturnValueOnce({ score: 80, cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'), card: pokemon1Card, position: PokemonPosition.BENCH_0 })
+        .mockReturnValueOnce({ score: 100, cardInstance: createCardInstance('temp-pokemon-2', 'pokemon-2'), card: pokemon2Card, position: PokemonPosition.BENCH_0 });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-1 (has zero-cost attack, even though lower score)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-1');
+    });
+
+    it('should handle COLORLESS energy requirement - matches any energy type', async () => {
+      // Arrange: Pokemon requires COLORLESS, hand has FIRE energy
+      const hand = ['pokemon-1', 'fire-energy-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Pikachu', 60, [
+        new Attack('Tackle', [EnergyType.COLORLESS], '20', 'Deals 20 damage'),
+      ]);
+      const fireEnergyCard = createEnergyCard('fire-energy-1', EnergyType.FIRE);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'fire-energy-1', card: fireEnergyCard },
+      ]);
+
+      pokemonScoringService.scorePokemon.mockReturnValue({
+        score: 100,
+        cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'),
+        card: pokemon1Card,
+        position: PokemonPosition.BENCH_0,
+      });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-1 (COLORLESS can be satisfied by FIRE)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-1');
+    });
+
+    it('should handle Double Colorless Energy for COLORLESS requirements', async () => {
+      // Arrange: Pokemon requires COLORLESS, hand has Double Colorless Energy
+      const hand = ['pokemon-1', 'dce-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Pikachu', 60, [
+        new Attack('Thunder', [EnergyType.COLORLESS, EnergyType.COLORLESS], '50', 'Deals 50 damage'),
+      ]);
+      const dceCard = createDoubleColorlessEnergyCard('dce-1');
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'dce-1', card: dceCard },
+      ]);
+
+      pokemonScoringService.scorePokemon.mockReturnValue({
+        score: 100,
+        cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'),
+        card: pokemon1Card,
+        position: PokemonPosition.BENCH_0,
+      });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-1 (DCE provides COLORLESS)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-1');
+    });
+
+    it('should handle Pokemon with multiple attacks - checks lowest-cost attack', async () => {
+      // Arrange: Pokemon has 2 attacks, lowest-cost requires FIRE
+      const hand = ['pokemon-1', 'fire-energy-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Charizard', 120, [
+        new Attack('Ember', [EnergyType.FIRE], '30', 'Deals 30 damage'), // Lowest cost: 1 FIRE
+        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE, EnergyType.COLORLESS], '100', 'Deals 100 damage'), // Higher cost
+      ]);
+      const fireEnergyCard = createEnergyCard('fire-energy-1', EnergyType.FIRE);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'fire-energy-1', card: fireEnergyCard },
+      ]);
+
+      pokemonScoringService.scorePokemon.mockReturnValue({
+        score: 150,
+        cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'),
+        card: pokemon1Card,
+        position: PokemonPosition.BENCH_0,
+      });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-1 (lowest-cost attack can be powered)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-1');
+    });
+
+    it('should skip Pokemon with no attacks (prefer ones with attacks)', async () => {
+      // Arrange: Pokemon 1 has no attacks, Pokemon 2 has attacks with matching energy
+      const hand = ['pokemon-1', 'pokemon-2', 'fire-energy-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Magikarp', 30, []); // No attacks
+      const pokemon2Card = createPokemonCard('pokemon-2', 'Charmander', 50, [
+        new Attack('Ember', [EnergyType.FIRE], '30', 'Deals 30 damage'),
+      ]);
+      const fireEnergyCard = createEnergyCard('fire-energy-1', EnergyType.FIRE);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'pokemon-2', card: pokemon2Card },
+        { cardId: 'fire-energy-1', card: fireEnergyCard },
+      ]);
+
+      pokemonScoringService.scorePokemon
+        .mockReturnValueOnce({ score: 100, cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'), card: pokemon1Card, position: PokemonPosition.BENCH_0 })
+        .mockReturnValueOnce({ score: 80, cardInstance: createCardInstance('temp-pokemon-2', 'pokemon-2'), card: pokemon2Card, position: PokemonPosition.BENCH_0 });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-2 (has attacks and matching energy)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-2');
+    });
+
+    it('should return null if no Basic Pokemon found in hand', async () => {
+      // Arrange: Hand has only evolved Pokemon or non-Pokemon cards
+      const hand = ['trainer-1', 'energy-1'];
+      
+      const trainerCard = Card.createTrainerCard(
+        'instance-trainer-1',
+        'trainer-1',
+        '001',
+        'Potion',
+        'base-set',
+        '1',
+        Rarity.COMMON,
+        'Trainer',
+        'Artist',
+        '',
+      );
+      const energyCard = createEnergyCard('energy-1', EnergyType.COLORLESS);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'trainer-1', card: trainerCard },
+        { cardId: 'energy-1', card: energyCard },
+      ]);
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should return null
+      expect(result).toBeNull();
+    });
+
+    it('should handle Pokemon with lowest-cost attack requiring multiple energy types', async () => {
+      // Arrange: Pokemon requires FIRE+COLORLESS, hand has FIRE
+      const hand = ['pokemon-1', 'fire-energy-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Charmander', 60, [
+        new Attack('Ember', [EnergyType.FIRE, EnergyType.COLORLESS], '40', 'Deals 40 damage'),
+      ]);
+      const fireEnergyCard = createEnergyCard('fire-energy-1', EnergyType.FIRE);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'fire-energy-1', card: fireEnergyCard },
+      ]);
+
+      pokemonScoringService.scorePokemon.mockReturnValue({
+        score: 100,
+        cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'),
+        card: pokemon1Card,
+        position: PokemonPosition.BENCH_0,
+      });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-1 (FIRE can satisfy first requirement, COLORLESS can be satisfied by any)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-1');
+    });
+
+    it('should handle empty hand', async () => {
+      // Arrange
+      const hand: string[] = [];
+      const getCardEntity = jest.fn();
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert
+      expect(result).toBeNull();
+      expect(getCardEntity).not.toHaveBeenCalled();
+    });
+
+    it('should prioritize Pokemon with matching energy over higher-scoring Pokemon without energy', async () => {
+      // Arrange: Pokemon 1 (score 80) has matching energy, Pokemon 2 (score 100) doesn't
+      const hand = ['pokemon-1', 'pokemon-2', 'fire-energy-1'];
+      
+      const pokemon1Card = createPokemonCard('pokemon-1', 'Charmander', 50, [
+        new Attack('Ember', [EnergyType.FIRE], '30', 'Deals 30 damage'),
+      ]);
+      const pokemon2Card = createPokemonCard('pokemon-2', 'Squirtle', 60, [
+        new Attack('Bubble', [EnergyType.WATER], '20', 'Deals 20 damage'),
+      ]);
+      const fireEnergyCard = createEnergyCard('fire-energy-1', EnergyType.FIRE);
+
+      const getCardEntity = createGetCardEntityMock([
+        { cardId: 'pokemon-1', card: pokemon1Card },
+        { cardId: 'pokemon-2', card: pokemon2Card },
+        { cardId: 'fire-energy-1', card: fireEnergyCard },
+      ]);
+
+      pokemonScoringService.scorePokemon
+        .mockReturnValueOnce({ score: 80, cardInstance: createCardInstance('temp-pokemon-1', 'pokemon-1'), card: pokemon1Card, position: PokemonPosition.BENCH_0 })
+        .mockReturnValueOnce({ score: 100, cardInstance: createCardInstance('temp-pokemon-2', 'pokemon-2'), card: pokemon2Card, position: PokemonPosition.BENCH_0 });
+
+      // Act
+      const result = await (service as any).selectBestPokemonFromHand(hand, getCardEntity);
+
+      // Assert: Should select pokemon-1 (has matching energy, even though lower score)
+      expect(result).not.toBeNull();
+      expect(result.cardId).toBe('pokemon-1');
     });
   });
 });

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
 import { StatusConditionEffect } from '../../../../card/domain/value-objects/attack-effect.value-object';
@@ -10,6 +10,7 @@ import {
   SortedPokemonScoreList,
 } from '../types/action-analysis.types';
 import { sortPokemonScores } from '../utils/sorting.utils';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 
 /**
  * Pokemon Scoring Service
@@ -17,16 +18,32 @@ import { sortPokemonScores } from '../utils/sorting.utils';
  */
 @Injectable()
 export class PokemonScoringService {
+  constructor(
+    @Inject(ILogger)
+    private readonly logger: ILogger,
+  ) {}
+
   /**
    * Calculate Pokemon score
    * Formula: maxHP + sum(attackScore) for all attacks
    * attackScore = (averageDamage / energyCost) + sideEffectPoints
    */
   calculateScore(card: Card, cardInstance: CardInstance): number {
+    this.logger.verbose('calculateScore called', 'PokemonScoringService', {
+      cardId: card.cardId,
+      cardName: card.name,
+      maxHp: cardInstance.maxHp,
+      attacksCount: card.attacks?.length || 0,
+    });
+
     const maxHp = cardInstance.maxHp;
     const attacks = card.attacks || [];
 
     if (attacks.length === 0) {
+      this.logger.debug('No attacks, returning maxHP as score', 'PokemonScoringService', {
+        cardId: card.cardId,
+        score: maxHp,
+      });
       return maxHp;
     }
 
@@ -35,9 +52,23 @@ export class PokemonScoringService {
     for (const attack of attacks) {
       const attackScore = this.calculateAttackScore(attack, maxHp);
       totalAttackScore += attackScore;
+      this.logger.verbose('Attack score calculated', 'PokemonScoringService', {
+        cardId: card.cardId,
+        attackName: attack.name,
+        attackScore,
+      });
     }
 
-    return maxHp + totalAttackScore;
+    const totalScore = maxHp + totalAttackScore;
+    this.logger.debug('Pokemon score calculated', 'PokemonScoringService', {
+      cardId: card.cardId,
+      cardName: card.name,
+      maxHp,
+      totalAttackScore,
+      totalScore,
+    });
+
+    return totalScore;
   }
 
   /**

@@ -11,6 +11,7 @@ import {
   ActionSummary,
   MatchResult,
   WinCondition,
+  MatchState,
 } from '../../../domain';
 import { Card } from '../../../../card/domain/entities';
 import { IMatchRepository } from '../../../domain/repositories';
@@ -19,6 +20,9 @@ import {
   StatusEffectProcessorService,
 } from '../../../domain/services';
 import { IGetCardByIdUseCase } from '../../../../card/application/ports/card-use-cases.interface';
+import { ProcessActionUseCase } from '../../use-cases/process-action.use-case';
+import { PlayerTypeService } from '../../services';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -38,6 +42,10 @@ export class EndTurnActionHandler
     @Inject(IGetCardByIdUseCase)
     protected readonly getCardByIdUseCase: IGetCardByIdUseCase,
     private readonly statusEffectProcessor: StatusEffectProcessorService,
+    private readonly processActionUseCase: ProcessActionUseCase,
+    private readonly playerTypeService: PlayerTypeService,
+    @Inject(ILogger)
+    private readonly logger: ILogger,
   ) {
     super(matchRepository, stateMachineService, getCardByIdUseCase);
   }
@@ -255,7 +263,70 @@ export class EndTurnActionHandler
       );
     }
 
-    return await this.matchRepository.save(match);
+    const savedMatch = await this.matchRepository.save(match);
+
+    // Auto-trigger next player if AI
+    if (savedMatch.state === MatchState.PLAYER_TURN && savedMatch.currentPlayer) {
+      try {
+        const nextPlayerId = savedMatch.currentPlayer === PlayerIdentifier.PLAYER1
+          ? savedMatch.player1Id
+          : savedMatch.player2Id;
+        
+        this.logger.debug('Checking if next player is AI', 'EndTurnActionHandler', {
+          matchId: savedMatch.id,
+          currentPlayer: savedMatch.currentPlayer,
+          nextPlayerId,
+          matchState: savedMatch.state,
+        });
+          
+        if (nextPlayerId && this.playerTypeService.isAiPlayer(nextPlayerId, savedMatch)) {
+          this.logger.info('Auto-triggering AI player to start turn', 'EndTurnActionHandler', {
+            matchId: savedMatch.id,
+            aiPlayerId: nextPlayerId,
+            playerIdentifier: savedMatch.currentPlayer,
+            turnNumber: savedMatch.gameState?.turnNumber,
+            phase: savedMatch.gameState?.phase,
+          });
+          
+          await this.processActionUseCase.execute({
+            playerId: nextPlayerId,
+            actionType: PlayerActionType.DRAW_CARD, // Placeholder - AI will generate
+            actionData: {},
+          }, savedMatch.id);
+          
+          this.logger.debug('AI turn trigger completed', 'EndTurnActionHandler', {
+            matchId: savedMatch.id,
+            aiPlayerId: nextPlayerId,
+          });
+          
+          // Reload match after AI action
+          const updatedMatch = await this.matchRepository.findById(dto.matchId);
+          if (updatedMatch) {
+            return updatedMatch;
+          }
+        } else {
+          this.logger.debug('Next player is not AI, skipping auto-trigger', 'EndTurnActionHandler', {
+            matchId: savedMatch.id,
+            nextPlayerId,
+          });
+        }
+      } catch (error) {
+        this.logger.error('Error auto-triggering AI turn', 'EndTurnActionHandler', {
+          matchId: savedMatch.id,
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        // Don't fail the END_TURN action
+      }
+    } else {
+      this.logger.debug('Not in PLAYER_TURN state or no current player', 'EndTurnActionHandler', {
+        matchId: savedMatch.id,
+        state: savedMatch.state,
+        currentPlayer: savedMatch.currentPlayer,
+      });
+    }
+
+    return savedMatch;
   }
 }
 

@@ -1,19 +1,24 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { Match, PlayerIdentifier, MatchState, TurnPhase } from '../../domain';
+import { Injectable, Inject, NotFoundException, Logger } from '@nestjs/common';
+import { Match, PlayerIdentifier, MatchState, TurnPhase, PlayerActionType } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
 import { GameState, PlayerGameState } from '../../domain/value-objects';
 import { IDeckRepository } from '../../../deck/domain/repositories';
 import { DeckCard } from '../../../deck/domain/value-objects';
 import { ITournamentRepository } from '../../../tournament/domain';
 import { StartGameRulesValidatorService } from '../../domain/services';
+import { ProcessActionUseCase } from './process-action.use-case';
+import { PlayerTypeService } from '../services';
 
 /**
  * Start Match Use Case
  * Starts a match by performing coin flip and initial setup
  * Automatically shuffles decks, deals cards, and sets up prize cards
+ * Auto-triggers AI players to draw initial cards if they are the first player
  */
 @Injectable()
 export class StartMatchUseCase {
+  private readonly logger = new Logger(StartMatchUseCase.name);
+
   constructor(
     @Inject(IMatchRepository)
     private readonly matchRepository: IMatchRepository,
@@ -22,6 +27,8 @@ export class StartMatchUseCase {
     @Inject(ITournamentRepository)
     private readonly tournamentRepository: ITournamentRepository,
     private readonly startGameRulesValidator: StartGameRulesValidatorService,
+    private readonly processActionUseCase: ProcessActionUseCase,
+    private readonly playerTypeService: PlayerTypeService,
   ) {}
 
   async execute(
@@ -166,8 +173,57 @@ export class StartMatchUseCase {
     // Update game state during drawing phase
     match.updateGameStateDuringDrawing(gameState);
 
-    // Save and return
-    return await this.matchRepository.save(match);
+    // Save match
+    const savedMatch = await this.matchRepository.save(match);
+
+    // If match is now in DRAWING_CARDS state and first player is AI, auto-trigger AI to draw
+    if (savedMatch.state === MatchState.DRAWING_CARDS) {
+      try {
+        // Get first player ID
+        const firstPlayerId =
+          firstPlayer === PlayerIdentifier.PLAYER1
+            ? savedMatch.player1Id
+            : savedMatch.player2Id;
+
+        // Check if first player is AI and hasn't drawn yet
+        if (
+          firstPlayerId &&
+          this.playerTypeService.isAiPlayer(firstPlayerId, savedMatch)
+        ) {
+          const firstPlayerHasDrawn =
+            firstPlayer === PlayerIdentifier.PLAYER1
+              ? savedMatch.player1HasDrawnValidHand
+              : savedMatch.player2HasDrawnValidHand;
+
+          if (!firstPlayerHasDrawn) {
+            this.logger.debug(
+              `Auto-triggering AI first player ${firstPlayerId} (${firstPlayer}) to draw initial cards for match ${savedMatch.id}`,
+            );
+            await this.processActionUseCase.execute(
+              {
+                playerId: firstPlayerId,
+                actionType: PlayerActionType.DRAW_INITIAL_CARDS,
+                actionData: {},
+              },
+              savedMatch.id,
+            );
+            // Reload match after AI draws
+            const updatedMatch = await this.matchRepository.findById(matchId);
+            if (updatedMatch) {
+              return updatedMatch;
+            }
+          }
+        }
+      } catch (autoDrawError) {
+        // Log error but don't fail match start - auto-draw is best effort
+        this.logger.error(
+          `Error during AI auto-draw after match start for match ${matchId}: ${autoDrawError instanceof Error ? autoDrawError.message : String(autoDrawError)}`,
+          autoDrawError instanceof Error ? autoDrawError.stack : undefined,
+        );
+      }
+    }
+
+    return savedMatch;
   }
 
   /**

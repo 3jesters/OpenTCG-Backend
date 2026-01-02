@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecuteTurnActionUseCase } from './execute-turn-action.use-case';
 import { IMatchRepository } from '../../domain/repositories';
+import { ILogger } from '../../../../shared/application/ports/logger.interface';
 import { MatchStateMachineService } from '../../domain/services';
 import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
@@ -502,6 +503,16 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
           useValue: {
             hasHandler: jest.fn().mockReturnValue(false),
             getHandler: jest.fn(),
+          },
+        },
+        {
+          provide: ILogger,
+          useValue: {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            verbose: jest.fn(),
           },
         },
       ],

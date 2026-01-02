@@ -1,4 +1,4 @@
-import { Match, MatchState, MatchResult, PlayerIdentifier } from '../../domain';
+import { Match, MatchState, MatchResult, PlayerIdentifier, PlayerType } from '../../domain';
 import { WinCondition } from '../../domain/enums';
 
 /**
@@ -12,6 +12,8 @@ export class MatchResponseDto {
   player2Id: string | null;
   player1DeckId: string | null;
   player2DeckId: string | null;
+  player1Type: PlayerType | null;
+  player2Type: PlayerType | null;
   state: MatchState;
   currentPlayer: PlayerIdentifier | null;
   firstPlayer: PlayerIdentifier | null;
@@ -32,6 +34,8 @@ export class MatchResponseDto {
       player2Id: match.player2Id,
       player1DeckId: match.player1DeckId,
       player2DeckId: match.player2DeckId,
+      player1Type: match.player1Type,
+      player2Type: match.player2Type,
       state: match.state,
       currentPlayer: match.currentPlayer,
       firstPlayer: match.firstPlayer,

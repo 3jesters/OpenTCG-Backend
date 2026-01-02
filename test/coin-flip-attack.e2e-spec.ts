@@ -38,6 +38,8 @@ describe('Coin Flip Attack E2E', () => {
         player2Id: 'test-player-2',
         player1DeckId: 'classic-fire-starter-deck',
         player2DeckId: 'classic-grass-starter-deck',
+        player1Type: null,
+        player2Type: null,
         state: 'PLAYER_TURN',
         currentPlayer: 'PLAYER2',
         firstPlayer: 'PLAYER1',

@@ -3,7 +3,6 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
-  Logger,
 } from '@nestjs/common';
 import {
   Match,
@@ -42,6 +41,7 @@ import {
 import {
   EffectConditionEvaluatorService,
 } from '../../domain/services';
+import { ILogger } from '../../../../shared/application/ports/logger.interface';
 
 /**
  * Execute Turn Action Use Case
@@ -49,7 +49,6 @@ import {
  */
 @Injectable()
 export class ExecuteTurnActionUseCase {
-  private readonly logger = new Logger(ExecuteTurnActionUseCase.name);
   private cardsMap: Map<string, Card> = new Map();
 
   constructor(
@@ -67,6 +66,8 @@ export class ExecuteTurnActionUseCase {
     private readonly evolvePokemonPlayerTurnService: EvolvePokemonPlayerTurnService,
     private readonly retreatExecutionService: RetreatExecutionService,
     private readonly availableActionsService: AvailableActionsService,
+    @Inject(ILogger)
+    private readonly logger: ILogger,
   ) {}
 
   // ============================================================================
@@ -92,6 +93,16 @@ export class ExecuteTurnActionUseCase {
       throw new BadRequestException('Player is not part of this match');
     }
 
+    this.logger.debug('Executing action', 'ExecuteTurnActionUseCase', {
+      matchId: dto.matchId,
+      playerId: dto.playerId,
+      playerIdentifier,
+      actionType: dto.actionType,
+      matchState: match.state,
+      currentPlayer: match.currentPlayer,
+      phase: match.gameState?.phase,
+    });
+
     // Validate action
     const validation = this.stateMachineService.validateAction(
       match.state,
@@ -102,6 +113,14 @@ export class ExecuteTurnActionUseCase {
     );
 
     if (!validation.isValid) {
+      this.logger.warn('Action validation failed', 'ExecuteTurnActionUseCase', {
+        matchId: dto.matchId,
+        playerId: dto.playerId,
+        actionType: dto.actionType,
+        error: validation.error,
+        matchState: match.state,
+        phase: match.gameState?.phase,
+      });
       throw new BadRequestException(
         `Invalid action: ${validation.error || 'Unknown error'}`,
       );
@@ -118,10 +137,27 @@ export class ExecuteTurnActionUseCase {
         ? await this.getCardByIdUseCase.getCardsByIds(Array.from(cardIds))
         : new Map<string, Card>();
 
-      const gameState = match.gameState;
-      if (!gameState) {
-        throw new BadRequestException('Game state must be initialized');
-      }
+    // Only require gameState for actions that need it
+    // Actions in MATCH_APPROVAL (APPROVE_MATCH, CONCEDE) don't need gameState
+    // Actions in DRAWING_CARDS (DRAW_INITIAL_CARDS) also don't need gameState - it's created during execution
+    // Actions in FIRST_PLAYER_SELECTION (CONFIRM_FIRST_PLAYER) don't need gameState
+    // Actions in INITIAL_SETUP (COMPLETE_INITIAL_SETUP) may not need gameState in some cases
+    const actionsNotRequiringGameState = [
+      PlayerActionType.APPROVE_MATCH,
+      PlayerActionType.CONCEDE,
+      PlayerActionType.DRAW_INITIAL_CARDS,
+      PlayerActionType.CONFIRM_FIRST_PLAYER,
+      PlayerActionType.COMPLETE_INITIAL_SETUP,
+    ];
+
+    const requiresGameState = !actionsNotRequiringGameState.includes(
+      dto.actionType,
+    );
+    const gameState = match.gameState;
+
+    if (requiresGameState && !gameState) {
+      throw new BadRequestException('Game state must be initialized');
+    }
 
     // Route to handler if available
     if (this.actionHandlerFactory.hasHandler(dto.actionType)) {
@@ -130,10 +166,11 @@ export class ExecuteTurnActionUseCase {
         const updatedMatch = await handler.execute(
           dto,
           match,
-          gameState,
+          gameState, // Can be null for APPROVE_MATCH
           playerIdentifier,
           this.cardsMap,
         );
+        this.logStateTransition(match, updatedMatch, dto);
         return this.wrapWithAvailableActions(updatedMatch, playerIdentifier);
       } catch (error) {
         // ATTACK handler delegates back - allow fallthrough
@@ -153,13 +190,28 @@ export class ExecuteTurnActionUseCase {
     }
 
     // State machine router - route to state-specific handlers
+    // These states require gameState, so ensure it's not null
+    const statesRequiringGameState = [
+      MatchState.SELECT_ACTIVE_POKEMON,
+      MatchState.SELECT_BENCH_POKEMON,
+      MatchState.INITIAL_SETUP,
+      MatchState.PLAYER_TURN,
+    ];
+
+    if (
+      statesRequiringGameState.includes(match.state) &&
+      !gameState
+    ) {
+      throw new BadRequestException('Game state must be initialized');
+    }
+
     let updatedMatch: Match;
     switch (match.state) {
       case MatchState.SELECT_ACTIVE_POKEMON:
         updatedMatch = await this.handleSelectActivePokemonState(
           dto,
           match,
-          gameState,
+          gameState!, // Non-null assertion safe due to check above
           playerIdentifier,
         );
         break;
@@ -168,7 +220,7 @@ export class ExecuteTurnActionUseCase {
         updatedMatch = await this.handleSelectBenchPokemonState(
           dto,
           match,
-          gameState,
+          gameState!, // Non-null assertion safe due to check above
           playerIdentifier,
         );
         break;
@@ -185,7 +237,7 @@ export class ExecuteTurnActionUseCase {
         updatedMatch = await this.handleInitialSetupState(
           dto,
           match,
-          gameState,
+          gameState!, // Non-null assertion safe due to check above
           playerIdentifier,
         );
         break;
@@ -194,7 +246,7 @@ export class ExecuteTurnActionUseCase {
         updatedMatch = await this.handlePlayerTurnState(
           dto,
           match,
-          gameState,
+          gameState!, // Non-null assertion safe due to check above
           playerIdentifier,
         );
         break;
@@ -206,7 +258,45 @@ export class ExecuteTurnActionUseCase {
         );
     }
 
+    this.logStateTransition(match, updatedMatch, dto);
     return this.wrapWithAvailableActions(updatedMatch, playerIdentifier);
+  }
+
+  /**
+   * Log state transitions, phase changes, and current player changes
+   */
+  private logStateTransition(
+    oldMatch: Match,
+    newMatch: Match,
+    dto: ExecuteActionDto,
+  ): void {
+    const stateChanged = oldMatch.state !== newMatch.state;
+    const currentPlayerChanged = oldMatch.currentPlayer !== newMatch.currentPlayer;
+    const phaseChanged = oldMatch.gameState?.phase !== newMatch.gameState?.phase;
+    const turnNumberChanged = oldMatch.gameState?.turnNumber !== newMatch.gameState?.turnNumber;
+
+    if (stateChanged || currentPlayerChanged || phaseChanged || turnNumberChanged) {
+      this.logger.debug('State transition detected', 'ExecuteTurnActionUseCase', {
+        matchId: dto.matchId,
+        actionType: dto.actionType,
+        stateChanged: stateChanged ? {
+          from: oldMatch.state,
+          to: newMatch.state,
+        } : undefined,
+        currentPlayerChanged: currentPlayerChanged ? {
+          from: oldMatch.currentPlayer,
+          to: newMatch.currentPlayer,
+        } : undefined,
+        phaseChanged: phaseChanged ? {
+          from: oldMatch.gameState?.phase,
+          to: newMatch.gameState?.phase,
+        } : undefined,
+        turnNumberChanged: turnNumberChanged ? {
+          from: oldMatch.gameState?.turnNumber,
+          to: newMatch.gameState?.turnNumber,
+        } : undefined,
+      });
+    }
   }
 
   /**

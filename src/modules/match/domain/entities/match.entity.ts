@@ -4,6 +4,7 @@ import {
   PlayerIdentifier,
   WinCondition,
   TurnPhase,
+  PlayerType,
 } from '../enums';
 import { GameState } from '../value-objects';
 
@@ -24,6 +25,8 @@ export class Match {
   private _player2Id: string | null;
   private _player1DeckId: string | null;
   private _player2DeckId: string | null;
+  private _player1Type: PlayerType | null;
+  private _player2Type: PlayerType | null;
 
   // State Machine
   private _state: MatchState;
@@ -63,6 +66,8 @@ export class Match {
     this._player2Id = null;
     this._player1DeckId = null;
     this._player2DeckId = null;
+    this._player1Type = null;
+    this._player2Type = null;
     this._currentPlayer = null;
     this._firstPlayer = null;
     this._player1HasDrawnValidHand = false;
@@ -174,6 +179,14 @@ export class Match {
     return this._player2HasApprovedMatch;
   }
 
+  get player1Type(): PlayerType | null {
+    return this._player1Type;
+  }
+
+  get player2Type(): PlayerType | null {
+    return this._player2Type;
+  }
+
   get startedAt(): Date | null {
     return this._startedAt;
   }
@@ -261,6 +274,25 @@ export class Match {
       this._state = MatchState.DECK_VALIDATION;
     }
 
+    this._updatedAt = new Date();
+  }
+
+  /**
+   * Set player type (AI or HUMAN)
+   * @param playerIdentifier - PLAYER1 or PLAYER2
+   * @param playerType - AI or HUMAN
+   */
+  setPlayerType(
+    playerIdentifier: PlayerIdentifier,
+    playerType: PlayerType,
+  ): void {
+    if (playerIdentifier === PlayerIdentifier.PLAYER1) {
+      this._player1Type = playerType;
+    } else if (playerIdentifier === PlayerIdentifier.PLAYER2) {
+      this._player2Type = playerType;
+    } else {
+      throw new Error(`Invalid player identifier: ${playerIdentifier}`);
+    }
     this._updatedAt = new Date();
   }
 

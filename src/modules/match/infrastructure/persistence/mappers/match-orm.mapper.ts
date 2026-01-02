@@ -1,4 +1,5 @@
 import { Match } from '../../../domain/entities';
+import { PlayerIdentifier } from '../../../domain/enums';
 import { MatchOrmEntity } from '../entities/match.orm-entity';
 import { MatchMapper, GameStateJson } from '../match.mapper';
 
@@ -17,7 +18,7 @@ export class MatchOrmMapper {
       ? MatchMapper.gameStateFromJson(ormEntity.gameState)
       : null;
 
-    return Match.restore(
+    const match = Match.restore(
       ormEntity.id,
       ormEntity.tournamentId,
       ormEntity.createdAt,
@@ -47,6 +48,16 @@ export class MatchOrmMapper {
       ormEntity.player1HasApprovedMatch,
       ormEntity.player2HasApprovedMatch,
     );
+
+    // Restore player types if present
+    if (ormEntity.player1Type !== null && ormEntity.player1Type !== undefined) {
+      match.setPlayerType(PlayerIdentifier.PLAYER1, ormEntity.player1Type);
+    }
+    if (ormEntity.player2Type !== null && ormEntity.player2Type !== undefined) {
+      match.setPlayerType(PlayerIdentifier.PLAYER2, ormEntity.player2Type);
+    }
+
+    return match;
   }
 
   /**
@@ -61,6 +72,8 @@ export class MatchOrmMapper {
     ormEntity.player2Id = domain.player2Id;
     ormEntity.player1DeckId = domain.player1DeckId;
     ormEntity.player2DeckId = domain.player2DeckId;
+    ormEntity.player1Type = domain.player1Type;
+    ormEntity.player2Type = domain.player2Type;
     ormEntity.state = domain.state;
     ormEntity.currentPlayer = domain.currentPlayer;
     ormEntity.firstPlayer = domain.firstPlayer;

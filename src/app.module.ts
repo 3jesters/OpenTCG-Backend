@@ -8,6 +8,7 @@ import { TournamentModule } from './modules/tournament/tournament.module';
 import { DeckModule } from './modules/deck/deck.module';
 import { MatchModule } from './modules/match/match.module';
 import { DatabaseModule } from './shared/infrastructure/database/database.module';
+import { SharedModule } from './shared/shared.module';
 
 @Module({
   imports: [
@@ -23,6 +24,8 @@ import { DatabaseModule } from './shared/infrastructure/database/database.module
     MatchModule,
     // DatabaseModule is safe to import - it won't initialize TypeORM in dev/test
     DatabaseModule,
+    // SharedModule provides global services (logger, etc.)
+    SharedModule,
   ],
   controllers: [AppController],
   providers: [AppService],

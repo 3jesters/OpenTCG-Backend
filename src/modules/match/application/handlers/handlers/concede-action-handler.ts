@@ -26,7 +26,10 @@ export class ConcedeActionHandler
   /**
    * Check if CONCEDE action already exists in action history
    */
-  private hasConcedeAction(gameState: GameState): boolean {
+  private hasConcedeAction(gameState: GameState | null): boolean {
+    if (!gameState) {
+      return false; // No gameState means no action history yet
+    }
     return gameState.actionHistory.some(
       (action) => action.actionType === PlayerActionType.CONCEDE,
     );
@@ -35,28 +38,30 @@ export class ConcedeActionHandler
   async execute(
     dto: ExecuteActionDto,
     match: Match,
-    gameState: GameState,
+    gameState: GameState | null, // Allow null for MATCH_APPROVAL state
     playerIdentifier: PlayerIdentifier,
     cardsMap: Map<string, Card>,
   ): Promise<Match> {
     // CONCEDE must always be the last action - check if there are any actions after a previous CONCEDE
-    if (this.hasConcedeAction(gameState)) {
+    if (gameState && this.hasConcedeAction(gameState)) {
       throw new BadRequestException(
         'Cannot perform actions after CONCEDE. CONCEDE must be the last action.',
       );
     }
 
-    // Record CONCEDE action in history before ending match
-    const concedeAction = new ActionSummary(
-      uuidv4(),
-      playerIdentifier,
-      PlayerActionType.CONCEDE,
-      new Date(),
-      {},
-    );
+    // If gameState exists, record CONCEDE action in history before ending match
+    if (gameState) {
+      const concedeAction = new ActionSummary(
+        uuidv4(),
+        playerIdentifier,
+        PlayerActionType.CONCEDE,
+        new Date(),
+        {},
+      );
 
-    const gameStateWithConcede = gameState.withAction(concedeAction);
-    match.updateGameState(gameStateWithConcede);
+      const gameStateWithConcede = gameState.withAction(concedeAction);
+      match.updateGameState(gameStateWithConcede);
+    }
 
     const opponentId = match.getOpponentId(dto.playerId);
     if (opponentId) {

@@ -28,7 +28,10 @@ import { RetreatExecutionService } from '../services/retreat-execution.service';
 import { PlayerActionType } from '../../domain/enums/player-action-type.enum';
 import { ExecuteActionDto } from '../dto/execute-action.dto';
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
+import { ILogger } from '../../../../shared/application/ports/logger.interface';
 import { IGetCardByIdUseCase as IGetCardByIdUseCasePort } from '../../../card/application/ports/card-use-cases.interface';
+import { ProcessActionUseCase } from './process-action.use-case';
+import { PlayerTypeService } from '../services/player-type.service';
 import { CardHelperService } from '../services/card-helper.service';
 import { ActionFilterRegistry } from '../services/action-filters/action-filter-registry';
 import { PlayerTurnActionFilter } from '../services/action-filters/player-turn-action-filter';
@@ -264,6 +267,9 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
             stateMachine: MatchStateMachineService,
             getCardUseCase: IGetCardByIdUseCase,
             statusEffectProcessor: StatusEffectProcessorService,
+            processActionUseCase: ProcessActionUseCase,
+            playerTypeService: PlayerTypeService,
+            logger: ILogger,
           ) => {
             const factory = new ActionHandlerFactory();
             // Create real END_TURN handler
@@ -272,6 +278,9 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
               stateMachine,
               getCardUseCase,
               statusEffectProcessor,
+              processActionUseCase,
+              playerTypeService,
+              logger,
             );
             factory.registerHandler(PlayerActionType.END_TURN, endTurnHandler);
             // Create real SELECT_PRIZE handler
@@ -288,6 +297,9 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
             MatchStateMachineService,
             IGetCardByIdUseCasePort,
             StatusEffectProcessorService,
+            ProcessActionUseCase,
+            PlayerTypeService,
+            ILogger,
           ],
         },
         {
@@ -397,6 +409,18 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
           provide: EffectConditionEvaluatorService,
           useValue: {},
         },
+        {
+          provide: ProcessActionUseCase,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
+        {
+          provide: PlayerTypeService,
+          useValue: {
+            isAiPlayer: jest.fn().mockReturnValue(false),
+          },
+        },
         EndTurnActionHandler,
         SelectPrizeActionHandler,
         {
@@ -431,6 +455,16 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
           provide: RetreatExecutionService,
           useValue: {
             executeRetreat: jest.fn(),
+          },
+        },
+        {
+          provide: ILogger,
+          useValue: {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            verbose: jest.fn(),
           },
         },
       ],

@@ -17,7 +17,7 @@ export class ApproveMatchActionHandler
   async execute(
     dto: ExecuteActionDto,
     match: Match,
-    gameState: GameState,
+    gameState: GameState | null, // Allow null for MATCH_APPROVAL state
     playerIdentifier: PlayerIdentifier,
     cardsMap: Map<string, Card>,
   ): Promise<Match> {

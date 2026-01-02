@@ -67,6 +67,8 @@ export class TypeOrmMatchRepository implements IMatchRepository {
         player2Id: entity.player2Id,
         player1DeckId: entity.player1DeckId,
         player2DeckId: entity.player2DeckId,
+        player1Type: entity.player1Type,
+        player2Type: entity.player2Type,
         state: entity.state,
         currentPlayer: entity.currentPlayer,
         firstPlayer: entity.firstPlayer,

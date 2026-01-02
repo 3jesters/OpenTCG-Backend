@@ -9,6 +9,7 @@ import { AttackDamageCalculatorService } from '../../../domain/services/attack/d
 import { AttackTextParserService } from '../../../domain/services/attack/damage-bonuses/attack-text-parser.service';
 import { WeaknessResistanceService } from '../../../domain/services/attack/damage-modifiers/weakness-resistance.service';
 import { DamagePreventionService } from '../../../domain/services/attack/damage-modifiers/damage-prevention.service';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
 import { AttackEffectFactory } from '../../../../card/domain/value-objects/attack-effect.value-object';
@@ -168,6 +169,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
   };
 
   beforeEach(async () => {
+    const mockLogger: ILogger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      verbose: jest.fn(),
+    };
+
     // Use real implementations - all are deterministic business logic services
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -181,6 +190,10 @@ describe('EnergyAttachmentAnalyzerService', () => {
         WeaknessResistanceService,
         DamagePreventionService,
         AttackDamageCalculationService,
+        {
+          provide: ILogger,
+          useValue: mockLogger,
+        },
       ],
     }).compile();
 

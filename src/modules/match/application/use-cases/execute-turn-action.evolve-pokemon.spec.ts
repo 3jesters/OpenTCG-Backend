@@ -7,6 +7,7 @@ import { DrawInitialCardsUseCase } from './draw-initial-cards.use-case';
 import { SetPrizeCardsUseCase } from './set-prize-cards.use-case';
 import { PerformCoinTossUseCase } from './perform-coin-toss.use-case';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { ILogger } from '../../../../shared/application/ports/logger.interface';
 import { CoinFlipResolverService } from '../../domain/services/coin-flip/coin-flip-resolver.service';
 import { AttackCoinFlipParserService } from '../../domain/services/attack/coin-flip-detection/attack-coin-flip-parser.service';
 import { AttackEnergyValidatorService } from '../../domain/services/attack/energy-requirements/attack-energy-validator.service';
@@ -17,6 +18,8 @@ import { AbilityEffectValidatorService } from '../../domain/services/effects/abi
 import { ActionHandlerFactory } from '../handlers/action-handler-factory';
 import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
 import { StatusEffectProcessorService } from '../../domain/services/status/status-effect-processor.service';
+import { ProcessActionUseCase } from './process-action.use-case';
+import { PlayerTypeService } from '../services/player-type.service';
 import {
   EnergyAttachmentExecutionService,
   EvolutionExecutionService,
@@ -556,6 +559,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
             stateMachine: MatchStateMachineService,
             getCardUseCase: IGetCardByIdUseCase,
             statusEffectProcessor: StatusEffectProcessorService,
+            processActionUseCase: ProcessActionUseCase,
+            playerTypeService: PlayerTypeService,
+            logger: ILogger,
           ) => {
             const factory = new ActionHandlerFactory();
             // Create real END_TURN handler for tests
@@ -564,6 +570,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
               stateMachine,
               getCardUseCase,
               statusEffectProcessor,
+              processActionUseCase,
+              playerTypeService,
+              logger,
             );
             factory.registerHandler(PlayerActionType.END_TURN, endTurnHandler);
             // For other actions, return false (use old code)
@@ -581,7 +590,32 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
             MatchStateMachineService,
             IGetCardByIdUseCase,
             StatusEffectProcessorService,
+            ProcessActionUseCase,
+            PlayerTypeService,
+            ILogger,
           ],
+        },
+        {
+          provide: ProcessActionUseCase,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
+        {
+          provide: PlayerTypeService,
+          useValue: {
+            isAiPlayer: jest.fn().mockReturnValue(false),
+          },
+        },
+        {
+          provide: ILogger,
+          useValue: {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            verbose: jest.fn(),
+          },
         },
       ],
     }).compile();

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecuteTurnActionUseCase } from './execute-turn-action.use-case';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { ILogger } from '../../../../shared/application/ports/logger.interface';
 import { Card } from '../../../card/domain/entities/card.entity';
 import { Rarity } from '../../../card/domain/enums/rarity.enum';
 import { CardType } from '../../../card/domain/enums/card-type.enum';
@@ -47,6 +48,8 @@ import { DamagePreventionService } from '../../domain/services/attack/damage-mod
 import { EndTurnActionHandler } from '../handlers/handlers/end-turn-action-handler';
 import { AttackActionHandler } from '../handlers/handlers/attack-action-handler';
 import { DrawCardActionHandler } from '../handlers/handlers/draw-card-action-handler';
+import { ProcessActionUseCase } from './process-action.use-case';
+import { PlayerTypeService } from '../services/player-type.service';
 import { PlayerActionType } from '../../domain/enums/player-action-type.enum';
 import {
   EnergyAttachmentExecutionService,
@@ -892,6 +895,9 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
             attackDamageCalculator: AttackDamageCalculatorService,
             attackTextParser: AttackTextParserService,
             effectConditionEvaluator: EffectConditionEvaluatorService,
+            processActionUseCase: ProcessActionUseCase,
+            playerTypeService: PlayerTypeService,
+            logger: ILogger,
           ) => {
             const factory = new ActionHandlerFactory();
             // Create real END_TURN handler for tests
@@ -900,6 +906,9 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
               stateMachine,
               getCardUseCase,
               statusEffectProcessor,
+              processActionUseCase,
+              playerTypeService,
+              logger,
             );
             factory.registerHandler(PlayerActionType.END_TURN, endTurnHandler);
             // Create real ATTACK handler with all dependencies
@@ -944,7 +953,32 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
             AttackDamageCalculatorService,
             AttackTextParserService,
             EffectConditionEvaluatorService,
+            ProcessActionUseCase,
+            PlayerTypeService,
+            ILogger,
           ],
+        },
+        {
+          provide: ProcessActionUseCase,
+          useValue: {
+            execute: jest.fn(),
+          },
+        },
+        {
+          provide: PlayerTypeService,
+          useValue: {
+            isAiPlayer: jest.fn().mockReturnValue(false),
+          },
+        },
+        {
+          provide: ILogger,
+          useValue: {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            verbose: jest.fn(),
+          },
         },
       ],
     }).compile();

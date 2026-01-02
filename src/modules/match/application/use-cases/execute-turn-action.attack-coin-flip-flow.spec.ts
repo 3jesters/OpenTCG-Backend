@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecuteTurnActionUseCase } from './execute-turn-action.use-case';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
+import { ILogger } from '../../../../shared/application/ports/logger.interface';
 import { Card } from '../../../card/domain/entities/card.entity';
 import { Rarity } from '../../../card/domain/enums/rarity.enum';
 import { CardType } from '../../../card/domain/enums/card-type.enum';
@@ -320,6 +321,16 @@ describe('ExecuteTurnActionUseCase - Attack Coin Flip Flow', () => {
         FirstPlayerSelectionActionFilter,
         InitialSetupActionFilter,
         DefaultActionFilter,
+        {
+          provide: ILogger,
+          useValue: {
+            debug: jest.fn(),
+            info: jest.fn(),
+            warn: jest.fn(),
+            error: jest.fn(),
+            verbose: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

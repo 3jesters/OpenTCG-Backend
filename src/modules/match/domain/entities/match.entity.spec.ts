@@ -5,6 +5,7 @@ import {
   MatchResult,
   WinCondition,
   TurnPhase,
+  PlayerType,
 } from '../enums';
 import { GameState, PlayerGameState } from '../value-objects';
 
@@ -18,6 +19,8 @@ describe('Match Entity', () => {
       expect(match.state).toBe(MatchState.CREATED);
       expect(match.player1Id).toBeNull();
       expect(match.player2Id).toBeNull();
+      expect(match.player1Type).toBeNull();
+      expect(match.player2Type).toBeNull();
     });
 
     it('should throw error if id is empty', () => {
@@ -331,6 +334,66 @@ describe('Match Entity', () => {
       const match = new Match('match-001', 'tournament-001');
 
       expect(match.getOpponentId('unknown')).toBeNull();
+    });
+  });
+
+  describe('setPlayerType', () => {
+    it('should set player1Type to HUMAN', () => {
+      const match = new Match('match-001', 'tournament-001');
+      match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+
+      match.setPlayerType(PlayerIdentifier.PLAYER1, PlayerType.HUMAN);
+
+      expect(match.player1Type).toBe(PlayerType.HUMAN);
+    });
+
+    it('should set player2Type to AI', () => {
+      const match = new Match('match-001', 'tournament-001');
+      match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+
+      match.setPlayerType(PlayerIdentifier.PLAYER2, PlayerType.AI);
+
+      expect(match.player2Type).toBe(PlayerType.AI);
+    });
+
+    it('should throw error for invalid player identifier', () => {
+      const match = new Match('match-001', 'tournament-001');
+
+      expect(() => {
+        match.setPlayerType('INVALID' as PlayerIdentifier, PlayerType.HUMAN);
+      }).toThrow('Invalid player identifier');
+    });
+  });
+
+  describe('playerType getters', () => {
+    it('should return null for player1Type when not set', () => {
+      const match = new Match('match-001', 'tournament-001');
+
+      expect(match.player1Type).toBeNull();
+    });
+
+    it('should return null for player2Type when not set', () => {
+      const match = new Match('match-001', 'tournament-001');
+
+      expect(match.player2Type).toBeNull();
+    });
+
+    it('should return HUMAN for player1Type when set', () => {
+      const match = new Match('match-001', 'tournament-001');
+      match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      match.setPlayerType(PlayerIdentifier.PLAYER1, PlayerType.HUMAN);
+
+      expect(match.player1Type).toBe(PlayerType.HUMAN);
+    });
+
+    it('should return AI for player2Type when set', () => {
+      const match = new Match('match-001', 'tournament-001');
+      match.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      match.assignPlayer('player-2', 'deck-2', PlayerIdentifier.PLAYER2);
+      match.setPlayerType(PlayerIdentifier.PLAYER2, PlayerType.AI);
+
+      expect(match.player2Type).toBe(PlayerType.AI);
     });
   });
 });
