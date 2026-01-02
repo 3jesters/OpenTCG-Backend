@@ -8,6 +8,7 @@ import { AttackDamageCalculatorService } from '../../../domain/services/attack/d
 import { AttackTextParserService } from '../../../domain/services/attack/damage-bonuses/attack-text-parser.service';
 import { WeaknessResistanceService } from '../../../domain/services/attack/damage-modifiers/weakness-resistance.service';
 import { DamagePreventionService } from '../../../domain/services/attack/damage-modifiers/damage-prevention.service';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
 import { GameState } from '../../../domain/value-objects';
@@ -109,6 +110,14 @@ describe('ActionPrioritizationService', () => {
   };
 
   beforeEach(async () => {
+    const mockLogger: ILogger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+      verbose: jest.fn(),
+    };
+
     // Use real implementations - all are deterministic business logic services
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -121,6 +130,10 @@ describe('ActionPrioritizationService', () => {
         WeaknessResistanceService,
         DamagePreventionService,
         AttackDamageCalculationService,
+        {
+          provide: ILogger,
+          useValue: mockLogger,
+        },
       ],
     }).compile();
 
@@ -924,6 +937,106 @@ describe('ActionPrioritizationService', () => {
       expect(knockoutAttacks[0].hasSideEffectToPlayer).toBe(false);
       expect(knockoutAttacks[1].hasSideEffectToPlayer).toBe(true);
     });
+
+    it('should only return knockout attacks from active Pokemon, not bench Pokemon', async () => {
+      // Arrange: Active Pokemon has low damage attack, bench Pokemon has knockout attack
+      const activeAttack = new Attack(
+        'Weak Attack',
+        [EnergyType.COLORLESS],
+        '30',
+        'A weak attack',
+      );
+      const benchKnockoutAttack = new Attack(
+        'Strong Knockout',
+        [EnergyType.COLORLESS],
+        '70',
+        'A strong knockout attack',
+      );
+
+      const activeCard = createPokemonCard('active-card-001', 'Pikachu', 60, [activeAttack]);
+      const benchCard = createPokemonCard('bench-card-001', 'Charizard', 120, [benchKnockoutAttack]);
+
+      const activeInstance = createCardInstance(
+        'active-instance-001',
+        'active-card-001',
+        PokemonPosition.ACTIVE,
+        60,
+        60,
+        ['energy-1'], // Sufficient energy for attack
+      );
+
+      const benchInstance = createCardInstance(
+        'bench-instance-001',
+        'bench-card-001',
+        PokemonPosition.BENCH_0,
+        120,
+        120,
+        ['energy-2'], // Sufficient energy for attack
+      );
+
+      const opponentCard = createPokemonCard('opponent-card-001', 'Blastoise', 60, []);
+      const opponentInstance = createCardInstance(
+        'opponent-instance-001',
+        'opponent-card-001',
+        PokemonPosition.ACTIVE,
+        60,
+        60,
+      );
+
+      const playerState = new PlayerGameState(
+        [],
+        [],
+        activeInstance,
+        [benchInstance],
+        [],
+        [],
+      );
+
+      const opponentState = new PlayerGameState(
+        [],
+        [],
+        opponentInstance,
+        [],
+        [],
+        [],
+      );
+
+      const gameState = new GameState(
+        playerState,
+        opponentState,
+        1,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+
+      const cardsMap = new Map<string, Card>();
+      cardsMap.set('active-card-001', activeCard);
+      cardsMap.set('bench-card-001', benchCard);
+      cardsMap.set('opponent-card-001', opponentCard);
+      cardsMap.set('energy-1', createEnergyCard('energy-1', EnergyType.COLORLESS));
+      cardsMap.set('energy-2', createEnergyCard('energy-2', EnergyType.COLORLESS));
+
+      // Act
+      const knockoutAttacks = await service.identifyKnockoutAttacks(
+        gameState,
+        PlayerIdentifier.PLAYER1,
+        cardsMap,
+        async (cardId) => cardsMap.get(cardId)!,
+      );
+
+      // Assert: Should only return active Pokemon's attack (if it can knockout), not bench Pokemon's
+      // Active attack does 30 damage, opponent has 60 HP, so it cannot knockout
+      // Bench attack does 70 damage, opponent has 60 HP, so it could knockout, but should be filtered out
+      expect(knockoutAttacks).toHaveLength(0);
+
+      // Verify bench Pokemon's knockout attack is NOT included
+      const benchKnockoutFound = knockoutAttacks.find(
+        (k) => k.attackAnalysis.attack.name === 'Strong Knockout',
+      );
+      expect(benchKnockoutFound).toBeUndefined();
+    });
   });
 
   describe('findMaximumDamageAttacks', () => {
@@ -1320,6 +1433,110 @@ describe('ActionPrioritizationService', () => {
       expect(maxDamageAttacks.length).toBeGreaterThan(0);
       expect(maxDamageAttacks[0].attack.name).toBe('Pure Strike');
       expect(maxDamageAttacks[0].baseDamage).toBe(20);
+    });
+
+    it('should only return attacks from active Pokemon, not bench Pokemon', async () => {
+      // Arrange: Active Pokemon has low damage attack, bench Pokemon has high damage attack
+      const activeAttack = new Attack(
+        'Weak Attack',
+        [EnergyType.COLORLESS],
+        '10',
+        'A weak attack',
+      );
+      const benchAttack = new Attack(
+        'Strong Attack',
+        [EnergyType.COLORLESS],
+        '50',
+        'A strong attack',
+      );
+
+      const activeCard = createPokemonCard('active-card-001', 'Pikachu', 60, [activeAttack]);
+      const benchCard = createPokemonCard('bench-card-001', 'Charizard', 120, [benchAttack]);
+
+      const activeInstance = createCardInstance(
+        'active-instance-001',
+        'active-card-001',
+        PokemonPosition.ACTIVE,
+        60,
+        60,
+        ['energy-1'], // Sufficient energy for attack
+      );
+
+      const benchInstance = createCardInstance(
+        'bench-instance-001',
+        'bench-card-001',
+        PokemonPosition.BENCH_0,
+        120,
+        120,
+        ['energy-2'], // Sufficient energy for attack
+      );
+
+      const opponentCard = createPokemonCard('opponent-card-001', 'Blastoise', 100, []);
+      const opponentInstance = createCardInstance(
+        'opponent-instance-001',
+        'opponent-card-001',
+        PokemonPosition.ACTIVE,
+        100,
+        100,
+      );
+
+      const playerState = new PlayerGameState(
+        [],
+        [],
+        activeInstance,
+        [benchInstance],
+        [],
+        [],
+      );
+
+      const opponentState = new PlayerGameState(
+        [],
+        [],
+        opponentInstance,
+        [],
+        [],
+        [],
+      );
+
+      const gameState = new GameState(
+        playerState,
+        opponentState,
+        1,
+        TurnPhase.MAIN_PHASE,
+        PlayerIdentifier.PLAYER1,
+        null,
+        [],
+      );
+
+      const cardsMap = new Map<string, Card>();
+      cardsMap.set('active-card-001', activeCard);
+      cardsMap.set('bench-card-001', benchCard);
+      cardsMap.set('opponent-card-001', opponentCard);
+      cardsMap.set('energy-1', createEnergyCard('energy-1', EnergyType.COLORLESS));
+      cardsMap.set('energy-2', createEnergyCard('energy-2', EnergyType.COLORLESS));
+
+      // Act
+      const maxDamageAttacks = await service.findMaximumDamageAttacks(
+        gameState,
+        PlayerIdentifier.PLAYER1,
+        cardsMap,
+        async (cardId) => cardsMap.get(cardId)!,
+      );
+
+      // Assert: Should only return active Pokemon's attack, not bench Pokemon's
+      expect(maxDamageAttacks.length).toBeGreaterThan(0);
+      maxDamageAttacks.forEach((attack) => {
+        expect(attack.position).toBe(PokemonPosition.ACTIVE);
+        expect(attack.card.cardId).toBe('active-card-001');
+        expect(attack.attack.name).toBe('Weak Attack');
+        expect(attack.baseDamage).toBe(10);
+      });
+
+      // Verify bench Pokemon's attack is NOT included
+      const benchAttackFound = maxDamageAttacks.find(
+        (a) => a.attack.name === 'Strong Attack',
+      );
+      expect(benchAttackFound).toBeUndefined();
     });
   });
 

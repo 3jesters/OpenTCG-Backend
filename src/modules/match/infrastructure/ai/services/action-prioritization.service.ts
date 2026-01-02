@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
 import { PlayerIdentifier, PokemonPosition, StatusEffect } from '../../../domain/enums';
 import { Card } from '../../../../card/domain/entities';
@@ -18,6 +18,7 @@ import {
   SortedKnockoutAnalysisList,
 } from '../types/action-analysis.types';
 import { sortAttackAnalyses, sortKnockoutAnalyses } from '../utils/sorting.utils';
+import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 
 /**
  * Action Prioritization Service
@@ -29,6 +30,8 @@ export class ActionPrioritizationService {
     private readonly opponentAnalysisService: OpponentAnalysisService,
     private readonly attackEnergyValidatorService: AttackEnergyValidatorService,
     private readonly attackDamageCalculationService: AttackDamageCalculationService,
+    @Inject(ILogger)
+    private readonly logger: ILogger,
   ) {}
 
   /**
@@ -101,6 +104,10 @@ export class ActionPrioritizationService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<SortedKnockoutAnalysisList> {
+    this.logger.debug('identifyKnockoutAttacks called', 'ActionPrioritizationService', {
+      playerIdentifier,
+    });
+
     const playerState = gameState.getPlayerState(playerIdentifier);
     const opponentState = gameState.getOpponentState(playerIdentifier);
     const knockouts: KnockoutAnalysis[] = [];
@@ -113,13 +120,27 @@ export class ActionPrioritizationService {
       getCardEntity,
     );
 
+    this.logger.debug('Available attacks retrieved', 'ActionPrioritizationService', {
+      availableAttacksCount: availableAttacks.length,
+    });
+
     // Filter to only attacks we can perform
     // Note: In Pokemon TCG, only active Pokemon can attack, but we analyze all attacks
     // for planning purposes (e.g., if we retreat and make bench Pokemon active)
     const performableAttacks = availableAttacks.filter((a) => a.canPerform);
+    
+    // Filter to only active Pokemon attacks - only active Pokemon can attack
+    const activePokemonAttacks = performableAttacks.filter(
+      (a) => a.position === PokemonPosition.ACTIVE,
+    );
+    
+    this.logger.debug('Performable attacks filtered', 'ActionPrioritizationService', {
+      performableAttacksCount: performableAttacks.length,
+      activePokemonAttacksCount: activePokemonAttacks.length,
+    });
 
     // Check each attack against opponent Pokemon
-    for (const attackAnalysis of performableAttacks) {
+    for (const attackAnalysis of activePokemonAttacks) {
       // Check active Pokemon
       if (opponentState.activePokemon) {
         const opponentActiveCard = await getCardEntity(
@@ -137,6 +158,11 @@ export class ActionPrioritizationService {
         );
         if (knockout) {
           knockouts.push(knockout);
+          this.logger.debug('Knockout found for active Pokemon', 'ActionPrioritizationService', {
+            attackName: attackAnalysis.attack.name,
+            damage: knockout.damage,
+            targetHp: opponentState.activePokemon.currentHp,
+          });
         }
       }
 
@@ -157,11 +183,21 @@ export class ActionPrioritizationService {
         );
         if (knockout) {
           knockouts.push(knockout);
+          this.logger.debug('Knockout found for bench Pokemon', 'ActionPrioritizationService', {
+            attackName: attackAnalysis.attack.name,
+            damage: knockout.damage,
+            targetHp: benchInstance.currentHp,
+            position,
+          });
         }
       }
     }
 
-    return sortKnockoutAnalyses(knockouts);
+    const sorted = sortKnockoutAnalyses(knockouts);
+    this.logger.info('Knockout attacks identified', 'ActionPrioritizationService', {
+      knockoutCount: sorted.length,
+    });
+    return sorted;
   }
 
   /**
@@ -174,6 +210,9 @@ export class ActionPrioritizationService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<SortedAttackAnalysisList> {
+    this.logger.debug('findMaximumDamageAttacks called', 'ActionPrioritizationService', {
+      playerIdentifier,
+    });
     const playerState = gameState.getPlayerState(playerIdentifier);
     const opponentState = gameState.getOpponentState(playerIdentifier);
     const analyses: AttackAnalysis[] = [];
@@ -186,9 +225,14 @@ export class ActionPrioritizationService {
       getCardEntity,
     );
 
+    // Filter to only active Pokemon attacks - only active Pokemon can attack
+    const activePokemonAttacks = availableAttacks.filter(
+      (a) => a.position === PokemonPosition.ACTIVE,
+    );
+
     // Calculate expected value for each attack
     const attacksWithValue = await Promise.all(
-      availableAttacks.map(async (analysis) => {
+      activePokemonAttacks.map(async (analysis) => {
         // Check if this attack can knockout
         let canKnockout = false;
         if (opponentState.activePokemon) {
