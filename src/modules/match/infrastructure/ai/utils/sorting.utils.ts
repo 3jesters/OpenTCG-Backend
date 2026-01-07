@@ -73,19 +73,25 @@ export function sortKnockoutAnalyses(
   knockouts: KnockoutAnalysis[],
 ): SortedKnockoutAnalysisList {
   return [...knockouts].sort((a, b) => {
-    // First: target position (ACTIVE = 0, BENCH = 1)
+    // First: attacker position (ACTIVE = 0, BENCH = 1+) - prioritize ACTIVE attackers
+    const attackerPosA = a.attackAnalysis.position === PokemonPosition.ACTIVE ? 0 : 1;
+    const attackerPosB = b.attackAnalysis.position === PokemonPosition.ACTIVE ? 0 : 1;
+    if (attackerPosA !== attackerPosB) return attackerPosA - attackerPosB;
+    
+    // Second: target position (ACTIVE = 0, BENCH = 1)
     const posA = a.targetPosition === PokemonPosition.ACTIVE ? 0 : 1;
     const posB = b.targetPosition === PokemonPosition.ACTIVE ? 0 : 1;
     if (posA !== posB) return posA - posB;
-    // Second: side effects to opponent (prefer attacks with opponent side effects)
+    
+    // Third: side effects to opponent (prefer attacks with opponent side effects)
     if (a.hasSideEffectToOpponent !== b.hasSideEffectToOpponent) {
       return a.hasSideEffectToOpponent ? -1 : 1;
     }
-    // Third: side effects to player (prefer NO self-side effects)
+    // Fourth: side effects to player (prefer NO self-side effects)
     if (a.hasSideEffectToPlayer !== b.hasSideEffectToPlayer) {
       return a.hasSideEffectToPlayer ? 1 : -1;
     }
-    // Fourth: damage
+    // Fifth: damage
     return b.damage - a.damage;
   });
 }

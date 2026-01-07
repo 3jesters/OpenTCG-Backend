@@ -655,19 +655,13 @@ describe('ActionPrioritizationService', () => {
       expect(knockoutAttacks).toHaveLength(0);
     });
 
-    it('should sort knockout attacks: Active Pokemon attacks first, then bench', async () => {
-      // Arrange
+    it('should sort knockout attacks: Target active Pokemon first, then bench', async () => {
+      // Arrange: Active Pokemon has one attack that can knockout both opponent active and bench
       const activeAttack = new Attack(
-        'Active Strike',
+        'Strong Strike',
         [EnergyType.FIRE],
-        '70',
-        'Active attack',
-      );
-      const benchAttack = new Attack(
-        'Bench Strike',
-        [EnergyType.FIRE],
-        '70',
-        'Bench attack',
+        '80',
+        'Strong attack',
       );
 
       const activeCard = createPokemonCard('active-card-001', 'Charizard', 120, [activeAttack]);
@@ -680,30 +674,29 @@ describe('ActionPrioritizationService', () => {
         ['energy-1'],
       );
 
-      const benchCard = createPokemonCard('bench-card-001', 'Pikachu', 60, [benchAttack]);
-      const benchInstance = createCardInstance(
-        'bench-instance-001',
-        'bench-card-001',
-        PokemonPosition.BENCH_0,
-        60,
-        60,
-        ['energy-2'],
-      );
-
-      const opponentCard = createPokemonCard('opponent-card-001', 'Blastoise', 60, []);
-      const opponentInstance = createCardInstance(
-        'opponent-instance-001',
-        'opponent-card-001',
+      const opponentActiveCard = createPokemonCard('opponent-active-001', 'Blastoise', 60, []);
+      const opponentActiveInstance = createCardInstance(
+        'opponent-active-instance-001',
+        'opponent-active-001',
         PokemonPosition.ACTIVE,
         60,
         60,
+      );
+
+      const opponentBenchCard = createPokemonCard('opponent-bench-001', 'Pikachu', 50, []);
+      const opponentBenchInstance = createCardInstance(
+        'opponent-bench-instance-001',
+        'opponent-bench-001',
+        PokemonPosition.BENCH_0,
+        50,
+        50,
       );
 
       const playerState = new PlayerGameState(
         [],
         [],
         activeInstance,
-        [benchInstance],
+        [],
         [],
         [],
       );
@@ -711,8 +704,8 @@ describe('ActionPrioritizationService', () => {
       const opponentState = new PlayerGameState(
         [],
         [],
-        opponentInstance,
-        [],
+        opponentActiveInstance,
+        [opponentBenchInstance],
         [],
         [],
       );
@@ -729,10 +722,9 @@ describe('ActionPrioritizationService', () => {
 
       const cardsMap = new Map<string, Card>();
       cardsMap.set('active-card-001', activeCard);
-      cardsMap.set('bench-card-001', benchCard);
-      cardsMap.set('opponent-card-001', opponentCard);
+      cardsMap.set('opponent-active-001', opponentActiveCard);
+      cardsMap.set('opponent-bench-001', opponentBenchCard);
       cardsMap.set('energy-1', createEnergyCard('energy-1', EnergyType.FIRE));
-      cardsMap.set('energy-2', createEnergyCard('energy-2', EnergyType.FIRE));
 
       // Act
       const knockoutAttacks = await service.identifyKnockoutAttacks(
@@ -743,17 +735,15 @@ describe('ActionPrioritizationService', () => {
       );
 
       // Expected Result:
-      // Both attacks can knockout (70 >= 60)
-      // Should return array with 2 KnockoutAnalysis
-      // First should be from ACTIVE Pokemon, second from BENCH
-      // Sorting: ACTIVE before BENCH
+      // Attack can knockout both (80 >= 60 for active, 80 >= 50 for bench)
+      // Should return array with 2 KnockoutAnalysis (both from ACTIVE Pokemon)
+      // First should target ACTIVE (prioritized), second should target BENCH
+      // Sorting: target ACTIVE before target BENCH
       expect(knockoutAttacks).toHaveLength(2);
-      expect(knockoutAttacks[0].attackAnalysis.position).toBe(
-        PokemonPosition.ACTIVE,
-      );
-      expect(knockoutAttacks[1].attackAnalysis.position).toBe(
-        PokemonPosition.BENCH_0,
-      );
+      expect(knockoutAttacks[0].attackAnalysis.position).toBe(PokemonPosition.ACTIVE);
+      expect(knockoutAttacks[0].targetPosition).toBe(PokemonPosition.ACTIVE);
+      expect(knockoutAttacks[1].attackAnalysis.position).toBe(PokemonPosition.ACTIVE);
+      expect(knockoutAttacks[1].targetPosition).toBe(PokemonPosition.BENCH_0);
     });
 
     it('should sort knockout attacks: Prefer attacks with side effects to opponent', async () => {

@@ -125,8 +125,6 @@ export class ActionPrioritizationService {
     });
 
     // Filter to only attacks we can perform
-    // Note: In Pokemon TCG, only active Pokemon can attack, but we analyze all attacks
-    // for planning purposes (e.g., if we retreat and make bench Pokemon active)
     const performableAttacks = availableAttacks.filter((a) => a.canPerform);
     
     // Filter to only active Pokemon attacks - only active Pokemon can attack
