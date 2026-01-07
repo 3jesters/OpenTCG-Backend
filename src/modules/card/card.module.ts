@@ -27,7 +27,10 @@ import {
   IGetAvailableSetsUseCase,
   IPreviewCardUseCase,
   IPreviewSetUseCase,
+  ICalculateCardStrengthUseCase,
 } from './application/ports/card-use-cases.interface';
+import { CardStrengthCalculatorService } from './domain/services/card-strength-calculator.service';
+import { CalculateCardStrengthUseCase } from './application/use-cases/calculate-card-strength.use-case';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
 const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
@@ -84,6 +87,10 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
           ? PreviewSetUseCase
           : PreviewSetDbUseCase,
     },
+    {
+      provide: ICalculateCardStrengthUseCase,
+      useClass: CalculateCardStrengthUseCase,
+    },
     // File reader only for dev/test
     ...(nodeEnv === 'dev' || nodeEnv === 'test'
       ? [
@@ -93,6 +100,8 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
           },
         ]
       : []),
+    // Domain services
+    CardStrengthCalculatorService,
   ],
   exports: [
     ICardRepository,
@@ -100,6 +109,7 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     IGetAvailableSetsUseCase,
     IPreviewCardUseCase,
     IPreviewSetUseCase,
+    ICalculateCardStrengthUseCase,
   ],
 })
 export class CardModule {}

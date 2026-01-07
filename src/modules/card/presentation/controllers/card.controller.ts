@@ -3,10 +3,12 @@ import {
   IGetAvailableSetsUseCase,
   IPreviewSetUseCase,
   IPreviewCardUseCase,
+  ICalculateCardStrengthUseCase,
 } from '../../application/ports/card-use-cases.interface';
 import { GetAvailableSetsResponseDto } from '../dto/get-available-sets-response.dto';
 import { GetCardsResponseDto } from '../dto/get-cards-response.dto';
 import { CardDetailDto } from '../dto/card-detail.dto';
+import { CardStrengthResponseDto } from '../dto/card-strength-response.dto';
 
 /**
  * Card Controller
@@ -22,6 +24,8 @@ export class CardController {
     private readonly previewSetUseCase: IPreviewSetUseCase,
     @Inject(IPreviewCardUseCase)
     private readonly previewCardUseCase: IPreviewCardUseCase,
+    @Inject(ICalculateCardStrengthUseCase)
+    private readonly calculateCardStrengthUseCase: ICalculateCardStrengthUseCase,
   ) {}
 
   /**
@@ -63,5 +67,17 @@ export class CardController {
       version,
       cardNumber,
     );
+  }
+
+  /**
+   * Calculate card strength for a card by cardId
+   */
+  @Get('strength/:cardId')
+  @HttpCode(HttpStatus.OK)
+  async calculateCardStrength(
+    @Param('cardId') cardId: string,
+  ): Promise<CardStrengthResponseDto> {
+    const result = await this.calculateCardStrengthUseCase.execute(cardId);
+    return CardStrengthResponseDto.fromDomain(result);
   }
 }

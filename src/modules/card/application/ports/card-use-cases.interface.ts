@@ -2,6 +2,7 @@ import { CardDetailDto } from '../../presentation/dto/card-detail.dto';
 import { GetAvailableSetsResponseDto } from '../../presentation/dto/get-available-sets-response.dto';
 import { GetCardsResponseDto } from '../../presentation/dto/get-cards-response.dto';
 import { Card } from '../../domain/entities/card.entity';
+import { CardStrengthResult } from '../../domain/services/card-strength-calculator.service';
 
 /**
  * Get Card By ID Use Case Interface
@@ -55,4 +56,14 @@ export interface IPreviewSetUseCase {
 }
 
 export const IPreviewSetUseCase = Symbol('IPreviewSetUseCase');
+
+/**
+ * Calculate Card Strength Use Case Interface
+ */
+export interface ICalculateCardStrengthUseCase {
+  execute(cardId: string): Promise<CardStrengthResult>;
+  executeForCard(card: Card): CardStrengthResult;
+}
+
+export const ICalculateCardStrengthUseCase = Symbol('ICalculateCardStrengthUseCase');
 

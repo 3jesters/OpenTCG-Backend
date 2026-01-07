@@ -1,0 +1,276 @@
+================================================================================
+POKEMON CARD STRENGTH ANALYSIS
+================================================================================
+
+Total Pokemon Cards Analyzed: 190
+
+TOP 5 STRONGEST CARDS
+--------------------------------------------------------------------------------
+1. Chansey (base-set #3)
+   Pokemon #113 | Stage: BASIC | HP: 120
+   Attacks: 2 | Ability: No
+   Total Strength: 97.00/100
+   Category: too_strong
+   Breakdown: HP=100.00, Attack=25.00, Ability=0.00
+
+2. Zapdos (base-set #16)
+   Pokemon #145 | Stage: BASIC | HP: 90
+   Attacks: 2 | Ability: No
+   Total Strength: 84.27/100
+   Category: too_strong
+   Breakdown: HP=93.15, Attack=48.75, Ability=0.00
+
+3. Charizard (base-set #4)
+   Pokemon #006 | Stage: STAGE_2 | HP: 120
+   Attacks: 1 | Ability: Yes
+   Total Strength: 68.02/100
+   Category: strong
+   Breakdown: HP=24.77, Attack=66.00, Ability=100.00
+
+4. Zapdos (fossil #15)
+   Pokemon #145 | Stage: BASIC | HP: 80
+   Attacks: 1 | Ability: No
+   Total Strength: 65.95/100
+   Category: strong
+   Breakdown: HP=74.93, Attack=15.00, Ability=0.00
+
+5. Zapdos (fossil #30)
+   Pokemon #145 | Stage: BASIC | HP: 80
+   Attacks: 1 | Ability: No
+   Total Strength: 65.95/100
+   Category: strong
+   Breakdown: HP=74.93, Attack=15.00, Ability=0.00
+
+
+TOP 5 WEAKEST CARDS
+--------------------------------------------------------------------------------
+1. Vileplume (jungle #31)
+   Pokemon #045 | Stage: STAGE_2 | HP: 80
+   Attacks: 1 | Ability: No
+   Total Strength: 0.00/100
+   Category: very_weak
+   Breakdown: HP=5.99, Attack=9.33, Ability=0.00
+
+2. Victreebel (jungle #30)
+   Pokemon #071 | Stage: STAGE_2 | HP: 80
+   Attacks: 2 | Ability: No
+   Total Strength: 0.00/100
+   Category: very_weak
+   Breakdown: HP=5.99, Attack=14.83, Ability=0.00
+
+3. Vileplume (jungle #15)
+   Pokemon #045 | Stage: STAGE_2 | HP: 80
+   Attacks: 1 | Ability: No
+   Total Strength: 0.00/100
+   Category: very_weak
+   Breakdown: HP=5.99, Attack=9.33, Ability=0.00
+
+4. Victreebel (jungle #14)
+   Pokemon #071 | Stage: STAGE_2 | HP: 80
+   Attacks: 2 | Ability: No
+   Total Strength: 0.00/100
+   Category: very_weak
+   Breakdown: HP=5.99, Attack=14.83, Ability=0.00
+
+5. Kabuto (fossil #49)
+   Pokemon #140 | Stage: STAGE_1 | HP: 30
+   Attacks: 2 | Ability: No
+   Total Strength: 0.00/100
+   Category: very_weak
+   Breakdown: HP=0.60, Attack=5.00, Ability=0.00
+
+
+================================================================================
+COMPLETE CARD STRENGTH LIST (Sorted by Strength)
+================================================================================
+
+  1. Chansey              [base-set   #  3] HP:120 Stage:BASIC    Str: 97.00 (too_strong)
+  2. Zapdos               [base-set   # 16] HP: 90 Stage:BASIC    Str: 84.27 (too_strong)
+  3. Charizard            [base-set   #  4] HP:120 Stage:STAGE_2  Str: 68.02 (strong)
+  4. Zapdos               [fossil     # 15] HP: 80 Stage:BASIC    Str: 65.95 (strong)
+  5. Zapdos               [fossil     # 30] HP: 80 Stage:BASIC    Str: 65.95 (strong)
+  6. Lickitung            [jungle     # 38] HP: 90 Stage:BASIC    Str: 61.85 (strong)
+  7. Snorlax              [jungle     # 11] HP: 90 Stage:BASIC    Str: 61.65 (strong)
+  8. Snorlax              [jungle     # 27] HP: 90 Stage:BASIC    Str: 61.65 (strong)
+  9. Kangaskhan           [jungle     #  5] HP: 90 Stage:BASIC    Str: 59.25 (strong)
+ 10. Kangaskhan           [jungle     # 21] HP: 90 Stage:BASIC    Str: 59.25 (strong)
+ 11. Venusaur             [base-set   # 15] HP:100 Stage:STAGE_2  Str: 56.44 (strong)
+ 12. Moltres              [fossil     # 12] HP: 70 Stage:BASIC    Str: 56.40 (strong)
+ 13. Moltres              [fossil     # 27] HP: 70 Stage:BASIC    Str: 56.40 (strong)
+ 14. Gengar               [fossil     #  5] HP: 80 Stage:STAGE_2  Str: 55.19 (strong)
+ 15. Gengar               [fossil     # 20] HP: 80 Stage:STAGE_2  Str: 55.19 (strong)
+ 16. Blastoise            [base-set   #  2] HP:100 Stage:STAGE_2  Str: 54.99 (strong)
+ 17. Machamp              [base-set   #  8] HP:100 Stage:STAGE_2  Str: 54.44 (strong)
+ 18. Alakazam             [base-set   #  1] HP: 80 Stage:STAGE_2  Str: 48.00 (balanced)
+ 19. Scyther              [jungle     # 10] HP: 70 Stage:BASIC    Str: 46.06 (balanced)
+ 20. Scyther              [jungle     # 26] HP: 70 Stage:BASIC    Str: 46.06 (balanced)
+ 21. Hypno                [fossil     #  8] HP: 90 Stage:STAGE_1  Str: 44.77 (weak)
+ 22. Hypno                [fossil     # 23] HP: 90 Stage:STAGE_1  Str: 44.77 (weak)
+ 23. Electrode            [base-set   # 21] HP: 80 Stage:STAGE_1  Str: 44.23 (weak)
+ 24. Onix                 [base-set   # 58] HP: 90 Stage:BASIC    Str: 43.52 (weak)
+ 25. Rhyhorn              [jungle     # 61] HP: 70 Stage:BASIC    Str: 39.06 (weak)
+ 26. Lapras               [fossil     # 10] HP: 80 Stage:BASIC    Str: 38.65 (weak)
+ 27. Lapras               [fossil     # 25] HP: 80 Stage:BASIC    Str: 38.65 (weak)
+ 28. Ditto                [fossil     #  3] HP: 50 Stage:BASIC    Str: 38.17 (weak)
+ 29. Ditto                [fossil     # 18] HP: 50 Stage:BASIC    Str: 38.17 (weak)
+ 30. Slowbro              [fossil     # 42] HP: 60 Stage:STAGE_1  Str: 37.93 (weak)
+ 31. Hitmonchan           [base-set   #  7] HP: 70 Stage:BASIC    Str: 36.01 (weak)
+ 32. Tauros               [jungle     # 47] HP: 60 Stage:BASIC    Str: 34.37 (weak)
+ 33. Farfetch'd           [base-set   # 27] HP: 50 Stage:BASIC    Str: 34.31 (weak)
+ 34. Electabuzz           [base-set   # 20] HP: 70 Stage:BASIC    Str: 32.85 (weak)
+ 35. Jigglypuff           [jungle     # 54] HP: 60 Stage:BASIC    Str: 31.71 (weak)
+ 36. Articuno             [fossil     #  2] HP: 70 Stage:BASIC    Str: 31.45 (weak)
+ 37. Articuno             [fossil     # 17] HP: 70 Stage:BASIC    Str: 31.45 (weak)
+ 38. Mr. Mime             [jungle     #  6] HP: 40 Stage:BASIC    Str: 29.82 (very_weak)
+ 39. Mr. Mime             [jungle     # 22] HP: 40 Stage:BASIC    Str: 29.82 (very_weak)
+ 40. Jynx                 [base-set   # 31] HP: 70 Stage:BASIC    Str: 29.75 (very_weak)
+ 41. Spearow              [jungle     # 62] HP: 50 Stage:BASIC    Str: 29.41 (very_weak)
+ 42. Machop               [base-set   # 54] HP: 50 Stage:BASIC    Str: 28.67 (very_weak)
+ 43. Rattata              [base-set   # 63] HP: 30 Stage:BASIC    Str: 28.29 (very_weak)
+ 44. Nidoran♂             [base-set   # 57] HP: 40 Stage:BASIC    Str: 28.19 (very_weak)
+ 45. Gyarados             [base-set   #  6] HP:100 Stage:STAGE_1  Str: 27.49 (very_weak)
+ 46. Pinsir               [jungle     #  9] HP: 60 Stage:BASIC    Str: 27.42 (very_weak)
+ 47. Pinsir               [jungle     # 25] HP: 60 Stage:BASIC    Str: 27.42 (very_weak)
+ 48. Doduo                [base-set   # 50] HP: 50 Stage:BASIC    Str: 27.41 (very_weak)
+ 49. Hitmonlee            [fossil     #  7] HP: 60 Stage:BASIC    Str: 26.65 (very_weak)
+ 50. Hitmonlee            [fossil     # 22] HP: 60 Stage:BASIC    Str: 26.65 (very_weak)
+ 51. Eevee                [jungle     # 51] HP: 50 Stage:BASIC    Str: 26.21 (very_weak)
+ 52. Growlithe            [base-set   # 28] HP: 60 Stage:BASIC    Str: 26.12 (very_weak)
+ 53. Seel                 [base-set   # 43] HP: 60 Stage:BASIC    Str: 26.12 (very_weak)
+ 54. Meowth               [jungle     # 56] HP: 50 Stage:BASIC    Str: 26.01 (very_weak)
+ 55. Rhydon               [jungle     # 45] HP:100 Stage:STAGE_1  Str: 25.46 (very_weak)
+ 56. Poliwag              [base-set   # 39] HP: 40 Stage:BASIC    Str: 24.39 (very_weak)
+ 57. Staryu               [base-set   # 67] HP: 40 Stage:BASIC    Str: 24.39 (very_weak)
+ 58. Pikachu              [jungle     # 60] HP: 60 Stage:BASIC    Str: 24.32 (very_weak)
+ 59. Zubat                [fossil     # 56] HP: 40 Stage:BASIC    Str: 23.16 (very_weak)
+ 60. Haunter              [base-set   # 29] HP: 60 Stage:STAGE_1  Str: 23.12 (very_weak)
+ 61. Nidoran♀             [jungle     # 57] HP: 60 Stage:BASIC    Str: 23.12 (very_weak)
+ 62. Magmar               [base-set   # 36] HP: 50 Stage:BASIC    Str: 23.00 (very_weak)
+ 63. Magmar               [fossil     # 38] HP: 50 Stage:BASIC    Str: 23.00 (very_weak)
+ 64. Diglett              [base-set   # 49] HP: 30 Stage:BASIC    Str: 22.49 (very_weak)
+ 65. Charmander           [base-set   # 48] HP: 50 Stage:BASIC    Str: 22.47 (very_weak)
+ 66. Dratini              [base-set   # 26] HP: 40 Stage:BASIC    Str: 22.16 (very_weak)
+ 67. Sandshrew            [base-set   # 64] HP: 40 Stage:BASIC    Str: 22.16 (very_weak)
+ 68. Koffing              [base-set   # 53] HP: 50 Stage:BASIC    Str: 21.47 (very_weak)
+ 69. Oddish               [jungle     # 58] HP: 50 Stage:BASIC    Str: 20.67 (very_weak)
+ 70. Pidgey               [base-set   # 59] HP: 40 Stage:BASIC    Str: 20.16 (very_weak)
+ 71. Venonat              [jungle     # 63] HP: 40 Stage:BASIC    Str: 20.16 (very_weak)
+ 72. Arcanine             [base-set   # 23] HP:100 Stage:STAGE_1  Str: 20.03 (very_weak)
+ 73. Drowzee              [base-set   # 51] HP: 50 Stage:BASIC    Str: 19.87 (very_weak)
+ 74. Cubone               [jungle     # 50] HP: 40 Stage:BASIC    Str: 19.16 (very_weak)
+ 75. Mewtwo               [base-set   # 10] HP: 60 Stage:BASIC    Str: 19.12 (very_weak)
+ 76. Vulpix               [base-set   # 70] HP: 50 Stage:BASIC    Str: 19.07 (very_weak)
+ 77. Exeggcute            [jungle     # 52] HP: 50 Stage:BASIC    Str: 18.97 (very_weak)
+ 78. Tangela              [base-set   # 68] HP: 50 Stage:BASIC    Str: 18.80 (very_weak)
+ 79. Persian              [jungle     # 42] HP: 70 Stage:STAGE_1  Str: 18.79 (very_weak)
+ 80. Electrode            [jungle     # 18] HP: 70 Stage:STAGE_1  Str: 18.68 (very_weak)
+ 81. Ponyta               [base-set   # 62] HP: 40 Stage:BASIC    Str: 18.59 (very_weak)
+ 82. Clefairy             [base-set   #  5] HP: 40 Stage:BASIC    Str: 18.46 (very_weak)
+ 83. Geodude              [fossil     # 46] HP: 50 Stage:BASIC    Str: 18.27 (very_weak)
+ 84. Krabby               [fossil     # 50] HP: 50 Stage:BASIC    Str: 18.27 (very_weak)
+ 85. Fearow               [jungle     # 36] HP: 70 Stage:STAGE_1  Str: 17.82 (very_weak)
+ 86. Dugtrio              [base-set   # 19] HP: 70 Stage:STAGE_1  Str: 17.76 (very_weak)
+ 87. Grimer               [fossil     # 47] HP: 50 Stage:BASIC    Str: 17.27 (very_weak)
+ 88. Psyduck              [fossil     # 52] HP: 50 Stage:BASIC    Str: 17.17 (very_weak)
+ 89. Slowpoke             [fossil     # 54] HP: 50 Stage:BASIC    Str: 16.67 (very_weak)
+ 90. Gastly               [base-set   # 52] HP: 30 Stage:BASIC    Str: 16.59 (very_weak)
+ 91. Gastly               [fossil     # 33] HP: 30 Stage:BASIC    Str: 16.59 (very_weak)
+ 92. Venomoth             [jungle     # 13] HP: 70 Stage:STAGE_1  Str: 16.46 (very_weak)
+ 93. Venomoth             [jungle     # 29] HP: 70 Stage:STAGE_1  Str: 16.46 (very_weak)
+ 94. Pikachu              [base-set   # 60] HP: 40 Stage:BASIC    Str: 16.39 (very_weak)
+ 95. Bulbasaur            [base-set   # 46] HP: 40 Stage:BASIC    Str: 16.39 (very_weak)
+ 96. Voltorb              [base-set   # 69] HP: 40 Stage:BASIC    Str: 16.39 (very_weak)
+ 97. Horsea               [fossil     # 48] HP: 40 Stage:BASIC    Str: 16.39 (very_weak)
+ 98. Goldeen              [jungle     # 53] HP: 40 Stage:BASIC    Str: 16.39 (very_weak)
+ 99. Dodrio               [jungle     # 34] HP: 70 Stage:STAGE_1  Str: 16.36 (very_weak)
+100. Tentacool            [fossil     # 55] HP: 30 Stage:BASIC    Str: 16.28 (very_weak)
+101. Flareon              [jungle     # 19] HP: 70 Stage:STAGE_1  Str: 15.46 (very_weak)
+102. Charmeleon           [base-set   # 24] HP: 80 Stage:STAGE_1  Str: 15.21 (very_weak)
+103. Ekans                [fossil     # 45] HP: 40 Stage:BASIC    Str: 15.19 (very_weak)
+104. Poliwag              [base-set   # 61] HP: 40 Stage:BASIC    Str: 14.79 (very_weak)
+105. Dragonair            [base-set   # 18] HP: 80 Stage:STAGE_1  Str: 14.69 (very_weak)
+106. Paras                [jungle     # 59] HP: 40 Stage:BASIC    Str: 14.69 (very_weak)
+107. Ninetales            [base-set   # 12] HP: 80 Stage:STAGE_1  Str: 14.68 (very_weak)
+108. Squirtle             [base-set   # 65] HP: 40 Stage:BASIC    Str: 14.59 (very_weak)
+109. Haunter              [fossil     #  6] HP: 60 Stage:STAGE_1  Str: 14.52 (very_weak)
+110. Haunter              [fossil     # 21] HP: 60 Stage:STAGE_1  Str: 14.52 (very_weak)
+111. Raticate             [base-set   # 42] HP: 60 Stage:STAGE_1  Str: 14.41 (very_weak)
+112. Bellsprout           [jungle     # 49] HP: 40 Stage:BASIC    Str: 14.39 (very_weak)
+113. Mankey               [jungle     # 55] HP: 30 Stage:BASIC    Str: 14.28 (very_weak)
+114. Wigglytuff           [jungle     # 16] HP: 80 Stage:STAGE_1  Str: 14.26 (very_weak)
+115. Wigglytuff           [jungle     # 32] HP: 80 Stage:STAGE_1  Str: 14.26 (very_weak)
+116. Vaporeon             [jungle     # 12] HP: 80 Stage:STAGE_1  Str: 14.15 (very_weak)
+117. Sandslash            [fossil     # 40] HP: 70 Stage:STAGE_1  Str: 14.06 (very_weak)
+118. Flareon              [jungle     #  3] HP: 70 Stage:STAGE_1  Str: 13.68 (very_weak)
+119. Porygon              [base-set   # 41] HP: 30 Stage:BASIC    Str: 13.29 (very_weak)
+120. Abra                 [base-set   # 45] HP: 30 Stage:BASIC    Str: 13.28 (very_weak)
+121. Magikarp             [base-set   # 55] HP: 30 Stage:BASIC    Str: 13.28 (very_weak)
+122. Golbat               [fossil     # 34] HP: 60 Stage:STAGE_1  Str: 12.74 (very_weak)
+123. Electrode            [jungle     #  2] HP: 80 Stage:STAGE_1  Str: 12.41 (very_weak)
+124. Magikarp             [base-set   # 35] HP: 30 Stage:BASIC    Str: 12.28 (very_weak)
+125. Weedle               [base-set   # 71] HP: 40 Stage:BASIC    Str: 12.19 (very_weak)
+126. Caterpie             [base-set   # 47] HP: 40 Stage:BASIC    Str: 11.79 (very_weak)
+127. Machoke              [base-set   # 34] HP: 80 Stage:STAGE_1  Str: 11.71 (very_weak)
+128. Primeape             [jungle     # 43] HP: 70 Stage:STAGE_1  Str: 11.56 (very_weak)
+129. Rapidash             [jungle     # 44] HP: 70 Stage:STAGE_1  Str: 11.45 (very_weak)
+130. Dragonite            [fossil     #  4] HP:100 Stage:STAGE_2  Str: 10.87 (very_weak)
+131. Dragonite            [fossil     # 19] HP:100 Stage:STAGE_2  Str: 10.87 (very_weak)
+132. Dewgong              [base-set   # 25] HP: 80 Stage:STAGE_1  Str: 10.81 (very_weak)
+133. Raichu               [base-set   # 14] HP: 80 Stage:STAGE_1  Str: 10.46 (very_weak)
+134. Raichu               [fossil     # 14] HP: 80 Stage:STAGE_1  Str: 10.46 (very_weak)
+135. Raichu               [fossil     # 29] HP: 80 Stage:STAGE_1  Str: 10.46 (very_weak)
+136. Pidgeotto            [base-set   # 22] HP: 60 Stage:STAGE_1  Str: 10.41 (very_weak)
+137. Aerodactyl           [fossil     #  1] HP: 60 Stage:STAGE_1  Str: 10.41 (very_weak)
+138. Aerodactyl           [fossil     # 16] HP: 60 Stage:STAGE_1  Str: 10.41 (very_weak)
+139. Seaking              [jungle     # 46] HP: 70 Stage:STAGE_1  Str: 10.28 (very_weak)
+140. Marowak              [jungle     # 39] HP: 60 Stage:STAGE_1  Str:  9.91 (very_weak)
+141. Seadra               [fossil     # 41] HP: 60 Stage:STAGE_1  Str:  9.82 (very_weak)
+142. Clefable             [jungle     #  1] HP: 70 Stage:STAGE_1  Str:  9.79 (very_weak)
+143. Clefable             [jungle     # 17] HP: 70 Stage:STAGE_1  Str:  9.79 (very_weak)
+144. Shellder             [fossil     # 53] HP: 30 Stage:BASIC    Str:  9.68 (very_weak)
+145. Wartortle            [base-set   # 44] HP: 70 Stage:STAGE_1  Str:  9.55 (very_weak)
+146. Cloyster             [fossil     # 32] HP: 50 Stage:STAGE_1  Str:  9.40 (very_weak)
+147. Jolteon              [jungle     # 20] HP: 70 Stage:STAGE_1  Str:  9.38 (very_weak)
+148. Nidorino             [base-set   # 38] HP: 60 Stage:STAGE_1  Str:  9.25 (very_weak)
+149. Pidgeot              [jungle     #  8] HP: 80 Stage:STAGE_2  Str:  9.13 (very_weak)
+150. Pidgeot              [jungle     # 24] HP: 80 Stage:STAGE_2  Str:  9.13 (very_weak)
+151. Starmie              [base-set   # 66] HP: 60 Stage:STAGE_1  Str:  9.12 (very_weak)
+152. Butterfree           [jungle     # 33] HP: 70 Stage:STAGE_2  Str:  9.03 (very_weak)
+153. Muk                  [fossil     # 13] HP: 70 Stage:STAGE_1  Str:  8.88 (very_weak)
+154. Muk                  [fossil     # 28] HP: 70 Stage:STAGE_1  Str:  8.88 (very_weak)
+155. Weepinbell           [jungle     # 48] HP: 70 Stage:STAGE_1  Str:  8.88 (very_weak)
+156. Jolteon              [jungle     #  4] HP: 70 Stage:STAGE_1  Str:  8.35 (very_weak)
+157. Ivysaur              [base-set   # 30] HP: 60 Stage:STAGE_1  Str:  7.85 (very_weak)
+158. Nidorina             [jungle     # 40] HP: 70 Stage:STAGE_1  Str:  7.48 (very_weak)
+159. Beedrill             [base-set   # 17] HP: 80 Stage:STAGE_2  Str:  7.43 (very_weak)
+160. Kakuna               [base-set   # 33] HP: 80 Stage:STAGE_1  Str:  6.68 (very_weak)
+161. Omanyte              [fossil     # 51] HP: 40 Stage:STAGE_1  Str:  6.52 (very_weak)
+162. Parasect             [jungle     # 41] HP: 60 Stage:STAGE_1  Str:  6.22 (very_weak)
+163. Vaporeon             [jungle     # 28] HP: 60 Stage:STAGE_1  Str:  5.92 (very_weak)
+164. Metapod              [base-set   # 56] HP: 70 Stage:STAGE_1  Str:  5.68 (very_weak)
+165. Exeggutor            [jungle     # 35] HP: 80 Stage:STAGE_1  Str:  5.35 (very_weak)
+166. Graveler             [fossil     # 36] HP: 60 Stage:STAGE_1  Str:  5.19 (very_weak)
+167. Tentacruel           [fossil     # 43] HP: 60 Stage:STAGE_1  Str:  4.92 (very_weak)
+168. Gloom                [jungle     # 37] HP: 60 Stage:STAGE_1  Str:  4.92 (very_weak)
+169. Arbok                [fossil     # 31] HP: 60 Stage:STAGE_1  Str:  4.89 (very_weak)
+170. Poliwhirl            [base-set   # 40] HP: 60 Stage:STAGE_1  Str:  4.72 (very_weak)
+171. Kadabra              [base-set   # 32] HP: 60 Stage:STAGE_1  Str:  4.45 (very_weak)
+172. Magnemite            [base-set   # 37] HP: 40 Stage:BASIC    Str:  3.59 (very_weak)
+173. Omastar              [fossil     # 39] HP: 70 Stage:STAGE_2  Str:  2.38 (very_weak)
+174. Kingler              [fossil     # 37] HP: 60 Stage:STAGE_1  Str:  1.92 (very_weak)
+175. Golem                [fossil     # 35] HP: 80 Stage:STAGE_2  Str:  1.79 (very_weak)
+176. Nidoqueen            [jungle     #  7] HP: 90 Stage:STAGE_2  Str:  1.54 (very_weak)
+177. Nidoqueen            [jungle     # 23] HP: 90 Stage:STAGE_2  Str:  1.54 (very_weak)
+178. Poliwrath            [base-set   # 13] HP: 90 Stage:STAGE_2  Str:  1.31 (very_weak)
+179. Kabutops             [fossil     #  9] HP: 60 Stage:STAGE_2  Str:  0.20 (very_weak)
+180. Kabutops             [fossil     # 24] HP: 60 Stage:STAGE_2  Str:  0.20 (very_weak)
+181. Magneton             [base-set   #  9] HP: 60 Stage:STAGE_1  Str:  0.00 (very_weak)
+182. Nidoking             [base-set   # 11] HP: 90 Stage:STAGE_2  Str:  0.00 (very_weak)
+183. Magneton             [fossil     # 11] HP: 60 Stage:STAGE_1  Str:  0.00 (very_weak)
+184. Magneton             [fossil     # 26] HP: 60 Stage:STAGE_1  Str:  0.00 (very_weak)
+185. Weezing              [fossil     # 44] HP: 60 Stage:STAGE_1  Str:  0.00 (very_weak)
+186. Kabuto               [fossil     # 49] HP: 30 Stage:STAGE_1  Str:  0.00 (very_weak)
+187. Victreebel           [jungle     # 14] HP: 80 Stage:STAGE_2  Str:  0.00 (very_weak)
+188. Vileplume            [jungle     # 15] HP: 80 Stage:STAGE_2  Str:  0.00 (very_weak)
+189. Victreebel           [jungle     # 30] HP: 80 Stage:STAGE_2  Str:  0.00 (very_weak)
+190. Vileplume            [jungle     # 31] HP: 80 Stage:STAGE_2  Str:  0.00 (very_weak)
