@@ -90,4 +90,10 @@ export enum AbilityEffectType {
    * Example: "Put 2 Pokémon from your discard pile into your hand"
    */
   RETRIEVE_FROM_DISCARD = 'RETRIEVE_FROM_DISCARD',
+
+  /**
+   * MOVE_DAMAGE_COUNTER: Move damage counters from one Pokémon to another
+   * Example: "Move 1 damage counter from 1 of your Pokémon to another"
+   */
+  MOVE_DAMAGE_COUNTER = 'MOVE_DAMAGE_COUNTER',
 }

@@ -100,6 +100,19 @@ export class AbilityEffectImportDto {
   @IsEnum(TargetType)
   with?: TargetType;
 
+  // MOVE_DAMAGE_COUNTER specific fields
+  @IsOptional()
+  @IsEnum(TargetType)
+  sourceTarget?: TargetType;
+
+  @IsOptional()
+  @IsEnum(TargetType)
+  destinationTarget?: TargetType;
+
+  @IsOptional()
+  @IsBoolean()
+  preventKnockout?: boolean;
+
   @IsOptional()
   @IsNumber()
   value?: number; // Legacy support

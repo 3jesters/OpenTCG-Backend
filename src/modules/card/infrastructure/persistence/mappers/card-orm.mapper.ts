@@ -196,6 +196,11 @@ export class CardOrmMapper {
       card.setRegulationMark(ormEntity.regulationMark);
     }
 
+    // Editor metadata
+    if (ormEntity.isEditorCreated && ormEntity.createdBy && ormEntity.createdAt) {
+      card.setEditorMetadata(ormEntity.createdBy, ormEntity.createdAt);
+    }
+
     return card;
   }
 
@@ -320,7 +325,11 @@ export class CardOrmMapper {
     ormEntity.artist = domainEntity.artist;
     ormEntity.imageUrl = domainEntity.imageUrl;
     ormEntity.regulationMark = domainEntity.regulationMark || null;
-    // createdAt and updatedAt are auto-managed by TypeORM
+
+    // Editor metadata
+    ormEntity.createdBy = domainEntity.createdBy || null;
+    ormEntity.createdAt = domainEntity.createdAt || null;
+    ormEntity.isEditorCreated = domainEntity.isEditorCreated;
 
     return ormEntity;
   }

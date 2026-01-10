@@ -115,6 +115,15 @@ export interface ReduceDamageAbilityActionData extends BaseAbilityActionData {
 }
 
 /**
+ * Action data for MOVE_DAMAGE_COUNTER effect
+ */
+export interface MoveDamageCounterAbilityActionData
+  extends BaseAbilityActionData {
+  sourcePokemon: PokemonPosition; // Required: Source Pokemon position to take damage from
+  destinationPokemon: PokemonPosition; // Required: Destination Pokemon position to add damage to
+}
+
+/**
  * Union type for all ability action data types
  */
 export type AbilityActionData =
@@ -131,4 +140,5 @@ export type AbilityActionData =
   | PreventDamageAbilityActionData
   | BoostAttackAbilityActionData
   | BoostHpAbilityActionData
-  | ReduceDamageAbilityActionData;
+  | ReduceDamageAbilityActionData
+  | MoveDamageCounterAbilityActionData;

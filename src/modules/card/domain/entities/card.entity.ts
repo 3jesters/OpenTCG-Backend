@@ -95,6 +95,13 @@ export class Card {
   private _imageUrl: string;
   private _regulationMark?: string;
 
+  // ========================================
+  // Editor Metadata
+  // ========================================
+  private _createdBy?: string;
+  private _createdAt?: Date;
+  private _isEditorCreated: boolean;
+
   constructor(
     instanceId: string,
     cardId: string,
@@ -125,6 +132,9 @@ export class Card {
     this._evolvesTo = [];
     this._attacks = [];
     this._trainerEffects = [];
+
+    // Initialize editor metadata
+    this._isEditorCreated = false;
 
     this.validate();
   }
@@ -253,6 +263,18 @@ export class Card {
     return this._regulationMark;
   }
 
+  get createdBy(): string | undefined {
+    return this._createdBy;
+  }
+
+  get createdAt(): Date | undefined {
+    return this._createdAt;
+  }
+
+  get isEditorCreated(): boolean {
+    return this._isEditorCreated;
+  }
+
   // ========================================
   // Business Logic - Setters with Validation
   // ========================================
@@ -337,6 +359,12 @@ export class Card {
       throw new Error('Resistance can only be set on Pokemon cards');
     }
     this._resistance = resistance;
+  }
+
+  setEditorMetadata(createdBy: string, createdAt: Date): void {
+    this._createdBy = createdBy;
+    this._createdAt = createdAt;
+    this._isEditorCreated = true;
   }
 
   addAttack(attack: Attack): void {
@@ -618,5 +646,42 @@ export class Card {
       artist,
       imageUrl,
     );
+  }
+
+  /**
+   * Create a Pokemon card from editor
+   * Sets editor metadata (createdBy, createdAt, isEditorCreated)
+   */
+  static createFromEditor(
+    instanceId: string,
+    cardId: string,
+    pokemonNumber: string,
+    name: string,
+    setName: string,
+    cardNumber: string,
+    rarity: Rarity,
+    description: string,
+    artist: string,
+    imageUrl: string,
+    createdBy: string,
+    createdAt: Date = new Date(),
+  ): Card {
+    const card = new Card(
+      instanceId,
+      cardId,
+      pokemonNumber,
+      name,
+      setName,
+      cardNumber,
+      rarity,
+      CardType.POKEMON,
+      description,
+      artist,
+      imageUrl,
+    );
+    card._createdBy = createdBy;
+    card._createdAt = createdAt;
+    card._isEditorCreated = true;
+    return card;
   }
 }

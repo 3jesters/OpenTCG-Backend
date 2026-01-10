@@ -39,9 +39,11 @@
         "usageLimit": "UNLIMITED",
         "effects": [
           {
-            "effectType": "HEAL",
-            "target": "ALL_YOURS",
-            "amount": 10
+            "effectType": "MOVE_DAMAGE_COUNTER",
+            "sourceTarget": "ALL_YOURS",
+            "destinationTarget": "ALL_YOURS",
+            "amount": 1,
+            "preventKnockout": true
           }
         ]
       },

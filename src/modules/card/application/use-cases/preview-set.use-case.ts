@@ -325,6 +325,15 @@ export class PreviewSetUseCase {
                 if (e.pokemonType !== undefined)
                   effect.pokemonType = e.pokemonType;
                 break;
+              case 'MOVE_DAMAGE_COUNTER':
+                if (e.sourceTarget !== undefined)
+                  effect.sourceTarget = e.sourceTarget;
+                if (e.destinationTarget !== undefined)
+                  effect.destinationTarget = e.destinationTarget;
+                if (e.amount !== undefined) effect.amount = e.amount;
+                if (e.preventKnockout !== undefined)
+                  effect.preventKnockout = e.preventKnockout;
+                break;
             }
 
             // Legacy support for old properties

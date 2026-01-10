@@ -143,6 +143,7 @@ export class AbilityEffectExecutorService {
 
       // Effects that modify Pokémon state
       [AbilityEffectType.HEAL]: 7,
+      [AbilityEffectType.MOVE_DAMAGE_COUNTER]: 7, // Same priority as HEAL
       [AbilityEffectType.STATUS_CONDITION]: 8,
       [AbilityEffectType.PREVENT_DAMAGE]: 9,
       [AbilityEffectType.REDUCE_DAMAGE]: 10,
@@ -177,6 +178,15 @@ export class AbilityEffectExecutorService {
     switch (effect.effectType) {
       case AbilityEffectType.HEAL:
         return this.handleHeal(
+          effect,
+          actionData,
+          currentPlayerState,
+          currentOpponentState,
+          playerIdentifier,
+        );
+
+      case AbilityEffectType.MOVE_DAMAGE_COUNTER:
+        return this.handleMoveDamageCounter(
           effect,
           actionData,
           currentPlayerState,
@@ -1334,6 +1344,135 @@ export class AbilityEffectExecutorService {
         opponentState: opponentState.withBench(updatedBench),
       };
     }
+  }
+
+  /**
+   * Handle MOVE_DAMAGE_COUNTER effect - Move damage counters from one Pokémon to another
+   */
+  private handleMoveDamageCounter(
+    effect: any, // MoveDamageCounterEffect
+    actionData: AbilityActionData,
+    playerState: PlayerGameState,
+    opponentState: PlayerGameState,
+    playerIdentifier: PlayerIdentifier,
+  ): ExecuteAbilityEffectsResult {
+    const moveActionData = actionData as any; // MoveDamageCounterAbilityActionData
+    const damageAmount = (effect.amount || 1) * 10; // Each damage counter = 10 HP
+
+    // Get source Pokemon
+    let sourcePokemon: CardInstance | null = null;
+    let sourceBenchIndex: number | null = null;
+    const sourcePosition = moveActionData.sourcePokemon;
+
+    if (sourcePosition === PokemonPosition.ACTIVE) {
+      if (!playerState.activePokemon) {
+        throw new BadRequestException('No active Pokemon to move damage from');
+      }
+      sourcePokemon = playerState.activePokemon;
+    } else {
+      sourceBenchIndex = this.parseBenchIndex(sourcePosition);
+      if (sourceBenchIndex < 0 || sourceBenchIndex >= playerState.bench.length) {
+        throw new BadRequestException(
+          `Invalid source bench position: ${sourcePosition}`,
+        );
+      }
+      sourcePokemon = playerState.bench[sourceBenchIndex];
+    }
+
+    if (!sourcePokemon) {
+      throw new BadRequestException('Source Pokemon not found');
+    }
+
+    // Check if moving damage would KO the source Pokemon (if preventKnockout is true)
+    if (effect.preventKnockout !== false) {
+      const sourceDamageAfterMove = sourcePokemon.currentHp - damageAmount;
+      if (sourceDamageAfterMove <= 0) {
+        throw new BadRequestException(
+          'Cannot move damage: would Knock Out the source Pokemon',
+        );
+      }
+    }
+
+    // Get destination Pokemon
+    let destinationPokemon: CardInstance | null = null;
+    let destinationBenchIndex: number | null = null;
+    const destinationPosition = moveActionData.destinationPokemon;
+
+    if (destinationPosition === PokemonPosition.ACTIVE) {
+      if (!playerState.activePokemon) {
+        throw new BadRequestException('No active Pokemon to move damage to');
+      }
+      destinationPokemon = playerState.activePokemon;
+    } else {
+      destinationBenchIndex = this.parseBenchIndex(destinationPosition);
+      if (
+        destinationBenchIndex < 0 ||
+        destinationBenchIndex >= playerState.bench.length
+      ) {
+        throw new BadRequestException(
+          `Invalid destination bench position: ${destinationPosition}`,
+        );
+      }
+      destinationPokemon = playerState.bench[destinationBenchIndex];
+    }
+
+    if (!destinationPokemon) {
+      throw new BadRequestException('Destination Pokemon not found');
+    }
+
+    // Cannot move damage to the same Pokemon
+    if (sourcePosition === destinationPosition) {
+      throw new BadRequestException(
+        'Source and destination Pokemon cannot be the same',
+      );
+    }
+
+    // Calculate new HP for source (remove damage)
+    const sourceNewHp = Math.max(0, sourcePokemon.currentHp - damageAmount);
+    const updatedSourcePokemon = sourcePokemon.withHp(sourceNewHp);
+
+    // Calculate new HP for destination (add damage)
+    const destinationNewHp = Math.max(
+      0,
+      destinationPokemon.currentHp - damageAmount,
+    );
+    const updatedDestinationPokemon = destinationPokemon.withHp(destinationNewHp);
+
+    // Update player state with both Pokemon changes
+    let updatedPlayerState = playerState;
+
+    // Update source Pokemon
+    if (sourcePosition === PokemonPosition.ACTIVE) {
+      updatedPlayerState = updatedPlayerState.withActivePokemon(
+        updatedSourcePokemon,
+      );
+    } else {
+      if (sourceBenchIndex === null) {
+        throw new BadRequestException('Source bench index is required');
+      }
+      const updatedBench = [...updatedPlayerState.bench];
+      updatedBench[sourceBenchIndex] = updatedSourcePokemon;
+      updatedPlayerState = updatedPlayerState.withBench(updatedBench);
+    }
+
+    // Update destination Pokemon
+    if (destinationPosition === PokemonPosition.ACTIVE) {
+      updatedPlayerState = updatedPlayerState.withActivePokemon(
+        updatedDestinationPokemon,
+      );
+    } else {
+      if (destinationBenchIndex === null) {
+        throw new BadRequestException('Destination bench index is required');
+      }
+      const updatedBench = [...updatedPlayerState.bench];
+      updatedBench[destinationBenchIndex] = updatedDestinationPokemon;
+      updatedPlayerState = updatedPlayerState.withBench(updatedBench);
+    }
+
+    return {
+      playerState: updatedPlayerState,
+      opponentState,
+    };
   }
 
   /**

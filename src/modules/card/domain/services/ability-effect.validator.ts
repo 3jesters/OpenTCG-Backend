@@ -22,6 +22,7 @@ import type {
   DiscardFromHandEffect,
   AttachFromDiscardEffect,
   RetrieveFromDiscardEffect,
+  MoveDamageCounterEffect,
 } from '../value-objects/ability-effect.value-object';
 
 /**
@@ -93,6 +94,9 @@ export class AbilityEffectValidator {
         break;
       case AbilityEffectType.RETRIEVE_FROM_DISCARD:
         this.validateRetrieveFromDiscard(effect as RetrieveFromDiscardEffect);
+        break;
+      case AbilityEffectType.MOVE_DAMAGE_COUNTER:
+        this.validateMoveDamageCounter(effect as MoveDamageCounterEffect);
         break;
       default:
         throw new Error(`Unhandled effect type: ${effect.effectType}`);
@@ -426,6 +430,48 @@ export class AbilityEffectValidator {
       !Object.values(Selector).includes(effect.selector)
     ) {
       throw new Error('Selector must be a valid Selector enum value');
+    }
+  }
+
+  private static validateMoveDamageCounter(
+    effect: MoveDamageCounterEffect,
+  ): void {
+    const validSourceTargets = [
+      TargetType.SELF,
+      TargetType.BENCHED_YOURS,
+      TargetType.ALL_YOURS,
+      TargetType.ACTIVE_YOURS,
+    ];
+    if (
+      !effect.sourceTarget ||
+      !validSourceTargets.includes(effect.sourceTarget)
+    ) {
+      throw new Error(
+        'Source target must be: self, benched_yours, all_yours, or active_yours',
+      );
+    }
+
+    const validDestinationTargets = [
+      TargetType.SELF,
+      TargetType.BENCHED_YOURS,
+      TargetType.ALL_YOURS,
+      TargetType.ACTIVE_YOURS,
+    ];
+    if (
+      !effect.destinationTarget ||
+      !validDestinationTargets.includes(effect.destinationTarget)
+    ) {
+      throw new Error(
+        'Destination target must be: self, benched_yours, all_yours, or active_yours',
+      );
+    }
+
+    if (typeof effect.amount !== 'number' || effect.amount < 1) {
+      throw new Error('Amount must be at least 1 (damage counter)');
+    }
+
+    if (effect.preventKnockout !== undefined && typeof effect.preventKnockout !== 'boolean') {
+      throw new Error('preventKnockout must be a boolean if provided');
     }
   }
 }

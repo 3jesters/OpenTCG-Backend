@@ -17,7 +17,10 @@ export class GetAvailableSetsUseCase {
     private readonly fileReader: IFileReader,
   ) {}
 
-  async execute(): Promise<GetAvailableSetsResponseDto> {
+  async execute(
+    author?: string,
+    official?: boolean,
+  ): Promise<GetAvailableSetsResponseDto> {
     // Get all JSON files from the data/cards directory
     const files = await this.fileReader.listCardFiles();
 
@@ -42,6 +45,14 @@ export class GetAvailableSetsUseCase {
           });
 
           if (errors.length === 0) {
+            // Apply filters
+            if (author && metadataDto.author?.toLowerCase() !== author.toLowerCase()) {
+              continue;
+            }
+            if (official !== undefined && metadataDto.official !== official) {
+              continue;
+            }
+
             sets.push({
               author: metadataDto.author,
               setName: metadataDto.setName,

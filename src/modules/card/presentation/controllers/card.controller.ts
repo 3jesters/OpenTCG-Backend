@@ -1,14 +1,18 @@
-import { Controller, Get, Param, HttpCode, HttpStatus, Inject } from '@nestjs/common';
+import { Controller, Get, Param, Query, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import {
   IGetAvailableSetsUseCase,
   IPreviewSetUseCase,
   IPreviewCardUseCase,
   ICalculateCardStrengthUseCase,
+  ISearchCardsUseCase,
 } from '../../application/ports/card-use-cases.interface';
 import { GetAvailableSetsResponseDto } from '../dto/get-available-sets-response.dto';
 import { GetCardsResponseDto } from '../dto/get-cards-response.dto';
 import { CardDetailDto } from '../dto/card-detail.dto';
 import { CardStrengthResponseDto } from '../dto/card-strength-response.dto';
+import { SearchCardsRequestDto } from '../dto/search-cards-request.dto';
+import { SearchCardsResponseDto } from '../dto/search-cards-response.dto';
+import { ListSetsRequestDto } from '../dto/list-sets-request.dto';
 
 /**
  * Card Controller
@@ -26,15 +30,32 @@ export class CardController {
     private readonly previewCardUseCase: IPreviewCardUseCase,
     @Inject(ICalculateCardStrengthUseCase)
     private readonly calculateCardStrengthUseCase: ICalculateCardStrengthUseCase,
+    @Inject(ISearchCardsUseCase)
+    private readonly searchCardsUseCase: ISearchCardsUseCase,
   ) {}
 
   /**
-   * Get all available card sets from file system
+   * Get all available card sets from file system (legacy endpoint)
+   * Must come before 'sets' route to avoid route conflicts
    */
   @Get('sets/available')
   @HttpCode(HttpStatus.OK)
   async getAvailableSets(): Promise<GetAvailableSetsResponseDto> {
     return await this.getAvailableSetsUseCase.execute();
+  }
+
+  /**
+   * List available card sets with optional filtering
+   */
+  @Get('sets')
+  @HttpCode(HttpStatus.OK)
+  async listSets(
+    @Query() query: ListSetsRequestDto,
+  ): Promise<GetAvailableSetsResponseDto> {
+    return await this.getAvailableSetsUseCase.execute(
+      query.author,
+      query.official,
+    );
   }
 
   /**
@@ -67,6 +88,17 @@ export class CardController {
       version,
       cardNumber,
     );
+  }
+
+  /**
+   * Search and filter cards with pagination
+   */
+  @Get('search')
+  @HttpCode(HttpStatus.OK)
+  async searchCards(
+    @Query() query: SearchCardsRequestDto,
+  ): Promise<SearchCardsResponseDto> {
+    return await this.searchCardsUseCase.execute(query);
   }
 
   /**

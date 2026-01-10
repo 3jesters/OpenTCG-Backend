@@ -197,5 +197,19 @@ export class CardOrmEntity {
 
   @Column({ type: 'varchar', nullable: true })
   regulationMark: string | null;
+
+  // ========================================
+  // Editor Metadata
+  // ========================================
+  @Column({ type: 'varchar', nullable: true })
+  @Index()
+  createdBy: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  createdAt: Date | null;
+
+  @Column({ type: 'boolean', default: false })
+  @Index()
+  isEditorCreated: boolean;
 }
 

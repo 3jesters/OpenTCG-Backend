@@ -17,13 +17,16 @@ export class GetAvailableSetsDbUseCase {
     private readonly cardRepository: ICardRepository,
   ) {}
 
-  async execute(): Promise<GetAvailableSetsResponseDto> {
+  async execute(
+    author?: string,
+    official?: boolean,
+  ): Promise<GetAvailableSetsResponseDto> {
     // Get all sets from the database
     const sets = await this.setRepository.findAll();
 
     // If we have sets in the database, use them
     if (sets.length > 0) {
-      const setDtos: AvailableSetDto[] = sets.map((set) => ({
+      let setDtos: AvailableSetDto[] = sets.map((set) => ({
         author: 'system', // Sets don't have author field, use default
         setName: set.id,
         version: '1.0',
@@ -35,6 +38,16 @@ export class GetAvailableSetsDbUseCase {
         filename: `${set.id}.json`, // For compatibility
       }));
 
+      // Apply filters
+      if (author) {
+        setDtos = setDtos.filter(
+          (dto) => dto.author?.toLowerCase() === author.toLowerCase(),
+        );
+      }
+      if (official !== undefined) {
+        setDtos = setDtos.filter((dto) => dto.official === official);
+      }
+
       return {
         sets: setDtos,
         total: setDtos.length,
@@ -43,7 +56,7 @@ export class GetAvailableSetsDbUseCase {
 
     // Fallback: construct sets from cards
     const setNames = await this.cardRepository.getDistinctSetNames();
-    const setDtos: AvailableSetDto[] = [];
+    let setDtos: AvailableSetDto[] = [];
 
     for (const setName of setNames) {
       const cards = await this.cardRepository.findBySetName(setName);
@@ -51,7 +64,7 @@ export class GetAvailableSetsDbUseCase {
       // Extract metadata from first card if available
       const firstCard = cards[0];
       
-      setDtos.push({
+      const setDto: AvailableSetDto = {
         author: 'pokemon', // Default
         setName: setName,
         version: '1.0', // Default
@@ -61,7 +74,17 @@ export class GetAvailableSetsDbUseCase {
         description: `${setName} Set - ${cards.length} cards`,
         logoUrl: undefined,
         filename: `${setName}.json`,
-      });
+      };
+
+      // Apply filters
+      if (author && setDto.author?.toLowerCase() !== author.toLowerCase()) {
+        continue;
+      }
+      if (official !== undefined && setDto.official !== official) {
+        continue;
+      }
+
+      setDtos.push(setDto);
     }
 
     return {

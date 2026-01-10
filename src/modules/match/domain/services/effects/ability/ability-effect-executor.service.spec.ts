@@ -848,13 +848,20 @@ describe('AbilityEffectExecutorService', () => {
       });
     });
 
-    describe('Alakazam - Damage Swap (HEAL)', () => {
+    describe('Alakazam - Damage Swap (MOVE_DAMAGE_COUNTER)', () => {
       const cardId = 'pokemon-base-set-v1.0-alakazam--1';
       const ability = new Ability(
         'Damage Swap',
         "As often as you like during your turn (before your attack), you may move 1 damage counter from 1 of your Pokémon to another as long as you don't Knock Out that Pokémon. This power can't be used if Alakazam is Asleep, Confused, or Paralyzed.",
         AbilityActivationType.ACTIVATED,
-        [AbilityEffectFactory.heal(TargetType.SELF, 10)],
+        [
+          AbilityEffectFactory.moveDamageCounter(
+            TargetType.ALL_YOURS,
+            TargetType.ALL_YOURS,
+            1,
+            true,
+          ),
+        ],
         undefined,
         UsageLimit.UNLIMITED,
       );
@@ -882,12 +889,12 @@ describe('AbilityEffectExecutorService', () => {
 
         const gameState = createGameState(alakazam, [benchPokemon]);
 
-        // Alakazam's ability uses TargetType.SELF, so it heals Alakazam itself
-        // Note: Current HEAL implementation doesn't support moving damage between Pokemon
-        // This test will need to be updated when MOVE_DAMAGE_COUNTER effect is implemented
+        // MOVE_DAMAGE_COUNTER requires both source and destination Pokemon
         const actionData: AbilityActionData = {
           cardId,
-          target: PokemonPosition.ACTIVE, // Target is Alakazam (SELF)
+          target: PokemonPosition.ACTIVE, // Alakazam using the ability
+          sourcePokemon: PokemonPosition.BENCH_0, // Take damage from bench Pokemon
+          destinationPokemon: PokemonPosition.ACTIVE, // Add damage to Alakazam
         };
 
         const result = await service.executeEffects(
@@ -897,14 +904,56 @@ describe('AbilityEffectExecutorService', () => {
           PlayerIdentifier.PLAYER1,
         );
 
-        // Alakazam should be healed (damage reduced by 10, from 0 to 0)
-        expect(result.playerState.activePokemon?.getDamageCounters()).toBe(0);
-        // Bench Pokemon damage unchanged (HEAL doesn't move damage, only heals target)
-        expect(
-          result.playerState.bench
-            .find((p) => p.instanceId === 'instance-2')
-            ?.getDamageCounters(),
-        ).toBe(20);
+        // Bench Pokemon should lose 10 HP (1 damage counter)
+        const updatedBenchPokemon = result.playerState.bench.find(
+          (p) => p.instanceId === 'instance-2',
+        );
+        expect(updatedBenchPokemon?.currentHp).toBe(70); // 80 - 10 = 70
+        expect(updatedBenchPokemon?.getDamageCounters()).toBe(30); // 20 + 10 = 30
+
+        // Alakazam should gain 10 HP of damage (1 damage counter)
+        expect(result.playerState.activePokemon?.currentHp).toBe(90); // 100 - 10 = 90
+        expect(result.playerState.activePokemon?.getDamageCounters()).toBe(10); // 0 + 10 = 10
+      });
+
+      it('should prevent moving damage that would KO the source Pokemon', async () => {
+        const alakazam = new CardInstance(
+          'instance-1',
+          cardId,
+          PokemonPosition.ACTIVE,
+          100,
+          100,
+          [],
+          [],
+        );
+
+        const benchPokemon = new CardInstance(
+          'instance-2',
+          'pokemon-base-set-v1.0-abra--63',
+          PokemonPosition.BENCH_0,
+          10, // Only 10 HP left (would be KO'd by moving 10 HP)
+          100,
+          [],
+          [],
+        );
+
+        const gameState = createGameState(alakazam, [benchPokemon]);
+
+        const actionData: AbilityActionData = {
+          cardId,
+          target: PokemonPosition.ACTIVE,
+          sourcePokemon: PokemonPosition.BENCH_0,
+          destinationPokemon: PokemonPosition.ACTIVE,
+        };
+
+        await expect(
+          service.executeEffects(
+            ability,
+            actionData,
+            gameState,
+            PlayerIdentifier.PLAYER1,
+          ),
+        ).rejects.toThrow('Cannot move damage: would Knock Out the source Pokemon');
       });
     });
 

@@ -207,6 +207,19 @@ export interface RetrieveFromDiscardEffect extends AbilityEffect {
   selector: Selector;
 }
 
+/**
+ * Move Damage Counter Effect
+ * Move damage counters from one Pokémon to another
+ * Example: Alakazam's "Damage Swap" - move 1 damage counter from 1 of your Pokémon to another
+ */
+export interface MoveDamageCounterEffect extends AbilityEffect {
+  effectType: AbilityEffectType.MOVE_DAMAGE_COUNTER;
+  sourceTarget: TargetType; // Source Pokémon(s) to take damage from (e.g., ALL_YOURS, BENCHED_YOURS)
+  destinationTarget: TargetType; // Destination Pokémon(s) to add damage to (e.g., SELF, ALL_YOURS)
+  amount: number; // Number of damage counters to move (each counter = 10 HP)
+  preventKnockout?: boolean; // If true, cannot move damage that would KO the source Pokémon
+}
+
 // ========================================
 // TYPE UNION
 // ========================================
@@ -227,7 +240,8 @@ export type AnyAbilityEffect =
   | ReduceDamageEffect
   | DiscardFromHandEffect
   | AttachFromDiscardEffect
-  | RetrieveFromDiscardEffect;
+  | RetrieveFromDiscardEffect
+  | MoveDamageCounterEffect;
 
 // ========================================
 // FACTORY
@@ -473,6 +487,23 @@ export class AbilityEffectFactory {
       selector,
       cardType: params?.cardType,
       pokemonType: params?.pokemonType,
+      requiredConditions: conditions,
+    };
+  }
+
+  static moveDamageCounter(
+    sourceTarget: TargetType,
+    destinationTarget: TargetType,
+    amount: number,
+    preventKnockout: boolean = true,
+    conditions?: Condition[],
+  ): MoveDamageCounterEffect {
+    return {
+      effectType: AbilityEffectType.MOVE_DAMAGE_COUNTER,
+      sourceTarget,
+      destinationTarget,
+      amount,
+      preventKnockout,
       requiredConditions: conditions,
     };
   }

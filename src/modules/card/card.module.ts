@@ -28,9 +28,15 @@ import {
   IPreviewCardUseCase,
   IPreviewSetUseCase,
   ICalculateCardStrengthUseCase,
+  ICreateCardUseCase,
+  ISearchCardsUseCase,
 } from './application/ports/card-use-cases.interface';
 import { CardStrengthCalculatorService } from './domain/services/card-strength-calculator.service';
 import { CalculateCardStrengthUseCase } from './application/use-cases/calculate-card-strength.use-case';
+import { CreateCardUseCase } from './application/use-cases/create-card.use-case';
+import { SearchCardsUseCase } from './application/use-cases/search-cards.use-case';
+import { CardEditorValidator } from './application/services/card-editor.validator';
+import { CardEditorController } from './presentation/controllers/card-editor.controller';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
 const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
@@ -48,7 +54,7 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
       ? [TypeOrmModule.forFeature([CardOrmEntity]), DatabaseModule]
       : []),
   ],
-  controllers: [CardController],
+  controllers: [CardController, CardEditorController],
   providers: [
     // Repository (conditional based on environment)
     {
@@ -91,6 +97,15 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
       provide: ICalculateCardStrengthUseCase,
       useClass: CalculateCardStrengthUseCase,
     },
+    {
+      provide: ICreateCardUseCase,
+      useClass: CreateCardUseCase,
+    },
+    {
+      provide: ISearchCardsUseCase,
+      useClass: SearchCardsUseCase,
+    },
+    CardEditorValidator,
     // File reader only for dev/test
     ...(nodeEnv === 'dev' || nodeEnv === 'test'
       ? [
@@ -110,6 +125,8 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     IPreviewCardUseCase,
     IPreviewSetUseCase,
     ICalculateCardStrengthUseCase,
+    ICreateCardUseCase,
+    ISearchCardsUseCase,
   ],
 })
 export class CardModule {}

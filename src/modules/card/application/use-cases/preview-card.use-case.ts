@@ -376,6 +376,22 @@ export class PreviewCardUseCase {
                 if (e.pokemonType !== undefined)
                   effect.pokemonType = e.pokemonType;
                 break;
+              case 'MOVE_DAMAGE_COUNTER':
+                // sourceTarget and destinationTarget are required for MOVE_DAMAGE_COUNTER
+                if (!e.sourceTarget) {
+                  throw new Error('MOVE_DAMAGE_COUNTER effect requires sourceTarget');
+                }
+                if (!e.destinationTarget) {
+                  throw new Error('MOVE_DAMAGE_COUNTER effect requires destinationTarget');
+                }
+                // For string enums, the value should already be correct from DTO validation
+                // Cast to TargetType to ensure type safety
+                effect.sourceTarget = e.sourceTarget as TargetType;
+                effect.destinationTarget = e.destinationTarget as TargetType;
+                if (e.amount !== undefined) effect.amount = e.amount;
+                if (e.preventKnockout !== undefined)
+                  effect.preventKnockout = e.preventKnockout;
+                break;
             }
 
             // Legacy support for old properties
