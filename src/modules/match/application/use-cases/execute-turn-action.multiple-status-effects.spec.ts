@@ -114,7 +114,6 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       findByPlayerId: jest.fn(),
     } as any;
 
-
     // Create mock CardHelperService for RealEvolutionExecutionService
     const mockCardHelperForEvolution = {
       getCardEntity: jest.fn().mockImplementation(async (cardId, cardsMap) => {
@@ -170,8 +169,12 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
           provide: CoinFlipResolverService,
           useFactory: () => {
             const mockService = {
-              generateCoinFlip: jest.fn().mockReturnValue(new CoinFlipResult(0, 'heads', 12345)),
-              generateMultipleCoinFlips: jest.fn().mockReturnValue([new CoinFlipResult(0, 'heads', 12345)]),
+              generateCoinFlip: jest
+                .fn()
+                .mockReturnValue(new CoinFlipResult(0, 'heads', 12345)),
+              generateMultipleCoinFlips: jest
+                .fn()
+                .mockReturnValue([new CoinFlipResult(0, 'heads', 12345)]),
               calculateCoinCount: jest.fn().mockReturnValue(1),
             };
             return mockService;
@@ -218,36 +221,47 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         {
           provide: StatusEffectProcessorService,
           useValue: {
-            processBetweenTurnsStatusEffects: jest.fn().mockImplementation(
-              async (gameState, matchId) => {
+            processBetweenTurnsStatusEffects: jest
+              .fn()
+              .mockImplementation(async (gameState, matchId) => {
                 // Process status effects: apply poison (10) and burn (20) damage
                 let updatedGameState = gameState;
-                
+
                 // Process both players
-                for (const playerId of [PlayerIdentifier.PLAYER1, PlayerIdentifier.PLAYER2]) {
+                for (const playerId of [
+                  PlayerIdentifier.PLAYER1,
+                  PlayerIdentifier.PLAYER2,
+                ]) {
                   const playerState = gameState.getPlayerState(playerId);
                   let updatedPlayerState = playerState;
-                  
+
                   if (playerState.activePokemon) {
                     let updatedActive = playerState.activePokemon;
                     let hpChanged = false;
-                    
+
                     // Apply poison damage
                     if (updatedActive.hasStatusEffect(StatusEffect.POISONED)) {
-                      const poisonDamage = updatedActive.poisonDamageAmount || 10;
-                      const newHp = Math.max(0, updatedActive.currentHp - poisonDamage);
+                      const poisonDamage =
+                        updatedActive.poisonDamageAmount || 10;
+                      const newHp = Math.max(
+                        0,
+                        updatedActive.currentHp - poisonDamage,
+                      );
                       updatedActive = updatedActive.withHp(newHp);
                       hpChanged = true;
                     }
-                    
+
                     // Apply burn damage
                     if (updatedActive.hasStatusEffect(StatusEffect.BURNED)) {
                       const burnDamage = 20;
-                      const newHp = Math.max(0, updatedActive.currentHp - burnDamage);
+                      const newHp = Math.max(
+                        0,
+                        updatedActive.currentHp - burnDamage,
+                      );
                       updatedActive = updatedActive.withHp(newHp);
                       hpChanged = true;
                     }
-                    
+
                     // Clear paralyzed status based on turn number tracking
                     // Paralysis is removed at the end of the affected player's next turn
                     // We check if the current turn number > the expected clear turn
@@ -255,53 +269,75 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
                     if (updatedActive.hasStatusEffect(StatusEffect.PARALYZED)) {
                       const shouldClear =
                         updatedActive.paralysisClearsAtTurn !== undefined &&
-                        gameState.turnNumber > updatedActive.paralysisClearsAtTurn;
-                      
+                        gameState.turnNumber >
+                          updatedActive.paralysisClearsAtTurn;
+
                       if (shouldClear) {
-                        updatedActive = updatedActive.withStatusEffectRemoved(StatusEffect.PARALYZED);
+                        updatedActive = updatedActive.withStatusEffectRemoved(
+                          StatusEffect.PARALYZED,
+                        );
                       }
                     }
-                    
-                    if (hpChanged || updatedActive !== playerState.activePokemon) {
-                      updatedPlayerState = updatedPlayerState.withActivePokemon(updatedActive);
+
+                    if (
+                      hpChanged ||
+                      updatedActive !== playerState.activePokemon
+                    ) {
+                      updatedPlayerState =
+                        updatedPlayerState.withActivePokemon(updatedActive);
                     }
-                    
+
                     // Process bench Pokemon
-                    const updatedBench = playerState.bench.map((benchPokemon) => {
-                      let updated = benchPokemon;
-                      
-                      if (benchPokemon.hasStatusEffect(StatusEffect.POISONED)) {
-                        const poisonDamage = benchPokemon.poisonDamageAmount || 10;
-                        const newHp = Math.max(0, updated.currentHp - poisonDamage);
-                        updated = updated.withHp(newHp);
-                      }
-                      
-                      if (benchPokemon.hasStatusEffect(StatusEffect.BURNED)) {
-                        const burnDamage = 20;
-                        const newHp = Math.max(0, updated.currentHp - burnDamage);
-                        updated = updated.withHp(newHp);
-                      }
-                      
-                      return updated;
-                    });
-                    
-                    if (updatedBench.some((p, i) => p !== playerState.bench[i])) {
-                      updatedPlayerState = updatedPlayerState.withBench(updatedBench);
+                    const updatedBench = playerState.bench.map(
+                      (benchPokemon) => {
+                        let updated = benchPokemon;
+
+                        if (
+                          benchPokemon.hasStatusEffect(StatusEffect.POISONED)
+                        ) {
+                          const poisonDamage =
+                            benchPokemon.poisonDamageAmount || 10;
+                          const newHp = Math.max(
+                            0,
+                            updated.currentHp - poisonDamage,
+                          );
+                          updated = updated.withHp(newHp);
+                        }
+
+                        if (benchPokemon.hasStatusEffect(StatusEffect.BURNED)) {
+                          const burnDamage = 20;
+                          const newHp = Math.max(
+                            0,
+                            updated.currentHp - burnDamage,
+                          );
+                          updated = updated.withHp(newHp);
+                        }
+
+                        return updated;
+                      },
+                    );
+
+                    if (
+                      updatedBench.some((p, i) => p !== playerState.bench[i])
+                    ) {
+                      updatedPlayerState =
+                        updatedPlayerState.withBench(updatedBench);
                     }
-                    
+
                     if (updatedPlayerState !== playerState) {
                       if (playerId === PlayerIdentifier.PLAYER1) {
-                        updatedGameState = updatedGameState.withPlayer1State(updatedPlayerState);
+                        updatedGameState =
+                          updatedGameState.withPlayer1State(updatedPlayerState);
                       } else {
-                        updatedGameState = updatedGameState.withPlayer2State(updatedPlayerState);
+                        updatedGameState =
+                          updatedGameState.withPlayer2State(updatedPlayerState);
                       }
                     }
                   }
                 }
-                
+
                 return updatedGameState;
-              },
-            ),
+              }),
           },
         },
         {
@@ -325,30 +361,43 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
           useValue: {
             processEnergyCost: jest.fn().mockImplementation(async (params) => {
               // Get the current player state from gameState
-              const playerState = params.gameState.getPlayerState(params.playerIdentifier);
-              
+              const playerState = params.gameState.getPlayerState(
+                params.playerIdentifier,
+              );
+
               // If there are selectedEnergyIds, discard them
-              if (params.selectedEnergyIds && params.selectedEnergyIds.length > 0 && playerState.activePokemon) {
-                const updatedAttachedEnergy = playerState.activePokemon.attachedEnergy.filter(
-                  (id) => !params.selectedEnergyIds.includes(id),
-                );
-                const updatedAttacker = playerState.activePokemon.withAttachedEnergy(updatedAttachedEnergy);
-                const updatedDiscardPile = [...playerState.discardPile, ...params.selectedEnergyIds];
+              if (
+                params.selectedEnergyIds &&
+                params.selectedEnergyIds.length > 0 &&
+                playerState.activePokemon
+              ) {
+                const updatedAttachedEnergy =
+                  playerState.activePokemon.attachedEnergy.filter(
+                    (id) => !params.selectedEnergyIds.includes(id),
+                  );
+                const updatedAttacker =
+                  playerState.activePokemon.withAttachedEnergy(
+                    updatedAttachedEnergy,
+                  );
+                const updatedDiscardPile = [
+                  ...playerState.discardPile,
+                  ...params.selectedEnergyIds,
+                ];
                 const updatedPlayerState = playerState
                   .withActivePokemon(updatedAttacker)
                   .withDiscardPile(updatedDiscardPile);
-                
+
                 const updatedGameState =
                   params.playerIdentifier === PlayerIdentifier.PLAYER1
                     ? params.gameState.withPlayer1State(updatedPlayerState)
                     : params.gameState.withPlayer2State(updatedPlayerState);
-                
+
                 return {
                   updatedGameState,
                   updatedPlayerState,
                 };
               }
-              
+
               // No energy to discard, return unchanged
               return {
                 updatedGameState: params.gameState,
@@ -386,57 +435,88 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
 
               // Check for structured status effects in attack
               if (params.attack?.hasEffects?.()) {
-                const statusEffects = params.attack.getEffectsByType?.(
-                  AttackEffectType.STATUS_CONDITION,
-                ) || [];
+                const statusEffects =
+                  params.attack.getEffectsByType?.(
+                    AttackEffectType.STATUS_CONDITION,
+                  ) || [];
                 for (const statusEffect of statusEffects) {
                   // Check if conditions are met
-                  const conditionsMet = await params.evaluateEffectConditions?.(
-                    statusEffect.requiredConditions || [],
-                    params.gameState,
-                    params.playerIdentifier,
-                    params.playerState,
-                    params.opponentState,
-                  ) ?? true;
+                  const conditionsMet =
+                    (await params.evaluateEffectConditions?.(
+                      statusEffect.requiredConditions || [],
+                      params.gameState,
+                      params.playerIdentifier,
+                      params.playerState,
+                      params.opponentState,
+                    )) ?? true;
 
                   if (conditionsMet && statusEffect.statusCondition) {
                     // Map status condition to StatusEffect enum
                     let statusToApply: StatusEffect | null = null;
-                    const statusCondition = statusEffect.statusCondition.toString().toUpperCase();
-                    if (statusCondition === 'POISONED' || statusCondition === StatusEffect.POISONED) {
+                    const statusCondition = statusEffect.statusCondition
+                      .toString()
+                      .toUpperCase();
+                    if (
+                      statusCondition === 'POISONED' ||
+                      statusCondition === StatusEffect.POISONED
+                    ) {
                       statusToApply = StatusEffect.POISONED;
-                    } else if (statusCondition === 'CONFUSED' || statusCondition === StatusEffect.CONFUSED) {
+                    } else if (
+                      statusCondition === 'CONFUSED' ||
+                      statusCondition === StatusEffect.CONFUSED
+                    ) {
                       statusToApply = StatusEffect.CONFUSED;
-                    } else if (statusCondition === 'BURNED' || statusCondition === StatusEffect.BURNED) {
+                    } else if (
+                      statusCondition === 'BURNED' ||
+                      statusCondition === StatusEffect.BURNED
+                    ) {
                       statusToApply = StatusEffect.BURNED;
-                    } else if (statusCondition === 'PARALYZED' || statusCondition === StatusEffect.PARALYZED) {
+                    } else if (
+                      statusCondition === 'PARALYZED' ||
+                      statusCondition === StatusEffect.PARALYZED
+                    ) {
                       statusToApply = StatusEffect.PARALYZED;
-                    } else if (statusCondition === 'ASLEEP' || statusCondition === StatusEffect.ASLEEP) {
+                    } else if (
+                      statusCondition === 'ASLEEP' ||
+                      statusCondition === StatusEffect.ASLEEP
+                    ) {
                       statusToApply = StatusEffect.ASLEEP;
                     }
 
-                    if (statusToApply && updatedPokemon && typeof updatedPokemon.withStatusEffectAdded === 'function') {
+                    if (
+                      statusToApply &&
+                      updatedPokemon &&
+                      typeof updatedPokemon.withStatusEffectAdded === 'function'
+                    ) {
                       // Calculate paralysis clear turn if applying PARALYZED
                       // The target Pokemon belongs to the opponent (not the attacker)
-                      const targetPlayer = params.playerIdentifier === PlayerIdentifier.PLAYER1
-                        ? PlayerIdentifier.PLAYER2
-                        : PlayerIdentifier.PLAYER1;
-                      const paralysisClearsAtTurn = statusToApply === StatusEffect.PARALYZED
-                        ? (() => {
-                            const currentTurn = params.gameState.turnNumber;
-                            if (targetPlayer === PlayerIdentifier.PLAYER1) {
-                              // Player 1's next turn is the next odd turn >= currentTurn + 1
-                              return currentTurn % 2 === 1 ? currentTurn + 2 : currentTurn + 1;
-                            } else {
-                              // Player 2's next turn is the next even turn >= currentTurn + 1
-                              return currentTurn % 2 === 0 ? currentTurn + 2 : currentTurn + 1;
-                            }
-                          })()
-                        : undefined;
-                      
+                      const targetPlayer =
+                        params.playerIdentifier === PlayerIdentifier.PLAYER1
+                          ? PlayerIdentifier.PLAYER2
+                          : PlayerIdentifier.PLAYER1;
+                      const paralysisClearsAtTurn =
+                        statusToApply === StatusEffect.PARALYZED
+                          ? (() => {
+                              const currentTurn = params.gameState.turnNumber;
+                              if (targetPlayer === PlayerIdentifier.PLAYER1) {
+                                // Player 1's next turn is the next odd turn >= currentTurn + 1
+                                return currentTurn % 2 === 1
+                                  ? currentTurn + 2
+                                  : currentTurn + 1;
+                              } else {
+                                // Player 2's next turn is the next even turn >= currentTurn + 1
+                                return currentTurn % 2 === 0
+                                  ? currentTurn + 2
+                                  : currentTurn + 1;
+                              }
+                            })()
+                          : undefined;
+
                       updatedPokemon = updatedPokemon.withStatusEffectAdded(
                         statusToApply,
-                        statusToApply === StatusEffect.POISONED ? 10 : undefined,
+                        statusToApply === StatusEffect.POISONED
+                          ? 10
+                          : undefined,
                         paralysisClearsAtTurn,
                       );
                       statusApplied = true;
@@ -448,26 +528,38 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
 
               // Fallback: parse from attack text if no structured effects applied
               if (!statusApplied && params.parseStatusEffectFromAttackText) {
-                const parsedStatus = params.parseStatusEffectFromAttackText(params.attackText);
-                if (parsedStatus && updatedPokemon && typeof updatedPokemon.withStatusEffectAdded === 'function') {
+                const parsedStatus = params.parseStatusEffectFromAttackText(
+                  params.attackText,
+                );
+                if (
+                  parsedStatus &&
+                  updatedPokemon &&
+                  typeof updatedPokemon.withStatusEffectAdded === 'function'
+                ) {
                   // Calculate paralysis clear turn if applying PARALYZED
                   // The target Pokemon belongs to the opponent (not the attacker)
-                  const targetPlayer = params.playerIdentifier === PlayerIdentifier.PLAYER1
-                    ? PlayerIdentifier.PLAYER2
-                    : PlayerIdentifier.PLAYER1;
-                  const paralysisClearsAtTurn = parsedStatus === StatusEffect.PARALYZED
-                    ? (() => {
-                        const currentTurn = params.gameState.turnNumber;
-                        if (targetPlayer === PlayerIdentifier.PLAYER1) {
-                          // Player 1's next turn is the next odd turn >= currentTurn + 1
-                          return currentTurn % 2 === 1 ? currentTurn + 2 : currentTurn + 1;
-                        } else {
-                          // Player 2's next turn is the next even turn >= currentTurn + 1
-                          return currentTurn % 2 === 0 ? currentTurn + 2 : currentTurn + 1;
-                        }
-                      })()
-                    : undefined;
-                  
+                  const targetPlayer =
+                    params.playerIdentifier === PlayerIdentifier.PLAYER1
+                      ? PlayerIdentifier.PLAYER2
+                      : PlayerIdentifier.PLAYER1;
+                  const paralysisClearsAtTurn =
+                    parsedStatus === StatusEffect.PARALYZED
+                      ? (() => {
+                          const currentTurn = params.gameState.turnNumber;
+                          if (targetPlayer === PlayerIdentifier.PLAYER1) {
+                            // Player 1's next turn is the next odd turn >= currentTurn + 1
+                            return currentTurn % 2 === 1
+                              ? currentTurn + 2
+                              : currentTurn + 1;
+                          } else {
+                            // Player 2's next turn is the next even turn >= currentTurn + 1
+                            return currentTurn % 2 === 0
+                              ? currentTurn + 2
+                              : currentTurn + 1;
+                          }
+                        })()
+                      : undefined;
+
                   updatedPokemon = updatedPokemon.withStatusEffectAdded(
                     parsedStatus,
                     undefined,
@@ -479,7 +571,8 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
               }
 
               return {
-                updatedPokemon: updatedPokemon || params.targetPokemon || {} as any,
+                updatedPokemon:
+                  updatedPokemon || params.targetPokemon || ({} as any),
                 statusApplied,
                 appliedStatus,
               };
@@ -491,24 +584,40 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
           useValue: {
             applyActiveDamage: jest.fn().mockImplementation((params) => {
               // Use the actual CardInstance method to preserve all methods
-              if (params.pokemon && typeof params.pokemon.withHp === 'function') {
-                const newHp = Math.max(0, (params.pokemon.currentHp || 0) - (params.damage || 0));
+              if (
+                params.pokemon &&
+                typeof params.pokemon.withHp === 'function'
+              ) {
+                const newHp = Math.max(
+                  0,
+                  (params.pokemon.currentHp || 0) - (params.damage || 0),
+                );
                 return params.pokemon.withHp(newHp);
               }
               // Fallback if pokemon is not a CardInstance
-              const newHp = Math.max(0, ((params.pokemon as any)?.currentHp || 0) - (params.damage || 0));
+              const newHp = Math.max(
+                0,
+                (params.pokemon?.currentHp || 0) - (params.damage || 0),
+              );
               return {
                 ...params.pokemon,
                 currentHp: newHp,
-              } as any;
+              };
             }),
             applySelfDamage: jest.fn().mockImplementation((params) => {
-              const newHp = Math.max(0, (params.attackerPokemon?.currentHp || 0) - (params.selfDamage || 0));
+              const newHp = Math.max(
+                0,
+                (params.attackerPokemon?.currentHp || 0) -
+                  (params.selfDamage || 0),
+              );
               return {
-                updatedPokemon: newHp === 0 ? null : {
-                  ...params.attackerPokemon,
-                  currentHp: newHp,
-                },
+                updatedPokemon:
+                  newHp === 0
+                    ? null
+                    : {
+                        ...params.attackerPokemon,
+                        currentHp: newHp,
+                      },
                 isKnockedOut: newHp === 0,
               };
             }),
@@ -528,8 +637,12 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
                   cardsToDiscard: [],
                 };
               }
-              const cardsToDiscard = params.pokemon.getAllCardsToDiscard?.() || [];
-              const discardPile = [...params.playerState.discardPile, ...cardsToDiscard];
+              const cardsToDiscard =
+                params.pokemon.getAllCardsToDiscard?.() || [];
+              const discardPile = [
+                ...params.playerState.discardPile,
+                ...cardsToDiscard,
+              ];
               const updatedState = params.playerState
                 .withActivePokemon(null)
                 .withDiscardPile(discardPile);
@@ -538,16 +651,21 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
                 cardsToDiscard,
               };
             }),
-            handleBenchKnockout: jest.fn().mockImplementation((knockedOutBench, playerState) => {
-              if (knockedOutBench.length === 0) {
-                return playerState;
-              }
-              const cardsToDiscard = knockedOutBench.flatMap((p) =>
-                p.getAllCardsToDiscard?.() || [],
-              );
-              const discardPile = [...playerState.discardPile, ...cardsToDiscard];
-              return playerState.withDiscardPile(discardPile);
-            }),
+            handleBenchKnockout: jest
+              .fn()
+              .mockImplementation((knockedOutBench, playerState) => {
+                if (knockedOutBench.length === 0) {
+                  return playerState;
+                }
+                const cardsToDiscard = knockedOutBench.flatMap(
+                  (p) => p.getAllCardsToDiscard?.() || [],
+                );
+                const discardPile = [
+                  ...playerState.discardPile,
+                  ...cardsToDiscard,
+                ];
+                return playerState.withDiscardPile(discardPile);
+              }),
           },
         },
         {
@@ -593,79 +711,103 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         {
           provide: CardHelperService,
           useValue: {
-            getCardEntity: jest.fn().mockImplementation(async (cardId, cardsMap) => {
-              return mockGetCardByIdUseCase.getCardEntity(cardId);
-            }),
-            getCardHp: jest.fn().mockImplementation(async (cardId, cardsMap) => {
-              const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
-              return card?.hp || 0;
-            }),
-            collectCardIds: jest.fn().mockImplementation((dto, gameState, playerIdentifier) => {
-              const cardIds = new Set<string>();
-              const actionData = dto.actionData as any;
-              
-              // Collect from actionData
-              if (actionData?.cardId) cardIds.add(actionData.cardId);
-              if (actionData?.evolutionCardId) cardIds.add(actionData.evolutionCardId);
-              if (actionData?.attackerCardId) cardIds.add(actionData.attackerCardId);
-              if (actionData?.defenderCardId) cardIds.add(actionData.defenderCardId);
-              if (actionData?.currentPokemonCardId) cardIds.add(actionData.currentPokemonCardId);
-              if (actionData?.energyId) cardIds.add(actionData.energyId);
-              if (Array.isArray(actionData?.energyIds)) {
-                actionData.energyIds.forEach((id: string) => cardIds.add(id));
-              }
-              if (Array.isArray(actionData?.cardIds)) {
-                actionData.cardIds.forEach((id: string) => cardIds.add(id));
-              }
-              
-              // Collect from gameState (matching real implementation)
-              if (gameState) {
-                const playerState = gameState.getPlayerState(playerIdentifier);
-                const opponentState = gameState.getOpponentState(playerIdentifier);
-                
-                // Player's Pokemon
-                if (playerState.activePokemon) {
-                  cardIds.add(playerState.activePokemon.cardId);
-                  if (playerState.activePokemon.attachedEnergy) {
-                    playerState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
+            getCardEntity: jest
+              .fn()
+              .mockImplementation(async (cardId, cardsMap) => {
+                return mockGetCardByIdUseCase.getCardEntity(cardId);
+              }),
+            getCardHp: jest
+              .fn()
+              .mockImplementation(async (cardId, cardsMap) => {
+                const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
+                return card?.hp || 0;
+              }),
+            collectCardIds: jest
+              .fn()
+              .mockImplementation((dto, gameState, playerIdentifier) => {
+                const cardIds = new Set<string>();
+                const actionData = dto.actionData;
+
+                // Collect from actionData
+                if (actionData?.cardId) cardIds.add(actionData.cardId);
+                if (actionData?.evolutionCardId)
+                  cardIds.add(actionData.evolutionCardId);
+                if (actionData?.attackerCardId)
+                  cardIds.add(actionData.attackerCardId);
+                if (actionData?.defenderCardId)
+                  cardIds.add(actionData.defenderCardId);
+                if (actionData?.currentPokemonCardId)
+                  cardIds.add(actionData.currentPokemonCardId);
+                if (actionData?.energyId) cardIds.add(actionData.energyId);
+                if (Array.isArray(actionData?.energyIds)) {
+                  actionData.energyIds.forEach((id: string) => cardIds.add(id));
                 }
-                playerState.bench.forEach((pokemon) => {
-                  cardIds.add(pokemon.cardId);
-                  if (pokemon.attachedEnergy) {
-                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
-                });
-                
-                // Player's hand, deck, discard, prize cards
-                if (playerState.hand) playerState.hand.forEach((id) => cardIds.add(id));
-                if (playerState.deck) playerState.deck.forEach((id) => cardIds.add(id));
-                if (playerState.discardPile) playerState.discardPile.forEach((id) => cardIds.add(id));
-                if (playerState.prizeCards) playerState.prizeCards.forEach((id) => cardIds.add(id));
-                
-                // Opponent's Pokemon
-                if (opponentState.activePokemon) {
-                  cardIds.add(opponentState.activePokemon.cardId);
-                  if (opponentState.activePokemon.attachedEnergy) {
-                    opponentState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
+                if (Array.isArray(actionData?.cardIds)) {
+                  actionData.cardIds.forEach((id: string) => cardIds.add(id));
                 }
-                opponentState.bench.forEach((pokemon) => {
-                  cardIds.add(pokemon.cardId);
-                  if (pokemon.attachedEnergy) {
-                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+
+                // Collect from gameState (matching real implementation)
+                if (gameState) {
+                  const playerState =
+                    gameState.getPlayerState(playerIdentifier);
+                  const opponentState =
+                    gameState.getOpponentState(playerIdentifier);
+
+                  // Player's Pokemon
+                  if (playerState.activePokemon) {
+                    cardIds.add(playerState.activePokemon.cardId);
+                    if (playerState.activePokemon.attachedEnergy) {
+                      playerState.activePokemon.attachedEnergy.forEach((id) =>
+                        cardIds.add(id),
+                      );
+                    }
                   }
-                });
-                
-                // Opponent's hand, deck, discard, prize cards
-                if (opponentState.hand) opponentState.hand.forEach((id) => cardIds.add(id));
-                if (opponentState.deck) opponentState.deck.forEach((id) => cardIds.add(id));
-                if (opponentState.discardPile) opponentState.discardPile.forEach((id) => cardIds.add(id));
-                if (opponentState.prizeCards) opponentState.prizeCards.forEach((id) => cardIds.add(id));
-              }
-              
-              return cardIds;
-            }),
+                  playerState.bench.forEach((pokemon) => {
+                    cardIds.add(pokemon.cardId);
+                    if (pokemon.attachedEnergy) {
+                      pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                    }
+                  });
+
+                  // Player's hand, deck, discard, prize cards
+                  if (playerState.hand)
+                    playerState.hand.forEach((id) => cardIds.add(id));
+                  if (playerState.deck)
+                    playerState.deck.forEach((id) => cardIds.add(id));
+                  if (playerState.discardPile)
+                    playerState.discardPile.forEach((id) => cardIds.add(id));
+                  if (playerState.prizeCards)
+                    playerState.prizeCards.forEach((id) => cardIds.add(id));
+
+                  // Opponent's Pokemon
+                  if (opponentState.activePokemon) {
+                    cardIds.add(opponentState.activePokemon.cardId);
+                    if (opponentState.activePokemon.attachedEnergy) {
+                      opponentState.activePokemon.attachedEnergy.forEach((id) =>
+                        cardIds.add(id),
+                      );
+                    }
+                  }
+                  opponentState.bench.forEach((pokemon) => {
+                    cardIds.add(pokemon.cardId);
+                    if (pokemon.attachedEnergy) {
+                      pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                    }
+                  });
+
+                  // Opponent's hand, deck, discard, prize cards
+                  if (opponentState.hand)
+                    opponentState.hand.forEach((id) => cardIds.add(id));
+                  if (opponentState.deck)
+                    opponentState.deck.forEach((id) => cardIds.add(id));
+                  if (opponentState.discardPile)
+                    opponentState.discardPile.forEach((id) => cardIds.add(id));
+                  if (opponentState.prizeCards)
+                    opponentState.prizeCards.forEach((id) => cardIds.add(id));
+                }
+
+                return cardIds;
+              }),
           },
         },
         {
@@ -673,9 +815,20 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
           useValue: {
             calculateDamage: jest.fn(),
             calculatePlusDamageBonus: jest.fn(),
-            calculateMinusDamageReduction: jest.fn().mockImplementation((damage, attack, attackText, attackerName, playerState, opponentState) => {
-              return damage; // Return damage unchanged by default
-            }),
+            calculateMinusDamageReduction: jest
+              .fn()
+              .mockImplementation(
+                (
+                  damage,
+                  attack,
+                  attackText,
+                  attackerName,
+                  playerState,
+                  opponentState,
+                ) => {
+                  return damage; // Return damage unchanged by default
+                },
+              ),
           },
         },
         {
@@ -689,81 +842,115 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         {
           provide: WeaknessResistanceService,
           useValue: {
-            applyWeakness: jest.fn().mockImplementation((damage, attackerCard, defenderCard) => {
-              // Apply weakness: ×2 if attacker type matches defender weakness
-              if (defenderCard.weakness && attackerCard.pokemonType) {
-                if (defenderCard.weakness.type.toString() === attackerCard.pokemonType.toString()) {
-                  const modifier = defenderCard.weakness.modifier;
-                  if (modifier === '×2') {
-                    return damage * 2;
+            applyWeakness: jest
+              .fn()
+              .mockImplementation((damage, attackerCard, defenderCard) => {
+                // Apply weakness: ×2 if attacker type matches defender weakness
+                if (defenderCard.weakness && attackerCard.pokemonType) {
+                  if (
+                    defenderCard.weakness.type.toString() ===
+                    attackerCard.pokemonType.toString()
+                  ) {
+                    const modifier = defenderCard.weakness.modifier;
+                    if (modifier === '×2') {
+                      return damage * 2;
+                    }
                   }
                 }
-              }
-              return damage;
-            }),
-            applyResistance: jest.fn().mockImplementation((damage, attackerCard, defenderCard) => {
-              // Apply resistance: -20 if attacker type matches defender resistance
-              if (defenderCard.resistance && attackerCard.pokemonType) {
-                if (defenderCard.resistance.type.toString() === attackerCard.pokemonType.toString()) {
-                  const modifier = defenderCard.resistance.modifier;
-                  const reduction = parseInt(modifier, 10);
-                  if (!isNaN(reduction)) {
-                    return Math.max(0, damage + reduction); // Note: resistance modifier is negative, so we add it
+                return damage;
+              }),
+            applyResistance: jest
+              .fn()
+              .mockImplementation((damage, attackerCard, defenderCard) => {
+                // Apply resistance: -20 if attacker type matches defender resistance
+                if (defenderCard.resistance && attackerCard.pokemonType) {
+                  if (
+                    defenderCard.resistance.type.toString() ===
+                    attackerCard.pokemonType.toString()
+                  ) {
+                    const modifier = defenderCard.resistance.modifier;
+                    const reduction = parseInt(modifier, 10);
+                    if (!isNaN(reduction)) {
+                      return Math.max(0, damage + reduction); // Note: resistance modifier is negative, so we add it
+                    }
                   }
                 }
-              }
-              return damage;
-            }),
+                return damage;
+              }),
           },
         },
         {
           provide: DamagePreventionService,
           useValue: {
-            applyDamagePrevention: jest.fn().mockImplementation((damage, gameState, opponentIdentifier, pokemonInstanceId) => {
-              // No damage prevention by default
-              return damage;
-            }),
-            applyDamageReduction: jest.fn().mockImplementation((damage, gameState, opponentIdentifier, pokemonInstanceId) => {
-              // No damage reduction by default
-              return damage;
-            }),
+            applyDamagePrevention: jest
+              .fn()
+              .mockImplementation(
+                (damage, gameState, opponentIdentifier, pokemonInstanceId) => {
+                  // No damage prevention by default
+                  return damage;
+                },
+              ),
+            applyDamageReduction: jest
+              .fn()
+              .mockImplementation(
+                (damage, gameState, opponentIdentifier, pokemonInstanceId) => {
+                  // No damage reduction by default
+                  return damage;
+                },
+              ),
           },
         },
         {
           provide: EffectConditionEvaluatorService,
           useValue: {
-            evaluateEffectConditions: jest.fn().mockImplementation(async (conditions, gameState, playerIdentifier, playerState, opponentState, coinFlipResults, getCardEntity) => {
-              // If no conditions, always return true
-              if (!conditions || conditions.length === 0) {
-                return true;
-              }
-              
-              // Check coin flip conditions
-              for (const condition of conditions) {
-                if (condition.type === 'COIN_FLIP_SUCCESS' || condition.type === 'COIN_FLIP_FAILURE') {
-                  // If no coin flip results provided, generate one using the resolver
-                  let results = coinFlipResults;
-                  if (!results || results.length === 0) {
-                    // Generate coin flip using the resolver
-                    const coinFlipResult = mockCoinFlipResolver.generateCoinFlip();
-                    results = [coinFlipResult];
+            evaluateEffectConditions: jest
+              .fn()
+              .mockImplementation(
+                async (
+                  conditions,
+                  gameState,
+                  playerIdentifier,
+                  playerState,
+                  opponentState,
+                  coinFlipResults,
+                  getCardEntity,
+                ) => {
+                  // If no conditions, always return true
+                  if (!conditions || conditions.length === 0) {
+                    return true;
                   }
-                  
-                  // Check if any coin flip result matches the condition
-                  const isHeads = results.some(r => r.isHeads());
-                  const isTails = results.some(r => r.isTails());
-                  
-                  if (condition.type === 'COIN_FLIP_SUCCESS' && !isHeads) {
-                    return false;
+
+                  // Check coin flip conditions
+                  for (const condition of conditions) {
+                    if (
+                      condition.type === 'COIN_FLIP_SUCCESS' ||
+                      condition.type === 'COIN_FLIP_FAILURE'
+                    ) {
+                      // If no coin flip results provided, generate one using the resolver
+                      let results = coinFlipResults;
+                      if (!results || results.length === 0) {
+                        // Generate coin flip using the resolver
+                        const coinFlipResult =
+                          mockCoinFlipResolver.generateCoinFlip();
+                        results = [coinFlipResult];
+                      }
+
+                      // Check if any coin flip result matches the condition
+                      const isHeads = results.some((r) => r.isHeads());
+                      const isTails = results.some((r) => r.isTails());
+
+                      if (condition.type === 'COIN_FLIP_SUCCESS' && !isHeads) {
+                        return false;
+                      }
+                      if (condition.type === 'COIN_FLIP_FAILURE' && !isTails) {
+                        return false;
+                      }
+                    }
                   }
-                  if (condition.type === 'COIN_FLIP_FAILURE' && !isTails) {
-                    return false;
-                  }
-                }
-              }
-              
-              return true;
-            }),
+
+                  return true;
+                },
+              ),
           },
         },
         {
@@ -788,39 +975,44 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
           provide: EvolvePokemonPlayerTurnService,
           useFactory: (matchRepo: IMatchRepository) => {
             return {
-              executeEvolvePokemon: jest.fn().mockImplementation(async (params) => {
-                // Use the real evolution service
-                const result = await mockEvolutionExecutionService.executeEvolvePokemon({
-                  evolutionCardId: params.dto.actionData.evolutionCardId,
-                  target: params.dto.actionData.target,
-                  gameState: params.gameState,
-                  playerIdentifier: params.playerIdentifier,
-                  cardsMap: params.cardsMap,
-                  validatePokemonNotEvolvedThisTurn: params.validatePokemonNotEvolvedThisTurn,
-                  validateEvolution: params.validateEvolution,
-                  getCardHp: params.getCardHp,
-                });
-                
-                // Create action summary (matching real implementation)
-                const actionSummary = new ActionSummary(
-                  'test-action-id',
-                  params.playerIdentifier,
-                  PlayerActionType.EVOLVE_POKEMON,
-                  new Date(),
-                  {
-                    evolutionCardId: params.dto.actionData.evolutionCardId,
-                    target: params.dto.actionData.target,
-                    targetInstanceId: result.targetInstanceId,
-                  },
-                );
-                
-                // Update match with action summary
-                const finalGameState = result.updatedGameState.withAction(actionSummary);
-                params.match.updateGameState(finalGameState);
-                
-                // Return saved match
-                return await matchRepo.save(params.match);
-              }),
+              executeEvolvePokemon: jest
+                .fn()
+                .mockImplementation(async (params) => {
+                  // Use the real evolution service
+                  const result =
+                    await mockEvolutionExecutionService.executeEvolvePokemon({
+                      evolutionCardId: params.dto.actionData.evolutionCardId,
+                      target: params.dto.actionData.target,
+                      gameState: params.gameState,
+                      playerIdentifier: params.playerIdentifier,
+                      cardsMap: params.cardsMap,
+                      validatePokemonNotEvolvedThisTurn:
+                        params.validatePokemonNotEvolvedThisTurn,
+                      validateEvolution: params.validateEvolution,
+                      getCardHp: params.getCardHp,
+                    });
+
+                  // Create action summary (matching real implementation)
+                  const actionSummary = new ActionSummary(
+                    'test-action-id',
+                    params.playerIdentifier,
+                    PlayerActionType.EVOLVE_POKEMON,
+                    new Date(),
+                    {
+                      evolutionCardId: params.dto.actionData.evolutionCardId,
+                      target: params.dto.actionData.target,
+                      targetInstanceId: result.targetInstanceId,
+                    },
+                  );
+
+                  // Update match with action summary
+                  const finalGameState =
+                    result.updatedGameState.withAction(actionSummary);
+                  params.match.updateGameState(finalGameState);
+
+                  // Return saved match
+                  return await matchRepo.save(params.match);
+                }),
             };
           },
           inject: [IMatchRepository],
@@ -876,7 +1068,10 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
             stateMachine: MatchStateMachineService,
             actionFilterRegistry: ActionFilterRegistry,
           ) => {
-            return new AvailableActionsService(stateMachine, actionFilterRegistry);
+            return new AvailableActionsService(
+              stateMachine,
+              actionFilterRegistry,
+            );
           },
           inject: [MatchStateMachineService, ActionFilterRegistry],
         },
@@ -932,11 +1127,16 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
               stateMachine,
               getCardUseCase,
             );
-            factory.registerHandler(PlayerActionType.DRAW_CARD, drawCardHandler);
+            factory.registerHandler(
+              PlayerActionType.DRAW_CARD,
+              drawCardHandler,
+            );
             factory.hasHandler = jest.fn().mockImplementation((actionType) => {
-              return actionType === PlayerActionType.END_TURN || 
-                     actionType === PlayerActionType.ATTACK ||
-                     actionType === PlayerActionType.DRAW_CARD;
+              return (
+                actionType === PlayerActionType.END_TURN ||
+                actionType === PlayerActionType.ATTACK ||
+                actionType === PlayerActionType.DRAW_CARD
+              );
             });
             return factory;
           },
@@ -1198,8 +1398,8 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         undefined,
       );
 
-      let match = createMatchWithGameState(attacker, [], defender, []);
-      
+      const match = createMatchWithGameState(attacker, [], defender, []);
+
       // Set up coin flip state in game state with heads result for CONFUSED status
       // The attack handler now checks for existing completed coin flip state
       const coinFlipResult = new CoinFlipResult(0, 'heads', 12345);
@@ -1223,9 +1423,10 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         true,
         true,
       );
-      const gameStateWithCoinFlip = match.gameState!.withCoinFlipState(coinFlipState);
+      const gameStateWithCoinFlip =
+        match.gameState!.withCoinFlipState(coinFlipState);
       match.updateGameState(gameStateWithCoinFlip);
-      
+
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockImplementation(async (m) => m);
 
@@ -1234,9 +1435,9 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       (mockCoinFlipResolver.generateCoinFlip as jest.Mock).mockReturnValue(
         coinFlipResult,
       );
-      (mockCoinFlipResolver.generateMultipleCoinFlips as jest.Mock).mockReturnValue(
-        [coinFlipResult],
-      );
+      (
+        mockCoinFlipResolver.generateMultipleCoinFlips as jest.Mock
+      ).mockReturnValue([coinFlipResult]);
 
       const { match: result1 } = await useCase.execute({
         matchId: 'match-1',
@@ -1910,7 +2111,7 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
   });
 
   describe('Paralysis Clearing Behavior', () => {
-    it('should clear paralysis only at the end of the opponent\'s turn (affected player\'s next turn)', async () => {
+    it("should clear paralysis only at the end of the opponent's turn (affected player's next turn)", async () => {
       // Arrange: Player 1's Pokemon is paralyzed on turn 1
       // Player 1's next turn is turn 3 (after Player 2's turn 2)
       // So paralysis should clear at the end of turn 3
@@ -1997,14 +2198,15 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         actionData: {},
       };
 
-      const { match: matchAfterPlayer1Turn } = await useCase.execute(endTurnDto1);
+      const { match: matchAfterPlayer1Turn } =
+        await useCase.execute(endTurnDto1);
 
       // Verify paralysis is still present (Player 1's turn ended, so Player 1's paralysis should remain)
       const player1PokemonAfterTurn1 =
         matchAfterPlayer1Turn.gameState?.player1State.activePokemon;
-      expect(player1PokemonAfterTurn1?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(
-        true,
-      );
+      expect(
+        player1PokemonAfterTurn1?.hasStatusEffect(StatusEffect.PARALYZED),
+      ).toBe(true);
 
       // Verify it's now Player 2's turn
       expect(matchAfterPlayer1Turn.gameState?.currentPlayer).toBe(
@@ -2031,14 +2233,15 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         actionData: {},
       };
 
-      const { match: matchAfterPlayer2Turn } = await useCase.execute(endTurnDto2);
+      const { match: matchAfterPlayer2Turn } =
+        await useCase.execute(endTurnDto2);
 
       // Verify paralysis is still present (we're at start of turn 3, paralysis clears at end of turn 3)
       const player1PokemonAfterTurn2 =
         matchAfterPlayer2Turn.gameState?.player1State.activePokemon;
-      expect(player1PokemonAfterTurn2?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(
-        true,
-      );
+      expect(
+        player1PokemonAfterTurn2?.hasStatusEffect(StatusEffect.PARALYZED),
+      ).toBe(true);
 
       // Verify it's now Player 1's turn (turn 3)
       expect(matchAfterPlayer2Turn.gameState?.currentPlayer).toBe(
@@ -2066,14 +2269,15 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
         actionData: {},
       };
 
-      const { match: matchAfterPlayer1Turn3 } = await useCase.execute(endTurnDto3);
+      const { match: matchAfterPlayer1Turn3 } =
+        await useCase.execute(endTurnDto3);
 
       // Verify paralysis is now cleared (end of turn 3, so paralysis should be cleared)
       const player1PokemonAfterTurn3 =
         matchAfterPlayer1Turn3.gameState?.player1State.activePokemon;
-      expect(player1PokemonAfterTurn3?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(
-        false,
-      );
+      expect(
+        player1PokemonAfterTurn3?.hasStatusEffect(StatusEffect.PARALYZED),
+      ).toBe(false);
       expect(player1PokemonAfterTurn3?.statusEffects).toEqual([]);
 
       // Verify it's now Player 2's turn (turn 4)
@@ -2174,8 +2378,11 @@ describe('ExecuteTurnActionUseCase - Multiple Status Effects', () => {
       const { match: matchAfterTurn } = await useCase.execute(endTurnDto);
 
       // Verify Player 2's paralysis is still present
-      const player2Pokemon = matchAfterTurn.gameState?.player2State.activePokemon;
-      expect(player2Pokemon?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(true);
+      const player2Pokemon =
+        matchAfterTurn.gameState?.player2State.activePokemon;
+      expect(player2Pokemon?.hasStatusEffect(StatusEffect.PARALYZED)).toBe(
+        true,
+      );
 
       // Verify it's now Player 2's turn
       expect(matchAfterTurn.gameState?.currentPlayer).toBe(

@@ -62,9 +62,7 @@ export class ActionConditionHelpers {
         ? gameState.player1State
         : gameState.player2State;
 
-    return (
-      playerState.activePokemon === null && playerState.bench.length > 0
-    );
+    return playerState.activePokemon === null && playerState.bench.length > 0;
   }
 
   /**
@@ -104,9 +102,7 @@ export class ActionConditionHelpers {
   /**
    * Check if both players need to select active Pokemon (double knockout)
    */
-  static bothPlayersNeedActiveSelection(
-    gameState: GameStateContext,
-  ): boolean {
+  static bothPlayersNeedActiveSelection(gameState: GameStateContext): boolean {
     if (!gameState?.player1State || !gameState?.player2State) {
       return false;
     }
@@ -121,4 +117,3 @@ export class ActionConditionHelpers {
     return player1NeedsActive || player2NeedsActive;
   }
 }
-

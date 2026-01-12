@@ -3,7 +3,10 @@ import { Match, PlayerIdentifier, PlayerType, MatchState } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
 import { CreateMatchDto } from '../dto';
 import { v4 as uuidv4 } from 'uuid';
-import { getAiPlayerById, AI_PLAYER_ID } from '../../domain/constants/ai-player.constants';
+import {
+  getAiPlayerById,
+  AI_PLAYER_ID,
+} from '../../domain/constants/ai-player.constants';
 import { ValidateMatchDecksUseCase } from './validate-match-decks.use-case';
 
 /**
@@ -63,11 +66,7 @@ export class CreateMatchUseCase {
       }
 
       // Assign AI player with specified deck
-      match.assignPlayer(
-        aiPlayerId,
-        dto.aiDeckId,
-        PlayerIdentifier.PLAYER2,
-      );
+      match.assignPlayer(aiPlayerId, dto.aiDeckId, PlayerIdentifier.PLAYER2);
       // Set player2 type to AI
       match.setPlayerType(PlayerIdentifier.PLAYER2, PlayerType.AI);
     }

@@ -6,7 +6,13 @@ import { CreateCardRequestDto } from '../dto/create-card-request.dto';
 import { CardEditorResponseDto } from '../../presentation/dto/card-editor-response.dto';
 import { CardMapper } from '../../presentation/mappers/card.mapper';
 import { Card } from '../../domain/entities/card.entity';
-import { Attack, Ability, Weakness, Resistance, Evolution } from '../../domain/value-objects';
+import {
+  Attack,
+  Ability,
+  Weakness,
+  Resistance,
+  Evolution,
+} from '../../domain/value-objects';
 import { AttackEffectFactory } from '../../domain/value-objects/attack-effect.value-object';
 import { AbilityEffectFactory } from '../../domain/value-objects/ability-effect.value-object';
 import { AttackEffectType } from '../../domain/enums/attack-effect-type.enum';
@@ -89,7 +95,9 @@ export class CreateCardUseCase {
     if (dto.attacks && dto.attacks.length > 0) {
       for (const attackDto of dto.attacks) {
         const attackEffects = attackDto.effects
-          ? attackDto.effects.map((effectDto) => this.convertAttackEffect(effectDto))
+          ? attackDto.effects.map((effectDto) =>
+              this.convertAttackEffect(effectDto),
+            )
           : undefined;
 
         const attack = new Attack(
@@ -108,7 +116,9 @@ export class CreateCardUseCase {
     // Set ability if provided
     if (dto.ability) {
       const abilityEffects = dto.ability.effects
-        ? dto.ability.effects.map((effectDto) => this.convertAbilityEffect(effectDto))
+        ? dto.ability.effects.map((effectDto) =>
+            this.convertAbilityEffect(effectDto),
+          )
         : [AbilityEffectFactory.drawCards(1)]; // Default effect if none provided
 
       const ability = new Ability(
@@ -173,7 +183,9 @@ export class CreateCardUseCase {
   /**
    * Get evolution stage for previous evolution
    */
-  private getEvolutionStageForPrevious(currentStage: EvolutionStage): EvolutionStage {
+  private getEvolutionStageForPrevious(
+    currentStage: EvolutionStage,
+  ): EvolutionStage {
     switch (currentStage) {
       case EvolutionStage.STAGE_1:
         return EvolutionStage.BASIC;
@@ -191,7 +203,8 @@ export class CreateCardUseCase {
     switch (effectDto.effectType) {
       case AttackEffectType.DISCARD_ENERGY:
         return AttackEffectFactory.discardEnergy(
-          (effectDto.target as TargetType.SELF | TargetType.DEFENDING) || TargetType.SELF,
+          (effectDto.target as TargetType.SELF | TargetType.DEFENDING) ||
+            TargetType.SELF,
           effectDto.amount || 1,
           effectDto.energyType,
         );
@@ -201,27 +214,22 @@ export class CreateCardUseCase {
           throw new Error('STATUS_CONDITION effect requires statusCondition');
         }
         // STATUS_CONDITION always targets DEFENDING (opponent active Pokemon)
-        return AttackEffectFactory.statusCondition(
-          effectDto.statusCondition as
-            | 'PARALYZED'
-            | 'POISONED'
-            | 'BURNED'
-            | 'ASLEEP'
-            | 'CONFUSED',
-        );
+        return AttackEffectFactory.statusCondition(effectDto.statusCondition);
 
       case AttackEffectType.DAMAGE_MODIFIER:
         return AttackEffectFactory.damageModifier(effectDto.modifier || 0);
 
       case AttackEffectType.HEAL:
         return AttackEffectFactory.heal(
-          (effectDto.target as TargetType.SELF | TargetType.DEFENDING) || TargetType.SELF,
+          (effectDto.target as TargetType.SELF | TargetType.DEFENDING) ||
+            TargetType.SELF,
           effectDto.healAmount || 0,
         );
 
       case AttackEffectType.PREVENT_DAMAGE:
         return AttackEffectFactory.preventDamage(
-          (effectDto.target as TargetType.SELF | TargetType.DEFENDING) || TargetType.SELF,
+          (effectDto.target as TargetType.SELF | TargetType.DEFENDING) ||
+            TargetType.SELF,
           (effectDto.duration as 'next_turn' | 'this_turn') || 'next_turn',
           effectDto.amount,
         );
@@ -231,7 +239,8 @@ export class CreateCardUseCase {
 
       case AttackEffectType.ENERGY_ACCELERATION:
         return AttackEffectFactory.energyAcceleration(
-          (effectDto.target as TargetType.SELF | TargetType.BENCHED_YOURS) || TargetType.SELF,
+          (effectDto.target as TargetType.SELF | TargetType.BENCHED_YOURS) ||
+            TargetType.SELF,
           (effectDto.source as 'deck' | 'discard' | 'hand') || 'deck',
           effectDto.count || 1,
           effectDto.energyType,
@@ -244,7 +253,9 @@ export class CreateCardUseCase {
         );
 
       default:
-        throw new Error(`Unsupported attack effect type: ${effectDto.effectType}`);
+        throw new Error(
+          `Unsupported attack effect type: ${effectDto.effectType}`,
+        );
     }
   }
 
@@ -267,7 +278,7 @@ export class CreateCardUseCase {
       case AbilityEffectType.ENERGY_ACCELERATION:
         return AbilityEffectFactory.energyAcceleration(
           (effectDto.target as any) || TargetType.SELF,
-          (effectDto.source as any),
+          effectDto.source as any,
           (effectDto.count as number) || 1,
           effectDto.energyType,
           {
@@ -281,7 +292,7 @@ export class CreateCardUseCase {
       case AbilityEffectType.SEARCH_DECK:
         return AbilityEffectFactory.searchDeck(
           (effectDto.count as number) || 1,
-          (effectDto.destination as any),
+          effectDto.destination as any,
           {
             cardType: effectDto.cardType,
             pokemonType: effectDto.pokemonType,
@@ -310,14 +321,15 @@ export class CreateCardUseCase {
 
       case AbilityEffectType.STATUS_CONDITION:
         return AbilityEffectFactory.statusCondition(
-          (effectDto.statusCondition as StatusCondition) || StatusCondition.PARALYZED,
+          (effectDto.statusCondition as StatusCondition) ||
+            StatusCondition.PARALYZED,
           (effectDto.target as any) || TargetType.DEFENDING,
         );
 
       case AbilityEffectType.PREVENT_DAMAGE:
         return AbilityEffectFactory.preventDamage(
           (effectDto.target as any) || TargetType.SELF,
-          (effectDto.duration as any),
+          effectDto.duration as any,
           effectDto.amount,
         );
 
@@ -330,4 +342,3 @@ export class CreateCardUseCase {
     }
   }
 }
-

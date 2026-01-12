@@ -13,7 +13,11 @@ import { ILogger } from '../../../../../shared/application/ports/logger.interfac
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
 import { TrainerEffect } from '../../../../card/domain/value-objects';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
 import {
   CardType,
   TrainerType,
@@ -22,7 +26,12 @@ import {
   TrainerEffectType,
 } from '../../../../card/domain/enums';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
-import { PokemonPosition, PlayerIdentifier, TurnPhase, StatusEffect } from '../../../domain/enums';
+import {
+  PokemonPosition,
+  PlayerIdentifier,
+  TurnPhase,
+  StatusEffect,
+} from '../../../domain/enums';
 import {
   TrainerCardOption,
   TrainerCardCategory,
@@ -110,10 +119,7 @@ describe('TrainerCardAnalyzerService', () => {
   };
 
   // Helper function to create a basic Energy card
-  const createEnergyCard = (
-    cardId: string,
-    energyType: EnergyType,
-  ): Card => {
+  const createEnergyCard = (cardId: string, energyType: EnergyType): Card => {
     const card = Card.createEnergyCard(
       `instance-${cardId}`,
       cardId,
@@ -280,9 +286,7 @@ describe('TrainerCardAnalyzerService', () => {
 
       // Expected Result:
       // Should return TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION (3)
-      expect(category).toBe(
-        TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION,
-      );
+      expect(category).toBe(TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION);
     });
 
     it('should categorize SEARCH_DECK effect as CARD_DRAWING_DECK_MANIPULATION', async () => {
@@ -305,9 +309,7 @@ describe('TrainerCardAnalyzerService', () => {
 
       // Expected Result:
       // Should return TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION (3)
-      expect(category).toBe(
-        TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION,
-      );
+      expect(category).toBe(TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION);
     });
 
     it('should categorize RETRIEVE_FROM_DISCARD effect as CARD_DISCARD_RETRIEVAL', async () => {
@@ -446,9 +448,7 @@ describe('TrainerCardAnalyzerService', () => {
       // Expected Result:
       // Should ignore DISCARD_HAND and categorize based on DRAW_CARDS
       // Should return TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION (3)
-      expect(category).toBe(
-        TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION,
-      );
+      expect(category).toBe(TrainerCardCategory.CARD_DRAWING_DECK_MANIPULATION);
     });
 
     it('should use highest priority effect when multiple non-ignored effects exist', async () => {
@@ -491,14 +491,7 @@ describe('TrainerCardAnalyzerService', () => {
         [], // prizeCards
         [], // discardPile
       );
-      const opponentState = new PlayerGameState(
-        [],
-        [],
-        null,
-        [],
-        [],
-        [],
-      );
+      const opponentState = new PlayerGameState([], [], null, [], [], []);
       const gameState = new GameState(
         playerState,
         opponentState,
@@ -647,9 +640,12 @@ describe('TrainerCardAnalyzerService', () => {
         TargetType.SELF,
         2,
       );
-      const healCard = createTrainerCard('potion-001', 'Potion', TrainerType.ITEM, [
-        healEffect,
-      ]);
+      const healCard = createTrainerCard(
+        'potion-001',
+        'Potion',
+        TrainerType.ITEM,
+        [healEffect],
+      );
       const drawCard = createTrainerCard(
         'professor-oak-001',
         "Professor Oak's",

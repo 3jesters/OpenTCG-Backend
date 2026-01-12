@@ -31,7 +31,7 @@ This will apply these practices to all your NestJS projects in Cursor.
 ---
 
 ### 2. `.cursorrules` - Project-Specific Rules
-**Location**: `/Users/amitbenvenisti/OpenTCG/.cursorrules` (project root)
+**Location**: `.cursorrules` (project root)
 
 **Purpose**: Specific to the OpenTCG project architecture and structure
 

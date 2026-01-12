@@ -67,7 +67,7 @@ export class CardOrmMapper {
         // Object format with pokemonNumber
         const evolution = new Evolution(
           ormEntity.evolvesFrom.pokemonNumber,
-          ormEntity.evolvesFrom.stage as EvolutionStage,
+          ormEntity.evolvesFrom.stage,
           ormEntity.evolvesFrom.condition,
         );
         card.setEvolvesFrom(evolution);
@@ -129,18 +129,20 @@ export class CardOrmMapper {
     if (ormEntity.ability) {
       const abilityData = ormEntity.ability as any;
       // Ability requires at least one effect - use placeholder if none provided
-      let effects = abilityData.effects && abilityData.effects.length > 0
-        ? abilityData.effects
-        : [AbilityEffectFactory.drawCards(1)]; // Placeholder effect
-      
+      let effects =
+        abilityData.effects && abilityData.effects.length > 0
+          ? abilityData.effects
+          : [AbilityEffectFactory.drawCards(1)]; // Placeholder effect
+
       // Normalize effects to fix invalid targets (e.g., DEFENDING in HEAL effects)
       effects = AbilityEffectNormalizer.normalize(effects);
-      
+
       const ability = new Ability(
         abilityData.name,
         abilityData.description || abilityData.text || '',
-        (abilityData.type || abilityData.activationType) as AbilityActivationType,
-        effects as any,
+        (abilityData.type ||
+          abilityData.activationType) as AbilityActivationType,
+        effects,
         abilityData.triggerEvent,
         abilityData.usageLimit,
       );
@@ -182,7 +184,10 @@ export class CardOrmMapper {
     if (ormEntity.energyProvision) {
       const provision = ormEntity.energyProvision as any;
       const energyProvision = new EnergyProvision(
-        (provision.energyTypes || provision.provides || [provision.energyType]).map((e: string) => e as EnergyType),
+        (
+          provision.energyTypes ||
+          provision.provides || [provision.energyType]
+        ).map((e: string) => e as EnergyType),
         provision.amount || 1,
         provision.isSpecial || false,
         provision.restrictions,
@@ -197,7 +202,11 @@ export class CardOrmMapper {
     }
 
     // Editor metadata
-    if (ormEntity.isEditorCreated && ormEntity.createdBy && ormEntity.createdAt) {
+    if (
+      ormEntity.isEditorCreated &&
+      ormEntity.createdBy &&
+      ormEntity.createdAt
+    ) {
       card.setEditorMetadata(ormEntity.createdBy, ormEntity.createdAt);
     }
 
@@ -333,5 +342,4 @@ export class CardOrmMapper {
 
     return ormEntity;
   }
-
 }

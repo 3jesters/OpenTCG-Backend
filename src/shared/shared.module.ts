@@ -18,5 +18,3 @@ import { ConsoleLoggerService } from './infrastructure/logging/console-logger.se
   exports: [ILogger],
 })
 export class SharedModule {}
-
-

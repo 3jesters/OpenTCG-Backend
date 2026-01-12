@@ -27,4 +27,3 @@ export class ActionFilterRegistry {
     return filter || this.defaultFilter;
   }
 }
-

@@ -1,7 +1,23 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsArray, ValidateNested, Min, Max, ArrayMaxSize, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+  Min,
+  Max,
+  ArrayMaxSize,
+  IsNotEmpty,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PokemonType, EvolutionStage, EnergyType, AbilityActivationType } from '../../domain/enums';
+import {
+  PokemonType,
+  EvolutionStage,
+  EnergyType,
+  AbilityActivationType,
+} from '../../domain/enums';
 import { AttackEffectDto } from '../../presentation/dto/attack-effect.dto';
 import { AbilityEffectDto } from '../../presentation/dto/ability-effect.dto';
 
@@ -11,7 +27,12 @@ class CreateAttackDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ description: 'Energy cost array', type: [String], enum: EnergyType, example: [EnergyType.FIRE, EnergyType.FIRE] })
+  @ApiProperty({
+    description: 'Energy cost array',
+    type: [String],
+    enum: EnergyType,
+    example: [EnergyType.FIRE, EnergyType.FIRE],
+  })
   @IsArray()
   @IsEnum(EnergyType, { each: true })
   energyCost: EnergyType[];
@@ -21,12 +42,18 @@ class CreateAttackDto {
   @IsNotEmpty()
   damage: string;
 
-  @ApiProperty({ description: 'Attack text description', example: 'Discard 2 Energy attached to this Pokemon.' })
+  @ApiProperty({
+    description: 'Attack text description',
+    example: 'Discard 2 Energy attached to this Pokemon.',
+  })
   @IsString()
   @IsNotEmpty()
   text: string;
 
-  @ApiPropertyOptional({ description: 'Attack effects', type: [AttackEffectDto] })
+  @ApiPropertyOptional({
+    description: 'Attack effects',
+    type: [AttackEffectDto],
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
@@ -55,7 +82,10 @@ class CreateAbilityDto {
   @IsEnum(AbilityActivationType)
   activationType: AbilityActivationType;
 
-  @ApiPropertyOptional({ description: 'Ability effects', type: [AbilityEffectDto] })
+  @ApiPropertyOptional({
+    description: 'Ability effects',
+    type: [AbilityEffectDto],
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
@@ -102,12 +132,18 @@ class CreateEvolutionDto {
  * Used for creating new cards through the editor
  */
 export class CreateCardRequestDto {
-  @ApiProperty({ description: 'Pokemon name (must be from supported list)', example: 'Pikachu' })
+  @ApiProperty({
+    description: 'Pokemon name (must be from supported list)',
+    example: 'Pikachu',
+  })
   @IsString()
   @IsNotEmpty()
   pokemonName: string;
 
-  @ApiProperty({ description: 'Pokemon number (must match pokemonName)', example: '025' })
+  @ApiProperty({
+    description: 'Pokemon number (must match pokemonName)',
+    example: '025',
+  })
   @IsString()
   @IsNotEmpty()
   pokemonNumber: string;
@@ -125,7 +161,11 @@ export class CreateCardRequestDto {
   @IsEnum(PokemonType)
   pokemonType: PokemonType;
 
-  @ApiPropertyOptional({ description: 'Attacks (max 2)', type: [CreateAttackDto], maxItems: 2 })
+  @ApiPropertyOptional({
+    description: 'Attacks (max 2)',
+    type: [CreateAttackDto],
+    maxItems: 2,
+  })
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(2)
@@ -157,7 +197,10 @@ export class CreateCardRequestDto {
   @Min(0)
   retreatCost?: number;
 
-  @ApiPropertyOptional({ description: 'Evolution from', type: CreateEvolutionDto })
+  @ApiPropertyOptional({
+    description: 'Evolution from',
+    type: CreateEvolutionDto,
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => CreateEvolutionDto)
@@ -168,4 +211,3 @@ export class CreateCardRequestDto {
   @IsNotEmpty()
   createdBy: string;
 }
-

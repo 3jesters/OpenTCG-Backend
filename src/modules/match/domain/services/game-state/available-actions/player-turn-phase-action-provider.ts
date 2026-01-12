@@ -61,4 +61,3 @@ export class PlayerTurnPhaseActionProvider implements AvailableActionsProvider {
     return [PlayerActionType.CONCEDE];
   }
 }
-

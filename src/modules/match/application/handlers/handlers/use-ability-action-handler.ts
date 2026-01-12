@@ -95,9 +95,7 @@ export class UseAbilityActionHandler
     }
 
     if (!pokemon) {
-      throw new BadRequestException(
-        'Pokemon not found at specified position',
-      );
+      throw new BadRequestException('Pokemon not found at specified position');
     }
 
     // Validate Pokemon matches cardId (or instanceId if provided)
@@ -112,15 +110,14 @@ export class UseAbilityActionHandler
     }
 
     // Validate ability can be used
-    const validation =
-      await this.abilityEffectValidator.validateAbilityUsage(
-        ability,
-        actionData,
-        pokemon,
-        gameState,
-        playerIdentifier,
-        cardsMap,
-      );
+    const validation = await this.abilityEffectValidator.validateAbilityUsage(
+      ability,
+      actionData,
+      pokemon,
+      gameState,
+      playerIdentifier,
+      cardsMap,
+    );
 
     if (!validation.isValid) {
       throw new BadRequestException(
@@ -167,4 +164,3 @@ export class UseAbilityActionHandler
     return await this.matchRepository.save(match);
   }
 }
-

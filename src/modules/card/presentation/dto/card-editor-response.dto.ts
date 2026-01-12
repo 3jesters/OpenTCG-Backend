@@ -25,4 +25,3 @@ export class CardEditorResponseDto extends CardDetailDto {
   })
   isEditorCreated: boolean;
 }
-

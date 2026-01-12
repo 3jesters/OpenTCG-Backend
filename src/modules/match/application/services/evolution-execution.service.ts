@@ -11,10 +11,7 @@ import {
   PlayerActionType,
 } from '../../domain/enums';
 import { Card } from '../../../card/domain/entities';
-import {
-  CardType,
-  EvolutionStage,
-} from '../../../card/domain/enums';
+import { CardType, EvolutionStage } from '../../../card/domain/enums';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
 import { CardHelperService } from './card-helper.service';
 
@@ -45,13 +42,8 @@ export class EvolutionExecutionService {
   async executeEvolvePokemon(
     params: EvolvePokemonParams,
   ): Promise<EvolvePokemonResult> {
-    const {
-      evolutionCardId,
-      target,
-      gameState,
-      playerIdentifier,
-      cardsMap,
-    } = params;
+    const { evolutionCardId, target, gameState, playerIdentifier, cardsMap } =
+      params;
 
     // Validate phase
     if (gameState.phase !== TurnPhase.MAIN_PHASE) {
@@ -86,7 +78,10 @@ export class EvolutionExecutionService {
     }
 
     // Load evolution card details to get HP
-    const evolutionCardHp = await this.cardHelper.getCardHp(evolutionCardId, cardsMap);
+    const evolutionCardHp = await this.cardHelper.getCardHp(
+      evolutionCardId,
+      cardsMap,
+    );
 
     // Calculate damage taken (preserve absolute damage amount)
     const damageTaken = targetPokemon.maxHp - targetPokemon.currentHp;
@@ -117,9 +112,7 @@ export class EvolutionExecutionService {
     );
 
     // Remove evolution card from hand
-    const updatedHand = playerState.hand.filter(
-      (id) => id !== evolutionCardId,
-    );
+    const updatedHand = playerState.hand.filter((id) => id !== evolutionCardId);
 
     // Update bench if needed
     if (target !== 'ACTIVE') {
@@ -152,4 +145,3 @@ export class EvolutionExecutionService {
     };
   }
 }
-

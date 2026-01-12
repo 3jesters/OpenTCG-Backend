@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
  * Database Module
  * Configures TypeORM with PostgreSQL connection
  * Only initializes TypeORM when NODE_ENV is not 'dev' or 'test'
- * 
+ *
  * In dev/test mode, this module is imported but TypeORM is not initialized,
  * preventing database connection attempts.
  */
@@ -42,4 +42,3 @@ const typeOrmImports = shouldInitializeDb
   exports: shouldInitializeDb ? [TypeOrmModule] : [],
 })
 export class DatabaseModule {}
-

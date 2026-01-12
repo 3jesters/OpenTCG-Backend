@@ -65,7 +65,10 @@ export class EndTurnActionHandler
     }
 
     // END_TURN must come after RETREAT (if RETREAT was performed) or after ATTACK (if no RETREAT)
-    const hasRetreat = this.hasRetreatInCurrentTurn(gameState, playerIdentifier);
+    const hasRetreat = this.hasRetreatInCurrentTurn(
+      gameState,
+      playerIdentifier,
+    );
     const hasAttack = this.hasAttackInCurrentTurn(gameState, playerIdentifier);
 
     if (hasRetreat) {
@@ -86,9 +89,7 @@ export class EndTurnActionHandler
       if (lastRetreatIndex >= 0) {
         const hasEndTurnBeforeRetreat = currentTurnActions
           .slice(0, lastRetreatIndex)
-          .some(
-            (action) => action.actionType === PlayerActionType.END_TURN,
-          );
+          .some((action) => action.actionType === PlayerActionType.END_TURN);
 
         if (hasEndTurnBeforeRetreat) {
           throw new BadRequestException(
@@ -125,8 +126,7 @@ export class EndTurnActionHandler
     if (gameState.phase === TurnPhase.SELECT_ACTIVE_POKEMON) {
       const opponentState = gameState.getOpponentState(playerIdentifier);
       const opponentNeedsActive =
-        opponentState.activePokemon === null &&
-        opponentState.bench.length > 0;
+        opponentState.activePokemon === null && opponentState.bench.length > 0;
 
       if (opponentNeedsActive) {
         throw new BadRequestException(
@@ -266,67 +266,100 @@ export class EndTurnActionHandler
     const savedMatch = await this.matchRepository.save(match);
 
     // Auto-trigger next player if AI
-    if (savedMatch.state === MatchState.PLAYER_TURN && savedMatch.currentPlayer) {
+    if (
+      savedMatch.state === MatchState.PLAYER_TURN &&
+      savedMatch.currentPlayer
+    ) {
       try {
-        const nextPlayerId = savedMatch.currentPlayer === PlayerIdentifier.PLAYER1
-          ? savedMatch.player1Id
-          : savedMatch.player2Id;
-        
-        this.logger.debug('Checking if next player is AI', 'EndTurnActionHandler', {
-          matchId: savedMatch.id,
-          currentPlayer: savedMatch.currentPlayer,
-          nextPlayerId,
-          matchState: savedMatch.state,
-        });
-          
-        if (nextPlayerId && this.playerTypeService.isAiPlayer(nextPlayerId, savedMatch)) {
-          this.logger.info('Auto-triggering AI player to start turn', 'EndTurnActionHandler', {
+        const nextPlayerId =
+          savedMatch.currentPlayer === PlayerIdentifier.PLAYER1
+            ? savedMatch.player1Id
+            : savedMatch.player2Id;
+
+        this.logger.debug(
+          'Checking if next player is AI',
+          'EndTurnActionHandler',
+          {
             matchId: savedMatch.id,
-            aiPlayerId: nextPlayerId,
-            playerIdentifier: savedMatch.currentPlayer,
-            turnNumber: savedMatch.gameState?.turnNumber,
-            phase: savedMatch.gameState?.phase,
-          });
-          
-          await this.processActionUseCase.execute({
-            playerId: nextPlayerId,
-            actionType: PlayerActionType.DRAW_CARD, // Placeholder - AI will generate
-            actionData: {},
-          }, savedMatch.id);
-          
-          this.logger.debug('AI turn trigger completed', 'EndTurnActionHandler', {
-            matchId: savedMatch.id,
-            aiPlayerId: nextPlayerId,
-          });
-          
+            currentPlayer: savedMatch.currentPlayer,
+            nextPlayerId,
+            matchState: savedMatch.state,
+          },
+        );
+
+        if (
+          nextPlayerId &&
+          this.playerTypeService.isAiPlayer(nextPlayerId, savedMatch)
+        ) {
+          this.logger.info(
+            'Auto-triggering AI player to start turn',
+            'EndTurnActionHandler',
+            {
+              matchId: savedMatch.id,
+              aiPlayerId: nextPlayerId,
+              playerIdentifier: savedMatch.currentPlayer,
+              turnNumber: savedMatch.gameState?.turnNumber,
+              phase: savedMatch.gameState?.phase,
+            },
+          );
+
+          await this.processActionUseCase.execute(
+            {
+              playerId: nextPlayerId,
+              actionType: PlayerActionType.DRAW_CARD, // Placeholder - AI will generate
+              actionData: {},
+            },
+            savedMatch.id,
+          );
+
+          this.logger.debug(
+            'AI turn trigger completed',
+            'EndTurnActionHandler',
+            {
+              matchId: savedMatch.id,
+              aiPlayerId: nextPlayerId,
+            },
+          );
+
           // Reload match after AI action
           const updatedMatch = await this.matchRepository.findById(dto.matchId);
           if (updatedMatch) {
             return updatedMatch;
           }
         } else {
-          this.logger.debug('Next player is not AI, skipping auto-trigger', 'EndTurnActionHandler', {
-            matchId: savedMatch.id,
-            nextPlayerId,
-          });
+          this.logger.debug(
+            'Next player is not AI, skipping auto-trigger',
+            'EndTurnActionHandler',
+            {
+              matchId: savedMatch.id,
+              nextPlayerId,
+            },
+          );
         }
       } catch (error) {
-        this.logger.error('Error auto-triggering AI turn', 'EndTurnActionHandler', {
-          matchId: savedMatch.id,
-          error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        });
+        this.logger.error(
+          'Error auto-triggering AI turn',
+          'EndTurnActionHandler',
+          {
+            matchId: savedMatch.id,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        );
         // Don't fail the END_TURN action
       }
     } else {
-      this.logger.debug('Not in PLAYER_TURN state or no current player', 'EndTurnActionHandler', {
-        matchId: savedMatch.id,
-        state: savedMatch.state,
-        currentPlayer: savedMatch.currentPlayer,
-      });
+      this.logger.debug(
+        'Not in PLAYER_TURN state or no current player',
+        'EndTurnActionHandler',
+        {
+          matchId: savedMatch.id,
+          state: savedMatch.state,
+          currentPlayer: savedMatch.currentPlayer,
+        },
+      );
     }
 
     return savedMatch;
   }
 }
-

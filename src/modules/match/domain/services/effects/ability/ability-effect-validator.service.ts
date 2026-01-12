@@ -275,13 +275,11 @@ export class AbilityEffectValidatorService {
         // If source is SELF, selectedCardIds may be needed
         if (effect.source === EnergySource.SELF) {
           // Check if sourcePokemonTarget requires sourcePokemon selection
-          const sourcePokemonTarget = effect.sourcePokemonTarget || TargetType.SELF;
+          const sourcePokemonTarget =
+            effect.sourcePokemonTarget || TargetType.SELF;
           if (sourcePokemonTarget !== TargetType.SELF) {
             // Require sourcePokemon when sourcePokemonTarget is not SELF
-            if (
-              !('sourcePokemon' in actionData) ||
-              !actionData.sourcePokemon
-            ) {
+            if (!('sourcePokemon' in actionData) || !actionData.sourcePokemon) {
               errors.push(
                 'sourcePokemon is required for ENERGY_ACCELERATION effect when sourcePokemonTarget is not SELF',
               );

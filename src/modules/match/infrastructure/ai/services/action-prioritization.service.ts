@@ -1,6 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
-import { PlayerIdentifier, PokemonPosition, StatusEffect } from '../../../domain/enums';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
+import {
+  PlayerIdentifier,
+  PokemonPosition,
+  StatusEffect,
+} from '../../../domain/enums';
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
 import { StatusConditionEffect } from '../../../../card/domain/value-objects/attack-effect.value-object';
@@ -17,7 +25,10 @@ import {
   SortedAttackAnalysisList,
   SortedKnockoutAnalysisList,
 } from '../types/action-analysis.types';
-import { sortAttackAnalyses, sortKnockoutAnalyses } from '../utils/sorting.utils';
+import {
+  sortAttackAnalyses,
+  sortKnockoutAnalyses,
+} from '../utils/sorting.utils';
 import { ILogger } from '../../../../../shared/application/ports/logger.interface';
 
 /**
@@ -104,9 +115,13 @@ export class ActionPrioritizationService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<SortedKnockoutAnalysisList> {
-    this.logger.debug('identifyKnockoutAttacks called', 'ActionPrioritizationService', {
-      playerIdentifier,
-    });
+    this.logger.debug(
+      'identifyKnockoutAttacks called',
+      'ActionPrioritizationService',
+      {
+        playerIdentifier,
+      },
+    );
 
     const playerState = gameState.getPlayerState(playerIdentifier);
     const opponentState = gameState.getOpponentState(playerIdentifier);
@@ -120,22 +135,30 @@ export class ActionPrioritizationService {
       getCardEntity,
     );
 
-    this.logger.debug('Available attacks retrieved', 'ActionPrioritizationService', {
-      availableAttacksCount: availableAttacks.length,
-    });
+    this.logger.debug(
+      'Available attacks retrieved',
+      'ActionPrioritizationService',
+      {
+        availableAttacksCount: availableAttacks.length,
+      },
+    );
 
     // Filter to only attacks we can perform
     const performableAttacks = availableAttacks.filter((a) => a.canPerform);
-    
+
     // Filter to only active Pokemon attacks - only active Pokemon can attack
     const activePokemonAttacks = performableAttacks.filter(
       (a) => a.position === PokemonPosition.ACTIVE,
     );
-    
-    this.logger.debug('Performable attacks filtered', 'ActionPrioritizationService', {
-      performableAttacksCount: performableAttacks.length,
-      activePokemonAttacksCount: activePokemonAttacks.length,
-    });
+
+    this.logger.debug(
+      'Performable attacks filtered',
+      'ActionPrioritizationService',
+      {
+        performableAttacksCount: performableAttacks.length,
+        activePokemonAttacksCount: activePokemonAttacks.length,
+      },
+    );
 
     // Check each attack against opponent Pokemon
     for (const attackAnalysis of activePokemonAttacks) {
@@ -156,11 +179,15 @@ export class ActionPrioritizationService {
         );
         if (knockout) {
           knockouts.push(knockout);
-          this.logger.debug('Knockout found for active Pokemon', 'ActionPrioritizationService', {
-            attackName: attackAnalysis.attack.name,
-            damage: knockout.damage,
-            targetHp: opponentState.activePokemon.currentHp,
-          });
+          this.logger.debug(
+            'Knockout found for active Pokemon',
+            'ActionPrioritizationService',
+            {
+              attackName: attackAnalysis.attack.name,
+              damage: knockout.damage,
+              targetHp: opponentState.activePokemon.currentHp,
+            },
+          );
         }
       }
 
@@ -181,20 +208,28 @@ export class ActionPrioritizationService {
         );
         if (knockout) {
           knockouts.push(knockout);
-          this.logger.debug('Knockout found for bench Pokemon', 'ActionPrioritizationService', {
-            attackName: attackAnalysis.attack.name,
-            damage: knockout.damage,
-            targetHp: benchInstance.currentHp,
-            position,
-          });
+          this.logger.debug(
+            'Knockout found for bench Pokemon',
+            'ActionPrioritizationService',
+            {
+              attackName: attackAnalysis.attack.name,
+              damage: knockout.damage,
+              targetHp: benchInstance.currentHp,
+              position,
+            },
+          );
         }
       }
     }
 
     const sorted = sortKnockoutAnalyses(knockouts);
-    this.logger.info('Knockout attacks identified', 'ActionPrioritizationService', {
-      knockoutCount: sorted.length,
-    });
+    this.logger.info(
+      'Knockout attacks identified',
+      'ActionPrioritizationService',
+      {
+        knockoutCount: sorted.length,
+      },
+    );
     return sorted;
   }
 
@@ -208,9 +243,13 @@ export class ActionPrioritizationService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<SortedAttackAnalysisList> {
-    this.logger.debug('findMaximumDamageAttacks called', 'ActionPrioritizationService', {
-      playerIdentifier,
-    });
+    this.logger.debug(
+      'findMaximumDamageAttacks called',
+      'ActionPrioritizationService',
+      {
+        playerIdentifier,
+      },
+    );
     const playerState = gameState.getPlayerState(playerIdentifier);
     const opponentState = gameState.getOpponentState(playerIdentifier);
     const analyses: AttackAnalysis[] = [];
@@ -410,8 +449,8 @@ export class ActionPrioritizationService {
     const baseDamage = this.parseBaseDamage(attackAnalysis.attack.damage || '');
 
     // Calculate final damage using damage calculation service
-    const finalDamage = await this.attackDamageCalculationService.calculateFinalDamage(
-      {
+    const finalDamage =
+      await this.attackDamageCalculationService.calculateFinalDamage({
         baseDamage,
         attack: attackAnalysis.attack,
         attackerCard,
@@ -444,8 +483,7 @@ export class ActionPrioritizationService {
           playerState: PlayerGameState,
           opponentState: PlayerGameState,
         ) => false, // No conditions for analysis
-      },
-    );
+      });
 
     return finalDamage;
   }
@@ -513,11 +551,14 @@ export class ActionPrioritizationService {
 
     for (const effect of statusEffects) {
       if (effect.effectType === AttackEffectType.STATUS_CONDITION) {
-        const statusEffect = effect as StatusConditionEffect;
+        const statusEffect = effect;
         const statusEffectEnum = this.mapStatusConditionToStatusEffect(
           statusEffect.statusCondition,
         );
-        if (statusEffectEnum && targetPokemon.statusEffects.includes(statusEffectEnum)) {
+        if (
+          statusEffectEnum &&
+          targetPokemon.statusEffects.includes(statusEffectEnum)
+        ) {
           return true;
         }
       }
@@ -643,7 +684,7 @@ export class ActionPrioritizationService {
 
     return statusEffects.some((effect) => {
       if (effect.effectType === AttackEffectType.STATUS_CONDITION) {
-        const statusEffect = effect as StatusConditionEffect;
+        const statusEffect = effect;
         return statusEffect.statusCondition === 'POISONED';
       }
       return false;
@@ -704,7 +745,10 @@ export class ActionPrioritizationService {
    * - Other status effects: 10
    * - No side effect: 0
    */
-  private calculateSideEffectPoints(attack: Attack, baseDamage: number): number {
+  private calculateSideEffectPoints(
+    attack: Attack,
+    baseDamage: number,
+  ): number {
     if (!attack.hasEffects()) {
       return 0;
     }
@@ -720,7 +764,7 @@ export class ActionPrioritizationService {
     // Check if any status effect is poison
     const hasPoison = statusEffects.some((effect) => {
       if (effect.effectType === AttackEffectType.STATUS_CONDITION) {
-        const statusEffect = effect as StatusConditionEffect;
+        const statusEffect = effect;
         return statusEffect.statusCondition === 'POISONED';
       }
       return false;

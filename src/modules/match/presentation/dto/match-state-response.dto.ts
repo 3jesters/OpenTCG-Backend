@@ -154,10 +154,7 @@ export class MatchStateResponseDto {
       turnNumber: gameState?.turnNumber || 0,
       phase: gameState?.phase || null,
       playerState: playerState
-        ? await PlayerStateDto.fromDomain(
-            playerState,
-            match.state,
-          )
+        ? await PlayerStateDto.fromDomain(playerState, match.state)
         : PlayerStateDto.empty(),
       opponentState: opponentState
         ? await OpponentStateDto.fromDomain(
@@ -232,14 +229,10 @@ class PlayerStateDto {
       discardCount: state.discardPile.length,
       discardPile: state.discardPile, // Include discard pile contents
       activePokemon: state.activePokemon
-        ? await PokemonInPlayDto.fromDomain(
-            state.activePokemon,
-          )
+        ? await PokemonInPlayDto.fromDomain(state.activePokemon)
         : null,
       bench: await Promise.all(
-        state.bench.map((card) =>
-          PokemonInPlayDto.fromDomain(card),
-        ),
+        state.bench.map((card) => PokemonInPlayDto.fromDomain(card)),
       ),
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
       prizeCards, // Hide prize card IDs during SET_PRIZE_CARDS phase
@@ -294,14 +287,10 @@ class OpponentStateDto {
       discardCount: state.discardPile.length,
       discardPile: state.discardPile, // Include discard pile contents
       activePokemon: state.activePokemon
-        ? await PokemonInPlayDto.fromDomain(
-            state.activePokemon,
-          )
+        ? await PokemonInPlayDto.fromDomain(state.activePokemon)
         : null,
       bench: await Promise.all(
-        state.bench.map((card) =>
-          PokemonInPlayDto.fromDomain(card),
-        ),
+        state.bench.map((card) => PokemonInPlayDto.fromDomain(card)),
       ),
       benchCount: state.bench.length,
       prizeCardsRemaining: state.getPrizeCardsRemaining(),
@@ -372,9 +361,7 @@ class PokemonInPlayDto {
   damageCounters: number;
   poisonDamageAmount?: number; // Optional, poison damage amount (10 or 20)
 
-  static async fromDomain(
-    card: CardInstance,
-  ): Promise<PokemonInPlayDto> {
+  static async fromDomain(card: CardInstance): Promise<PokemonInPlayDto> {
     // Use maxHp directly from CardInstance - it's already stored correctly when Pokemon is put into play
     return {
       instanceId: card.instanceId,

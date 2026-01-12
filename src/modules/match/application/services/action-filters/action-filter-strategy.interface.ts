@@ -1,4 +1,9 @@
-import { Match, MatchState, PlayerIdentifier, PlayerActionType } from '../../../domain';
+import {
+  Match,
+  MatchState,
+  PlayerIdentifier,
+  PlayerActionType,
+} from '../../../domain';
 
 /**
  * Action Filter Strategy Interface
@@ -19,4 +24,3 @@ export interface ActionFilterStrategy {
     playerIdentifier: PlayerIdentifier,
   ): PlayerActionType[];
 }
-

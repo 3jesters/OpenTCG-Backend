@@ -54,9 +54,7 @@ export class EnergyAttachmentExecutionService {
 
     if (target === 'ACTIVE') {
       if (!playerState.activePokemon) {
-        throw new BadRequestException(
-          'No active Pokemon to attach energy to',
-        );
+        throw new BadRequestException('No active Pokemon to attach energy to');
       }
       targetPokemon = playerState.activePokemon;
     } else {
@@ -118,4 +116,3 @@ export class EnergyAttachmentExecutionService {
     };
   }
 }
-

@@ -21,7 +21,11 @@ import {
   EnergyType,
   AttackEffectType,
 } from '../../../../card/domain/enums';
-import { PokemonPosition, PlayerIdentifier, TurnPhase } from '../../../domain/enums';
+import {
+  PokemonPosition,
+  PlayerIdentifier,
+  TurnPhase,
+} from '../../../domain/enums';
 import { AttackPreconditionFactory } from '../../../../card/domain/value-objects/attack-precondition.value-object';
 import { AttackEffectFactory } from '../../../../card/domain/value-objects/attack-effect.value-object';
 import { OpponentThreat } from '../types/action-analysis.types';
@@ -83,10 +87,7 @@ describe('OpponentAnalysisService', () => {
   };
 
   // Helper function to create an Energy card
-  const createEnergyCard = (
-    cardId: string,
-    energyType: EnergyType,
-  ): Card => {
+  const createEnergyCard = (cardId: string, energyType: EnergyType): Card => {
     const card = Card.createEnergyCard(
       `instance-${cardId}`, // instanceId
       cardId,
@@ -145,7 +146,12 @@ describe('OpponentAnalysisService', () => {
         '60',
         'A powerful fire attack',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [attack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [attack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -155,7 +161,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1', 'energy-2'], // 2 Fire energy attached
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -223,7 +234,12 @@ describe('OpponentAnalysisService', () => {
         '60',
         'A powerful fire attack',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [attack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [attack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -233,7 +249,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1'], // Only 1 Fire energy attached (needs 2)
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -305,7 +326,12 @@ describe('OpponentAnalysisService', () => {
         '80',
         'A powerful attack',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [weakAttack, strongAttack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [weakAttack, strongAttack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -315,7 +341,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1', 'energy-2'], // 2 Fire energy attached (sufficient for both)
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -385,7 +416,12 @@ describe('OpponentAnalysisService', () => {
         'Flip a coin. If heads, this attack does 20 more damage.',
         [AttackPreconditionFactory.coinFlip(1, 'Flip a coin')],
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pokemon', 60, [attack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pokemon',
+        60,
+        [attack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -395,7 +431,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1'], // 1 Colorless energy attached
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -435,7 +476,10 @@ describe('OpponentAnalysisService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('opponent-card-001', opponentCard);
       cardsMap.set('player-card-001', playerCard);
-      cardsMap.set('energy-1', createEnergyCard('energy-1', EnergyType.COLORLESS));
+      cardsMap.set(
+        'energy-1',
+        createEnergyCard('energy-1', EnergyType.COLORLESS),
+      );
 
       // Act
       const riskDamage = await service.calculateRiskAttackDamage(
@@ -460,7 +504,12 @@ describe('OpponentAnalysisService', () => {
         '80',
         'A powerful attack',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [attack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [attack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -470,7 +519,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1'], // Only 1 Fire energy attached (needs 2)
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -534,7 +588,12 @@ describe('OpponentAnalysisService', () => {
   describe('scoreOpponentPokemon', () => {
     it('should score all Pokemon in opponent hand and bench', async () => {
       // Arrange
-      const benchCard1 = createPokemonCard('opponent-bench-001', 'Pikachu', 60, []);
+      const benchCard1 = createPokemonCard(
+        'opponent-bench-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const benchInstance1 = createCardInstance(
         'opponent-bench-instance-001',
         'opponent-bench-001',
@@ -543,7 +602,12 @@ describe('OpponentAnalysisService', () => {
         60,
       );
 
-      const benchCard2 = createPokemonCard('opponent-bench-002', 'Charizard', 120, []);
+      const benchCard2 = createPokemonCard(
+        'opponent-bench-002',
+        'Charizard',
+        120,
+        [],
+      );
       const benchInstance2 = createCardInstance(
         'opponent-bench-instance-002',
         'opponent-bench-002',
@@ -552,7 +616,12 @@ describe('OpponentAnalysisService', () => {
         120,
       );
 
-      const handCard = createPokemonCard('opponent-hand-001', 'Blastoise', 100, []);
+      const handCard = createPokemonCard(
+        'opponent-hand-001',
+        'Blastoise',
+        100,
+        [],
+      );
 
       const opponentState = new PlayerGameState(
         [],
@@ -600,7 +669,12 @@ describe('OpponentAnalysisService', () => {
   describe('identifyMostThreateningPokemon', () => {
     it('should return highest scored Pokemon position from hand and bench', async () => {
       // Arrange
-      const benchCard1 = createPokemonCard('opponent-bench-001', 'Pikachu', 60, []);
+      const benchCard1 = createPokemonCard(
+        'opponent-bench-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const benchInstance1 = createCardInstance(
         'opponent-bench-instance-001',
         'opponent-bench-001',
@@ -609,7 +683,12 @@ describe('OpponentAnalysisService', () => {
         60,
       );
 
-      const benchCard2 = createPokemonCard('opponent-bench-002', 'Charizard', 120, []);
+      const benchCard2 = createPokemonCard(
+        'opponent-bench-002',
+        'Charizard',
+        120,
+        [],
+      );
       const benchInstance2 = createCardInstance(
         'opponent-bench-instance-002',
         'opponent-bench-002',
@@ -618,7 +697,12 @@ describe('OpponentAnalysisService', () => {
         120,
       );
 
-      const handCard = createPokemonCard('opponent-hand-001', 'Blastoise', 100, []);
+      const handCard = createPokemonCard(
+        'opponent-hand-001',
+        'Blastoise',
+        100,
+        [],
+      );
 
       const opponentState = new PlayerGameState(
         [],
@@ -710,7 +794,12 @@ describe('OpponentAnalysisService', () => {
         '70',
         'A powerful attack',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [opponentAttack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [opponentAttack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -720,7 +809,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1'], // Sufficient energy
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -786,7 +880,12 @@ describe('OpponentAnalysisService', () => {
         '30',
         'A weak attack',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [opponentAttack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [opponentAttack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -796,7 +895,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1'],
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -863,7 +967,12 @@ describe('OpponentAnalysisService', () => {
         '50',
         'A powerful attack',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [attack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [attack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -873,7 +982,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1'],
       );
 
-      const benchCard = createPokemonCard('opponent-bench-001', 'Blastoise', 100, []);
+      const benchCard = createPokemonCard(
+        'opponent-bench-001',
+        'Blastoise',
+        100,
+        [],
+      );
       const benchInstance = createCardInstance(
         'opponent-bench-instance-001',
         'opponent-bench-001',
@@ -882,7 +996,12 @@ describe('OpponentAnalysisService', () => {
         100,
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -959,7 +1078,12 @@ describe('OpponentAnalysisService', () => {
         '70',
         'A powerful attack that can knockout',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [attack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [attack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -969,7 +1093,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1'], // Sufficient energy
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Pikachu', 60, []);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -1040,7 +1169,12 @@ describe('OpponentAnalysisService', () => {
         '50',
         'An attack that can knockout bench Pokemon',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Charizard', 120, [attack]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Charizard',
+        120,
+        [attack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1050,7 +1184,12 @@ describe('OpponentAnalysisService', () => {
         ['energy-1'], // Sufficient energy
       );
 
-      const playerBenchCard = createPokemonCard('player-bench-001', 'Pikachu', 40, []);
+      const playerBenchCard = createPokemonCard(
+        'player-bench-001',
+        'Pikachu',
+        40,
+        [],
+      );
       const playerBenchInstance = createCardInstance(
         'player-bench-instance-001',
         'player-bench-001',
@@ -1059,7 +1198,12 @@ describe('OpponentAnalysisService', () => {
         40, // Max HP
       );
 
-      const playerActiveCard = createPokemonCard('player-active-001', 'Blastoise', 100, []);
+      const playerActiveCard = createPokemonCard(
+        'player-active-001',
+        'Blastoise',
+        100,
+        [],
+      );
       const playerActiveInstance = createCardInstance(
         'player-active-instance-001',
         'player-active-001',
@@ -1127,4 +1271,3 @@ describe('OpponentAnalysisService', () => {
     });
   });
 });
-

@@ -306,89 +306,114 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
         {
           provide: CardHelperService,
           useValue: {
-            getCardEntity: jest.fn().mockImplementation(async (cardId, cardsMap) => {
-              return mockGetCardByIdUseCase.getCardEntity(cardId);
-            }),
-            getCardHp: jest.fn().mockImplementation(async (cardId, cardsMap) => {
-              // Try to get HP from card entity first
-              try {
-                const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
-                if (card?.hp) {
-                  return card.hp;
+            getCardEntity: jest
+              .fn()
+              .mockImplementation(async (cardId, cardsMap) => {
+                return mockGetCardByIdUseCase.getCardEntity(cardId);
+              }),
+            getCardHp: jest
+              .fn()
+              .mockImplementation(async (cardId, cardsMap) => {
+                // Try to get HP from card entity first
+                try {
+                  const card =
+                    await mockGetCardByIdUseCase.getCardEntity(cardId);
+                  if (card?.hp) {
+                    return card.hp;
+                  }
+                } catch {
+                  // Fall through to execute method
                 }
-              } catch {
-                // Fall through to execute method
-              }
-              // Fallback to execute method if getCardEntity doesn't have hp
-              const cardDto = await mockGetCardByIdUseCase.execute(cardId);
-              return cardDto?.hp ?? 100; // Default to 100 if not found
-            }),
-            collectCardIds: jest.fn().mockImplementation((dto, gameState, playerIdentifier) => {
-              const cardIds = new Set<string>();
-              const actionData = dto.actionData as any;
-              
-              // Collect from actionData
-              if (actionData?.cardId) cardIds.add(actionData.cardId);
-              if (actionData?.evolutionCardId) cardIds.add(actionData.evolutionCardId);
-              if (actionData?.attackerCardId) cardIds.add(actionData.attackerCardId);
-              if (actionData?.defenderCardId) cardIds.add(actionData.defenderCardId);
-              if (actionData?.currentPokemonCardId) cardIds.add(actionData.currentPokemonCardId);
-              if (actionData?.energyId) cardIds.add(actionData.energyId);
-              if (Array.isArray(actionData?.energyIds)) {
-                actionData.energyIds.forEach((id: string) => cardIds.add(id));
-              }
-              if (Array.isArray(actionData?.cardIds)) {
-                actionData.cardIds.forEach((id: string) => cardIds.add(id));
-              }
-              
-              // Collect from gameState (matching real implementation)
-              if (gameState) {
-                const playerState = gameState.getPlayerState(playerIdentifier);
-                const opponentState = gameState.getOpponentState(playerIdentifier);
-                
-                // Player's Pokemon
-                if (playerState.activePokemon) {
-                  cardIds.add(playerState.activePokemon.cardId);
-                  if (playerState.activePokemon.attachedEnergy) {
-                    playerState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
+                // Fallback to execute method if getCardEntity doesn't have hp
+                const cardDto = await mockGetCardByIdUseCase.execute(cardId);
+                return cardDto?.hp ?? 100; // Default to 100 if not found
+              }),
+            collectCardIds: jest
+              .fn()
+              .mockImplementation((dto, gameState, playerIdentifier) => {
+                const cardIds = new Set<string>();
+                const actionData = dto.actionData;
+
+                // Collect from actionData
+                if (actionData?.cardId) cardIds.add(actionData.cardId);
+                if (actionData?.evolutionCardId)
+                  cardIds.add(actionData.evolutionCardId);
+                if (actionData?.attackerCardId)
+                  cardIds.add(actionData.attackerCardId);
+                if (actionData?.defenderCardId)
+                  cardIds.add(actionData.defenderCardId);
+                if (actionData?.currentPokemonCardId)
+                  cardIds.add(actionData.currentPokemonCardId);
+                if (actionData?.energyId) cardIds.add(actionData.energyId);
+                if (Array.isArray(actionData?.energyIds)) {
+                  actionData.energyIds.forEach((id: string) => cardIds.add(id));
                 }
-                playerState.bench.forEach((pokemon) => {
-                  cardIds.add(pokemon.cardId);
-                  if (pokemon.attachedEnergy) {
-                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
-                });
-                
-                // Player's hand, deck, discard, prize cards
-                if (playerState.hand) playerState.hand.forEach((id) => cardIds.add(id));
-                if (playerState.deck) playerState.deck.forEach((id) => cardIds.add(id));
-                if (playerState.discardPile) playerState.discardPile.forEach((id) => cardIds.add(id));
-                if (playerState.prizeCards) playerState.prizeCards.forEach((id) => cardIds.add(id));
-                
-                // Opponent's Pokemon
-                if (opponentState.activePokemon) {
-                  cardIds.add(opponentState.activePokemon.cardId);
-                  if (opponentState.activePokemon.attachedEnergy) {
-                    opponentState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
+                if (Array.isArray(actionData?.cardIds)) {
+                  actionData.cardIds.forEach((id: string) => cardIds.add(id));
                 }
-                opponentState.bench.forEach((pokemon) => {
-                  cardIds.add(pokemon.cardId);
-                  if (pokemon.attachedEnergy) {
-                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+
+                // Collect from gameState (matching real implementation)
+                if (gameState) {
+                  const playerState =
+                    gameState.getPlayerState(playerIdentifier);
+                  const opponentState =
+                    gameState.getOpponentState(playerIdentifier);
+
+                  // Player's Pokemon
+                  if (playerState.activePokemon) {
+                    cardIds.add(playerState.activePokemon.cardId);
+                    if (playerState.activePokemon.attachedEnergy) {
+                      playerState.activePokemon.attachedEnergy.forEach((id) =>
+                        cardIds.add(id),
+                      );
+                    }
                   }
-                });
-                
-                // Opponent's hand, deck, discard, prize cards
-                if (opponentState.hand) opponentState.hand.forEach((id) => cardIds.add(id));
-                if (opponentState.deck) opponentState.deck.forEach((id) => cardIds.add(id));
-                if (opponentState.discardPile) opponentState.discardPile.forEach((id) => cardIds.add(id));
-                if (opponentState.prizeCards) opponentState.prizeCards.forEach((id) => cardIds.add(id));
-              }
-              
-              return cardIds;
-            }),
+                  playerState.bench.forEach((pokemon) => {
+                    cardIds.add(pokemon.cardId);
+                    if (pokemon.attachedEnergy) {
+                      pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                    }
+                  });
+
+                  // Player's hand, deck, discard, prize cards
+                  if (playerState.hand)
+                    playerState.hand.forEach((id) => cardIds.add(id));
+                  if (playerState.deck)
+                    playerState.deck.forEach((id) => cardIds.add(id));
+                  if (playerState.discardPile)
+                    playerState.discardPile.forEach((id) => cardIds.add(id));
+                  if (playerState.prizeCards)
+                    playerState.prizeCards.forEach((id) => cardIds.add(id));
+
+                  // Opponent's Pokemon
+                  if (opponentState.activePokemon) {
+                    cardIds.add(opponentState.activePokemon.cardId);
+                    if (opponentState.activePokemon.attachedEnergy) {
+                      opponentState.activePokemon.attachedEnergy.forEach((id) =>
+                        cardIds.add(id),
+                      );
+                    }
+                  }
+                  opponentState.bench.forEach((pokemon) => {
+                    cardIds.add(pokemon.cardId);
+                    if (pokemon.attachedEnergy) {
+                      pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                    }
+                  });
+
+                  // Opponent's hand, deck, discard, prize cards
+                  if (opponentState.hand)
+                    opponentState.hand.forEach((id) => cardIds.add(id));
+                  if (opponentState.deck)
+                    opponentState.deck.forEach((id) => cardIds.add(id));
+                  if (opponentState.discardPile)
+                    opponentState.discardPile.forEach((id) => cardIds.add(id));
+                  if (opponentState.prizeCards)
+                    opponentState.prizeCards.forEach((id) => cardIds.add(id));
+                }
+
+                return cardIds;
+              }),
           },
         },
         {
@@ -441,7 +466,11 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
               cardHelper,
             );
           },
-          inject: [IMatchRepository, EvolutionExecutionService, CardHelperService],
+          inject: [
+            IMatchRepository,
+            EvolutionExecutionService,
+            CardHelperService,
+          ],
         },
         {
           provide: RetreatExecutionService,
@@ -494,7 +523,10 @@ describe('ExecuteTurnActionUseCase - Evolution Status Effects Clearing', () => {
             stateMachine: MatchStateMachineService,
             actionFilterRegistry: ActionFilterRegistry,
           ) => {
-            return new AvailableActionsService(stateMachine, actionFilterRegistry);
+            return new AvailableActionsService(
+              stateMachine,
+              actionFilterRegistry,
+            );
           },
           inject: [MatchStateMachineService, ActionFilterRegistry],
         },

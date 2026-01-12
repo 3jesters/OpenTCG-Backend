@@ -59,4 +59,3 @@ export class PlayerTurnActionFilter extends BaseActionFilter {
     return filteredActions;
   }
 }
-

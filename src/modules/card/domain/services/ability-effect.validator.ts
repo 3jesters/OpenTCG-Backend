@@ -470,7 +470,10 @@ export class AbilityEffectValidator {
       throw new Error('Amount must be at least 1 (damage counter)');
     }
 
-    if (effect.preventKnockout !== undefined && typeof effect.preventKnockout !== 'boolean') {
+    if (
+      effect.preventKnockout !== undefined &&
+      typeof effect.preventKnockout !== 'boolean'
+    ) {
       throw new Error('preventKnockout must be a boolean if provided');
     }
   }

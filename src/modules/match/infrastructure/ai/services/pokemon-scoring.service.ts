@@ -40,10 +40,14 @@ export class PokemonScoringService {
     const attacks = card.attacks || [];
 
     if (attacks.length === 0) {
-      this.logger.debug('No attacks, returning maxHP as score', 'PokemonScoringService', {
-        cardId: card.cardId,
-        score: maxHp,
-      });
+      this.logger.debug(
+        'No attacks, returning maxHP as score',
+        'PokemonScoringService',
+        {
+          cardId: card.cardId,
+          score: maxHp,
+        },
+      );
       return maxHp;
     }
 
@@ -97,7 +101,8 @@ export class PokemonScoringService {
    */
   private calculateAverageDamage(attack: Attack, baseDamage: number): number {
     // Check if attack has coin flip preconditions
-    const hasCoinFlip = attack.hasPreconditions() &&
+    const hasCoinFlip =
+      attack.hasPreconditions() &&
       attack.getPreconditionsByType(PreconditionType.COIN_FLIP).length > 0;
 
     if (!hasCoinFlip) {
@@ -120,9 +125,7 @@ export class PokemonScoringService {
 
     // Pattern 2: "Flip a coin. If heads, this attack does X more damage."
     // Also handles: "Flip a coin. If heads, do X more damage."
-    const bonusMatch = attackText.match(
-      /if heads.*?(\d+)\s+more\s+damage/i,
-    );
+    const bonusMatch = attackText.match(/if heads.*?(\d+)\s+more\s+damage/i);
     if (bonusMatch) {
       const bonus = parseInt(bonusMatch[1], 10);
       // Average = (baseDamage + (baseDamage + bonus)) / 2
@@ -177,7 +180,7 @@ export class PokemonScoringService {
     // Type guard: check if effect has statusCondition property (StatusConditionEffect)
     const hasPoison = statusEffects.some((effect) => {
       if (effect.effectType === AttackEffectType.STATUS_CONDITION) {
-        const statusEffect = effect as StatusConditionEffect;
+        const statusEffect = effect;
         return statusEffect.statusCondition === 'POISONED';
       }
       return false;
@@ -226,4 +229,3 @@ export class PokemonScoringService {
     return sortPokemonScores(pokemonScores);
   }
 }
-

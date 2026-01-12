@@ -206,4 +206,3 @@ export type SortedEnergyAttachmentOptionList = EnergyAttachmentOption[];
  * 4. estimatedImpact (prioritize: enablesKnockout > preventsOurKnockout > changesOpponentSureDamage)
  */
 export type SortedTrainerCardOptionList = TrainerCardOption[];
-

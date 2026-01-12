@@ -23,7 +23,10 @@ export const IGetCardByIdUseCase = Symbol('IGetCardByIdUseCase');
  * Get Available Sets Use Case Interface
  */
 export interface IGetAvailableSetsUseCase {
-  execute(author?: string, official?: boolean): Promise<GetAvailableSetsResponseDto>;
+  execute(
+    author?: string,
+    official?: boolean,
+  ): Promise<GetAvailableSetsResponseDto>;
 }
 
 export const IGetAvailableSetsUseCase = Symbol('IGetAvailableSetsUseCase');
@@ -69,7 +72,9 @@ export interface ICalculateCardStrengthUseCase {
   executeForCard(card: Card): CardStrengthResult;
 }
 
-export const ICalculateCardStrengthUseCase = Symbol('ICalculateCardStrengthUseCase');
+export const ICalculateCardStrengthUseCase = Symbol(
+  'ICalculateCardStrengthUseCase',
+);
 
 /**
  * Create Card Use Case Interface
@@ -88,4 +93,3 @@ export interface ISearchCardsUseCase {
 }
 
 export const ISearchCardsUseCase = Symbol('ISearchCardsUseCase');
-

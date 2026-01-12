@@ -221,7 +221,6 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
       save: jest.fn(),
     } as any;
 
-
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
       getCardEntity: jest.fn(),
@@ -328,30 +327,43 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           useValue: {
             processEnergyCost: jest.fn().mockImplementation(async (params) => {
               // Get the current player state from gameState
-              const playerState = params.gameState.getPlayerState(params.playerIdentifier);
-              
+              const playerState = params.gameState.getPlayerState(
+                params.playerIdentifier,
+              );
+
               // If there are selectedEnergyIds, discard them
-              if (params.selectedEnergyIds && params.selectedEnergyIds.length > 0 && playerState.activePokemon) {
-                const updatedAttachedEnergy = playerState.activePokemon.attachedEnergy.filter(
-                  (id) => !params.selectedEnergyIds.includes(id),
-                );
-                const updatedAttacker = playerState.activePokemon.withAttachedEnergy(updatedAttachedEnergy);
-                const updatedDiscardPile = [...playerState.discardPile, ...params.selectedEnergyIds];
+              if (
+                params.selectedEnergyIds &&
+                params.selectedEnergyIds.length > 0 &&
+                playerState.activePokemon
+              ) {
+                const updatedAttachedEnergy =
+                  playerState.activePokemon.attachedEnergy.filter(
+                    (id) => !params.selectedEnergyIds.includes(id),
+                  );
+                const updatedAttacker =
+                  playerState.activePokemon.withAttachedEnergy(
+                    updatedAttachedEnergy,
+                  );
+                const updatedDiscardPile = [
+                  ...playerState.discardPile,
+                  ...params.selectedEnergyIds,
+                ];
                 const updatedPlayerState = playerState
                   .withActivePokemon(updatedAttacker)
                   .withDiscardPile(updatedDiscardPile);
-                
+
                 const updatedGameState =
                   params.playerIdentifier === PlayerIdentifier.PLAYER1
                     ? params.gameState.withPlayer1State(updatedPlayerState)
                     : params.gameState.withPlayer2State(updatedPlayerState);
-                
+
                 return {
                   updatedGameState,
                   updatedPlayerState,
                 };
               }
-              
+
               // No energy to discard, return unchanged
               return {
                 updatedGameState: params.gameState,
@@ -386,7 +398,7 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
               // Return the targetPokemon as updatedPokemon (no status effect applied by default)
               // Preserve the original CardInstance
               return {
-                updatedPokemon: params.targetPokemon || {} as any,
+                updatedPokemon: params.targetPokemon || ({} as any),
                 statusApplied: false,
                 appliedStatus: null,
               };
@@ -398,24 +410,40 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
           useValue: {
             applyActiveDamage: jest.fn().mockImplementation((params) => {
               // Use the actual CardInstance method to preserve all methods
-              if (params.pokemon && typeof params.pokemon.withHp === 'function') {
-                const newHp = Math.max(0, (params.pokemon.currentHp || 0) - (params.damage || 0));
+              if (
+                params.pokemon &&
+                typeof params.pokemon.withHp === 'function'
+              ) {
+                const newHp = Math.max(
+                  0,
+                  (params.pokemon.currentHp || 0) - (params.damage || 0),
+                );
                 return params.pokemon.withHp(newHp);
               }
               // Fallback if pokemon is not a CardInstance
-              const newHp = Math.max(0, ((params.pokemon as any)?.currentHp || 0) - (params.damage || 0));
+              const newHp = Math.max(
+                0,
+                (params.pokemon?.currentHp || 0) - (params.damage || 0),
+              );
               return {
                 ...params.pokemon,
                 currentHp: newHp,
-              } as any;
+              };
             }),
             applySelfDamage: jest.fn().mockImplementation((params) => {
-              const newHp = Math.max(0, (params.attackerPokemon?.currentHp || 0) - (params.selfDamage || 0));
+              const newHp = Math.max(
+                0,
+                (params.attackerPokemon?.currentHp || 0) -
+                  (params.selfDamage || 0),
+              );
               return {
-                updatedPokemon: newHp === 0 ? null : {
-                  ...params.attackerPokemon,
-                  currentHp: newHp,
-                },
+                updatedPokemon:
+                  newHp === 0
+                    ? null
+                    : {
+                        ...params.attackerPokemon,
+                        currentHp: newHp,
+                      },
                 isKnockedOut: newHp === 0,
               };
             }),
@@ -435,8 +463,12 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
                   cardsToDiscard: [],
                 };
               }
-              const cardsToDiscard = params.pokemon.getAllCardsToDiscard?.() || [];
-              const discardPile = [...params.playerState.discardPile, ...cardsToDiscard];
+              const cardsToDiscard =
+                params.pokemon.getAllCardsToDiscard?.() || [];
+              const discardPile = [
+                ...params.playerState.discardPile,
+                ...cardsToDiscard,
+              ];
               const updatedState = params.playerState
                 .withActivePokemon(null)
                 .withDiscardPile(discardPile);
@@ -445,16 +477,21 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
                 cardsToDiscard,
               };
             }),
-            handleBenchKnockout: jest.fn().mockImplementation((knockedOutBench, playerState) => {
-              if (knockedOutBench.length === 0) {
-                return playerState;
-              }
-              const cardsToDiscard = knockedOutBench.flatMap((p) =>
-                p.getAllCardsToDiscard?.() || [],
-              );
-              const discardPile = [...playerState.discardPile, ...cardsToDiscard];
-              return playerState.withDiscardPile(discardPile);
-            }),
+            handleBenchKnockout: jest
+              .fn()
+              .mockImplementation((knockedOutBench, playerState) => {
+                if (knockedOutBench.length === 0) {
+                  return playerState;
+                }
+                const cardsToDiscard = knockedOutBench.flatMap(
+                  (p) => p.getAllCardsToDiscard?.() || [],
+                );
+                const discardPile = [
+                  ...playerState.discardPile,
+                  ...cardsToDiscard,
+                ];
+                return playerState.withDiscardPile(discardPile);
+              }),
           },
         },
         {
@@ -500,166 +537,240 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         {
           provide: CardHelperService,
           useValue: {
-            getCardEntity: jest.fn().mockImplementation(async (cardId, cardsMap) => {
-              return mockGetCardByIdUseCase.getCardEntity(cardId);
-            }),
-            getCardHp: jest.fn().mockImplementation(async (cardId, cardsMap) => {
-              const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
-              return card?.hp || 0;
-            }),
-            collectCardIds: jest.fn().mockImplementation((dto, gameState, playerIdentifier) => {
-              const cardIds = new Set<string>();
-              const actionData = dto.actionData as any;
-              
-              // Collect from actionData
-              if (actionData?.cardId) cardIds.add(actionData.cardId);
-              if (actionData?.evolutionCardId) cardIds.add(actionData.evolutionCardId);
-              if (actionData?.attackerCardId) cardIds.add(actionData.attackerCardId);
-              if (actionData?.defenderCardId) cardIds.add(actionData.defenderCardId);
-              if (actionData?.currentPokemonCardId) cardIds.add(actionData.currentPokemonCardId);
-              if (actionData?.energyId) cardIds.add(actionData.energyId);
-              if (Array.isArray(actionData?.energyIds)) {
-                actionData.energyIds.forEach((id: string) => cardIds.add(id));
-              }
-              if (Array.isArray(actionData?.cardIds)) {
-                actionData.cardIds.forEach((id: string) => cardIds.add(id));
-              }
-              
-              // Collect from gameState (matching real implementation)
-              if (gameState) {
-                const playerState = gameState.getPlayerState(playerIdentifier);
-                const opponentState = gameState.getOpponentState(playerIdentifier);
-                
-                // Player's Pokemon
-                if (playerState.activePokemon) {
-                  cardIds.add(playerState.activePokemon.cardId);
-                  if (playerState.activePokemon.attachedEnergy) {
-                    playerState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
+            getCardEntity: jest
+              .fn()
+              .mockImplementation(async (cardId, cardsMap) => {
+                return mockGetCardByIdUseCase.getCardEntity(cardId);
+              }),
+            getCardHp: jest
+              .fn()
+              .mockImplementation(async (cardId, cardsMap) => {
+                const card = await mockGetCardByIdUseCase.getCardEntity(cardId);
+                return card?.hp || 0;
+              }),
+            collectCardIds: jest
+              .fn()
+              .mockImplementation((dto, gameState, playerIdentifier) => {
+                const cardIds = new Set<string>();
+                const actionData = dto.actionData;
+
+                // Collect from actionData
+                if (actionData?.cardId) cardIds.add(actionData.cardId);
+                if (actionData?.evolutionCardId)
+                  cardIds.add(actionData.evolutionCardId);
+                if (actionData?.attackerCardId)
+                  cardIds.add(actionData.attackerCardId);
+                if (actionData?.defenderCardId)
+                  cardIds.add(actionData.defenderCardId);
+                if (actionData?.currentPokemonCardId)
+                  cardIds.add(actionData.currentPokemonCardId);
+                if (actionData?.energyId) cardIds.add(actionData.energyId);
+                if (Array.isArray(actionData?.energyIds)) {
+                  actionData.energyIds.forEach((id: string) => cardIds.add(id));
                 }
-                playerState.bench.forEach((pokemon) => {
-                  cardIds.add(pokemon.cardId);
-                  if (pokemon.attachedEnergy) {
-                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
-                });
-                
-                // Player's hand, deck, discard, prize cards
-                if (playerState.hand) playerState.hand.forEach((id) => cardIds.add(id));
-                if (playerState.deck) playerState.deck.forEach((id) => cardIds.add(id));
-                if (playerState.discardPile) playerState.discardPile.forEach((id) => cardIds.add(id));
-                if (playerState.prizeCards) playerState.prizeCards.forEach((id) => cardIds.add(id));
-                
-                // Opponent's Pokemon
-                if (opponentState.activePokemon) {
-                  cardIds.add(opponentState.activePokemon.cardId);
-                  if (opponentState.activePokemon.attachedEnergy) {
-                    opponentState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
+                if (Array.isArray(actionData?.cardIds)) {
+                  actionData.cardIds.forEach((id: string) => cardIds.add(id));
                 }
-                opponentState.bench.forEach((pokemon) => {
-                  cardIds.add(pokemon.cardId);
-                  if (pokemon.attachedEnergy) {
-                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+
+                // Collect from gameState (matching real implementation)
+                if (gameState) {
+                  const playerState =
+                    gameState.getPlayerState(playerIdentifier);
+                  const opponentState =
+                    gameState.getOpponentState(playerIdentifier);
+
+                  // Player's Pokemon
+                  if (playerState.activePokemon) {
+                    cardIds.add(playerState.activePokemon.cardId);
+                    if (playerState.activePokemon.attachedEnergy) {
+                      playerState.activePokemon.attachedEnergy.forEach((id) =>
+                        cardIds.add(id),
+                      );
+                    }
                   }
-                });
-                
-                // Opponent's hand, deck, discard, prize cards
-                if (opponentState.hand) opponentState.hand.forEach((id) => cardIds.add(id));
-                if (opponentState.deck) opponentState.deck.forEach((id) => cardIds.add(id));
-                if (opponentState.discardPile) opponentState.discardPile.forEach((id) => cardIds.add(id));
-                if (opponentState.prizeCards) opponentState.prizeCards.forEach((id) => cardIds.add(id));
-              }
-              
-              return cardIds;
-            }),
+                  playerState.bench.forEach((pokemon) => {
+                    cardIds.add(pokemon.cardId);
+                    if (pokemon.attachedEnergy) {
+                      pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                    }
+                  });
+
+                  // Player's hand, deck, discard, prize cards
+                  if (playerState.hand)
+                    playerState.hand.forEach((id) => cardIds.add(id));
+                  if (playerState.deck)
+                    playerState.deck.forEach((id) => cardIds.add(id));
+                  if (playerState.discardPile)
+                    playerState.discardPile.forEach((id) => cardIds.add(id));
+                  if (playerState.prizeCards)
+                    playerState.prizeCards.forEach((id) => cardIds.add(id));
+
+                  // Opponent's Pokemon
+                  if (opponentState.activePokemon) {
+                    cardIds.add(opponentState.activePokemon.cardId);
+                    if (opponentState.activePokemon.attachedEnergy) {
+                      opponentState.activePokemon.attachedEnergy.forEach((id) =>
+                        cardIds.add(id),
+                      );
+                    }
+                  }
+                  opponentState.bench.forEach((pokemon) => {
+                    cardIds.add(pokemon.cardId);
+                    if (pokemon.attachedEnergy) {
+                      pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                    }
+                  });
+
+                  // Opponent's hand, deck, discard, prize cards
+                  if (opponentState.hand)
+                    opponentState.hand.forEach((id) => cardIds.add(id));
+                  if (opponentState.deck)
+                    opponentState.deck.forEach((id) => cardIds.add(id));
+                  if (opponentState.discardPile)
+                    opponentState.discardPile.forEach((id) => cardIds.add(id));
+                  if (opponentState.prizeCards)
+                    opponentState.prizeCards.forEach((id) => cardIds.add(id));
+                }
+
+                return cardIds;
+              }),
           },
         },
         {
           provide: AttackDamageCalculatorService,
           useValue: {
             calculateDamage: jest.fn(),
-            calculatePlusDamageBonus: jest.fn().mockImplementation(async (attack, attackerName, playerState, opponentState, attackText, gameState, playerIdentifier, getCardEntity) => {
-              const text = attackText.toLowerCase();
-              
-              // Water Energy-based attacks (with cap)
-              if (text.includes('water energy') && text.includes('but not used to pay')) {
-                if (!attack.energyBonusCap) return 0;
-                
-                // Extract damage per energy (usually 10)
-                const damagePerEnergyMatch = text.match(/plus\s+(\d+)\s+more\s+damage\s+for\s+each/i);
-                if (!damagePerEnergyMatch) return 0;
-                const damagePerEnergy = parseInt(damagePerEnergyMatch[1], 10);
-                
-                // Count Water Energy attached
-                if (!playerState.activePokemon) return 0;
-                
-                let waterEnergyCount = 0;
-                for (const energyId of playerState.activePokemon.attachedEnergy) {
-                  try {
-                    const energyCard = await getCardEntity(energyId);
-                    if (energyCard.energyType === 'WATER') {
-                      waterEnergyCount++;
+            calculatePlusDamageBonus: jest
+              .fn()
+              .mockImplementation(
+                async (
+                  attack,
+                  attackerName,
+                  playerState,
+                  opponentState,
+                  attackText,
+                  gameState,
+                  playerIdentifier,
+                  getCardEntity,
+                ) => {
+                  const text = attackText.toLowerCase();
+
+                  // Water Energy-based attacks (with cap)
+                  if (
+                    text.includes('water energy') &&
+                    text.includes('but not used to pay')
+                  ) {
+                    if (!attack.energyBonusCap) return 0;
+
+                    // Extract damage per energy (usually 10)
+                    const damagePerEnergyMatch = text.match(
+                      /plus\s+(\d+)\s+more\s+damage\s+for\s+each/i,
+                    );
+                    if (!damagePerEnergyMatch) return 0;
+                    const damagePerEnergy = parseInt(
+                      damagePerEnergyMatch[1],
+                      10,
+                    );
+
+                    // Count Water Energy attached
+                    if (!playerState.activePokemon) return 0;
+
+                    let waterEnergyCount = 0;
+                    for (const energyId of playerState.activePokemon
+                      .attachedEnergy) {
+                      try {
+                        const energyCard = await getCardEntity(energyId);
+                        if (energyCard.energyType === 'WATER') {
+                          waterEnergyCount++;
+                        }
+                      } catch {
+                        // Skip if card lookup fails
+                      }
                     }
-                  } catch {
-                    // Skip if card lookup fails
+
+                    // Count Water Energy required for attack cost
+                    const waterEnergyRequired =
+                      attack.energyCost?.filter((e) => e === 'WATER').length ||
+                      0;
+
+                    // Calculate extra Water Energy (beyond attack cost)
+                    const extraWaterEnergy = Math.max(
+                      0,
+                      waterEnergyCount - waterEnergyRequired,
+                    );
+
+                    // Apply cap
+                    const cappedExtraEnergy = Math.min(
+                      extraWaterEnergy,
+                      attack.energyBonusCap,
+                    );
+
+                    // Calculate bonus damage
+                    return cappedExtraEnergy * damagePerEnergy;
                   }
-                }
-                
-                // Count Water Energy required for attack cost
-                const waterEnergyRequired = attack.energyCost?.filter(e => e === 'WATER').length || 0;
-                
-                // Calculate extra Water Energy (beyond attack cost)
-                const extraWaterEnergy = Math.max(0, waterEnergyCount - waterEnergyRequired);
-                
-                // Apply cap
-                const cappedExtraEnergy = Math.min(extraWaterEnergy, attack.energyBonusCap);
-                
-                // Calculate bonus damage
-                return cappedExtraEnergy * damagePerEnergy;
-              }
-              
-              return 0;
-            }),
-            calculateMinusDamageReduction: jest.fn().mockImplementation((damage, attack, attackText, attackerName, playerState, opponentState) => {
-              // Check if attack has "-" damage pattern
-              if (!attack.damage || !attack.damage.endsWith('-')) {
-                return damage;
-              }
-              
-              // Parse minus damage reduction info
-              const text = attackText.toLowerCase();
-              const attackerNameLower = attackerName.toLowerCase();
-              
-              // Pattern: "minus X damage for each damage counter on [Pokemon]"
-              const minusMatch = text.match(/minus\s+(\d+)\s+damage\s+for\s+each\s+damage\s+counter\s+on\s+(\w+)/i);
-              if (!minusMatch) {
-                return damage;
-              }
-              
-              const reductionPerCounter = parseInt(minusMatch[1], 10);
-              const targetPokemonName = minusMatch[2].toLowerCase();
-              
-              // Determine if target is self (attacker) or defending
-              const target = targetPokemonName === attackerNameLower ? 'self' : 'defending';
-              
-              // Get target Pokemon
-              const targetPokemon = target === 'self' ? playerState.activePokemon : opponentState.activePokemon;
-              
-              if (!targetPokemon) {
-                return damage;
-              }
-              
-              // Calculate damage counters (each 10 HP = 1 damage counter)
-              const totalDamage = targetPokemon.maxHp - targetPokemon.currentHp;
-              const damageCounters = Math.floor(totalDamage / 10);
-              
-              // Calculate reduction
-              const reduction = damageCounters * reductionPerCounter;
-              
-              // Apply reduction (ensure damage doesn't go below 0)
-              return Math.max(0, damage - reduction);
-            }),
+
+                  return 0;
+                },
+              ),
+            calculateMinusDamageReduction: jest
+              .fn()
+              .mockImplementation(
+                (
+                  damage,
+                  attack,
+                  attackText,
+                  attackerName,
+                  playerState,
+                  opponentState,
+                ) => {
+                  // Check if attack has "-" damage pattern
+                  if (!attack.damage || !attack.damage.endsWith('-')) {
+                    return damage;
+                  }
+
+                  // Parse minus damage reduction info
+                  const text = attackText.toLowerCase();
+                  const attackerNameLower = attackerName.toLowerCase();
+
+                  // Pattern: "minus X damage for each damage counter on [Pokemon]"
+                  const minusMatch = text.match(
+                    /minus\s+(\d+)\s+damage\s+for\s+each\s+damage\s+counter\s+on\s+(\w+)/i,
+                  );
+                  if (!minusMatch) {
+                    return damage;
+                  }
+
+                  const reductionPerCounter = parseInt(minusMatch[1], 10);
+                  const targetPokemonName = minusMatch[2].toLowerCase();
+
+                  // Determine if target is self (attacker) or defending
+                  const target =
+                    targetPokemonName === attackerNameLower
+                      ? 'self'
+                      : 'defending';
+
+                  // Get target Pokemon
+                  const targetPokemon =
+                    target === 'self'
+                      ? playerState.activePokemon
+                      : opponentState.activePokemon;
+
+                  if (!targetPokemon) {
+                    return damage;
+                  }
+
+                  // Calculate damage counters (each 10 HP = 1 damage counter)
+                  const totalDamage =
+                    targetPokemon.maxHp - targetPokemon.currentHp;
+                  const damageCounters = Math.floor(totalDamage / 10);
+
+                  // Calculate reduction
+                  const reduction = damageCounters * reductionPerCounter;
+
+                  // Apply reduction (ensure damage doesn't go below 0)
+                  return Math.max(0, damage - reduction);
+                },
+              ),
           },
         },
         {
@@ -679,52 +790,72 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
         {
           provide: WeaknessResistanceService,
           useValue: {
-            applyWeakness: jest.fn().mockImplementation((damage, attackerCard, defenderCard) => {
-              // Apply weakness: ×2 if attacker type matches defender weakness
-              if (defenderCard.weakness && attackerCard.pokemonType) {
-                if (defenderCard.weakness.type.toString() === attackerCard.pokemonType.toString()) {
-                  const modifier = defenderCard.weakness.modifier;
-                  if (modifier === '×2') {
-                    return damage * 2;
+            applyWeakness: jest
+              .fn()
+              .mockImplementation((damage, attackerCard, defenderCard) => {
+                // Apply weakness: ×2 if attacker type matches defender weakness
+                if (defenderCard.weakness && attackerCard.pokemonType) {
+                  if (
+                    defenderCard.weakness.type.toString() ===
+                    attackerCard.pokemonType.toString()
+                  ) {
+                    const modifier = defenderCard.weakness.modifier;
+                    if (modifier === '×2') {
+                      return damage * 2;
+                    }
                   }
                 }
-              }
-              return damage;
-            }),
-            applyResistance: jest.fn().mockImplementation((damage, attackerCard, defenderCard) => {
-              // Apply resistance: -20 if attacker type matches defender resistance
-              if (defenderCard.resistance && attackerCard.pokemonType) {
-                if (defenderCard.resistance.type.toString() === attackerCard.pokemonType.toString()) {
-                  const modifier = defenderCard.resistance.modifier;
-                  const reduction = parseInt(modifier, 10);
-                  if (!isNaN(reduction)) {
-                    return Math.max(0, damage + reduction); // Note: resistance modifier is negative, so we add it
+                return damage;
+              }),
+            applyResistance: jest
+              .fn()
+              .mockImplementation((damage, attackerCard, defenderCard) => {
+                // Apply resistance: -20 if attacker type matches defender resistance
+                if (defenderCard.resistance && attackerCard.pokemonType) {
+                  if (
+                    defenderCard.resistance.type.toString() ===
+                    attackerCard.pokemonType.toString()
+                  ) {
+                    const modifier = defenderCard.resistance.modifier;
+                    const reduction = parseInt(modifier, 10);
+                    if (!isNaN(reduction)) {
+                      return Math.max(0, damage + reduction); // Note: resistance modifier is negative, so we add it
+                    }
                   }
                 }
-              }
-              return damage;
-            }),
+                return damage;
+              }),
           },
         },
         {
           provide: DamagePreventionService,
           useValue: {
-            applyDamagePrevention: jest.fn().mockImplementation((damage, gameState, opponentIdentifier, pokemonInstanceId) => {
-              // No damage prevention by default
-              return damage;
-            }),
-            applyDamageReduction: jest.fn().mockImplementation((damage, gameState, opponentIdentifier, pokemonInstanceId) => {
-              // No damage reduction by default
-              return damage;
-            }),
+            applyDamagePrevention: jest
+              .fn()
+              .mockImplementation(
+                (damage, gameState, opponentIdentifier, pokemonInstanceId) => {
+                  // No damage prevention by default
+                  return damage;
+                },
+              ),
+            applyDamageReduction: jest
+              .fn()
+              .mockImplementation(
+                (damage, gameState, opponentIdentifier, pokemonInstanceId) => {
+                  // No damage reduction by default
+                  return damage;
+                },
+              ),
           },
         },
         {
           provide: StatusEffectProcessorService,
           useValue: {
-            processStatusEffects: jest.fn().mockImplementation(async (gameState, playerIdentifier) => {
-              return gameState;
-            }),
+            processStatusEffects: jest
+              .fn()
+              .mockImplementation(async (gameState, playerIdentifier) => {
+                return gameState;
+              }),
           },
         },
         {
@@ -802,7 +933,10 @@ describe('ExecuteTurnActionUseCase - Energy Cap and Minus Damage', () => {
             stateMachine: MatchStateMachineService,
             actionFilterRegistry: ActionFilterRegistry,
           ) => {
-            return new AvailableActionsService(stateMachine, actionFilterRegistry);
+            return new AvailableActionsService(
+              stateMachine,
+              actionFilterRegistry,
+            );
           },
           inject: [MatchStateMachineService, ActionFilterRegistry],
         },

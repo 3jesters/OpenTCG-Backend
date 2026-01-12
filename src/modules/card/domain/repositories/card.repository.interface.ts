@@ -24,7 +24,10 @@ export interface ICardRepository {
   /**
    * Find a card by set name and card number
    */
-  findBySetNameAndCardNumber(setName: string, cardNumber: string): Promise<Card | null>;
+  findBySetNameAndCardNumber(
+    setName: string,
+    cardNumber: string,
+  ): Promise<Card | null>;
 
   /**
    * Find all cards in a set
@@ -66,4 +69,3 @@ export interface ICardRepository {
  * Symbol for dependency injection
  */
 export const ICardRepository = Symbol('ICardRepository');
-

@@ -1,5 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
 import { PlayerIdentifier, PokemonPosition } from '../../../domain/enums';
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
@@ -35,21 +39,31 @@ export class OpponentAnalysisService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<number> {
-    this.logger.debug('calculateSureAttackDamage called', 'OpponentAnalysisService', {
-      playerIdentifier,
-      hasOpponentActive: !!gameState.getOpponentState(playerIdentifier).activePokemon,
-    });
+    this.logger.debug(
+      'calculateSureAttackDamage called',
+      'OpponentAnalysisService',
+      {
+        playerIdentifier,
+        hasOpponentActive:
+          !!gameState.getOpponentState(playerIdentifier).activePokemon,
+      },
+    );
 
     const opponentState = gameState.getOpponentState(playerIdentifier);
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     if (!opponentState.activePokemon) {
-      this.logger.debug('No opponent active Pokemon, returning 0', 'OpponentAnalysisService');
+      this.logger.debug(
+        'No opponent active Pokemon, returning 0',
+        'OpponentAnalysisService',
+      );
       return 0;
     }
 
     // Get opponent's active Pokemon card
-    const opponentCard = await getCardEntity(opponentState.activePokemon.cardId);
+    const opponentCard = await getCardEntity(
+      opponentState.activePokemon.cardId,
+    );
     if (!opponentCard.attacks || opponentCard.attacks.length === 0) {
       return 0;
     }
@@ -87,13 +101,15 @@ export class OpponentAnalysisService {
         continue;
       }
 
-      const defenderCard = await getCardEntity(playerState.activePokemon.cardId);
+      const defenderCard = await getCardEntity(
+        playerState.activePokemon.cardId,
+      );
 
       // Calculate final damage (without coin flips - this is "sure" damage)
       // For sure damage, we don't assume coin flips, so we use base damage
       // But we still need to account for weakness/resistance
-      const finalDamage = await this.attackDamageCalculationService.calculateFinalDamage(
-        {
+      const finalDamage =
+        await this.attackDamageCalculationService.calculateFinalDamage({
           baseDamage,
           attack,
           attackerCard: opponentCard,
@@ -105,21 +121,28 @@ export class OpponentAnalysisService {
           calculateMinusDamageReduction: (damage) => damage, // Pass through (no reduction for sure damage analysis)
           calculatePlusDamageBonus: async () => 0, // No bonus for sure damage
           evaluateEffectConditions: async () => false, // No conditions for sure damage
-        },
-      );
+        });
 
       maxDamage = Math.max(maxDamage, finalDamage);
-      this.logger.verbose('Attack damage calculated', 'OpponentAnalysisService', {
-        attackName: attack.name,
-        baseDamage,
-        finalDamage,
-        maxDamage,
-      });
+      this.logger.verbose(
+        'Attack damage calculated',
+        'OpponentAnalysisService',
+        {
+          attackName: attack.name,
+          baseDamage,
+          finalDamage,
+          maxDamage,
+        },
+      );
     }
 
-    this.logger.debug('Sure attack damage calculated', 'OpponentAnalysisService', {
-      maxDamage,
-    });
+    this.logger.debug(
+      'Sure attack damage calculated',
+      'OpponentAnalysisService',
+      {
+        maxDamage,
+      },
+    );
     return maxDamage;
   }
 
@@ -133,20 +156,29 @@ export class OpponentAnalysisService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<number> {
-    this.logger.debug('calculateRiskAttackDamage called', 'OpponentAnalysisService', {
-      playerIdentifier,
-    });
+    this.logger.debug(
+      'calculateRiskAttackDamage called',
+      'OpponentAnalysisService',
+      {
+        playerIdentifier,
+      },
+    );
 
     const opponentState = gameState.getOpponentState(playerIdentifier);
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     if (!opponentState.activePokemon) {
-      this.logger.debug('No opponent active Pokemon, returning 0', 'OpponentAnalysisService');
+      this.logger.debug(
+        'No opponent active Pokemon, returning 0',
+        'OpponentAnalysisService',
+      );
       return 0;
     }
 
     // Get opponent's active Pokemon card
-    const opponentCard = await getCardEntity(opponentState.activePokemon.cardId);
+    const opponentCard = await getCardEntity(
+      opponentState.activePokemon.cardId,
+    );
     if (!opponentCard.attacks || opponentCard.attacks.length === 0) {
       return 0;
     }
@@ -156,14 +188,16 @@ export class OpponentAnalysisService {
     // Check each attack
     for (const attack of opponentCard.attacks) {
       // First check with current energy
-      let energyCardData = this.getEnergyCardData(
+      const energyCardData = this.getEnergyCardData(
         opponentState.activePokemon.attachedEnergy || [],
         cardsMap,
       );
 
-      let canPerformAttack = this.attackEnergyValidatorService
-        .validateEnergyRequirements(attack, energyCardData)
-        .isValid;
+      let canPerformAttack =
+        this.attackEnergyValidatorService.validateEnergyRequirements(
+          attack,
+          energyCardData,
+        ).isValid;
 
       // If insufficient energy, check if opponent has energy in hand
       if (!canPerformAttack) {
@@ -182,9 +216,11 @@ export class OpponentAnalysisService {
               energyProvision: card.energyProvision,
             })),
           ];
-          canPerformAttack = this.attackEnergyValidatorService
-            .validateEnergyRequirements(attack, allEnergyData)
-            .isValid;
+          canPerformAttack =
+            this.attackEnergyValidatorService.validateEnergyRequirements(
+              attack,
+              allEnergyData,
+            ).isValid;
         }
       }
 
@@ -204,7 +240,9 @@ export class OpponentAnalysisService {
         continue;
       }
 
-      const defenderCard = await getCardEntity(playerState.activePokemon.cardId);
+      const defenderCard = await getCardEntity(
+        playerState.activePokemon.cardId,
+      );
 
       // For risk damage, assume best case scenario (coin flips succeed)
       // Calculate with coin flip bonuses if applicable
@@ -327,12 +365,16 @@ export class OpponentAnalysisService {
   ): Promise<boolean> {
     this.logger.debug('canOpponentKnockout called', 'OpponentAnalysisService', {
       playerIdentifier,
-      activeHp: gameState.getPlayerState(playerIdentifier).activePokemon?.currentHp,
+      activeHp:
+        gameState.getPlayerState(playerIdentifier).activePokemon?.currentHp,
     });
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     if (!playerState.activePokemon) {
-      this.logger.debug('No active Pokemon, opponent cannot knockout', 'OpponentAnalysisService');
+      this.logger.debug(
+        'No active Pokemon, opponent cannot knockout',
+        'OpponentAnalysisService',
+      );
       return false; // No active Pokemon to knockout
     }
 
@@ -346,11 +388,15 @@ export class OpponentAnalysisService {
 
     // Check if damage >= current HP
     const canKnockout = riskDamage >= playerState.activePokemon.currentHp;
-    this.logger.info('Opponent knockout check result', 'OpponentAnalysisService', {
-      riskDamage,
-      currentHp: playerState.activePokemon.currentHp,
-      canKnockout,
-    });
+    this.logger.info(
+      'Opponent knockout check result',
+      'OpponentAnalysisService',
+      {
+        riskDamage,
+        currentHp: playerState.activePokemon.currentHp,
+        canKnockout,
+      },
+    );
     return canKnockout;
   }
 
@@ -499,9 +545,7 @@ export class OpponentAnalysisService {
       const attackText = attack.text.toLowerCase();
 
       // Pattern: "Flip a coin. If heads, this attack does X more damage."
-      const bonusMatch = attackText.match(
-        /if heads.*?(\d+)\s+more\s+damage/i,
-      );
+      const bonusMatch = attackText.match(/if heads.*?(\d+)\s+more\s+damage/i);
       if (bonusMatch) {
         const bonus = parseInt(bonusMatch[1], 10);
         adjustedDamage = baseDamage + bonus; // Assume heads (best case)
@@ -552,4 +596,3 @@ export class OpponentAnalysisService {
       : PlayerIdentifier.PLAYER1;
   }
 }
-

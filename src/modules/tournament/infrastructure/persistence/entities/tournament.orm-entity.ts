@@ -97,4 +97,3 @@ export class TournamentOrmEntity {
   @Column({ type: 'integer', default: 6 })
   prizeCardCount: number;
 }
-

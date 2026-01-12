@@ -51,4 +51,3 @@ export class TypeOrmDeckRepository implements IDeckRepository {
     return entities.map(DeckOrmMapper.toDomain);
   }
 }
-

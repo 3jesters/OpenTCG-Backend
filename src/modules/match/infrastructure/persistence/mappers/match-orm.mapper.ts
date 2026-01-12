@@ -65,7 +65,7 @@ export class MatchOrmMapper {
    */
   static toOrm(domain: Match): MatchOrmEntity {
     const ormEntity = new MatchOrmEntity();
-    
+
     ormEntity.id = domain.id;
     ormEntity.tournamentId = domain.tournamentId;
     ormEntity.player1Id = domain.player1Id;
@@ -83,8 +83,10 @@ export class MatchOrmMapper {
     ormEntity.player2HasSetPrizeCards = domain.player2HasSetPrizeCards;
     ormEntity.player1ReadyToStart = domain.player1ReadyToStart;
     ormEntity.player2ReadyToStart = domain.player2ReadyToStart;
-    ormEntity.player1HasConfirmedFirstPlayer = domain.player1HasConfirmedFirstPlayer;
-    ormEntity.player2HasConfirmedFirstPlayer = domain.player2HasConfirmedFirstPlayer;
+    ormEntity.player1HasConfirmedFirstPlayer =
+      domain.player1HasConfirmedFirstPlayer;
+    ormEntity.player2HasConfirmedFirstPlayer =
+      domain.player2HasConfirmedFirstPlayer;
     ormEntity.player1HasApprovedMatch = domain.player1HasApprovedMatch;
     ormEntity.player2HasApprovedMatch = domain.player2HasApprovedMatch;
     ormEntity.createdAt = domain.createdAt;
@@ -95,7 +97,7 @@ export class MatchOrmMapper {
     ormEntity.result = domain.result;
     ormEntity.winCondition = domain.winCondition;
     ormEntity.cancellationReason = domain.cancellationReason;
-    
+
     // Convert gameState from domain GameState to JSONB
     ormEntity.gameState = domain.gameState
       ? MatchMapper.gameStateToJson(domain.gameState)
@@ -104,4 +106,3 @@ export class MatchOrmMapper {
     return ormEntity;
   }
 }
-

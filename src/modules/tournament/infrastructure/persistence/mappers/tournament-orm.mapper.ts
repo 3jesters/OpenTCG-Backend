@@ -1,11 +1,11 @@
 import { Tournament } from '../../../domain/entities';
 import { TournamentOrmEntity } from '../entities';
-import { 
-  DeckRules, 
-  RestrictedCard, 
-  StartGameRules, 
-  StartGameRule, 
-  StartGameRuleType 
+import {
+  DeckRules,
+  RestrictedCard,
+  StartGameRules,
+  StartGameRule,
+  StartGameRuleType,
 } from '../../../domain/value-objects';
 
 /**
@@ -31,10 +31,12 @@ export class TournamentOrmMapper {
 
     // Reconstruct StartGameRules value object
     // Cast JSONB rules to proper StartGameRule objects
-    const rules: StartGameRule[] = ormEntity.startGameRules.rules.map((rule: any) => ({
-      type: rule.type as StartGameRuleType,
-      minCount: rule.minCount,
-    }));
+    const rules: StartGameRule[] = ormEntity.startGameRules.rules.map(
+      (rule: any) => ({
+        type: rule.type as StartGameRuleType,
+        minCount: rule.minCount,
+      }),
+    );
     const startGameRules = new StartGameRules(rules);
 
     // Create Tournament domain entity
@@ -138,4 +140,3 @@ export class TournamentOrmMapper {
     return ormEntity;
   }
 }
-

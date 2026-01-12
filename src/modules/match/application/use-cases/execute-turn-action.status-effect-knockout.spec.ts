@@ -130,12 +130,12 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
 
     // Create match with just id and tournamentId (constructor only accepts these)
     const match = new Match('match-1', 'tournament-1');
-    
+
     // Assign players using assignPlayer() method
     // This must be done before changing state, as assignPlayer only works in CREATED or WAITING_FOR_PLAYERS state
     match.assignPlayer('test-player-1', 'deck-1', PlayerIdentifier.PLAYER1);
     match.assignPlayer('test-player-2', 'deck-2', PlayerIdentifier.PLAYER2);
-    
+
     // Set match state to PLAYER_TURN before updating game state
     // This is required because updateGameState only works in PLAYER_TURN or BETWEEN_TURNS states
     Object.defineProperty(match, '_state', {
@@ -143,7 +143,7 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
       writable: true,
       configurable: true,
     });
-    
+
     match.updateGameState(gameState);
 
     return match;
@@ -199,65 +199,79 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
         {
           provide: CardHelperService,
           useValue: {
-            getCardEntity: jest.fn().mockImplementation(async (cardId: string) => {
-              const card = createPokemonCard(cardId, `Pokemon ${cardId}`, 50);
-              return card;
-            }),
+            getCardEntity: jest
+              .fn()
+              .mockImplementation(async (cardId: string) => {
+                const card = createPokemonCard(cardId, `Pokemon ${cardId}`, 50);
+                return card;
+              }),
             getCardHp: jest.fn().mockResolvedValue(50),
-            collectCardIds: jest.fn().mockImplementation((dto, gameState, playerIdentifier) => {
-              const cardIds = new Set<string>();
-              const actionData = dto.actionData as any;
-              
-              // Collect from actionData
-              if (actionData?.cardId) cardIds.add(actionData.cardId);
-              if (actionData?.evolutionCardId) cardIds.add(actionData.evolutionCardId);
-              if (actionData?.attackerCardId) cardIds.add(actionData.attackerCardId);
-              if (actionData?.defenderCardId) cardIds.add(actionData.defenderCardId);
-              if (actionData?.currentPokemonCardId) cardIds.add(actionData.currentPokemonCardId);
-              if (actionData?.energyId) cardIds.add(actionData.energyId);
-              if (Array.isArray(actionData?.energyIds)) {
-                actionData.energyIds.forEach((id: string) => cardIds.add(id));
-              }
-              if (Array.isArray(actionData?.cardIds)) {
-                actionData.cardIds.forEach((id: string) => cardIds.add(id));
-              }
-              
-              // Collect from gameState
-              if (gameState) {
-                const playerState = gameState.getPlayerState(playerIdentifier);
-                const opponentState = gameState.getOpponentState(playerIdentifier);
-                
-                // Player's Pokemon
-                if (playerState.activePokemon) {
-                  cardIds.add(playerState.activePokemon.cardId);
-                  if (playerState.activePokemon.attachedEnergy) {
-                    playerState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
+            collectCardIds: jest
+              .fn()
+              .mockImplementation((dto, gameState, playerIdentifier) => {
+                const cardIds = new Set<string>();
+                const actionData = dto.actionData;
+
+                // Collect from actionData
+                if (actionData?.cardId) cardIds.add(actionData.cardId);
+                if (actionData?.evolutionCardId)
+                  cardIds.add(actionData.evolutionCardId);
+                if (actionData?.attackerCardId)
+                  cardIds.add(actionData.attackerCardId);
+                if (actionData?.defenderCardId)
+                  cardIds.add(actionData.defenderCardId);
+                if (actionData?.currentPokemonCardId)
+                  cardIds.add(actionData.currentPokemonCardId);
+                if (actionData?.energyId) cardIds.add(actionData.energyId);
+                if (Array.isArray(actionData?.energyIds)) {
+                  actionData.energyIds.forEach((id: string) => cardIds.add(id));
                 }
-                playerState.bench.forEach((pokemon) => {
-                  cardIds.add(pokemon.cardId);
-                  if (pokemon.attachedEnergy) {
-                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
-                });
-                
-                // Opponent's Pokemon
-                if (opponentState.activePokemon) {
-                  cardIds.add(opponentState.activePokemon.cardId);
-                  if (opponentState.activePokemon.attachedEnergy) {
-                    opponentState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-                  }
+                if (Array.isArray(actionData?.cardIds)) {
+                  actionData.cardIds.forEach((id: string) => cardIds.add(id));
                 }
-                opponentState.bench.forEach((pokemon) => {
-                  cardIds.add(pokemon.cardId);
-                  if (pokemon.attachedEnergy) {
-                    pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+
+                // Collect from gameState
+                if (gameState) {
+                  const playerState =
+                    gameState.getPlayerState(playerIdentifier);
+                  const opponentState =
+                    gameState.getOpponentState(playerIdentifier);
+
+                  // Player's Pokemon
+                  if (playerState.activePokemon) {
+                    cardIds.add(playerState.activePokemon.cardId);
+                    if (playerState.activePokemon.attachedEnergy) {
+                      playerState.activePokemon.attachedEnergy.forEach((id) =>
+                        cardIds.add(id),
+                      );
+                    }
                   }
-                });
-              }
-              
-              return cardIds;
-            }),
+                  playerState.bench.forEach((pokemon) => {
+                    cardIds.add(pokemon.cardId);
+                    if (pokemon.attachedEnergy) {
+                      pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                    }
+                  });
+
+                  // Opponent's Pokemon
+                  if (opponentState.activePokemon) {
+                    cardIds.add(opponentState.activePokemon.cardId);
+                    if (opponentState.activePokemon.attachedEnergy) {
+                      opponentState.activePokemon.attachedEnergy.forEach((id) =>
+                        cardIds.add(id),
+                      );
+                    }
+                  }
+                  opponentState.bench.forEach((pokemon) => {
+                    cardIds.add(pokemon.cardId);
+                    if (pokemon.attachedEnergy) {
+                      pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+                    }
+                  });
+                }
+
+                return cardIds;
+              }),
           },
         },
         {
@@ -289,7 +303,10 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
               stateMachine,
               getCardUseCase,
             );
-            factory.registerHandler(PlayerActionType.SELECT_PRIZE, selectPrizeHandler);
+            factory.registerHandler(
+              PlayerActionType.SELECT_PRIZE,
+              selectPrizeHandler,
+            );
             return factory;
           },
           inject: [
@@ -539,7 +556,9 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
       const { match: matchAfterEndTurn } = await useCase.execute(endTurnDto);
 
       // Assert: Knockout action should be created, phase should be END, currentPlayer should be Player 1 (prize winner)
-      expect(matchAfterEndTurn.gameState?.player2State.activePokemon).toBeNull();
+      expect(
+        matchAfterEndTurn.gameState?.player2State.activePokemon,
+      ).toBeNull();
       expect(matchAfterEndTurn.gameState?.phase).toBe(TurnPhase.END);
       expect(matchAfterEndTurn.gameState?.currentPlayer).toBe(
         PlayerIdentifier.PLAYER1,
@@ -584,13 +603,16 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
         },
       };
 
-      const { match: matchAfterSetActive } = await useCase.execute(setActiveDto);
+      const { match: matchAfterSetActive } =
+        await useCase.execute(setActiveDto);
 
       // Assert: Active Pokemon set, phase should be DRAW, currentPlayer should be Player 2 (next player)
-      expect(matchAfterSetActive.gameState?.player2State.activePokemon).toBeDefined();
-      expect(matchAfterSetActive.gameState?.player2State.activePokemon?.cardId).toBe(
-        'pokemon-3',
-      );
+      expect(
+        matchAfterSetActive.gameState?.player2State.activePokemon,
+      ).toBeDefined();
+      expect(
+        matchAfterSetActive.gameState?.player2State.activePokemon?.cardId,
+      ).toBe('pokemon-3');
       expect(matchAfterSetActive.gameState?.phase).toBe(TurnPhase.DRAW);
       expect(matchAfterSetActive.gameState?.currentPlayer).toBe(
         PlayerIdentifier.PLAYER2,
@@ -664,7 +686,9 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
       const { match: matchAfterEndTurn } = await useCase.execute(endTurnDto);
 
       // Assert: Knockout action should be created, phase should be END, currentPlayer should be Player 1 (prize winner)
-      expect(matchAfterEndTurn.gameState?.player2State.activePokemon).toBeNull();
+      expect(
+        matchAfterEndTurn.gameState?.player2State.activePokemon,
+      ).toBeNull();
       expect(matchAfterEndTurn.gameState?.phase).toBe(TurnPhase.END);
       expect(matchAfterEndTurn.gameState?.currentPlayer).toBe(
         PlayerIdentifier.PLAYER1, // Player 1 gets prize because Player 2's Pokemon was knocked out
@@ -709,13 +733,16 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
         },
       };
 
-      const { match: matchAfterSetActive } = await useCase.execute(setActiveDto);
+      const { match: matchAfterSetActive } =
+        await useCase.execute(setActiveDto);
 
       // Assert: Active Pokemon set, phase should be DRAW, currentPlayer should be Player 1 (next player)
-      expect(matchAfterSetActive.gameState?.player2State.activePokemon).toBeDefined();
-      expect(matchAfterSetActive.gameState?.player2State.activePokemon?.cardId).toBe(
-        'pokemon-3',
-      );
+      expect(
+        matchAfterSetActive.gameState?.player2State.activePokemon,
+      ).toBeDefined();
+      expect(
+        matchAfterSetActive.gameState?.player2State.activePokemon?.cardId,
+      ).toBe('pokemon-3');
       expect(matchAfterSetActive.gameState?.phase).toBe(TurnPhase.DRAW);
       expect(matchAfterSetActive.gameState?.currentPlayer).toBe(
         PlayerIdentifier.PLAYER1, // Player 1's turn should start (Player 2 just ended their turn)
@@ -723,4 +750,3 @@ describe('ExecuteTurnActionUseCase - Status Effect Knockout After Turn Ends', ()
     });
   });
 });
-

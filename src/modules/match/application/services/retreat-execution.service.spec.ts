@@ -708,7 +708,9 @@ describe('RetreatExecutionService', () => {
           playerIdentifier: PlayerIdentifier.PLAYER1,
           cardsMap: new Map(),
         }),
-      ).rejects.toThrow('No energy selection needed for Pokemon with free retreat');
+      ).rejects.toThrow(
+        'No energy selection needed for Pokemon with free retreat',
+      );
     });
 
     it('should clear status effects on both Pokemon after retreat', async () => {
@@ -857,4 +859,3 @@ describe('RetreatExecutionService', () => {
     });
   });
 });
-

@@ -1,4 +1,9 @@
-import { Injectable, Inject, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { BaseActionHandler } from '../base-action-handler';
 import { IActionHandler } from '../action-handler.interface';
 import { ExecuteActionDto } from '../../dto';
@@ -210,7 +215,9 @@ export class PlayPokemonSetupActionHandler
               savedMatch.id,
             );
             // Reload match after AI action
-            const updatedMatch = await this.matchRepository.findById(dto.matchId);
+            const updatedMatch = await this.matchRepository.findById(
+              dto.matchId,
+            );
             if (updatedMatch) {
               return updatedMatch;
             }
@@ -228,4 +235,3 @@ export class PlayPokemonSetupActionHandler
     return savedMatch;
   }
 }
-

@@ -34,7 +34,9 @@ export class TypeOrmMatchRepository implements IMatchRepository {
     const queryBuilder = this.matchEntityRepository.createQueryBuilder('match');
 
     if (tournamentId) {
-      queryBuilder.where('match.tournamentId = :tournamentId', { tournamentId });
+      queryBuilder.where('match.tournamentId = :tournamentId', {
+        tournamentId,
+      });
     }
 
     if (playerId) {
@@ -54,7 +56,7 @@ export class TypeOrmMatchRepository implements IMatchRepository {
    */
   async save(match: Match): Promise<Match> {
     const entity = MatchOrmMapper.toOrm(match);
-    
+
     // If match has an ID, use update() to avoid SELECT query that save() would do
     // This eliminates the duplicate query when updating an existing match
     if (match.id) {
@@ -91,19 +93,16 @@ export class TypeOrmMatchRepository implements IMatchRepository {
         cancellationReason: entity.cancellationReason,
         gameState: entity.gameState,
       };
-      
+
       // Type assertion needed because TypeORM's update() has strict typing for JSONB columns
       // The data is correct at runtime, but TypeScript can't verify nested JSON structures
-      await this.matchEntityRepository.update(
-        match.id,
-        updateData as any,
-      );
+      await this.matchEntityRepository.update(match.id, updateData as any);
       // Skip reload - return the domain entity directly since it already has correct updatedAt
       // This eliminates the SELECT query after UPDATE
       // The domain entity's updatedAt is already set correctly by domain logic
       return match;
     }
-    
+
     // For new matches (no ID), use save() which will INSERT
     const saved = await this.matchEntityRepository.save(entity);
     return MatchOrmMapper.toDomain(saved);
@@ -132,10 +131,9 @@ export class TypeOrmMatchRepository implements IMatchRepository {
   async findActiveMatchesByPlayer(playerId: string): Promise<Match[]> {
     const entities = await this.matchEntityRepository
       .createQueryBuilder('match')
-      .where(
-        '(match.player1Id = :playerId OR match.player2Id = :playerId)',
-        { playerId },
-      )
+      .where('(match.player1Id = :playerId OR match.player2Id = :playerId)', {
+        playerId,
+      })
       .andWhere('match.state != :endedState', {
         endedState: MatchState.MATCH_ENDED,
       })
@@ -147,4 +145,3 @@ export class TypeOrmMatchRepository implements IMatchRepository {
     return entities.map((entity) => MatchOrmMapper.toDomain(entity));
   }
 }
-

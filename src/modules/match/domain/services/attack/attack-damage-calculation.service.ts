@@ -170,4 +170,3 @@ export class AttackDamageCalculationService {
     return finalDamage;
   }
 }
-

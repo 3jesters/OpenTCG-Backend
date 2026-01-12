@@ -1,8 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { Match, PlayerIdentifier, MatchState, TurnPhase, PlayerActionType, PokemonPosition } from '../../domain';
 import {
-  IAiActionGeneratorService,
-} from '../../application/ports/ai-action-generator.interface';
+  Match,
+  PlayerIdentifier,
+  MatchState,
+  TurnPhase,
+  PlayerActionType,
+  PokemonPosition,
+} from '../../domain';
+import { IAiActionGeneratorService } from '../../application/ports/ai-action-generator.interface';
 import { ExecuteActionDto } from '../../application/dto';
 import { AvailableActionsService } from '../../application/services/available-actions.service';
 import { PokemonScoringService } from './services/pokemon-scoring.service';
@@ -14,16 +19,21 @@ import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-ca
 import { Card } from '../../../card/domain/entities';
 import { GameState, CardInstance } from '../../domain/value-objects';
 import { CoinFlipStatus, CoinFlipContext } from '../../domain/enums';
-import { TrainerEffectType, CardType, EvolutionStage, EnergyType } from '../../../card/domain/enums';
+import {
+  TrainerEffectType,
+  CardType,
+  EvolutionStage,
+  EnergyType,
+} from '../../../card/domain/enums';
 import { Attack } from '../../../card/domain/value-objects';
 import { AttackEnergyValidatorService } from '../../domain/services/attack/energy-requirements/attack-energy-validator.service';
 import { ILogger } from '../../../../shared/application/ports/logger.interface';
 
 /**
  * AI Action Generator Service
- * 
+ *
  * This service generates optimal actions for AI players based on game state analysis.
- * 
+ *
  * The service follows the specifications defined in Phase 7 of the implementation plan:
  * - Early return scenarios (single actions, approvals, coin flips, initial setup)
  * - Main turn phase flow (Steps A → B → C → D)
@@ -47,7 +57,7 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
 
   /**
    * Generate an action for an AI player
-   * 
+   *
    * @param match - The current match state
    * @param playerId - The AI player ID
    * @param playerIdentifier - The player identifier (PLAYER1 or PLAYER2)
@@ -68,20 +78,33 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     });
 
     // Handle states that don't require gameState
-    const availableActionsNoGameState = this.availableActionsService.getFilteredAvailableActions(
-      match,
-      playerIdentifier,
+    const availableActionsNoGameState =
+      this.availableActionsService.getFilteredAvailableActions(
+        match,
+        playerIdentifier,
+      );
+
+    this.logger.debug(
+      'Available actions (no game state)',
+      'AiActionGeneratorService',
+      {
+        availableActions: availableActionsNoGameState,
+        count: availableActionsNoGameState.length,
+      },
     );
-    
-    this.logger.debug('Available actions (no game state)', 'AiActionGeneratorService', {
-      availableActions: availableActionsNoGameState,
-      count: availableActionsNoGameState.length,
-    });
 
     if (match.state === MatchState.MATCH_APPROVAL) {
-      this.logger.debug('Checking MATCH_APPROVAL state', 'AiActionGeneratorService');
-      if (availableActionsNoGameState.includes(PlayerActionType.APPROVE_MATCH)) {
-        this.logger.info('Returning APPROVE_MATCH action', 'AiActionGeneratorService');
+      this.logger.debug(
+        'Checking MATCH_APPROVAL state',
+        'AiActionGeneratorService',
+      );
+      if (
+        availableActionsNoGameState.includes(PlayerActionType.APPROVE_MATCH)
+      ) {
+        this.logger.info(
+          'Returning APPROVE_MATCH action',
+          'AiActionGeneratorService',
+        );
         return {
           matchId: match.id,
           playerId,
@@ -92,9 +115,19 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     }
 
     if (match.state === MatchState.DRAWING_CARDS) {
-      this.logger.debug('Checking DRAWING_CARDS state', 'AiActionGeneratorService');
-      if (availableActionsNoGameState.includes(PlayerActionType.DRAW_INITIAL_CARDS)) {
-        this.logger.info('Returning DRAW_INITIAL_CARDS action', 'AiActionGeneratorService');
+      this.logger.debug(
+        'Checking DRAWING_CARDS state',
+        'AiActionGeneratorService',
+      );
+      if (
+        availableActionsNoGameState.includes(
+          PlayerActionType.DRAW_INITIAL_CARDS,
+        )
+      ) {
+        this.logger.info(
+          'Returning DRAW_INITIAL_CARDS action',
+          'AiActionGeneratorService',
+        );
         return {
           matchId: match.id,
           playerId,
@@ -105,11 +138,20 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     }
 
     if (match.state === MatchState.SET_PRIZE_CARDS) {
-      this.logger.debug('Checking SET_PRIZE_CARDS state', 'AiActionGeneratorService');
-      if (availableActionsNoGameState.includes(PlayerActionType.SET_PRIZE_CARDS)) {
-        this.logger.info('Returning SET_PRIZE_CARDS action', 'AiActionGeneratorService', {
-          prizeIndices: [0, 1, 2, 3, 4, 5],
-        });
+      this.logger.debug(
+        'Checking SET_PRIZE_CARDS state',
+        'AiActionGeneratorService',
+      );
+      if (
+        availableActionsNoGameState.includes(PlayerActionType.SET_PRIZE_CARDS)
+      ) {
+        this.logger.info(
+          'Returning SET_PRIZE_CARDS action',
+          'AiActionGeneratorService',
+          {
+            prizeIndices: [0, 1, 2, 3, 4, 5],
+          },
+        );
         return {
           matchId: match.id,
           playerId,
@@ -120,9 +162,19 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     }
 
     if (match.state === MatchState.FIRST_PLAYER_SELECTION) {
-      this.logger.debug('Checking FIRST_PLAYER_SELECTION state', 'AiActionGeneratorService');
-      if (availableActionsNoGameState.includes(PlayerActionType.CONFIRM_FIRST_PLAYER)) {
-        this.logger.info('Returning CONFIRM_FIRST_PLAYER action', 'AiActionGeneratorService');
+      this.logger.debug(
+        'Checking FIRST_PLAYER_SELECTION state',
+        'AiActionGeneratorService',
+      );
+      if (
+        availableActionsNoGameState.includes(
+          PlayerActionType.CONFIRM_FIRST_PLAYER,
+        )
+      ) {
+        this.logger.info(
+          'Returning CONFIRM_FIRST_PLAYER action',
+          'AiActionGeneratorService',
+        );
         return {
           matchId: match.id,
           playerId,
@@ -142,16 +194,21 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     }
 
     // Get available actions
-    const availableActions = this.availableActionsService.getFilteredAvailableActions(
-      match,
-      playerIdentifier,
+    const availableActions =
+      this.availableActionsService.getFilteredAvailableActions(
+        match,
+        playerIdentifier,
+      );
+
+    this.logger.debug(
+      'Available actions retrieved',
+      'AiActionGeneratorService',
+      {
+        availableActions,
+        count: availableActions.length,
+        phase: gameState.phase,
+      },
     );
-    
-    this.logger.debug('Available actions retrieved', 'AiActionGeneratorService', {
-      availableActions,
-      count: availableActions.length,
-      phase: gameState.phase,
-    });
 
     // Create cards map and getCardEntity function
     const cardsMap = new Map<string, Card>();
@@ -161,21 +218,29 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         hasInMap: cardsMap.has(cardId),
         mapSize: cardsMap.size,
       });
-      
+
       let card = cardsMap.get(cardId);
       if (!card) {
         try {
-          this.logger.debug('Fetching card from use case', 'AiActionGeneratorService', { cardId });
+          this.logger.debug(
+            'Fetching card from use case',
+            'AiActionGeneratorService',
+            { cardId },
+          );
           card = await this.getCardByIdUseCase.getCardEntity(cardId);
           if (!card) {
             throw new Error(`Card not found: ${cardId}`);
           }
           cardsMap.set(cardId, card);
-          this.logger.debug('Card fetched and cached', 'AiActionGeneratorService', {
-            cardId,
-            cardType: card.cardType,
-            cardName: card.name,
-          });
+          this.logger.debug(
+            'Card fetched and cached',
+            'AiActionGeneratorService',
+            {
+              cardId,
+              cardType: card.cardType,
+              cardName: card.name,
+            },
+          );
         } catch (error: any) {
           this.logger.error('Error fetching card', 'AiActionGeneratorService', {
             cardId,
@@ -185,13 +250,20 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
           throw error;
         }
       } else {
-        this.logger.verbose('Card retrieved from cache', 'AiActionGeneratorService', { cardId });
+        this.logger.verbose(
+          'Card retrieved from cache',
+          'AiActionGeneratorService',
+          { cardId },
+        );
       }
       return card;
     };
 
     // Early return scenarios
-    this.logger.debug('Checking for early return scenarios', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Checking for early return scenarios',
+      'AiActionGeneratorService',
+    );
     const earlyReturn = await this.checkEarlyReturns(
       match,
       gameState,
@@ -199,12 +271,16 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       availableActions,
       getCardEntity,
     );
-    
+
     if (earlyReturn) {
-      this.logger.info('Early return action found', 'AiActionGeneratorService', {
-        actionType: earlyReturn.actionType,
-        actionData: earlyReturn.actionData,
-      });
+      this.logger.info(
+        'Early return action found',
+        'AiActionGeneratorService',
+        {
+          actionType: earlyReturn.actionType,
+          actionData: earlyReturn.actionData,
+        },
+      );
       return {
         matchId: match.id,
         playerId,
@@ -212,17 +288,23 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         actionData: earlyReturn.actionData,
       };
     }
-    
-    this.logger.debug('No early return found, proceeding to main phase logic', 'AiActionGeneratorService');
+
+    this.logger.debug(
+      'No early return found, proceeding to main phase logic',
+      'AiActionGeneratorService',
+    );
 
     // Main turn phase flow (MAIN_PHASE)
-    if (match.state === MatchState.PLAYER_TURN && gameState.phase === TurnPhase.MAIN_PHASE) {
+    if (
+      match.state === MatchState.PLAYER_TURN &&
+      gameState.phase === TurnPhase.MAIN_PHASE
+    ) {
       this.logger.info('Entering MAIN_PHASE flow', 'AiActionGeneratorService', {
         matchState: match.state,
         phase: gameState.phase,
         turnNumber: gameState.turnNumber,
       });
-      
+
       const mainPhaseAction = await this.handleMainPhase(
         match,
         gameState,
@@ -231,12 +313,16 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         cardsMap,
         getCardEntity,
       );
-      
+
       if (mainPhaseAction) {
-        this.logger.info('Main phase action selected', 'AiActionGeneratorService', {
-          actionType: mainPhaseAction.actionType,
-          actionData: mainPhaseAction.actionData,
-        });
+        this.logger.info(
+          'Main phase action selected',
+          'AiActionGeneratorService',
+          {
+            actionType: mainPhaseAction.actionType,
+            actionData: mainPhaseAction.actionData,
+          },
+        );
         return {
           matchId: match.id,
           playerId,
@@ -244,8 +330,11 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
           actionData: mainPhaseAction.actionData,
         };
       }
-      
-      this.logger.debug('No main phase action found, checking fallback actions', 'AiActionGeneratorService');
+
+      this.logger.debug(
+        'No main phase action found, checking fallback actions',
+        'AiActionGeneratorService',
+      );
     }
 
     // Fallback: end turn
@@ -270,7 +359,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     playerIdentifier: PlayerIdentifier,
     availableActions: PlayerActionType[],
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
     this.logger.debug('checkEarlyReturns called', 'AiActionGeneratorService', {
       matchState: match.state,
       phase: gameState.phase,
@@ -279,28 +371,44 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     });
 
     // Early return: Single action available
-    if (availableActions.length === 1 && availableActions[0] !== PlayerActionType.CONCEDE) {
+    if (
+      availableActions.length === 1 &&
+      availableActions[0] !== PlayerActionType.CONCEDE
+    ) {
       const actionType = availableActions[0];
-      this.logger.info('Single action early return', 'AiActionGeneratorService', { actionType });
-      
+      this.logger.info(
+        'Single action early return',
+        'AiActionGeneratorService',
+        { actionType },
+      );
+
       if (actionType === PlayerActionType.SELECT_PRIZE) {
         // Select random prize
         const playerState = gameState.getPlayerState(playerIdentifier);
-        const availablePrizes = playerState.prizeCards.filter((p) => p !== null && p !== undefined);
+        const availablePrizes = playerState.prizeCards.filter(
+          (p) => p !== null && p !== undefined,
+        );
         this.logger.debug('Selecting prize', 'AiActionGeneratorService', {
           availablePrizesCount: availablePrizes.length,
         });
-        
+
         if (availablePrizes.length > 0) {
-          const randomIndex = Math.floor(Math.random() * availablePrizes.length);
-          this.logger.info('Prize selected', 'AiActionGeneratorService', { prizeIndex: randomIndex });
+          const randomIndex = Math.floor(
+            Math.random() * availablePrizes.length,
+          );
+          this.logger.info('Prize selected', 'AiActionGeneratorService', {
+            prizeIndex: randomIndex,
+          });
           return {
             actionType,
             actionData: { prizeIndex: randomIndex },
           };
         } else {
           // If no prizes available, return index 0 (shouldn't happen in normal gameplay)
-          this.logger.warn('No prizes available, using index 0', 'AiActionGeneratorService');
+          this.logger.warn(
+            'No prizes available, using index 0',
+            'AiActionGeneratorService',
+          );
           return {
             actionType,
             actionData: { prizeIndex: 0 },
@@ -318,36 +426,57 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       gameState.coinFlipState.status === CoinFlipStatus.READY_TO_FLIP &&
       gameState.coinFlipState.context === CoinFlipContext.ATTACK
     ) {
-      this.logger.debug('Coin flip ready for attack', 'AiActionGeneratorService', {
-        coinFlipStatus: gameState.coinFlipState.status,
-        context: gameState.coinFlipState.context,
-      });
-      
+      this.logger.debug(
+        'Coin flip ready for attack',
+        'AiActionGeneratorService',
+        {
+          coinFlipStatus: gameState.coinFlipState.status,
+          context: gameState.coinFlipState.context,
+        },
+      );
+
       if (availableActions.includes(PlayerActionType.GENERATE_COIN_FLIP)) {
-        this.logger.info('Returning GENERATE_COIN_FLIP action', 'AiActionGeneratorService');
-        return { actionType: PlayerActionType.GENERATE_COIN_FLIP, actionData: {} };
+        this.logger.info(
+          'Returning GENERATE_COIN_FLIP action',
+          'AiActionGeneratorService',
+        );
+        return {
+          actionType: PlayerActionType.GENERATE_COIN_FLIP,
+          actionData: {},
+        };
       }
     }
 
     // Early return: Initial setup actions (handled before gameState check)
 
     if (match.state === MatchState.SELECT_ACTIVE_POKEMON) {
-      this.logger.debug('Checking SELECT_ACTIVE_POKEMON state', 'AiActionGeneratorService');
+      this.logger.debug(
+        'Checking SELECT_ACTIVE_POKEMON state',
+        'AiActionGeneratorService',
+      );
       if (availableActions.includes(PlayerActionType.SET_ACTIVE_POKEMON)) {
         const playerState = gameState.getPlayerState(playerIdentifier);
-        this.logger.debug('Selecting best Pokemon from hand for active', 'AiActionGeneratorService', {
-          handSize: playerState.hand.length,
-        });
-        
+        this.logger.debug(
+          'Selecting best Pokemon from hand for active',
+          'AiActionGeneratorService',
+          {
+            handSize: playerState.hand.length,
+          },
+        );
+
         const bestPokemon = await this.selectBestPokemonFromHand(
           playerState.hand,
           getCardEntity,
         );
         if (bestPokemon) {
-          this.logger.info('Best Pokemon selected for active', 'AiActionGeneratorService', {
-            instanceId: bestPokemon.instanceId,
-            cardId: bestPokemon.cardId,
-          });
+          this.logger.info(
+            'Best Pokemon selected for active',
+            'AiActionGeneratorService',
+            {
+              instanceId: bestPokemon.instanceId,
+              cardId: bestPokemon.cardId,
+            },
+          );
           return {
             actionType: PlayerActionType.SET_ACTIVE_POKEMON,
             actionData: { cardId: bestPokemon.cardId },
@@ -357,23 +486,37 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     }
 
     if (match.state === MatchState.SELECT_BENCH_POKEMON) {
-      this.logger.debug('Checking SELECT_BENCH_POKEMON state', 'AiActionGeneratorService');
+      this.logger.debug(
+        'Checking SELECT_BENCH_POKEMON state',
+        'AiActionGeneratorService',
+      );
       const playerState = gameState.getPlayerState(playerIdentifier);
-      if (availableActions.includes(PlayerActionType.PLAY_POKEMON) && playerState.hand.length > 0) {
-        this.logger.debug('Selecting best Pokemon from hand for bench', 'AiActionGeneratorService', {
-          handSize: playerState.hand.length,
-        });
-        
+      if (
+        availableActions.includes(PlayerActionType.PLAY_POKEMON) &&
+        playerState.hand.length > 0
+      ) {
+        this.logger.debug(
+          'Selecting best Pokemon from hand for bench',
+          'AiActionGeneratorService',
+          {
+            handSize: playerState.hand.length,
+          },
+        );
+
         const bestPokemon = await this.selectBestPokemonFromHand(
           playerState.hand,
           getCardEntity,
         );
         if (bestPokemon) {
-          this.logger.info('Best Pokemon selected for bench', 'AiActionGeneratorService', {
-            instanceId: bestPokemon.instanceId,
-            cardId: bestPokemon.cardId,
-            position: 0,
-          });
+          this.logger.info(
+            'Best Pokemon selected for bench',
+            'AiActionGeneratorService',
+            {
+              instanceId: bestPokemon.instanceId,
+              cardId: bestPokemon.cardId,
+              position: 0,
+            },
+          );
           return {
             actionType: PlayerActionType.PLAY_POKEMON,
             actionData: { cardId: bestPokemon.cardId, position: 0 },
@@ -381,8 +524,14 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         }
       }
       if (availableActions.includes(PlayerActionType.COMPLETE_INITIAL_SETUP)) {
-        this.logger.info('Returning COMPLETE_INITIAL_SETUP action', 'AiActionGeneratorService');
-        return { actionType: PlayerActionType.COMPLETE_INITIAL_SETUP, actionData: {} };
+        this.logger.info(
+          'Returning COMPLETE_INITIAL_SETUP action',
+          'AiActionGeneratorService',
+        );
+        return {
+          actionType: PlayerActionType.COMPLETE_INITIAL_SETUP,
+          actionData: {},
+        };
       }
     }
 
@@ -392,7 +541,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     if (gameState.phase === TurnPhase.DRAW) {
       this.logger.debug('Checking DRAW phase', 'AiActionGeneratorService');
       if (availableActions.includes(PlayerActionType.DRAW_CARD)) {
-        this.logger.info('Returning DRAW_CARD action', 'AiActionGeneratorService');
+        this.logger.info(
+          'Returning DRAW_CARD action',
+          'AiActionGeneratorService',
+        );
         return { actionType: PlayerActionType.DRAW_CARD, actionData: {} };
       }
     }
@@ -403,37 +555,55 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         hasCoinFlipState: !!gameState.coinFlipState,
         coinFlipStatus: gameState.coinFlipState?.status,
       });
-      
-      if (!gameState.coinFlipState || gameState.coinFlipState.status !== CoinFlipStatus.READY_TO_FLIP) {
-        this.logger.debug('Identifying knockout attacks', 'AiActionGeneratorService');
-        const knockoutAttacks = await this.actionPrioritizationService.identifyKnockoutAttacks(
-          gameState,
-          playerIdentifier,
-          new Map(),
-          getCardEntity,
-        ) || [];
-        
-        this.logger.debug('Knockout attacks identified', 'AiActionGeneratorService', {
-          count: knockoutAttacks.length,
-        });
-        
+
+      if (
+        !gameState.coinFlipState ||
+        gameState.coinFlipState.status !== CoinFlipStatus.READY_TO_FLIP
+      ) {
+        this.logger.debug(
+          'Identifying knockout attacks',
+          'AiActionGeneratorService',
+        );
+        const knockoutAttacks =
+          (await this.actionPrioritizationService.identifyKnockoutAttacks(
+            gameState,
+            playerIdentifier,
+            new Map(),
+            getCardEntity,
+          )) || [];
+
+        this.logger.debug(
+          'Knockout attacks identified',
+          'AiActionGeneratorService',
+          {
+            count: knockoutAttacks.length,
+          },
+        );
+
         if (knockoutAttacks.length > 0 && knockoutAttacks[0].attackAnalysis) {
           const attackIndex = await this.findAttackIndex(
             knockoutAttacks[0].attackAnalysis.card,
             knockoutAttacks[0].attackAnalysis.attack,
             getCardEntity,
           );
-          this.logger.info('Returning ATTACK action (knockout)', 'AiActionGeneratorService', {
-            attackIndex,
-            cardId: knockoutAttacks[0].attackAnalysis.card.cardId,
-          });
+          this.logger.info(
+            'Returning ATTACK action (knockout)',
+            'AiActionGeneratorService',
+            {
+              attackIndex,
+              cardId: knockoutAttacks[0].attackAnalysis.card.cardId,
+            },
+          );
           return {
             actionType: PlayerActionType.ATTACK,
             actionData: { attackIndex },
           };
         }
         if (availableActions.includes(PlayerActionType.END_TURN)) {
-          this.logger.info('No knockout attack, returning END_TURN', 'AiActionGeneratorService');
+          this.logger.info(
+            'No knockout attack, returning END_TURN',
+            'AiActionGeneratorService',
+          );
           return { actionType: PlayerActionType.END_TURN, actionData: {} };
         }
       }
@@ -444,21 +614,36 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       this.logger.debug('Checking END phase', 'AiActionGeneratorService');
       if (availableActions.includes(PlayerActionType.SELECT_PRIZE)) {
         const playerState = gameState.getPlayerState(playerIdentifier);
-        const availablePrizes = playerState.prizeCards.filter((p) => p !== null && p !== undefined);
-        this.logger.debug('Selecting prize in END phase', 'AiActionGeneratorService', {
-          availablePrizesCount: availablePrizes.length,
-        });
-        
+        const availablePrizes = playerState.prizeCards.filter(
+          (p) => p !== null && p !== undefined,
+        );
+        this.logger.debug(
+          'Selecting prize in END phase',
+          'AiActionGeneratorService',
+          {
+            availablePrizesCount: availablePrizes.length,
+          },
+        );
+
         if (availablePrizes.length > 0) {
-          const randomIndex = Math.floor(Math.random() * availablePrizes.length);
-          this.logger.info('Prize selected in END phase', 'AiActionGeneratorService', { prizeIndex: randomIndex });
+          const randomIndex = Math.floor(
+            Math.random() * availablePrizes.length,
+          );
+          this.logger.info(
+            'Prize selected in END phase',
+            'AiActionGeneratorService',
+            { prizeIndex: randomIndex },
+          );
           return {
             actionType: PlayerActionType.SELECT_PRIZE,
             actionData: { prizeIndex: randomIndex },
           };
         } else {
           // If no prizes available, return index 0 (shouldn't happen in normal gameplay)
-          this.logger.warn('No prizes available in END phase, using index 0', 'AiActionGeneratorService');
+          this.logger.warn(
+            'No prizes available in END phase, using index 0',
+            'AiActionGeneratorService',
+          );
           return {
             actionType: PlayerActionType.SELECT_PRIZE,
             actionData: { prizeIndex: 0 },
@@ -481,31 +666,45 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     availableActions: PlayerActionType[],
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
     this.logger.debug('handleMainPhase called', 'AiActionGeneratorService', {
       availableActionsCount: availableActions.length,
       availableActions,
       turnNumber: gameState.turnNumber,
     });
-    
+
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     // Edge case: No active Pokemon
-    if (!playerState.activePokemon && availableActions.includes(PlayerActionType.SET_ACTIVE_POKEMON)) {
-      this.logger.debug('No active Pokemon, selecting from bench', 'AiActionGeneratorService', {
-        benchSize: playerState.bench.length,
-      });
-      
+    if (
+      !playerState.activePokemon &&
+      availableActions.includes(PlayerActionType.SET_ACTIVE_POKEMON)
+    ) {
+      this.logger.debug(
+        'No active Pokemon, selecting from bench',
+        'AiActionGeneratorService',
+        {
+          benchSize: playerState.bench.length,
+        },
+      );
+
       if (playerState.bench.length > 0) {
         const bestBench = await this.selectBestPokemonFromBench(
           playerState.bench,
           getCardEntity,
         );
         if (bestBench) {
-          this.logger.info('Best bench Pokemon selected for active', 'AiActionGeneratorService', {
-            instanceId: bestBench.instanceId,
-            cardId: bestBench.cardId,
-          });
+          this.logger.info(
+            'Best bench Pokemon selected for active',
+            'AiActionGeneratorService',
+            {
+              instanceId: bestBench.instanceId,
+              cardId: bestBench.cardId,
+            },
+          );
           return {
             actionType: PlayerActionType.SET_ACTIVE_POKEMON,
             actionData: { cardId: bestBench.cardId },
@@ -515,7 +714,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     }
 
     // Step A: Check trainer cards for hand addition (no discard)
-    this.logger.debug('Step A: Checking trainer cards for hand addition', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step A: Checking trainer cards for hand addition',
+      'AiActionGeneratorService',
+    );
     const stepA = await this.stepA_CheckTrainerCardsForHandAddition(
       gameState,
       playerIdentifier,
@@ -533,7 +735,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     this.logger.debug('Step A: No action found', 'AiActionGeneratorService');
 
     // Step B: Energy attachment & evolution sequencing
-    this.logger.debug('Step B: Checking energy attachment & evolution', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step B: Checking energy attachment & evolution',
+      'AiActionGeneratorService',
+    );
     const stepB = await this.stepB_EnergyAndEvolution(
       match,
       gameState,
@@ -552,7 +757,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     this.logger.debug('Step B: No action found', 'AiActionGeneratorService');
 
     // Step C: Check additional trainer cards
-    this.logger.debug('Step C: Checking additional trainer cards', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step C: Checking additional trainer cards',
+      'AiActionGeneratorService',
+    );
     const stepC = await this.stepC_CheckAdditionalTrainerCards(
       gameState,
       playerIdentifier,
@@ -570,7 +778,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     this.logger.debug('Step C: No action found', 'AiActionGeneratorService');
 
     // Step C.1: Check bench Pokemon evolution
-    this.logger.debug('Step C.1: Checking bench Pokemon evolution', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step C.1: Checking bench Pokemon evolution',
+      'AiActionGeneratorService',
+    );
     const stepC1 = await this.stepC1_CheckBenchEvolution(
       gameState,
       playerIdentifier,
@@ -588,7 +799,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     this.logger.debug('Step C.1: No action found', 'AiActionGeneratorService');
 
     // Step C.2: Check Pokemon powers/abilities
-    this.logger.debug('Step C.2: Checking Pokemon powers/abilities', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step C.2: Checking Pokemon powers/abilities',
+      'AiActionGeneratorService',
+    );
     const stepC2 = await this.stepC2_CheckPokemonPowers(
       gameState,
       playerIdentifier,
@@ -605,7 +819,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     this.logger.debug('Step C.2: No action found', 'AiActionGeneratorService');
 
     // Step D: Attack
-    this.logger.debug('Step D: Checking attack options', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step D: Checking attack options',
+      'AiActionGeneratorService',
+    );
     const stepD = await this.stepD_Attack(
       gameState,
       playerIdentifier,
@@ -641,11 +858,20 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     availableActions: PlayerActionType[],
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
-    this.logger.debug('stepA_CheckTrainerCardsForHandAddition called', 'AiActionGeneratorService');
-    
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
+    this.logger.debug(
+      'stepA_CheckTrainerCardsForHandAddition called',
+      'AiActionGeneratorService',
+    );
+
     if (!availableActions.includes(PlayerActionType.PLAY_TRAINER)) {
-      this.logger.debug('PLAY_TRAINER not available', 'AiActionGeneratorService');
+      this.logger.debug(
+        'PLAY_TRAINER not available',
+        'AiActionGeneratorService',
+      );
       return null;
     }
 
@@ -653,32 +879,44 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
 
     // Check if deck is empty (edge case)
     if (playerState.deck.length === 0) {
-      this.logger.debug('Deck is empty, skipping trainer cards that draw', 'AiActionGeneratorService');
+      this.logger.debug(
+        'Deck is empty, skipping trainer cards that draw',
+        'AiActionGeneratorService',
+      );
       return null; // Don't play cards that draw if deck is empty
     }
 
     // Get all trainer card options
-    this.logger.debug('Evaluating trainer card options', 'AiActionGeneratorService', {
-      handSize: playerState.hand.length,
-      deckSize: playerState.deck.length,
-    });
-    
-    const trainerOptions = await this.trainerCardAnalyzerService.evaluateTrainerCardOptions(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    ) || [];
-    
-    this.logger.debug('Trainer card options evaluated', 'AiActionGeneratorService', {
-      optionsCount: trainerOptions.length,
-      options: trainerOptions.map(o => ({
-        trainerCardId: o.trainerCardId,
-        shouldPlay: o.shouldPlay,
-        effectTypes: o.effectTypes,
-        wouldCauseDeckEmpty: o.wouldCauseDeckEmpty,
-      })),
-    });
+    this.logger.debug(
+      'Evaluating trainer card options',
+      'AiActionGeneratorService',
+      {
+        handSize: playerState.hand.length,
+        deckSize: playerState.deck.length,
+      },
+    );
+
+    const trainerOptions =
+      (await this.trainerCardAnalyzerService.evaluateTrainerCardOptions(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      )) || [];
+
+    this.logger.debug(
+      'Trainer card options evaluated',
+      'AiActionGeneratorService',
+      {
+        optionsCount: trainerOptions.length,
+        options: trainerOptions.map((o) => ({
+          trainerCardId: o.trainerCardId,
+          shouldPlay: o.shouldPlay,
+          effectTypes: o.effectTypes,
+          wouldCauseDeckEmpty: o.wouldCauseDeckEmpty,
+        })),
+      },
+    );
 
     // Find trainer cards that only have DRAW_CARDS effect (no discard requirement)
     for (const option of trainerOptions) {
@@ -688,10 +926,14 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         option.effectTypes.includes(TrainerEffectType.DRAW_CARDS) &&
         option.effectTypes.length === 1 // Only DRAW_CARDS, no other effects
       ) {
-        this.logger.info('Step A: Found trainer card with only DRAW_CARDS', 'AiActionGeneratorService', {
-          trainerCardId: option.trainerCardId,
-          effectTypes: option.effectTypes,
-        });
+        this.logger.info(
+          'Step A: Found trainer card with only DRAW_CARDS',
+          'AiActionGeneratorService',
+          {
+            trainerCardId: option.trainerCardId,
+            effectTypes: option.effectTypes,
+          },
+        );
         return {
           actionType: PlayerActionType.PLAY_TRAINER,
           actionData: { cardId: option.trainerCardId },
@@ -712,61 +954,92 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     availableActions: PlayerActionType[],
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
-    this.logger.debug('stepB_EnergyAndEvolution called', 'AiActionGeneratorService');
-    
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
+    this.logger.debug(
+      'stepB_EnergyAndEvolution called',
+      'AiActionGeneratorService',
+    );
+
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     // Check if energy already attached this turn
     if (playerState.hasAttachedEnergyThisTurn) {
-      this.logger.debug('Energy already attached this turn, skipping energy attachment', 'AiActionGeneratorService');
+      this.logger.debug(
+        'Energy already attached this turn, skipping energy attachment',
+        'AiActionGeneratorService',
+      );
       return null; // Skip energy attachment
     }
 
     // B.2.5: Check retreat/pokemon switch before attaching energy
     if (availableActions.includes(PlayerActionType.RETREAT)) {
-      this.logger.debug('Checking if retreat is needed', 'AiActionGeneratorService', {
-        benchSize: playerState.bench.length,
-        activeHp: playerState.activePokemon?.currentHp,
-        activeMaxHp: playerState.activePokemon?.maxHp,
-      });
-      
-      const shouldRetreat = await this.opponentAnalysisService.canOpponentKnockout(
-        gameState,
-        playerIdentifier,
-        cardsMap,
-        getCardEntity,
+      this.logger.debug(
+        'Checking if retreat is needed',
+        'AiActionGeneratorService',
+        {
+          benchSize: playerState.bench.length,
+          activeHp: playerState.activePokemon?.currentHp,
+          activeMaxHp: playerState.activePokemon?.maxHp,
+        },
       );
 
-      this.logger.debug('Opponent knockout check result', 'AiActionGeneratorService', {
-        shouldRetreat,
-      });
+      const shouldRetreat =
+        await this.opponentAnalysisService.canOpponentKnockout(
+          gameState,
+          playerIdentifier,
+          cardsMap,
+          getCardEntity,
+        );
+
+      this.logger.debug(
+        'Opponent knockout check result',
+        'AiActionGeneratorService',
+        {
+          shouldRetreat,
+        },
+      );
 
       if (shouldRetreat && playerState.bench.length > 0) {
-        this.logger.info('Retreat needed, selecting best bench Pokemon', 'AiActionGeneratorService');
+        this.logger.info(
+          'Retreat needed, selecting best bench Pokemon',
+          'AiActionGeneratorService',
+        );
         const bestBench = await this.selectBestPokemonFromBench(
           playerState.bench,
           getCardEntity,
         );
         if (bestBench) {
-          this.logger.info('Retreat action selected', 'AiActionGeneratorService', {
-            instanceId: bestBench.instanceId,
-            cardId: bestBench.cardId,
-            position: bestBench.position,
-          });
+          this.logger.info(
+            'Retreat action selected',
+            'AiActionGeneratorService',
+            {
+              instanceId: bestBench.instanceId,
+              cardId: bestBench.cardId,
+              position: bestBench.position,
+            },
+          );
           return {
             actionType: PlayerActionType.RETREAT,
             actionData: { target: bestBench.position },
           };
         }
       } else {
-        this.logger.debug('Retreat not needed or no bench available', 'AiActionGeneratorService');
+        this.logger.debug(
+          'Retreat not needed or no bench available',
+          'AiActionGeneratorService',
+        );
       }
     }
 
     // B.2: Check evolution cards
     if (availableActions.includes(PlayerActionType.EVOLVE_POKEMON)) {
-      this.logger.debug('B.2: Checking evolution cards', 'AiActionGeneratorService');
+      this.logger.debug(
+        'B.2: Checking evolution cards',
+        'AiActionGeneratorService',
+      );
       const evolutionAction = await this.checkEvolutionCards(
         gameState,
         playerIdentifier,
@@ -775,44 +1048,63 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         getCardEntity,
       );
       if (evolutionAction) {
-        this.logger.info('B.2: Evolution action found', 'AiActionGeneratorService', {
-          actionType: evolutionAction.actionType,
-          actionData: evolutionAction.actionData,
-        });
+        this.logger.info(
+          'B.2: Evolution action found',
+          'AiActionGeneratorService',
+          {
+            actionType: evolutionAction.actionType,
+            actionData: evolutionAction.actionData,
+          },
+        );
         return evolutionAction;
       }
-      this.logger.debug('B.2: No evolution action found', 'AiActionGeneratorService');
+      this.logger.debug(
+        'B.2: No evolution action found',
+        'AiActionGeneratorService',
+      );
     }
 
     // B.3: Attach energy
     if (availableActions.includes(PlayerActionType.ATTACH_ENERGY)) {
-      this.logger.debug('B.3: Evaluating energy attachment options', 'AiActionGeneratorService');
-      
-      const energyOptions = await this.energyAttachmentAnalyzerService.evaluateAttachmentOptions(
-        gameState,
-        playerIdentifier,
-        cardsMap,
-        getCardEntity,
-      ) || [];
-      
-      this.logger.debug('B.3: Energy attachment options evaluated', 'AiActionGeneratorService', {
-        optionsCount: energyOptions.length,
-        options: energyOptions.map(o => ({
-          energyCardId: o.energyCardId,
-          targetInstanceId: o.targetPokemon?.instanceId,
-          priority: o.priority,
-          enablesKnockout: o.enablesKnockout,
-        })),
-      });
+      this.logger.debug(
+        'B.3: Evaluating energy attachment options',
+        'AiActionGeneratorService',
+      );
+
+      const energyOptions =
+        (await this.energyAttachmentAnalyzerService.evaluateAttachmentOptions(
+          gameState,
+          playerIdentifier,
+          cardsMap,
+          getCardEntity,
+        )) || [];
+
+      this.logger.debug(
+        'B.3: Energy attachment options evaluated',
+        'AiActionGeneratorService',
+        {
+          optionsCount: energyOptions.length,
+          options: energyOptions.map((o) => ({
+            energyCardId: o.energyCardId,
+            targetInstanceId: o.targetPokemon?.instanceId,
+            priority: o.priority,
+            enablesKnockout: o.enablesKnockout,
+          })),
+        },
+      );
 
       if (energyOptions.length > 0) {
         const bestOption = energyOptions[0];
-        this.logger.info('B.3: Energy attachment selected', 'AiActionGeneratorService', {
-          instanceId: bestOption.targetPokemon.instanceId,
-          energyCardId: bestOption.energyCardId,
-          priority: bestOption.priority,
-          enablesKnockout: bestOption.enablesKnockout,
-        });
+        this.logger.info(
+          'B.3: Energy attachment selected',
+          'AiActionGeneratorService',
+          {
+            instanceId: bestOption.targetPokemon.instanceId,
+            energyCardId: bestOption.energyCardId,
+            priority: bestOption.priority,
+            enablesKnockout: bestOption.enablesKnockout,
+          },
+        );
         return {
           actionType: PlayerActionType.ATTACH_ENERGY,
           actionData: {
@@ -821,7 +1113,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
           },
         };
       }
-      this.logger.debug('B.3: No energy attachment options found', 'AiActionGeneratorService');
+      this.logger.debug(
+        'B.3: No energy attachment options found',
+        'AiActionGeneratorService',
+      );
     }
 
     this.logger.debug('Step B: No action found', 'AiActionGeneratorService');
@@ -837,11 +1132,20 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     availableActions: PlayerActionType[],
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
-    this.logger.debug('stepC_CheckAdditionalTrainerCards called', 'AiActionGeneratorService');
-    
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
+    this.logger.debug(
+      'stepC_CheckAdditionalTrainerCards called',
+      'AiActionGeneratorService',
+    );
+
     if (!availableActions.includes(PlayerActionType.PLAY_TRAINER)) {
-      this.logger.debug('PLAY_TRAINER not available', 'AiActionGeneratorService');
+      this.logger.debug(
+        'PLAY_TRAINER not available',
+        'AiActionGeneratorService',
+      );
       return null;
     }
 
@@ -849,29 +1153,41 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
 
     // Check if deck is empty (edge case)
     if (playerState.deck.length === 0) {
-      this.logger.debug('Deck is empty, skipping trainer cards', 'AiActionGeneratorService');
+      this.logger.debug(
+        'Deck is empty, skipping trainer cards',
+        'AiActionGeneratorService',
+      );
       return null; // Don't play cards that draw if deck is empty
     }
 
     // Get all trainer card options
-    this.logger.debug('Evaluating trainer card options for Step C', 'AiActionGeneratorService');
-    const trainerOptions = await this.trainerCardAnalyzerService.evaluateTrainerCardOptions(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    ) || [];
+    this.logger.debug(
+      'Evaluating trainer card options for Step C',
+      'AiActionGeneratorService',
+    );
+    const trainerOptions =
+      (await this.trainerCardAnalyzerService.evaluateTrainerCardOptions(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      )) || [];
 
-    this.logger.debug('Trainer card options evaluated for Step C', 'AiActionGeneratorService', {
-      optionsCount: trainerOptions.length,
-      options: trainerOptions.map(o => ({
-        trainerCardId: o.trainerCardId,
-        shouldPlay: o.shouldPlay,
-        enablesKnockout: o.estimatedImpact?.enablesKnockout,
-        preventsOurKnockout: o.estimatedImpact?.preventsOurKnockout,
-        changesOpponentSureDamage: o.estimatedImpact?.changesOpponentSureDamage,
-      })),
-    });
+    this.logger.debug(
+      'Trainer card options evaluated for Step C',
+      'AiActionGeneratorService',
+      {
+        optionsCount: trainerOptions.length,
+        options: trainerOptions.map((o) => ({
+          trainerCardId: o.trainerCardId,
+          shouldPlay: o.shouldPlay,
+          enablesKnockout: o.estimatedImpact?.enablesKnockout,
+          preventsOurKnockout: o.estimatedImpact?.preventsOurKnockout,
+          changesOpponentSureDamage:
+            o.estimatedImpact?.changesOpponentSureDamage,
+        })),
+      },
+    );
 
     // Find trainer cards that improve situation
     for (const option of trainerOptions) {
@@ -882,12 +1198,17 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
           option.estimatedImpact.preventsOurKnockout ||
           option.estimatedImpact.changesOpponentSureDamage)
       ) {
-        this.logger.info('Step C: Found beneficial trainer card', 'AiActionGeneratorService', {
-          trainerCardId: option.trainerCardId,
-          enablesKnockout: option.estimatedImpact.enablesKnockout,
-          preventsOurKnockout: option.estimatedImpact.preventsOurKnockout,
-          changesOpponentSureDamage: option.estimatedImpact.changesOpponentSureDamage,
-        });
+        this.logger.info(
+          'Step C: Found beneficial trainer card',
+          'AiActionGeneratorService',
+          {
+            trainerCardId: option.trainerCardId,
+            enablesKnockout: option.estimatedImpact.enablesKnockout,
+            preventsOurKnockout: option.estimatedImpact.preventsOurKnockout,
+            changesOpponentSureDamage:
+              option.estimatedImpact.changesOpponentSureDamage,
+          },
+        );
         return {
           actionType: PlayerActionType.PLAY_TRAINER,
           actionData: { cardId: option.trainerCardId },
@@ -895,7 +1216,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       }
     }
 
-    this.logger.debug('Step C: No beneficial trainer cards found', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step C: No beneficial trainer cards found',
+      'AiActionGeneratorService',
+    );
     return null;
   }
 
@@ -908,19 +1232,32 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     availableActions: PlayerActionType[],
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
-    this.logger.debug('stepC1_CheckBenchEvolution called', 'AiActionGeneratorService');
-    
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
+    this.logger.debug(
+      'stepC1_CheckBenchEvolution called',
+      'AiActionGeneratorService',
+    );
+
     if (!availableActions.includes(PlayerActionType.EVOLVE_POKEMON)) {
-      this.logger.debug('EVOLVE_POKEMON not available', 'AiActionGeneratorService');
+      this.logger.debug(
+        'EVOLVE_POKEMON not available',
+        'AiActionGeneratorService',
+      );
       return null;
     }
 
     const playerState = gameState.getPlayerState(playerIdentifier);
-    this.logger.debug('Checking bench Pokemon for evolution', 'AiActionGeneratorService', {
-      benchSize: playerState.bench.length,
-      handSize: playerState.hand.length,
-    });
+    this.logger.debug(
+      'Checking bench Pokemon for evolution',
+      'AiActionGeneratorService',
+      {
+        benchSize: playerState.bench.length,
+        handSize: playerState.hand.length,
+      },
+    );
 
     // Check each bench Pokemon for evolution
     for (const benchPokemon of playerState.bench) {
@@ -937,20 +1274,27 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
           handCard.evolvesFrom &&
           handCard.evolvesFrom.name === benchCard.name
         ) {
-          this.logger.debug('Evolution card found for bench Pokemon', 'AiActionGeneratorService', {
-            benchInstanceId: benchPokemon.instanceId,
-            benchCardId: benchPokemon.cardId,
-            evolutionCardId: cardId,
-            evolutionName: handCard.name,
-          });
-          
+          this.logger.debug(
+            'Evolution card found for bench Pokemon',
+            'AiActionGeneratorService',
+            {
+              benchInstanceId: benchPokemon.instanceId,
+              benchCardId: benchPokemon.cardId,
+              evolutionCardId: cardId,
+              evolutionName: handCard.name,
+            },
+          );
+
           // Check if evolved card's lowest energy attack is missing 2 or more energies
           if (handCard.attacks && handCard.attacks.length > 0) {
-            const lowestEnergyAttack = handCard.attacks.reduce((lowest, attack) => {
-              const currentCost = attack.energyCost?.length || 0;
-              const lowestCost = lowest.energyCost?.length || 0;
-              return currentCost < lowestCost ? attack : lowest;
-            }, handCard.attacks[0]);
+            const lowestEnergyAttack = handCard.attacks.reduce(
+              (lowest, attack) => {
+                const currentCost = attack.energyCost?.length || 0;
+                const lowestCost = lowest.energyCost?.length || 0;
+                return currentCost < lowestCost ? attack : lowest;
+              },
+              handCard.attacks[0],
+            );
 
             // Convert attached energy to EnergyCardData format
             const attachedEnergyCardIds = benchPokemon.attachedEnergy || [];
@@ -962,10 +1306,11 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
               energyType: card.energyType,
               energyProvision: card.energyProvision,
             }));
-            const energyValidation = this.attackEnergyValidatorService.validateEnergyRequirements(
-              lowestEnergyAttack,
-              energyCardData,
-            );
+            const energyValidation =
+              this.attackEnergyValidatorService.validateEnergyRequirements(
+                lowestEnergyAttack,
+                energyCardData,
+              );
             const canPerform = energyValidation.isValid;
 
             // Count missing energies
@@ -973,20 +1318,28 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
             const attachedEnergies = benchPokemon.attachedEnergy.length;
             const missingEnergies = requiredEnergies.length - attachedEnergies;
 
-            this.logger.debug('Evolution energy check', 'AiActionGeneratorService', {
-              requiredEnergies: requiredEnergies.length,
-              attachedEnergies,
-              missingEnergies,
-              canPerform,
-            });
+            this.logger.debug(
+              'Evolution energy check',
+              'AiActionGeneratorService',
+              {
+                requiredEnergies: requiredEnergies.length,
+                attachedEnergies,
+                missingEnergies,
+                canPerform,
+              },
+            );
 
             // Only evolve if missing 0 or 1 energy (not 2 or more)
             if (missingEnergies < 2) {
-              this.logger.info('Step C.1: Bench evolution selected', 'AiActionGeneratorService', {
-                instanceId: benchPokemon.instanceId,
-                evolutionInstanceId: cardId,
-                missingEnergies,
-              });
+              this.logger.info(
+                'Step C.1: Bench evolution selected',
+                'AiActionGeneratorService',
+                {
+                  instanceId: benchPokemon.instanceId,
+                  evolutionInstanceId: cardId,
+                  missingEnergies,
+                },
+              );
               return {
                 actionType: PlayerActionType.EVOLVE_POKEMON,
                 actionData: {
@@ -995,16 +1348,24 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
                 },
               };
             } else {
-              this.logger.debug('Evolution skipped - missing 2+ energies', 'AiActionGeneratorService', {
-                missingEnergies,
-              });
+              this.logger.debug(
+                'Evolution skipped - missing 2+ energies',
+                'AiActionGeneratorService',
+                {
+                  missingEnergies,
+                },
+              );
             }
           } else {
             // No attacks, safe to evolve
-            this.logger.info('Step C.1: Bench evolution selected (no attacks)', 'AiActionGeneratorService', {
-              instanceId: benchPokemon.instanceId,
-              evolutionInstanceId: cardId,
-            });
+            this.logger.info(
+              'Step C.1: Bench evolution selected (no attacks)',
+              'AiActionGeneratorService',
+              {
+                instanceId: benchPokemon.instanceId,
+                evolutionInstanceId: cardId,
+              },
+            );
             return {
               actionType: PlayerActionType.EVOLVE_POKEMON,
               actionData: {
@@ -1017,7 +1378,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       }
     }
 
-    this.logger.debug('Step C.1: No bench evolution found', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step C.1: No bench evolution found',
+      'AiActionGeneratorService',
+    );
     return null;
   }
 
@@ -1029,17 +1393,29 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     playerIdentifier: PlayerIdentifier,
     availableActions: PlayerActionType[],
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
-    this.logger.debug('stepC2_CheckPokemonPowers called', 'AiActionGeneratorService');
-    
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
+    this.logger.debug(
+      'stepC2_CheckPokemonPowers called',
+      'AiActionGeneratorService',
+    );
+
     if (!availableActions.includes(PlayerActionType.USE_ABILITY)) {
-      this.logger.debug('USE_ABILITY not available', 'AiActionGeneratorService');
+      this.logger.debug(
+        'USE_ABILITY not available',
+        'AiActionGeneratorService',
+      );
       return null;
     }
 
     // TODO: Implement ability evaluation logic
     // For now, return null (abilities will be evaluated in future phases)
-    this.logger.debug('Step C.2: Ability evaluation not yet implemented', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Step C.2: Ability evaluation not yet implemented',
+      'AiActionGeneratorService',
+    );
     return null;
   }
 
@@ -1052,31 +1428,42 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     availableActions: PlayerActionType[],
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
     this.logger.debug('stepD_Attack called', 'AiActionGeneratorService');
-    
+
     if (!availableActions.includes(PlayerActionType.ATTACK)) {
       this.logger.debug('ATTACK not available', 'AiActionGeneratorService');
       return null;
     }
 
     // Find knockout attacks first
-    this.logger.debug('Step D: Identifying knockout attacks', 'AiActionGeneratorService');
-    const knockoutAttacks = await this.actionPrioritizationService.identifyKnockoutAttacks(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    ) || [];
-    
-    this.logger.debug('Step D: Knockout attacks identified', 'AiActionGeneratorService', {
-      knockoutCount: knockoutAttacks.length,
-      attacks: knockoutAttacks.map(a => ({
-        hasAttackAnalysis: !!a.attackAnalysis,
-        cardId: a.attackAnalysis?.card?.cardId,
-        baseDamage: a.attackAnalysis?.baseDamage,
-      })),
-    });
+    this.logger.debug(
+      'Step D: Identifying knockout attacks',
+      'AiActionGeneratorService',
+    );
+    const knockoutAttacks =
+      (await this.actionPrioritizationService.identifyKnockoutAttacks(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      )) || [];
+
+    this.logger.debug(
+      'Step D: Knockout attacks identified',
+      'AiActionGeneratorService',
+      {
+        knockoutCount: knockoutAttacks.length,
+        attacks: knockoutAttacks.map((a) => ({
+          hasAttackAnalysis: !!a.attackAnalysis,
+          cardId: a.attackAnalysis?.card?.cardId,
+          baseDamage: a.attackAnalysis?.baseDamage,
+        })),
+      },
+    );
 
     if (knockoutAttacks.length > 0) {
       const bestKnockout = knockoutAttacks[0];
@@ -1085,11 +1472,15 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         bestKnockout.attackAnalysis.attack,
         getCardEntity,
       );
-      this.logger.info('Step D: Knockout attack selected', 'AiActionGeneratorService', {
-        attackIndex,
-        cardId: bestKnockout.attackAnalysis.card.cardId,
-        baseDamage: bestKnockout.attackAnalysis.baseDamage,
-      });
+      this.logger.info(
+        'Step D: Knockout attack selected',
+        'AiActionGeneratorService',
+        {
+          attackIndex,
+          cardId: bestKnockout.attackAnalysis.card.cardId,
+          baseDamage: bestKnockout.attackAnalysis.baseDamage,
+        },
+      );
       return {
         actionType: PlayerActionType.ATTACK,
         actionData: { attackIndex },
@@ -1097,21 +1488,29 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     }
 
     // Find maximum damage attacks
-    this.logger.debug('Step D: No knockout attacks, finding maximum damage attacks', 'AiActionGeneratorService');
-    const maxDamageAttacks = await this.actionPrioritizationService.findMaximumDamageAttacks(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    ) || [];
-    
-    this.logger.debug('Step D: Maximum damage attacks identified', 'AiActionGeneratorService', {
-      maxDamageCount: maxDamageAttacks.length,
-      attacks: maxDamageAttacks.map(a => ({
-        cardId: a.card?.cardId,
-        baseDamage: a.baseDamage,
-      })),
-    });
+    this.logger.debug(
+      'Step D: No knockout attacks, finding maximum damage attacks',
+      'AiActionGeneratorService',
+    );
+    const maxDamageAttacks =
+      (await this.actionPrioritizationService.findMaximumDamageAttacks(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      )) || [];
+
+    this.logger.debug(
+      'Step D: Maximum damage attacks identified',
+      'AiActionGeneratorService',
+      {
+        maxDamageCount: maxDamageAttacks.length,
+        attacks: maxDamageAttacks.map((a) => ({
+          cardId: a.card?.cardId,
+          baseDamage: a.baseDamage,
+        })),
+      },
+    );
 
     if (maxDamageAttacks.length > 0) {
       const bestAttack = maxDamageAttacks[0];
@@ -1120,11 +1519,15 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
         bestAttack.attack,
         getCardEntity,
       );
-      this.logger.info('Step D: Maximum damage attack selected', 'AiActionGeneratorService', {
-        attackIndex,
-        cardId: bestAttack.card.cardId,
-        baseDamage: bestAttack.baseDamage,
-      });
+      this.logger.info(
+        'Step D: Maximum damage attack selected',
+        'AiActionGeneratorService',
+        {
+          attackIndex,
+          cardId: bestAttack.card.cardId,
+          baseDamage: bestAttack.baseDamage,
+        },
+      );
       return {
         actionType: PlayerActionType.ATTACK,
         actionData: { attackIndex },
@@ -1143,30 +1546,48 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     playerIdentifier: PlayerIdentifier,
     availableActions: PlayerActionType[],
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
-    this.logger.debug('handleFallbackActions called', 'AiActionGeneratorService', {
-      availableActions,
-    });
-    
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
+    this.logger.debug(
+      'handleFallbackActions called',
+      'AiActionGeneratorService',
+      {
+        availableActions,
+      },
+    );
+
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     // Play Pokemon to bench
-    if (availableActions.includes(PlayerActionType.PLAY_POKEMON) && playerState.hand.length > 0) {
-      this.logger.debug('Fallback: Checking if Pokemon can be played to bench', 'AiActionGeneratorService', {
-        handSize: playerState.hand.length,
-      });
-      
+    if (
+      availableActions.includes(PlayerActionType.PLAY_POKEMON) &&
+      playerState.hand.length > 0
+    ) {
+      this.logger.debug(
+        'Fallback: Checking if Pokemon can be played to bench',
+        'AiActionGeneratorService',
+        {
+          handSize: playerState.hand.length,
+        },
+      );
+
       const bestPokemon = await this.selectBestPokemonFromHand(
         playerState.hand,
         getCardEntity,
       );
       if (bestPokemon) {
         const benchPosition = playerState.bench.length;
-        this.logger.info('Fallback: Playing Pokemon to bench', 'AiActionGeneratorService', {
-          instanceId: bestPokemon.instanceId,
-          cardId: bestPokemon.cardId,
-          position: benchPosition,
-        });
+        this.logger.info(
+          'Fallback: Playing Pokemon to bench',
+          'AiActionGeneratorService',
+          {
+            instanceId: bestPokemon.instanceId,
+            cardId: bestPokemon.cardId,
+            position: benchPosition,
+          },
+        );
         return {
           actionType: PlayerActionType.PLAY_POKEMON,
           actionData: { cardId: bestPokemon.cardId, position: benchPosition },
@@ -1180,7 +1601,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       return { actionType: PlayerActionType.END_TURN, actionData: {} };
     }
 
-    this.logger.debug('Fallback: No fallback action found', 'AiActionGeneratorService');
+    this.logger.debug(
+      'Fallback: No fallback action found',
+      'AiActionGeneratorService',
+    );
     return null;
   }
 
@@ -1193,18 +1617,25 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     availableActions: PlayerActionType[],
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ actionType: PlayerActionType; actionData: Record<string, unknown> } | null> {
+  ): Promise<{
+    actionType: PlayerActionType;
+    actionData: Record<string, unknown>;
+  } | null> {
     this.logger.debug('checkEvolutionCards called', 'AiActionGeneratorService');
-    
+
     const playerState = gameState.getPlayerState(playerIdentifier);
 
     // Check active Pokemon evolution first
     if (playerState.activePokemon) {
-      this.logger.debug('Checking active Pokemon for evolution', 'AiActionGeneratorService', {
-        activeCardId: playerState.activePokemon.cardId,
-        handSize: playerState.hand.length,
-      });
-      
+      this.logger.debug(
+        'Checking active Pokemon for evolution',
+        'AiActionGeneratorService',
+        {
+          activeCardId: playerState.activePokemon.cardId,
+          handSize: playerState.hand.length,
+        },
+      );
+
       const activeCard = await getCardEntity(playerState.activePokemon.cardId);
       if (activeCard && activeCard.cardType === CardType.POKEMON) {
         for (const cardId of playerState.hand) {
@@ -1215,11 +1646,15 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
             handCard.evolvesFrom &&
             handCard.evolvesFrom.name === activeCard.name
           ) {
-            this.logger.info('Evolution found for active Pokemon', 'AiActionGeneratorService', {
-              instanceId: playerState.activePokemon.instanceId,
-              evolutionInstanceId: cardId,
-              evolutionName: handCard.name,
-            });
+            this.logger.info(
+              'Evolution found for active Pokemon',
+              'AiActionGeneratorService',
+              {
+                instanceId: playerState.activePokemon.instanceId,
+                evolutionInstanceId: cardId,
+                evolutionName: handCard.name,
+              },
+            );
             // Check if evolving + attaching energy would cause damage
             // For now, always evolve active first if possible
             return {
@@ -1236,7 +1671,10 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
 
     // Bench Pokemon evolution is handled in Step C.1 with energy requirement checks
     // Don't evolve bench Pokemon here - only evolve active Pokemon in Step B
-    this.logger.debug('No evolution found for active Pokemon', 'AiActionGeneratorService');
+    this.logger.debug(
+      'No evolution found for active Pokemon',
+      'AiActionGeneratorService',
+    );
     return null;
   }
 
@@ -1248,16 +1686,27 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     hand: string[],
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<CardInstance | null> {
-    this.logger.debug('selectBestPokemonFromHand called', 'AiActionGeneratorService', {
-      handSize: hand.length,
-    });
-    
-    const pokemonScores: Array<{ instance: CardInstance; score: number; card: Card }> = [];
+    this.logger.debug(
+      'selectBestPokemonFromHand called',
+      'AiActionGeneratorService',
+      {
+        handSize: hand.length,
+      },
+    );
+
+    const pokemonScores: Array<{
+      instance: CardInstance;
+      score: number;
+      card: Card;
+    }> = [];
 
     // Score all basic Pokemon in hand
     for (const cardId of hand) {
       const card = await getCardEntity(cardId);
-      if (card.cardType === CardType.POKEMON && card.stage === EvolutionStage.BASIC) {
+      if (
+        card.cardType === CardType.POKEMON &&
+        card.stage === EvolutionStage.BASIC
+      ) {
         // Create a temporary instance for scoring
         const instance = new CardInstance(
           `temp-${cardId}`,
@@ -1269,18 +1718,28 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
           [],
           [],
         );
-        const pokemonScore = this.pokemonScoringService.scorePokemon(instance, card);
+        const pokemonScore = this.pokemonScoringService.scorePokemon(
+          instance,
+          card,
+        );
         pokemonScores.push({ instance, score: pokemonScore.score, card });
-        this.logger.verbose('Pokemon scored from hand', 'AiActionGeneratorService', {
-          cardId,
-          score: pokemonScore.score,
-          name: card.name,
-        });
+        this.logger.verbose(
+          'Pokemon scored from hand',
+          'AiActionGeneratorService',
+          {
+            cardId,
+            score: pokemonScore.score,
+            name: card.name,
+          },
+        );
       }
     }
 
     if (pokemonScores.length === 0) {
-      this.logger.debug('No basic Pokemon found in hand', 'AiActionGeneratorService');
+      this.logger.debug(
+        'No basic Pokemon found in hand',
+        'AiActionGeneratorService',
+      );
       return null;
     }
 
@@ -1296,38 +1755,57 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       }
     }
 
-    this.logger.debug('Energy cards found in hand', 'AiActionGeneratorService', {
-      energyCount: energyCardsInHand.length,
-    });
+    this.logger.debug(
+      'Energy cards found in hand',
+      'AiActionGeneratorService',
+      {
+        energyCount: energyCardsInHand.length,
+      },
+    );
 
     // Check each Pokemon (sorted by score) to find one that can be powered up
     // Even if no energy cards, we should check for zero-cost attacks
     for (const { instance, score, card } of pokemonScores) {
       const lowestCostAttack = this.getLowestCostAttack(card);
-      
+
       // If Pokemon has no attacks, skip it (prefer ones with attacks)
       if (!lowestCostAttack) {
-        this.logger.verbose('Pokemon has no attacks, skipping', 'AiActionGeneratorService', {
-          cardId: instance.cardId,
-        });
+        this.logger.verbose(
+          'Pokemon has no attacks, skipping',
+          'AiActionGeneratorService',
+          {
+            cardId: instance.cardId,
+          },
+        );
         continue;
       }
 
       // If attack has no energy cost, select immediately (zero-cost attack)
       // This works even when no energy cards are available
-      if (!lowestCostAttack.energyCost || lowestCostAttack.energyCost.length === 0) {
-        this.logger.debug('Pokemon has zero-cost attack, selecting immediately', 'AiActionGeneratorService', {
-          cardId: instance.cardId,
-          score,
-        });
+      if (
+        !lowestCostAttack.energyCost ||
+        lowestCostAttack.energyCost.length === 0
+      ) {
+        this.logger.debug(
+          'Pokemon has zero-cost attack, selecting immediately',
+          'AiActionGeneratorService',
+          {
+            cardId: instance.cardId,
+            score,
+          },
+        );
         return instance;
       }
 
       // If no energy cards in hand, skip energy-requiring Pokemon
       if (energyCardsInHand.length === 0) {
-        this.logger.verbose('Pokemon requires energy but no energy cards in hand, checking next', 'AiActionGeneratorService', {
-          cardId: instance.cardId,
-        });
+        this.logger.verbose(
+          'Pokemon requires energy but no energy cards in hand, checking next',
+          'AiActionGeneratorService',
+          {
+            cardId: instance.cardId,
+          },
+        );
         continue;
       }
 
@@ -1338,26 +1816,38 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       );
 
       if (canPowerUp) {
-        this.logger.debug('Pokemon can be powered up with hand energy, selecting', 'AiActionGeneratorService', {
-          cardId: instance.cardId,
-          score,
-          attackName: lowestCostAttack.name,
-        });
+        this.logger.debug(
+          'Pokemon can be powered up with hand energy, selecting',
+          'AiActionGeneratorService',
+          {
+            cardId: instance.cardId,
+            score,
+            attackName: lowestCostAttack.name,
+          },
+        );
         return instance;
       }
 
-      this.logger.verbose('Pokemon cannot be powered up with hand energy, checking next', 'AiActionGeneratorService', {
-        cardId: instance.cardId,
-        score,
-      });
+      this.logger.verbose(
+        'Pokemon cannot be powered up with hand energy, checking next',
+        'AiActionGeneratorService',
+        {
+          cardId: instance.cardId,
+          score,
+        },
+      );
     }
 
     // If no Pokemon can be powered up, fall back to highest-scoring Pokemon
     const best = pokemonScores[0];
-    this.logger.debug('No Pokemon can be powered up, selecting highest-scoring Pokemon', 'AiActionGeneratorService', {
-      cardId: best.instance.cardId,
-      score: best.score,
-    });
+    this.logger.debug(
+      'No Pokemon can be powered up, selecting highest-scoring Pokemon',
+      'AiActionGeneratorService',
+      {
+        cardId: best.instance.cardId,
+        score: best.score,
+      },
+    );
     return best.instance;
   }
 
@@ -1433,10 +1923,14 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     bench: CardInstance[],
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<CardInstance | null> {
-    this.logger.debug('selectBestPokemonFromBench called', 'AiActionGeneratorService', {
-      benchSize: bench.length,
-    });
-    
+    this.logger.debug(
+      'selectBestPokemonFromBench called',
+      'AiActionGeneratorService',
+      {
+        benchSize: bench.length,
+      },
+    );
+
     if (bench.length === 0) {
       this.logger.debug('Bench is empty', 'AiActionGeneratorService');
       return null;
@@ -1447,29 +1941,43 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
     for (const instance of bench) {
       const card = await getCardEntity(instance.cardId);
       if (card.cardType === CardType.POKEMON) {
-        const pokemonScore = await this.pokemonScoringService.scorePokemon(instance, card);
+        const pokemonScore = await this.pokemonScoringService.scorePokemon(
+          instance,
+          card,
+        );
         pokemonScores.push({ instance, score: pokemonScore.score });
-        this.logger.verbose('Pokemon scored from bench', 'AiActionGeneratorService', {
-          instanceId: instance.instanceId,
-          cardId: instance.cardId,
-          score: pokemonScore.score,
-          name: card.name,
-        });
+        this.logger.verbose(
+          'Pokemon scored from bench',
+          'AiActionGeneratorService',
+          {
+            instanceId: instance.instanceId,
+            cardId: instance.cardId,
+            score: pokemonScore.score,
+            name: card.name,
+          },
+        );
       }
     }
 
     if (pokemonScores.length === 0) {
-      this.logger.debug('No Pokemon found in bench, using first bench Pokemon as fallback', 'AiActionGeneratorService');
+      this.logger.debug(
+        'No Pokemon found in bench, using first bench Pokemon as fallback',
+        'AiActionGeneratorService',
+      );
       return bench[0]; // Fallback to first bench Pokemon
     }
 
     pokemonScores.sort((a, b) => b.score - a.score);
     const best = pokemonScores[0];
-    this.logger.debug('Best Pokemon selected from bench', 'AiActionGeneratorService', {
-      instanceId: best.instance.instanceId,
-      cardId: best.instance.cardId,
-      score: best.score,
-    });
+    this.logger.debug(
+      'Best Pokemon selected from bench',
+      'AiActionGeneratorService',
+      {
+        instanceId: best.instance.instanceId,
+        cardId: best.instance.cardId,
+        score: best.score,
+      },
+    );
     return best.instance;
   }
 
@@ -1486,12 +1994,17 @@ export class AiActionGeneratorService implements IAiActionGeneratorService {
       attackName: attack?.name,
       attacksCount: card.attacks?.length,
     });
-    
+
     // If card is already loaded, use it directly
     if (card.attacks) {
-      const index = card.attacks.findIndex((a) => a === attack || a.name === attack.name);
+      const index = card.attacks.findIndex(
+        (a) => a === attack || a.name === attack.name,
+      );
       if (index >= 0) {
-        this.logger.verbose('Attack index found', 'AiActionGeneratorService', { index, attackName: attack?.name });
+        this.logger.verbose('Attack index found', 'AiActionGeneratorService', {
+          index,
+          attackName: attack?.name,
+        });
         return index;
       }
     }

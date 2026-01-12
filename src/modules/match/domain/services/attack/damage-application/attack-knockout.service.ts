@@ -20,9 +20,7 @@ export class AttackKnockoutService {
   /**
    * Handle knockout of active Pokemon
    */
-  handleActiveKnockout(
-    params: HandleKnockoutParams,
-  ): HandleKnockoutResult {
+  handleActiveKnockout(params: HandleKnockoutParams): HandleKnockoutResult {
     const { pokemon, playerState } = params;
 
     if (!pokemon) {
@@ -62,4 +60,3 @@ export class AttackKnockoutService {
     return playerState.withDiscardPile(discardPile);
   }
 }
-

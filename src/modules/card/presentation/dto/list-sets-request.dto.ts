@@ -24,4 +24,3 @@ export class ListSetsRequestDto {
   @IsBoolean()
   official?: boolean;
 }
-

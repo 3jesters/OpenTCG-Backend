@@ -34,9 +34,7 @@ import {
 import { CoinFlipExecutionService } from '../../services/coin-flip-execution.service';
 import { CardHelperService } from '../../services/card-helper.service';
 import { Attack } from '../../../../card/domain/value-objects/attack.value-object';
-import {
-  DiscardEnergyEffect,
-} from '../../../../card/domain/value-objects/attack-effect.value-object';
+import { DiscardEnergyEffect } from '../../../../card/domain/value-objects/attack-effect.value-object';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
 import { ActionHandlerFactory } from '../action-handler-factory';
 import { v4 as uuidv4 } from 'uuid';
@@ -78,7 +76,7 @@ export class GenerateCoinFlipActionHandler
     cardsMap: Map<string, Card>,
   ): Promise<Match> {
     // Use CoinFlipExecutionService to generate coin flip
-      const result = await this.coinFlipExecutionService.generateCoinFlip({
+    const result = await this.coinFlipExecutionService.generateCoinFlip({
       gameState,
       playerIdentifier,
       matchId: match.id,
@@ -144,7 +142,10 @@ export class GenerateCoinFlipActionHandler
       parseBenchDamage: (attackText: string) =>
         this.attackTextParser.parseBenchDamage(attackText),
       parseStatusEffectFromAttackText: (attackText: string) =>
-        this.attackTextParser.parseStatusEffectFromAttackText(attackText, false),
+        this.attackTextParser.parseStatusEffectFromAttackText(
+          attackText,
+          false,
+        ),
       validateEnergySelection: async (
         selectedEnergyIds: string[],
         discardEffect: DiscardEnergyEffect,
@@ -190,7 +191,7 @@ export class GenerateCoinFlipActionHandler
         playerState: PlayerGameState,
         opponentState: PlayerGameState,
       ) => {
-        let updatedPlayerState = playerState;
+        const updatedPlayerState = playerState;
         let updatedOpponentState = opponentState;
 
         for (const discardEffect of discardEffects) {
@@ -202,7 +203,8 @@ export class GenerateCoinFlipActionHandler
               playerState,
               opponentState,
               undefined,
-              (cardId: string) => this.cardHelper.getCardEntity(cardId, cardsMap),
+              (cardId: string) =>
+                this.cardHelper.getCardEntity(cardId, cardsMap),
             );
 
           if (conditionsMet) {
@@ -230,7 +232,7 @@ export class GenerateCoinFlipActionHandler
                   energyToDiscard.push(...attachedEnergy);
                 }
               } else {
-                const amount = discardEffect.amount as number;
+                const amount = discardEffect.amount;
                 let count = 0;
                 for (const energyId of attachedEnergy) {
                   if (count >= amount) break;
@@ -276,7 +278,8 @@ export class GenerateCoinFlipActionHandler
 
     // Handle ATTACK context - check if attack should be resolved
     if (
-      result.updatedGameState.coinFlipState?.context === CoinFlipContext.ATTACK &&
+      result.updatedGameState.coinFlipState?.context ===
+        CoinFlipContext.ATTACK &&
       result.shouldResolveAttack
     ) {
       // Update match state first with coin flip results
@@ -316,10 +319,10 @@ export class GenerateCoinFlipActionHandler
       // Update match's game state to match before calling attack handler
       match.updateGameState(result.updatedGameState);
       await this.matchRepository.save(match);
-      
+
       // Store original match state before attack handler execution
       const originalMatchState = match.state;
-      
+
       // Execute attack handler - this will update the match with attack results
       const attackResult = await attackHandler.execute(
         attackDto,
@@ -328,11 +331,14 @@ export class GenerateCoinFlipActionHandler
         attackingPlayer,
         cardsMap,
       );
-      
+
       // When attack handler is called internally from coin flip flow,
       // we need to preserve PLAYER_TURN state to allow the flow to continue
       // Only allow MATCH_ENDED if it was already ended before the attack
-      if (attackResult.state === MatchState.MATCH_ENDED && originalMatchState === MatchState.PLAYER_TURN) {
+      if (
+        attackResult.state === MatchState.MATCH_ENDED &&
+        originalMatchState === MatchState.PLAYER_TURN
+      ) {
         // Restore PLAYER_TURN state - the match ending will be handled by the normal flow
         // This allows the coin flip flow to complete properly
         Object.defineProperty(attackResult, '_state', {
@@ -340,9 +346,11 @@ export class GenerateCoinFlipActionHandler
           writable: true,
           configurable: true,
         });
-      } else if (attackResult.state !== MatchState.PLAYER_TURN && 
-          attackResult.state !== MatchState.MATCH_ENDED &&
-          attackResult.state !== MatchState.BETWEEN_TURNS) {
+      } else if (
+        attackResult.state !== MatchState.PLAYER_TURN &&
+        attackResult.state !== MatchState.MATCH_ENDED &&
+        attackResult.state !== MatchState.BETWEEN_TURNS
+      ) {
         // If match state changed unexpectedly, restore it to PLAYER_TURN
         Object.defineProperty(attackResult, '_state', {
           value: MatchState.PLAYER_TURN,
@@ -350,7 +358,7 @@ export class GenerateCoinFlipActionHandler
           configurable: true,
         });
       }
-      
+
       return attackResult;
     }
 
@@ -364,7 +372,7 @@ export class GenerateCoinFlipActionHandler
         match,
         result.updatedGameState,
         playerIdentifier,
-        result.updatedGameState.coinFlipState!,
+        result.updatedGameState.coinFlipState,
         result.updatedGameState.coinFlipState.results.map((r) => ({
           flipIndex: r.flipIndex,
           result: r.result,
@@ -413,9 +421,8 @@ export class GenerateCoinFlipActionHandler
         isOpponent = true;
       } else {
         asleepPokemon =
-          playerState.bench.find(
-            (p) => p.instanceId === pokemonInstanceId,
-          ) || null;
+          playerState.bench.find((p) => p.instanceId === pokemonInstanceId) ||
+          null;
         if (!asleepPokemon) {
           asleepPokemon =
             opponentState.bench.find(
@@ -429,9 +436,7 @@ export class GenerateCoinFlipActionHandler
         !asleepPokemon ||
         !asleepPokemon.hasStatusEffect(StatusEffect.ASLEEP)
       ) {
-        throw new BadRequestException(
-          'Pokemon is not asleep or not found',
-        );
+        throw new BadRequestException('Pokemon is not asleep or not found');
       }
 
       // Check if coin flip succeeded (heads = wake up)
@@ -503,7 +508,7 @@ export class GenerateCoinFlipActionHandler
     // If heads, attack can proceed (AttackActionHandler will handle it)
     // For now, just clear the coin flip state and let AttackActionHandler handle the result
     const hasHeads = coinFlipState.results.some((r) => r.isHeads());
-    
+
     if (!hasHeads) {
       // Tails - confusion failed, but self-damage is handled in AttackActionHandler
       // Just clear coin flip state here
@@ -551,4 +556,3 @@ export class GenerateCoinFlipActionHandler
     return await this.matchRepository.save(match);
   }
 }
-

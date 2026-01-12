@@ -9,4 +9,3 @@ export * from './select-bench-pokemon-action-filter';
 export * from './first-player-selection-action-filter';
 export * from './initial-setup-action-filter';
 export * from './default-action-filter';
-

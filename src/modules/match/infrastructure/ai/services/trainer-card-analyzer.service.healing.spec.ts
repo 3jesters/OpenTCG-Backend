@@ -13,7 +13,11 @@ import { ILogger } from '../../../../../shared/application/ports/logger.interfac
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
 import { TrainerEffect } from '../../../../card/domain/value-objects';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
 import {
   CardType,
   TrainerType,
@@ -22,7 +26,12 @@ import {
   TrainerEffectType,
 } from '../../../../card/domain/enums';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
-import { PokemonPosition, PlayerIdentifier, TurnPhase, StatusEffect } from '../../../domain/enums';
+import {
+  PokemonPosition,
+  PlayerIdentifier,
+  TurnPhase,
+  StatusEffect,
+} from '../../../domain/enums';
 import {
   TrainerCardOption,
   TrainerCardCategory,
@@ -110,10 +119,7 @@ describe('TrainerCardAnalyzerService', () => {
   };
 
   // Helper function to create a basic Energy card
-  const createEnergyCard = (
-    cardId: string,
-    energyType: EnergyType,
-  ): Card => {
+  const createEnergyCard = (cardId: string, energyType: EnergyType): Card => {
     const card = Card.createEnergyCard(
       `instance-${cardId}`,
       cardId,
@@ -340,9 +346,12 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['fire-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 100, [
-        new Attack('Hydro Pump', [EnergyType.WATER], '80', 'Deal 80 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        100,
+        [new Attack('Hydro Pump', [EnergyType.WATER], '80', 'Deal 80 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         ['trainer-1'],

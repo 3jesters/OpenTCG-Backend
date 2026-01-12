@@ -13,7 +13,11 @@ import { ILogger } from '../../../../../shared/application/ports/logger.interfac
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
 import { TrainerEffect } from '../../../../card/domain/value-objects';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
 import {
   CardType,
   TrainerType,
@@ -22,7 +26,12 @@ import {
   TrainerEffectType,
 } from '../../../../card/domain/enums';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
-import { PokemonPosition, PlayerIdentifier, TurnPhase, StatusEffect } from '../../../domain/enums';
+import {
+  PokemonPosition,
+  PlayerIdentifier,
+  TurnPhase,
+  StatusEffect,
+} from '../../../domain/enums';
 import {
   TrainerCardOption,
   TrainerCardCategory,
@@ -110,10 +119,7 @@ describe('TrainerCardAnalyzerService', () => {
   };
 
   // Helper function to create a basic Energy card
-  const createEnergyCard = (
-    cardId: string,
-    energyType: EnergyType,
-  ): Card => {
+  const createEnergyCard = (cardId: string, energyType: EnergyType): Card => {
     const card = Card.createEnergyCard(
       `instance-${cardId}`,
       cardId,
@@ -195,9 +201,19 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['fire-energy-1', 'fire-energy-2'], // 2 energy
       );
-      const opponentCard1 = createPokemonCard('opponent-pokemon-001', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '80', 'Deal 80 damage'),
-      ]);
+      const opponentCard1 = createPokemonCard(
+        'opponent-pokemon-001',
+        'Charizard',
+        100,
+        [
+          new Attack(
+            'Fire Blast',
+            [EnergyType.FIRE, EnergyType.FIRE],
+            '80',
+            'Deal 80 damage',
+          ),
+        ],
+      );
       const opponentBench1 = createCardInstance(
         'opponent-bench-001',
         'opponent-pokemon-002',
@@ -206,10 +222,20 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1'], // 1 energy
       );
-      const opponentCard2 = createPokemonCard('opponent-pokemon-002', 'Blastoise', 60, [
-        new Attack('Water Gun', [EnergyType.WATER], '30', 'Deal 30 damage'),
-      ]);
-      const playerState = new PlayerGameState([], ['trainer-1'], null, [], [], []);
+      const opponentCard2 = createPokemonCard(
+        'opponent-pokemon-002',
+        'Blastoise',
+        60,
+        [new Attack('Water Gun', [EnergyType.WATER], '30', 'Deal 30 damage')],
+      );
+      const playerState = new PlayerGameState(
+        [],
+        ['trainer-1'],
+        null,
+        [],
+        [],
+        [],
+      );
       const opponentState = new PlayerGameState(
         [],
         [],
@@ -250,6 +276,5 @@ describe('TrainerCardAnalyzerService', () => {
       expect(option!.targetPokemon).toBeDefined();
       expect(option!.targetPokemon!.instanceId).toBe('opponent-active-001');
     });
-
   });
 });

@@ -9,7 +9,7 @@ export class SetOrmMapper {
   static toDomain(ormEntity: SetOrmEntity): Set {
     // Default to 'system' for backward compatibility during migration
     const ownerId = ormEntity.ownerId || 'system';
-    
+
     const set = new Set(
       ormEntity.id,
       ormEntity.name,
@@ -53,4 +53,3 @@ export class SetOrmMapper {
     return ormEntity;
   }
 }
-

@@ -549,7 +549,10 @@ export class Card {
       throw new Error('Card ID is required');
     }
     // Pokemon number is only required for Pokemon cards
-    if (this._cardType === CardType.POKEMON && (!this._pokemonNumber || this._pokemonNumber.trim() === '')) {
+    if (
+      this._cardType === CardType.POKEMON &&
+      (!this._pokemonNumber || this._pokemonNumber.trim() === '')
+    ) {
       throw new Error('Pokemon number is required for Pokemon cards');
     }
     if (!this._name || this._name.trim() === '') {

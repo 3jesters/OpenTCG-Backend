@@ -379,15 +379,19 @@ export class PreviewCardUseCase {
               case 'MOVE_DAMAGE_COUNTER':
                 // sourceTarget and destinationTarget are required for MOVE_DAMAGE_COUNTER
                 if (!e.sourceTarget) {
-                  throw new Error('MOVE_DAMAGE_COUNTER effect requires sourceTarget');
+                  throw new Error(
+                    'MOVE_DAMAGE_COUNTER effect requires sourceTarget',
+                  );
                 }
                 if (!e.destinationTarget) {
-                  throw new Error('MOVE_DAMAGE_COUNTER effect requires destinationTarget');
+                  throw new Error(
+                    'MOVE_DAMAGE_COUNTER effect requires destinationTarget',
+                  );
                 }
                 // For string enums, the value should already be correct from DTO validation
                 // Cast to TargetType to ensure type safety
-                effect.sourceTarget = e.sourceTarget as TargetType;
-                effect.destinationTarget = e.destinationTarget as TargetType;
+                effect.sourceTarget = e.sourceTarget;
+                effect.destinationTarget = e.destinationTarget;
                 if (e.amount !== undefined) effect.amount = e.amount;
                 if (e.preventKnockout !== undefined)
                   effect.preventKnockout = e.preventKnockout;
@@ -412,7 +416,7 @@ export class PreviewCardUseCase {
 
             return effect;
           });
-          
+
           // Normalize effects to fix invalid targets (e.g., DEFENDING in HEAL effects)
           effects = AbilityEffectNormalizer.normalize(effects);
         } else {

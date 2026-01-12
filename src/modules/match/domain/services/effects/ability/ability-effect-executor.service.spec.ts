@@ -953,7 +953,9 @@ describe('AbilityEffectExecutorService', () => {
             gameState,
             PlayerIdentifier.PLAYER1,
           ),
-        ).rejects.toThrow('Cannot move damage: would Knock Out the source Pokemon');
+        ).rejects.toThrow(
+          'Cannot move damage: would Knock Out the source Pokemon',
+        );
       });
     });
 

@@ -173,4 +173,3 @@ export class FileSystemMatchRepository implements IMatchRepository {
     );
   }
 }
-

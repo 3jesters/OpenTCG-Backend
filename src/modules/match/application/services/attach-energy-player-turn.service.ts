@@ -40,13 +40,12 @@ export class AttachEnergyPlayerTurnService {
     );
 
     // Execute energy attachment using execution service
-    const result =
-      this.energyAttachmentExecutionService.executeAttachEnergy({
-        energyCardId,
-        target,
-        gameState,
-        playerIdentifier,
-      });
+    const result = this.energyAttachmentExecutionService.executeAttachEnergy({
+      energyCardId,
+      target,
+      gameState,
+      playerIdentifier,
+    });
 
     // Create action summary
     const actionSummary = new ActionSummary(
@@ -89,4 +88,3 @@ export class AttachEnergyPlayerTurnService {
     return { energyCardId, target };
   }
 }
-

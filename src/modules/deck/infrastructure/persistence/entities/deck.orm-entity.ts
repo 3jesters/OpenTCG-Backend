@@ -47,4 +47,3 @@ export class DeckOrmEntity {
   @Column({ type: 'text' })
   cardBackImageUrl: string;
 }
-

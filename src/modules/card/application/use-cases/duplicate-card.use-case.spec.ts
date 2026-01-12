@@ -129,9 +129,9 @@ describe('DuplicateCardUseCase', () => {
         new NotFoundException('Card not found'),
       );
 
-      await expect(
-        useCase.execute('non-existent', 'user-123'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(useCase.execute('non-existent', 'user-123')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException when target set does not exist', async () => {

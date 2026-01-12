@@ -40,4 +40,3 @@ export class ApproveMatchActionHandler
     return await this.matchRepository.save(match);
   }
 }
-

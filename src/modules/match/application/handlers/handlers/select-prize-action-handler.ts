@@ -94,17 +94,14 @@ export class SelectPrizeActionHandler
     );
 
     // Check if active Pokemon selection is needed after prize selection
-    const opponentState =
-      updatedGameState.getOpponentState(playerIdentifier);
+    const opponentState = updatedGameState.getOpponentState(playerIdentifier);
     const attackerState = updatedGameState.getPlayerState(playerIdentifier);
 
     // Check for double knockout: both players have no active Pokemon
     const opponentNeedsActive =
-      opponentState.activePokemon === null &&
-      opponentState.bench.length > 0;
+      opponentState.activePokemon === null && opponentState.bench.length > 0;
     const attackerNeedsActive =
-      attackerState.activePokemon === null &&
-      attackerState.bench.length > 0;
+      attackerState.activePokemon === null && attackerState.bench.length > 0;
 
     // If opponent needs to select active Pokemon, don't check win conditions yet
     if (!opponentNeedsActive && !attackerNeedsActive) {
@@ -144,4 +141,3 @@ export class SelectPrizeActionHandler
     return await this.matchRepository.save(match);
   }
 }
-

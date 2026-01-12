@@ -164,7 +164,6 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       save: jest.fn(),
     } as any;
 
-
     mockGetCardByIdUseCase = {
       execute: jest.fn(),
       getCardEntity: jest.fn(),
@@ -237,72 +236,90 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         const cardDetail = await mockGetCardByIdUseCase.execute(cardId);
         return cardDetail?.hp ?? 100;
       }),
-      collectCardIds: jest.fn().mockImplementation((dto, gameState, playerIdentifier) => {
-        const cardIds = new Set<string>();
-        const actionData = dto.actionData as any;
-        
-        // Collect from actionData
-        if (actionData?.cardId) cardIds.add(actionData.cardId);
-        if (actionData?.evolutionCardId) cardIds.add(actionData.evolutionCardId);
-        if (actionData?.attackerCardId) cardIds.add(actionData.attackerCardId);
-        if (actionData?.defenderCardId) cardIds.add(actionData.defenderCardId);
-        if (actionData?.currentPokemonCardId) cardIds.add(actionData.currentPokemonCardId);
-        if (actionData?.energyId) cardIds.add(actionData.energyId);
-        if (Array.isArray(actionData?.energyIds)) {
-          actionData.energyIds.forEach((id: string) => cardIds.add(id));
-        }
-        if (Array.isArray(actionData?.cardIds)) {
-          actionData.cardIds.forEach((id: string) => cardIds.add(id));
-        }
-        
-        // Collect from gameState (matching real implementation)
-        if (gameState) {
-          const playerState = gameState.getPlayerState(playerIdentifier);
-          const opponentState = gameState.getOpponentState(playerIdentifier);
-          
-          // Player's Pokemon
-          if (playerState.activePokemon) {
-            cardIds.add(playerState.activePokemon.cardId);
-            if (playerState.activePokemon.attachedEnergy) {
-              playerState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-            }
+      collectCardIds: jest
+        .fn()
+        .mockImplementation((dto, gameState, playerIdentifier) => {
+          const cardIds = new Set<string>();
+          const actionData = dto.actionData;
+
+          // Collect from actionData
+          if (actionData?.cardId) cardIds.add(actionData.cardId);
+          if (actionData?.evolutionCardId)
+            cardIds.add(actionData.evolutionCardId);
+          if (actionData?.attackerCardId)
+            cardIds.add(actionData.attackerCardId);
+          if (actionData?.defenderCardId)
+            cardIds.add(actionData.defenderCardId);
+          if (actionData?.currentPokemonCardId)
+            cardIds.add(actionData.currentPokemonCardId);
+          if (actionData?.energyId) cardIds.add(actionData.energyId);
+          if (Array.isArray(actionData?.energyIds)) {
+            actionData.energyIds.forEach((id: string) => cardIds.add(id));
           }
-          playerState.bench.forEach((pokemon) => {
-            cardIds.add(pokemon.cardId);
-            if (pokemon.attachedEnergy) {
-              pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-            }
-          });
-          
-          // Player's hand, deck, discard, prize cards
-          if (playerState.hand) playerState.hand.forEach((id) => cardIds.add(id));
-          if (playerState.deck) playerState.deck.forEach((id) => cardIds.add(id));
-          if (playerState.discardPile) playerState.discardPile.forEach((id) => cardIds.add(id));
-          if (playerState.prizeCards) playerState.prizeCards.forEach((id) => cardIds.add(id));
-          
-          // Opponent's Pokemon
-          if (opponentState.activePokemon) {
-            cardIds.add(opponentState.activePokemon.cardId);
-            if (opponentState.activePokemon.attachedEnergy) {
-              opponentState.activePokemon.attachedEnergy.forEach((id) => cardIds.add(id));
-            }
+          if (Array.isArray(actionData?.cardIds)) {
+            actionData.cardIds.forEach((id: string) => cardIds.add(id));
           }
-          opponentState.bench.forEach((pokemon) => {
-            cardIds.add(pokemon.cardId);
-            if (pokemon.attachedEnergy) {
-              pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+
+          // Collect from gameState (matching real implementation)
+          if (gameState) {
+            const playerState = gameState.getPlayerState(playerIdentifier);
+            const opponentState = gameState.getOpponentState(playerIdentifier);
+
+            // Player's Pokemon
+            if (playerState.activePokemon) {
+              cardIds.add(playerState.activePokemon.cardId);
+              if (playerState.activePokemon.attachedEnergy) {
+                playerState.activePokemon.attachedEnergy.forEach((id) =>
+                  cardIds.add(id),
+                );
+              }
             }
-          });
-          
-          // Opponent's hand, deck, discard, prize cards
-          if (opponentState.hand) opponentState.hand.forEach((id) => cardIds.add(id));
-          if (opponentState.deck) opponentState.deck.forEach((id) => cardIds.add(id));
-          if (opponentState.discardPile) opponentState.discardPile.forEach((id) => cardIds.add(id));
-          if (opponentState.prizeCards) opponentState.prizeCards.forEach((id) => cardIds.add(id));
-        }
-        
-        return cardIds;
-      }),
+            playerState.bench.forEach((pokemon) => {
+              cardIds.add(pokemon.cardId);
+              if (pokemon.attachedEnergy) {
+                pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+              }
+            });
+
+            // Player's hand, deck, discard, prize cards
+            if (playerState.hand)
+              playerState.hand.forEach((id) => cardIds.add(id));
+            if (playerState.deck)
+              playerState.deck.forEach((id) => cardIds.add(id));
+            if (playerState.discardPile)
+              playerState.discardPile.forEach((id) => cardIds.add(id));
+            if (playerState.prizeCards)
+              playerState.prizeCards.forEach((id) => cardIds.add(id));
+
+            // Opponent's Pokemon
+            if (opponentState.activePokemon) {
+              cardIds.add(opponentState.activePokemon.cardId);
+              if (opponentState.activePokemon.attachedEnergy) {
+                opponentState.activePokemon.attachedEnergy.forEach((id) =>
+                  cardIds.add(id),
+                );
+              }
+            }
+            opponentState.bench.forEach((pokemon) => {
+              cardIds.add(pokemon.cardId);
+              if (pokemon.attachedEnergy) {
+                pokemon.attachedEnergy.forEach((id) => cardIds.add(id));
+              }
+            });
+
+            // Opponent's hand, deck, discard, prize cards
+            if (opponentState.hand)
+              opponentState.hand.forEach((id) => cardIds.add(id));
+            if (opponentState.deck)
+              opponentState.deck.forEach((id) => cardIds.add(id));
+            if (opponentState.discardPile)
+              opponentState.discardPile.forEach((id) => cardIds.add(id));
+            if (opponentState.prizeCards)
+              opponentState.prizeCards.forEach((id) => cardIds.add(id));
+          }
+
+          return cardIds;
+        }),
     } as any;
 
     module = await Test.createTestingModule({
@@ -381,9 +398,9 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         {
           provide: StatusEffectProcessorService,
           useValue: {
-            processBetweenTurnsStatusEffects: jest.fn().mockImplementation(
-              async (gameState) => gameState,
-            ),
+            processBetweenTurnsStatusEffects: jest
+              .fn()
+              .mockImplementation(async (gameState) => gameState),
           },
         },
         {
@@ -454,24 +471,27 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
           provide: AttachEnergyPlayerTurnService,
           useFactory: (matchRepo: IMatchRepository) => {
             return {
-              executeAttachEnergy: jest.fn().mockImplementation(async (params) => {
-                // Mock energy attachment - create action summary and update match
-                const actionSummary = new ActionSummary(
-                  'test-action-id',
-                  params.playerIdentifier,
-                  PlayerActionType.ATTACH_ENERGY,
-                  new Date(),
-                  {
-                    energyCardId: params.dto.actionData.energyCardId,
-                    target: params.dto.actionData.target,
-                  },
-                );
-                
-                const finalGameState = params.gameState.withAction(actionSummary);
-                params.match.updateGameState(finalGameState);
-                
-                return await matchRepo.save(params.match);
-              }),
+              executeAttachEnergy: jest
+                .fn()
+                .mockImplementation(async (params) => {
+                  // Mock energy attachment - create action summary and update match
+                  const actionSummary = new ActionSummary(
+                    'test-action-id',
+                    params.playerIdentifier,
+                    PlayerActionType.ATTACH_ENERGY,
+                    new Date(),
+                    {
+                      energyCardId: params.dto.actionData.energyCardId,
+                      target: params.dto.actionData.target,
+                    },
+                  );
+
+                  const finalGameState =
+                    params.gameState.withAction(actionSummary);
+                  params.match.updateGameState(finalGameState);
+
+                  return await matchRepo.save(params.match);
+                }),
             };
           },
           inject: [IMatchRepository],
@@ -495,7 +515,11 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
               cardHelper,
             );
           },
-          inject: [IMatchRepository, EvolutionExecutionService, CardHelperService],
+          inject: [
+            IMatchRepository,
+            EvolutionExecutionService,
+            CardHelperService,
+          ],
         },
         {
           provide: RetreatExecutionService,
@@ -548,7 +572,10 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
             stateMachine: MatchStateMachineService,
             actionFilterRegistry: ActionFilterRegistry,
           ) => {
-            return new AvailableActionsService(stateMachine, actionFilterRegistry);
+            return new AvailableActionsService(
+              stateMachine,
+              actionFilterRegistry,
+            );
           },
           inject: [MatchStateMachineService, ActionFilterRegistry],
         },
@@ -1713,7 +1740,8 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Execute first evolution
-      const { match: matchAfterFirstEvolution } = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterFirstEvolution } =
+        await useCase.execute(firstEvolutionDto);
 
       // Verify that after first evolution, evolvedAt is set to current turn number
       expect(
@@ -1833,7 +1861,8 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Execute first evolution
-      const { match: matchAfterFirstEvolution } = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterFirstEvolution } =
+        await useCase.execute(firstEvolutionDto);
 
       // Now evolve a different Pokemon (Bulbasaur -> Ivysaur)
       // This should be allowed since it's a different instanceId
@@ -1925,7 +1954,8 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
       };
 
       // Execute first evolution
-      const { match: matchAfterFirstEvolution } = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterFirstEvolution } =
+        await useCase.execute(firstEvolutionDto);
 
       // Verify that lastAction contains the evolution
       expect(matchAfterFirstEvolution.gameState?.lastAction).toBeDefined();
@@ -2037,7 +2067,8 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const { match: matchAfterEvolution } = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterEvolution } =
+        await useCase.execute(firstEvolutionDto);
 
       // Step 2: Attach energy (this becomes the new lastAction)
       // This means the evolution is now in actionHistory, not lastAction
@@ -2059,7 +2090,8 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const { match: matchAfterEnergy } = await useCase.execute(attachEnergyDto);
+      const { match: matchAfterEnergy } =
+        await useCase.execute(attachEnergyDto);
 
       // Verify that lastAction is now ATTACH_ENERGY, not EVOLVE_POKEMON
       expect(matchAfterEnergy.gameState?.lastAction).toBeDefined();
@@ -2162,7 +2194,8 @@ describe('ExecuteTurnActionUseCase - EVOLVE_POKEMON Validation', () => {
         },
       };
 
-      const { match: matchAfterEvolution } = await useCase.execute(firstEvolutionDto);
+      const { match: matchAfterEvolution } =
+        await useCase.execute(firstEvolutionDto);
 
       // Step 2: End turn (creates END_TURN action boundary)
       mockMatchRepository.findById.mockResolvedValue(matchAfterEvolution);

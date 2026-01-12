@@ -1,4 +1,9 @@
-import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ISetRepository } from '../../domain/repositories/set.repository.interface';
 import { UpdateSetDto } from '../dto/update-set.dto';
 import { Set } from '../../domain/entities/set.entity';
@@ -13,7 +18,11 @@ export class UpdateSetUseCase {
     private readonly setRepository: ISetRepository,
   ) {}
 
-  async execute(setId: string, userId: string, dto: UpdateSetDto): Promise<Set> {
+  async execute(
+    setId: string,
+    userId: string,
+    dto: UpdateSetDto,
+  ): Promise<Set> {
     // Find the set
     const set = await this.setRepository.findById(setId);
     if (!set) {

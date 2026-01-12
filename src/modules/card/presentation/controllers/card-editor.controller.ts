@@ -1,4 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Inject } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Inject,
+} from '@nestjs/common';
 import { CreateCardRequestDto } from '../../application/dto/create-card-request.dto';
 import { CardEditorResponseDto } from '../dto/card-editor-response.dto';
 import { ICreateCardUseCase } from '../../application/ports/card-use-cases.interface';
@@ -25,4 +32,3 @@ export class CardEditorController {
     return await this.createCardUseCase.execute(createCardDto);
   }
 }
-

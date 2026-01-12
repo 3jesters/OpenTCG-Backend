@@ -455,7 +455,12 @@ describe('ExecuteTurnActionUseCase - Attack Coin Flip Flow', () => {
       const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [
         confuseAttack,
       ]);
-      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+      const defenderCard = createPokemonCard(
+        'defender-id',
+        'Defender',
+        100,
+        [],
+      );
 
       const createEnergyCard = (energyType: string): Card => {
         const card = Card.createEnergyCard(
@@ -538,7 +543,7 @@ describe('ExecuteTurnActionUseCase - Attack Coin Flip Flow', () => {
         undefined,
       );
 
-      let match = createMatchWithGameState(attacker, [], defender, []);
+      const match = createMatchWithGameState(attacker, [], defender, []);
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockImplementation(async (m) => m);
 
@@ -548,9 +553,9 @@ describe('ExecuteTurnActionUseCase - Attack Coin Flip Flow', () => {
       (mockCoinFlipResolver.generateCoinFlip as jest.Mock).mockReturnValue(
         coinFlipResult,
       );
-      (mockCoinFlipResolver.generateMultipleCoinFlips as jest.Mock).mockReturnValue(
-        [coinFlipResult],
-      );
+      (
+        mockCoinFlipResolver.generateMultipleCoinFlips as jest.Mock
+      ).mockReturnValue([coinFlipResult]);
       (mockCoinFlipResolver.calculateDamage as jest.Mock).mockReturnValue(20);
 
       // Act 1: Call ATTACK - should create coin flip state
@@ -623,7 +628,12 @@ describe('ExecuteTurnActionUseCase - Attack Coin Flip Flow', () => {
       const attackerCard = createPokemonCard('attacker-id', 'Attacker', 100, [
         confuseAttack,
       ]);
-      const defenderCard = createPokemonCard('defender-id', 'Defender', 100, []);
+      const defenderCard = createPokemonCard(
+        'defender-id',
+        'Defender',
+        100,
+        [],
+      );
 
       const createEnergyCard = (energyType: string): Card => {
         const card = Card.createEnergyCard(
@@ -706,7 +716,7 @@ describe('ExecuteTurnActionUseCase - Attack Coin Flip Flow', () => {
         undefined,
       );
 
-      let match = createMatchWithGameState(attacker, [], defender, []);
+      const match = createMatchWithGameState(attacker, [], defender, []);
       mockMatchRepository.findById.mockResolvedValue(match);
       mockMatchRepository.save.mockImplementation(async (m) => m);
 
@@ -716,9 +726,9 @@ describe('ExecuteTurnActionUseCase - Attack Coin Flip Flow', () => {
       (mockCoinFlipResolver.generateCoinFlip as jest.Mock).mockReturnValue(
         coinFlipResult,
       );
-      (mockCoinFlipResolver.generateMultipleCoinFlips as jest.Mock).mockReturnValue(
-        [coinFlipResult],
-      );
+      (
+        mockCoinFlipResolver.generateMultipleCoinFlips as jest.Mock
+      ).mockReturnValue([coinFlipResult]);
       (mockCoinFlipResolver.calculateDamage as jest.Mock).mockReturnValue(20);
 
       // Act 1: Call ATTACK
@@ -755,4 +765,3 @@ describe('ExecuteTurnActionUseCase - Attack Coin Flip Flow', () => {
     });
   });
 });
-

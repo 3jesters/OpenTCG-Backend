@@ -354,7 +354,7 @@ export class PreviewSetUseCase {
 
             return effect;
           });
-          
+
           // Normalize effects to fix invalid targets (e.g., DEFENDING in HEAL effects)
           effects = AbilityEffectNormalizer.normalize(effects);
         } else {

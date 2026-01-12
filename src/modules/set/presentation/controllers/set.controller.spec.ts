@@ -81,7 +81,14 @@ describe('SetController', () => {
         totalCards: 102,
       };
 
-      const set = new Set('base-set', 'Base Set', 'pokemon', '1999-01-09', 102, 'user-123');
+      const set = new Set(
+        'base-set',
+        'Base Set',
+        'pokemon',
+        '1999-01-09',
+        102,
+        'user-123',
+      );
       createSetUseCase.execute.mockResolvedValue(set);
 
       const result = await controller.create(dto, 'user-123');
@@ -106,7 +113,11 @@ describe('SetController', () => {
       expect(result).toHaveLength(2);
       expect(result[0].id).toBe('base-set');
       expect(result[1].id).toBe('jungle');
-      expect(getSetsUseCase.execute).toHaveBeenCalledWith(undefined, undefined, undefined);
+      expect(getSetsUseCase.execute).toHaveBeenCalledWith(
+        undefined,
+        undefined,
+        undefined,
+      );
     });
 
     it('should return filtered sets when series query provided', async () => {
@@ -120,13 +131,24 @@ describe('SetController', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].series).toBe('pokemon');
-      expect(getSetsUseCase.execute).toHaveBeenCalledWith('pokemon', undefined, undefined);
+      expect(getSetsUseCase.execute).toHaveBeenCalledWith(
+        'pokemon',
+        undefined,
+        undefined,
+      );
     });
   });
 
   describe('getById', () => {
     it('should return a set by ID', async () => {
-      const set = new Set('base-set', 'Base Set', 'pokemon', '1999-01-09', 102, 'system');
+      const set = new Set(
+        'base-set',
+        'Base Set',
+        'pokemon',
+        '1999-01-09',
+        102,
+        'system',
+      );
       getSetByIdUseCase.execute.mockResolvedValue(set);
 
       const result = await controller.getById('base-set');

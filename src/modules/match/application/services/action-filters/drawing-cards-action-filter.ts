@@ -38,4 +38,3 @@ export class DrawingCardsActionFilter extends BaseActionFilter {
     return actions;
   }
 }
-

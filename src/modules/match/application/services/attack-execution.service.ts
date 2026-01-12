@@ -77,9 +77,7 @@ export interface ExecuteAttackParams {
   ) => Promise<boolean>;
   parseSelfDamage: (attackText: string, attackerName: string) => number;
   parseBenchDamage: (attackText: string) => number;
-  parseStatusEffectFromAttackText: (
-    attackText: string,
-  ) => StatusEffect | null;
+  parseStatusEffectFromAttackText: (attackText: string) => StatusEffect | null;
   validateEnergySelection: (
     selectedEnergyIds: string[],
     discardEffect: DiscardEnergyEffect,
@@ -121,11 +119,10 @@ export class AttackExecutionService {
     gameState: GameState,
     attackIndex: number,
   ): CoinFlipState | null {
-    const coinFlipConfig =
-      this.attackCoinFlipParser.parseCoinFlipFromAttack(
-        attack.text,
-        attack.damage,
-      );
+    const coinFlipConfig = this.attackCoinFlipParser.parseCoinFlipFromAttack(
+      attack.text,
+      attack.damage,
+    );
 
     if (!coinFlipConfig) {
       return null;
@@ -215,7 +212,7 @@ export class AttackExecutionService {
     });
     let updatedPlayerState = energyCostResult.updatedPlayerState;
     let updatedOpponentState = opponentState;
-    let currentGameState = energyCostResult.updatedGameState;
+    const currentGameState = energyCostResult.updatedGameState;
 
     // Calculate final damage
     const baseDamage = parseInt(attack.damage || '0', 10);
@@ -271,7 +268,7 @@ export class AttackExecutionService {
       pokemon: updatedOpponentState.activePokemon,
       damage: finalDamage,
     });
-    
+
     let attackCoinFlipResults: CoinFlipResult[] = [];
     if (
       gameStateWithCoinFlip.coinFlipState?.context === CoinFlipContext.ATTACK &&
@@ -281,17 +278,19 @@ export class AttackExecutionService {
     }
 
     // Apply status effects from attack - use game state with coin flip state
-    const statusEffectResult = await this.attackStatusEffect.applyStatusEffects({
-      attack,
-      attackText,
-      gameState: gameStateWithCoinFlip,
-      playerIdentifier,
-      playerState: updatedPlayerState,
-      opponentState: updatedOpponentState,
-      targetPokemon: updatedOpponentActive,
-      evaluateEffectConditions,
-      parseStatusEffectFromAttackText,
-    });
+    const statusEffectResult = await this.attackStatusEffect.applyStatusEffects(
+      {
+        attack,
+        attackText,
+        gameState: gameStateWithCoinFlip,
+        playerIdentifier,
+        playerState: updatedPlayerState,
+        opponentState: updatedOpponentState,
+        targetPokemon: updatedOpponentActive,
+        evaluateEffectConditions,
+        parseStatusEffectFromAttackText,
+      },
+    );
     updatedOpponentActive = statusEffectResult.updatedPokemon;
     const attackStatusEffectApplied = statusEffectResult.statusApplied;
     const attackAppliedStatus = statusEffectResult.appliedStatus;
@@ -325,11 +324,10 @@ export class AttackExecutionService {
 
     // Apply bench damage if needed
     if (benchDamage > 0 && updatedOpponentState.bench.length > 0) {
-      const benchDamageResult =
-        this.attackDamageApplication.applyBenchDamage({
-          bench: updatedOpponentState.bench,
-          benchDamage,
-        });
+      const benchDamageResult = this.attackDamageApplication.applyBenchDamage({
+        bench: updatedOpponentState.bench,
+        benchDamage,
+      });
 
       if (benchDamageResult.knockedOutBench.length > 0) {
         updatedOpponentState = this.attackKnockout.handleBenchKnockout(
@@ -405,6 +403,4 @@ export class AttackExecutionService {
       actionData,
     };
   }
-
 }
-

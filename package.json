@@ -1,10 +1,30 @@
 {
   "name": "open-tcg",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "description": "An open-source Trading Card Game backend API built with NestJS, featuring clean architecture, comprehensive game mechanics, and AI player support. Educational fan project based on Pokémon TCG.",
+  "author": "OpenTCG Contributors",
+  "private": false,
+  "license": "MIT",
+  "keywords": [
+    "trading-card-game",
+    "tcg",
+    "pokemon",
+    "nestjs",
+    "clean-architecture",
+    "typescript",
+    "game-engine",
+    "card-game",
+    "backend-api",
+    "educational"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOUR_USERNAME/OpenTCG-Backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/OpenTCG-Backend/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/OpenTCG-Backend#readme",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

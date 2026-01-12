@@ -1,4 +1,9 @@
-import { Injectable, Inject, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { BaseActionHandler } from '../base-action-handler';
 import { IActionHandler } from '../action-handler.interface';
 import { ExecuteActionDto } from '../../dto';
@@ -97,7 +102,9 @@ export class CompleteInitialSetupActionHandler
               savedMatch.id,
             );
             // Reload match after AI action
-            const updatedMatch = await this.matchRepository.findById(dto.matchId);
+            const updatedMatch = await this.matchRepository.findById(
+              dto.matchId,
+            );
             if (updatedMatch) {
               return updatedMatch;
             }
@@ -106,7 +113,9 @@ export class CompleteInitialSetupActionHandler
           // Log error but don't fail the action - auto-action is best effort
           this.logger.error(
             `Error during AI auto-action after human completed setup for match ${dto.matchId}: ${autoActionError instanceof Error ? autoActionError.message : String(autoActionError)}`,
-            autoActionError instanceof Error ? autoActionError.stack : undefined,
+            autoActionError instanceof Error
+              ? autoActionError.stack
+              : undefined,
           );
         }
       }
@@ -151,7 +160,9 @@ export class CompleteInitialSetupActionHandler
               savedMatch.id,
             );
             // Reload match after AI action
-            const updatedMatch = await this.matchRepository.findById(dto.matchId);
+            const updatedMatch = await this.matchRepository.findById(
+              dto.matchId,
+            );
             if (updatedMatch) {
               return updatedMatch;
             }
@@ -174,7 +185,9 @@ export class CompleteInitialSetupActionHandler
               savedMatch.id,
             );
             // Reload match after AI action
-            const updatedMatch = await this.matchRepository.findById(dto.matchId);
+            const updatedMatch = await this.matchRepository.findById(
+              dto.matchId,
+            );
             if (updatedMatch) {
               return updatedMatch;
             }
@@ -183,7 +196,9 @@ export class CompleteInitialSetupActionHandler
           // Log error but don't fail the action - auto-action is best effort
           this.logger.error(
             `Error during AI auto-confirm first player for match ${dto.matchId}: ${autoConfirmError instanceof Error ? autoConfirmError.message : String(autoConfirmError)}`,
-            autoConfirmError instanceof Error ? autoConfirmError.stack : undefined,
+            autoConfirmError instanceof Error
+              ? autoConfirmError.stack
+              : undefined,
           );
         }
       }
@@ -219,4 +234,3 @@ export class CompleteInitialSetupActionHandler
     );
   }
 }
-

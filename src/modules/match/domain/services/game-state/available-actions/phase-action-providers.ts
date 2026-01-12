@@ -1,5 +1,8 @@
 import { TurnPhase, PlayerActionType, PlayerIdentifier } from '../../../enums';
-import { AvailableActionsProvider, GameStateContext } from './available-actions-provider.interface';
+import {
+  AvailableActionsProvider,
+  GameStateContext,
+} from './available-actions-provider.interface';
 import { ActionConditionHelpers } from './action-condition-helpers';
 
 /**
@@ -18,7 +21,7 @@ export class DrawPhaseActionProvider implements AvailableActionsProvider {
     currentPlayer?: PlayerIdentifier,
   ): PlayerActionType[] {
     const actions: PlayerActionType[] = [PlayerActionType.DRAW_CARD];
-    
+
     // Always allow concede
     if (!actions.includes(PlayerActionType.CONCEDE)) {
       actions.push(PlayerActionType.CONCEDE);
@@ -193,4 +196,3 @@ export class SelectActivePokemonPhaseActionProvider
     return actions;
   }
 }
-

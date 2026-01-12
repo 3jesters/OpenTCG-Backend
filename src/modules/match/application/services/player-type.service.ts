@@ -56,4 +56,3 @@ export class PlayerTypeService {
     return false;
   }
 }
-

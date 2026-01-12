@@ -56,14 +56,14 @@ export class GetAvailableSetsDbUseCase {
 
     // Fallback: construct sets from cards
     const setNames = await this.cardRepository.getDistinctSetNames();
-    let setDtos: AvailableSetDto[] = [];
+    const setDtos: AvailableSetDto[] = [];
 
     for (const setName of setNames) {
       const cards = await this.cardRepository.findBySetName(setName);
-      
+
       // Extract metadata from first card if available
       const firstCard = cards[0];
-      
+
       const setDto: AvailableSetDto = {
         author: 'pokemon', // Default
         setName: setName,
@@ -93,4 +93,3 @@ export class GetAvailableSetsDbUseCase {
     };
   }
 }
-

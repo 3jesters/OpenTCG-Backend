@@ -35,14 +35,17 @@ export class DuplicateCardUseCase {
     targetSetName?: string,
   ): Promise<CardDetailDto> {
     // 1. Load source card from any set (global or private)
-    const sourceCard = await this.getCardByIdUseCase.getCardEntity(sourceCardId);
+    const sourceCard =
+      await this.getCardByIdUseCase.getCardEntity(sourceCardId);
 
     // 2. Get or create target set
     let targetSet: Set;
     if (targetSetId) {
       const foundSet = await this.setRepository.findById(targetSetId);
       if (!foundSet) {
-        throw new NotFoundException(`Target set with ID ${targetSetId} not found`);
+        throw new NotFoundException(
+          `Target set with ID ${targetSetId} not found`,
+        );
       }
       targetSet = foundSet;
       // Verify user owns the target set
@@ -88,7 +91,7 @@ export class DuplicateCardUseCase {
     // We need to determine card type and use appropriate factory
     // Use default pokemonNumber if undefined
     const pokemonNumber = sourceCard.pokemonNumber || '000';
-    
+
     let newCard: Card;
     if (sourceCard.cardType === CardType.TRAINER) {
       newCard = Card.createTrainerCard(

@@ -30,7 +30,11 @@ import {
 import { TrainerEffect } from '../../../../card/domain/value-objects';
 import { AttackEffectType } from '../../../../card/domain/enums/attack-effect-type.enum';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
-import { PokemonPosition, PlayerIdentifier, TurnPhase } from '../../../domain/enums';
+import {
+  PokemonPosition,
+  PlayerIdentifier,
+  TurnPhase,
+} from '../../../domain/enums';
 import {
   EnergyAttachmentOption,
   SortedEnergyAttachmentOptionList,
@@ -100,10 +104,7 @@ describe('EnergyAttachmentAnalyzerService', () => {
   };
 
   // Helper function to create a basic Energy card
-  const createEnergyCard = (
-    cardId: string,
-    energyType: EnergyType,
-  ): Card => {
+  const createEnergyCard = (cardId: string, energyType: EnergyType): Card => {
     const card = Card.createEnergyCard(
       `instance-${cardId}`,
       cardId,
@@ -281,7 +282,10 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('water-1', createEnergyCard('water-1', EnergyType.WATER));
       cardsMap.set('pokemon-1', createPokemonCard('pokemon-1', 'Pikachu', 60));
-      cardsMap.set('trainer-1', createTrainerCard('trainer-1', 'Potion', TrainerType.ITEM, []));
+      cardsMap.set(
+        'trainer-1',
+        createTrainerCard('trainer-1', 'Potion', TrainerType.ITEM, []),
+      );
       cardsMap.set('fire-1', createEnergyCard('fire-1', EnergyType.FIRE));
 
       // Act
@@ -310,9 +314,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '60',
         'A knockout attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        attack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [attack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -322,7 +329,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy attached yet
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -362,7 +374,10 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -402,10 +417,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '80',
         'A strong attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        weakAttack,
-        strongAttack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [weakAttack, strongAttack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -415,7 +432,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['fire-energy-1'], // Has 1 Fire energy (can use weak attack)
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Blastoise', 100, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Blastoise',
+        100,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -455,8 +477,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -476,7 +504,8 @@ describe('EnergyAttachmentAnalyzerService', () => {
       // Minimum: 1000 (base for increasesDamage)
       expect(attachmentOptions.length).toBeGreaterThan(0);
       const damageOption = attachmentOptions.find(
-        (option) => option.increasesDamage === true && option.enablesKnockout === false,
+        (option) =>
+          option.increasesDamage === true && option.enablesKnockout === false,
       );
       expect(damageOption).toBeDefined();
       expect(damageOption!.isExactMatch).toBe(true);
@@ -492,9 +521,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '50',
         'A mixed attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Blastoise', 100, [
-        attack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Blastoise',
+        100,
+        [attack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -504,7 +536,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['water-energy-1'], // Has 1 Water energy
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -544,8 +581,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('water-energy-2', createEnergyCard('water-energy-2', EnergyType.WATER));
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-2',
+        createEnergyCard('water-energy-2', EnergyType.WATER),
+      );
       cardsMap.set('dce-1', createDoubleColorlessEnergyCard('dce-1'));
 
       // Act
@@ -567,14 +610,18 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const waterOption = attachmentOptions.find(
         (option) => option.energyCardId === 'water-energy-2',
       );
-      const dceOption = attachmentOptions.find((option) => option.energyCardId === 'dce-1');
+      const dceOption = attachmentOptions.find(
+        (option) => option.energyCardId === 'dce-1',
+      );
       expect(waterOption).toBeDefined();
       expect(dceOption).toBeDefined();
       expect(waterOption!.isExactMatch).toBe(true);
       expect(dceOption!.isExactMatch).toBe(false); // DCE provides 2, we only need 1
       expect(waterOption!.priority).toBeGreaterThanOrEqual(1300);
       expect(waterOption!.priority).toBeGreaterThan(dceOption!.priority);
-      expect(waterOption!.priority - dceOption!.priority).toBeGreaterThanOrEqual(100);
+      expect(
+        waterOption!.priority - dceOption!.priority,
+      ).toBeGreaterThanOrEqual(100);
     });
 
     it('should prefer exact match with Fire energy: Pokemon needs [Water, Colorless], has [Water], hand has [Water, Fire, DoubleColorless]', async () => {
@@ -585,9 +632,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '50',
         'A mixed attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Blastoise', 100, [
-        attack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Blastoise',
+        100,
+        [attack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -597,7 +647,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['water-energy-1'], // Has 1 Water energy
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -637,9 +692,18 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('water-energy-2', createEnergyCard('water-energy-2', EnergyType.WATER));
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-2',
+        createEnergyCard('water-energy-2', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
       cardsMap.set('dce-1', createDoubleColorlessEnergyCard('dce-1'));
 
       // Act
@@ -663,7 +727,9 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const fireOption = attachmentOptions.find(
         (option) => option.energyCardId === 'fire-energy-1',
       );
-      const dceOption = attachmentOptions.find((option) => option.energyCardId === 'dce-1');
+      const dceOption = attachmentOptions.find(
+        (option) => option.energyCardId === 'dce-1',
+      );
       expect(waterOption).toBeDefined();
       expect(fireOption).toBeDefined();
       expect(dceOption).toBeDefined();
@@ -682,9 +748,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '90',
         'A triple attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Blastoise', 100, [
-        attack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Blastoise',
+        100,
+        [attack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -694,7 +763,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['water-energy-1'], // Has 1 Water energy
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -734,9 +808,18 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('water-energy-2', createEnergyCard('water-energy-2', EnergyType.WATER));
-      cardsMap.set('water-energy-3', createEnergyCard('water-energy-3', EnergyType.WATER));
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-2',
+        createEnergyCard('water-energy-2', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-3',
+        createEnergyCard('water-energy-3', EnergyType.WATER),
+      );
       cardsMap.set('dce-1', createDoubleColorlessEnergyCard('dce-1'));
 
       // Act
@@ -754,7 +837,9 @@ describe('EnergyAttachmentAnalyzerService', () => {
       // isExactMatch = true for DCE (provides 2 Colorless, exactly what's needed)
       // priority should be high for DCE (enables attack in one turn)
       expect(attachmentOptions.length).toBeGreaterThanOrEqual(1);
-      const dceOption = attachmentOptions.find((option) => option.energyCardId === 'dce-1');
+      const dceOption = attachmentOptions.find(
+        (option) => option.energyCardId === 'dce-1',
+      );
       expect(dceOption).toBeDefined();
       expect(dceOption!.isExactMatch).toBe(true);
       expect(dceOption!.priority).toBeGreaterThan(0);
@@ -769,9 +854,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '40',
         'A single attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        attack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [attack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -781,7 +869,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['fire-energy-1'], // Already has 1 Fire energy (can perform attack)
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -821,9 +914,18 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('fire-energy-3', createEnergyCard('fire-energy-3', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-3',
+        createEnergyCard('fire-energy-3', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -858,10 +960,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         'A strong attack',
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        weakAttack,
-        strongAttack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [weakAttack, strongAttack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -871,7 +975,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['fire-energy-0'], // Has 1 Fire energy - can use weak attack (30 damage)
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 100, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        100,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -911,8 +1020,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-0', createEnergyCard('fire-energy-0', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-0',
+        createEnergyCard('fire-energy-0', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -928,7 +1043,8 @@ describe('EnergyAttachmentAnalyzerService', () => {
       // Priority >= 1000 (damage increase base)
       expect(attachmentOptions.length).toBeGreaterThan(0);
       const damageOption = attachmentOptions.find(
-        (option) => option.increasesDamage === true && option.enablesKnockout === false,
+        (option) =>
+          option.increasesDamage === true && option.enablesKnockout === false,
       );
       expect(damageOption).toBeDefined();
       expect(damageOption!.isExactMatch).toBe(true);
@@ -952,10 +1068,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [AttackEffectFactory.discardEnergy(TargetType.SELF, 1)], // Removes 1 energy from self
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        cleanKnockoutAttack,
-        recoilKnockoutAttack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [cleanKnockoutAttack, recoilKnockoutAttack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -965,7 +1083,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['fire-energy-0'], // Has 1 Fire energy - needs 1 more to enable knockout
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1005,8 +1128,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-0', createEnergyCard('fire-energy-0', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-0',
+        createEnergyCard('fire-energy-0', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -1050,10 +1179,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ],
       );
 
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        cleanKnockoutAttack,
-        spreadKnockoutAttack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [cleanKnockoutAttack, spreadKnockoutAttack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -1064,9 +1195,19 @@ describe('EnergyAttachmentAnalyzerService', () => {
       );
 
       // Opponent has 2 bench Pokemon with different threat levels
-      const opponentBenchCard1 = createPokemonCard('opponent-bench-001', 'Blastoise', 100, [
-        new Attack('Strong Attack', [EnergyType.WATER, EnergyType.WATER], '80', 'Strong attack'),
-      ]);
+      const opponentBenchCard1 = createPokemonCard(
+        'opponent-bench-001',
+        'Blastoise',
+        100,
+        [
+          new Attack(
+            'Strong Attack',
+            [EnergyType.WATER, EnergyType.WATER],
+            '80',
+            'Strong attack',
+          ),
+        ],
+      );
       const opponentBenchInstance1 = createCardInstance(
         'opponent-bench-instance-001',
         'opponent-bench-001',
@@ -1076,9 +1217,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['water-energy-0', 'water-energy-1'], // Has 2 Water energy - can deal 80 damage next turn
       );
 
-      const opponentBenchCard2 = createPokemonCard('opponent-bench-002', 'Squirtle', 60, [
-        new Attack('Weak Attack', [EnergyType.WATER], '30', 'Weak attack'),
-      ]);
+      const opponentBenchCard2 = createPokemonCard(
+        'opponent-bench-002',
+        'Squirtle',
+        60,
+        [new Attack('Weak Attack', [EnergyType.WATER], '30', 'Weak attack')],
+      );
       const opponentBenchInstance2 = createCardInstance(
         'opponent-bench-instance-002',
         'opponent-bench-002',
@@ -1088,7 +1232,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['water-energy-2'], // Has 1 Water energy - can deal 30 damage next turn
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1130,11 +1279,26 @@ describe('EnergyAttachmentAnalyzerService', () => {
       cardsMap.set('opponent-card-001', opponentCard);
       cardsMap.set('opponent-bench-001', opponentBenchCard1);
       cardsMap.set('opponent-bench-002', opponentBenchCard2);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-0', createEnergyCard('fire-energy-0', EnergyType.FIRE));
-      cardsMap.set('water-energy-0', createEnergyCard('water-energy-0', EnergyType.WATER));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('water-energy-2', createEnergyCard('water-energy-2', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-0',
+        createEnergyCard('fire-energy-0', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-0',
+        createEnergyCard('water-energy-0', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-2',
+        createEnergyCard('water-energy-2', EnergyType.WATER),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -1181,9 +1345,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         'A general attack',
       );
 
-      const knockoutCard = createPokemonCard('knockout-card-001', 'Charizard', 120, [
-        knockoutAttack,
-      ]);
+      const knockoutCard = createPokemonCard(
+        'knockout-card-001',
+        'Charizard',
+        120,
+        [knockoutAttack],
+      );
       const knockoutInstance = createCardInstance(
         'knockout-instance-001',
         'knockout-card-001',
@@ -1193,9 +1360,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy
       );
 
-      const damageCard = createPokemonCard('damage-card-001', 'Blastoise', 100, [
-        damageAttack,
-      ]);
+      const damageCard = createPokemonCard(
+        'damage-card-001',
+        'Blastoise',
+        100,
+        [damageAttack],
+      );
       const damageInstance = createCardInstance(
         'damage-instance-001',
         'damage-card-001',
@@ -1205,9 +1375,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['water-energy-0'], // Has one water energy - attaching water-energy-1 will enable the attack and get priority 1350 (1000 base + 100 exact + 200 turns + 50 same type)
       );
 
-      const generalCard = createPokemonCard('general-card-001', 'Venusaur', 80, [
-        generalAttack,
-      ]);
+      const generalCard = createPokemonCard(
+        'general-card-001',
+        'Venusaur',
+        80,
+        [generalAttack],
+      );
       const generalInstance = createCardInstance(
         'general-instance-001',
         'general-card-001',
@@ -1217,7 +1390,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy - attaching grass-energy-1 will enable the attack and get priority 1300 (1000 base + 100 exact + 200 turns)
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1259,10 +1437,22 @@ describe('EnergyAttachmentAnalyzerService', () => {
       cardsMap.set('damage-card-001', damageCard);
       cardsMap.set('general-card-001', generalCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('grass-energy-1', createEnergyCard('grass-energy-1', EnergyType.GRASS));
-      cardsMap.set('water-energy-0', createEnergyCard('water-energy-0', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'grass-energy-1',
+        createEnergyCard('grass-energy-1', EnergyType.GRASS),
+      );
+      cardsMap.set(
+        'water-energy-0',
+        createEnergyCard('water-energy-0', EnergyType.WATER),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -1288,7 +1478,11 @@ describe('EnergyAttachmentAnalyzerService', () => {
       );
       // Find damage options (non-knockout, increases damage)
       const damageOptions = sortedOptions.filter(
-        (option) => option.increasesDamage === true && option.enablesKnockout === false && option.priority >= 1000 && option.priority < 10000,
+        (option) =>
+          option.increasesDamage === true &&
+          option.enablesKnockout === false &&
+          option.priority >= 1000 &&
+          option.priority < 10000,
       );
 
       expect(knockoutOption).toBeDefined();
@@ -1305,11 +1499,15 @@ describe('EnergyAttachmentAnalyzerService', () => {
         // The first damage option in sortedOptions should have higher or equal priority to the second
         const firstDamageOption = damageOptions[0];
         const secondDamageOption = damageOptions[1];
-        expect(firstDamageOption.priority).toBeGreaterThanOrEqual(secondDamageOption.priority);
-        
+        expect(firstDamageOption.priority).toBeGreaterThanOrEqual(
+          secondDamageOption.priority,
+        );
+
         // If they have different priorities, verify the higher one comes first
         if (firstDamageOption.priority !== secondDamageOption.priority) {
-          expect(firstDamageOption.priority).toBeGreaterThan(secondDamageOption.priority);
+          expect(firstDamageOption.priority).toBeGreaterThan(
+            secondDamageOption.priority,
+          );
         }
       }
     });
@@ -1329,9 +1527,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         'A weak attack',
       );
 
-      const knockoutCard = createPokemonCard('knockout-card-001', 'Charizard', 120, [
-        knockoutAttack,
-      ]);
+      const knockoutCard = createPokemonCard(
+        'knockout-card-001',
+        'Charizard',
+        120,
+        [knockoutAttack],
+      );
       const knockoutInstance = createCardInstance(
         'knockout-instance-001',
         'knockout-card-001',
@@ -1341,9 +1542,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy
       );
 
-      const nonKnockoutCard = createPokemonCard('non-knockout-card-001', 'Blastoise', 100, [
-        nonKnockoutAttack,
-      ]);
+      const nonKnockoutCard = createPokemonCard(
+        'non-knockout-card-001',
+        'Blastoise',
+        100,
+        [nonKnockoutAttack],
+      );
       const nonKnockoutInstance = createCardInstance(
         'non-knockout-instance-001',
         'non-knockout-card-001',
@@ -1353,7 +1557,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1394,8 +1603,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
       cardsMap.set('knockout-card-001', knockoutCard);
       cardsMap.set('non-knockout-card-001', nonKnockoutCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -1436,13 +1651,13 @@ describe('EnergyAttachmentAnalyzerService', () => {
 
     it('should return empty array: No energy cards in hand', async () => {
       // Arrange
-      const attack = new Attack(
-        'Strike',
-        [EnergyType.FIRE],
-        '40',
-        'An attack',
+      const attack = new Attack('Strike', [EnergyType.FIRE], '40', 'An attack');
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [attack],
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [attack]);
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -1452,7 +1667,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [],
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1515,7 +1735,9 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '50',
         'A bench attack',
       );
-      const benchCard = createPokemonCard('bench-card-001', 'Pikachu', 60, [benchAttack]);
+      const benchCard = createPokemonCard('bench-card-001', 'Pikachu', 60, [
+        benchAttack,
+      ]);
       const benchInstance = createCardInstance(
         'bench-instance-001',
         'bench-card-001',
@@ -1525,7 +1747,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy
       );
 
-      const activeCard = createPokemonCard('active-card-001', 'Charizard', 120, []);
+      const activeCard = createPokemonCard(
+        'active-card-001',
+        'Charizard',
+        120,
+        [],
+      );
       const activeInstance = createCardInstance(
         'active-instance-001',
         'active-card-001',
@@ -1535,7 +1762,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [],
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Blastoise', 100, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Blastoise',
+        100,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1648,7 +1880,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy
       );
 
-      const activeCard = createPokemonCard('active-card-001', 'Blastoise', 100, []);
+      const activeCard = createPokemonCard(
+        'active-card-001',
+        'Blastoise',
+        100,
+        [],
+      );
       const activeInstance = createCardInstance(
         'active-instance-001',
         'active-card-001',
@@ -1658,7 +1895,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [],
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Venusaur', 100, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Venusaur',
+        100,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1700,8 +1942,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
       cardsMap.set('low-priority-card-001', lowPriorityCard);
       cardsMap.set('active-card-001', activeCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -1717,13 +1965,17 @@ describe('EnergyAttachmentAnalyzerService', () => {
       // Low priority Pokemon (Pikachu, 60 HP) should be evaluated second
       // Options should be sorted with high priority Pokemon first
       expect(attachmentOptions.length).toBeGreaterThanOrEqual(2);
-      const sortedOptions = [...attachmentOptions].sort((a, b) => b.priority - a.priority);
+      const sortedOptions = [...attachmentOptions].sort(
+        (a, b) => b.priority - a.priority,
+      );
 
       const highPriorityOption = sortedOptions.find(
-        (option) => option.targetPokemon.instanceId === 'high-priority-instance-001',
+        (option) =>
+          option.targetPokemon.instanceId === 'high-priority-instance-001',
       );
       const lowPriorityOption = sortedOptions.find(
-        (option) => option.targetPokemon.instanceId === 'low-priority-instance-001',
+        (option) =>
+          option.targetPokemon.instanceId === 'low-priority-instance-001',
       );
 
       expect(highPriorityOption).toBeDefined();
@@ -1744,9 +1996,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '60',
         'A knockout attack',
       );
-      const knockoutCard = createPokemonCard('knockout-card-001', 'Charizard', 120, [
-        knockoutAttack,
-      ]);
+      const knockoutCard = createPokemonCard(
+        'knockout-card-001',
+        'Charizard',
+        120,
+        [knockoutAttack],
+      );
       const knockoutInstance = createCardInstance(
         'knockout-instance-001',
         'knockout-card-001',
@@ -1763,9 +2018,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '40',
         'A damage attack',
       );
-      const damageCard = createPokemonCard('damage-card-001', 'Blastoise', 100, [
-        damageAttack,
-      ]);
+      const damageCard = createPokemonCard(
+        'damage-card-001',
+        'Blastoise',
+        100,
+        [damageAttack],
+      );
       const damageInstance = createCardInstance(
         'damage-instance-001',
         'damage-card-001',
@@ -1782,9 +2040,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '20',
         'A general attack',
       );
-      const generalCard = createPokemonCard('general-card-001', 'Venusaur', 80, [
-        generalAttack,
-      ]);
+      const generalCard = createPokemonCard(
+        'general-card-001',
+        'Venusaur',
+        80,
+        [generalAttack],
+      );
       const generalInstance = createCardInstance(
         'general-instance-001',
         'general-card-001',
@@ -1794,7 +2055,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy
       );
 
-      const activeCard = createPokemonCard('active-card-001', 'Pikachu', 60, []);
+      const activeCard = createPokemonCard(
+        'active-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const activeInstance = createCardInstance(
         'active-instance-001',
         'active-card-001',
@@ -1804,7 +2070,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [],
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Raichu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Raichu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1847,9 +2118,18 @@ describe('EnergyAttachmentAnalyzerService', () => {
       cardsMap.set('general-card-001', generalCard);
       cardsMap.set('active-card-001', activeCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('grass-energy-1', createEnergyCard('grass-energy-1', EnergyType.GRASS));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'grass-energy-1',
+        createEnergyCard('grass-energy-1', EnergyType.GRASS),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -1866,7 +2146,9 @@ describe('EnergyAttachmentAnalyzerService', () => {
       // Damage option should have increasesDamage = true, enablesKnockout = false
       // General option should have increasesDamage = true (enables attack), enablesKnockout = false
       expect(attachmentOptions.length).toBeGreaterThanOrEqual(3);
-      const sortedOptions = [...attachmentOptions].sort((a, b) => b.priority - a.priority);
+      const sortedOptions = [...attachmentOptions].sort(
+        (a, b) => b.priority - a.priority,
+      );
 
       const knockoutOption = sortedOptions.find(
         (option) =>
@@ -1902,13 +2184,13 @@ describe('EnergyAttachmentAnalyzerService', () => {
     it('should not attach if energy does not improve any attack: Prefer no attachment', async () => {
       // Arrange
       // Pokemon already has sufficient energy for its best attack
-      const attack = new Attack(
-        'Strike',
-        [EnergyType.FIRE],
-        '40',
-        'An attack',
+      const attack = new Attack('Strike', [EnergyType.FIRE], '40', 'An attack');
+      const pokemonCard = createPokemonCard(
+        'pokemon-card-001',
+        'Charizard',
+        120,
+        [attack],
       );
-      const pokemonCard = createPokemonCard('pokemon-card-001', 'Charizard', 120, [attack]);
       const pokemonInstance = createCardInstance(
         'pokemon-instance-001',
         'pokemon-card-001',
@@ -1918,7 +2200,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['fire-energy-1'], // Already has sufficient energy
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -1958,8 +2245,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('pokemon-card-001', pokemonCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -2017,7 +2310,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'], // Already has sufficient energy for strong attack
       );
 
-      const activeCard = createPokemonCard('active-card-001', 'Pikachu', 60, []);
+      const activeCard = createPokemonCard(
+        'active-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const activeInstance = createCardInstance(
         'active-instance-001',
         'active-card-001',
@@ -2027,7 +2325,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [],
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Blastoise', 100, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Blastoise',
+        100,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -2068,9 +2371,18 @@ describe('EnergyAttachmentAnalyzerService', () => {
       cardsMap.set('bench-card-001', benchCard);
       cardsMap.set('active-card-001', activeCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('fire-energy-3', createEnergyCard('fire-energy-3', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-3',
+        createEnergyCard('fire-energy-3', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -2115,10 +2427,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '70',
         'A strong attack',
       );
-      const highPriorityCard = createPokemonCard('high-priority-card-001', 'Charizard', 120, [
-        weakAttack,
-        strongAttack,
-      ]);
+      const highPriorityCard = createPokemonCard(
+        'high-priority-card-001',
+        'Charizard',
+        120,
+        [weakAttack, strongAttack],
+      );
       const highPriorityInstance = createCardInstance(
         'high-priority-instance-001',
         'high-priority-card-001',
@@ -2135,9 +2449,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '40',
         'An attack',
       );
-      const lowPriorityCard = createPokemonCard('low-priority-card-001', 'Blastoise', 100, [
-        attack,
-      ]);
+      const lowPriorityCard = createPokemonCard(
+        'low-priority-card-001',
+        'Blastoise',
+        100,
+        [attack],
+      );
       const lowPriorityInstance = createCardInstance(
         'low-priority-instance-001',
         'low-priority-card-001',
@@ -2147,7 +2464,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         ['water-energy-1'], // Already has sufficient energy
       );
 
-      const activeCard = createPokemonCard('active-card-001', 'Pikachu', 60, []);
+      const activeCard = createPokemonCard(
+        'active-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       const activeInstance = createCardInstance(
         'active-instance-001',
         'active-card-001',
@@ -2157,7 +2479,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [],
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Venusaur', 100, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Venusaur',
+        100,
+        [],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -2199,10 +2526,22 @@ describe('EnergyAttachmentAnalyzerService', () => {
       cardsMap.set('low-priority-card-001', lowPriorityCard);
       cardsMap.set('active-card-001', activeCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('water-energy-2', createEnergyCard('water-energy-2', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-2',
+        createEnergyCard('water-energy-2', EnergyType.WATER),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -2219,10 +2558,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
       // Only include attachments that improve attacks (Knockout > Damage increase > General)
       expect(attachmentOptions.length).toBeGreaterThan(0);
       const highPriorityOption = attachmentOptions.find(
-        (option) => option.targetPokemon.instanceId === 'high-priority-instance-001',
+        (option) =>
+          option.targetPokemon.instanceId === 'high-priority-instance-001',
       );
       const lowPriorityOption = attachmentOptions.find(
-        (option) => option.targetPokemon.instanceId === 'low-priority-instance-001',
+        (option) =>
+          option.targetPokemon.instanceId === 'low-priority-instance-001',
       );
 
       expect(highPriorityOption).toBeDefined();
@@ -2238,9 +2579,15 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '30', // Base damage 30, but with weakness ×2 = 60
         'A fire attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        fireAttack,
-      ], undefined, undefined, PokemonType.FIRE);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [fireAttack],
+        undefined,
+        undefined,
+        PokemonType.FIRE,
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -2251,7 +2598,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
       );
 
       // Opponent has Fire weakness (×2)
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       opponentCard.setWeakness(new Weakness(EnergyType.FIRE, '×2'));
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
@@ -2292,7 +2644,10 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -2323,9 +2678,15 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '50', // Base damage 50, but with resistance -20 = 30
         'A fire attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        fireAttack,
-      ], undefined, undefined, PokemonType.FIRE);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [fireAttack],
+        undefined,
+        undefined,
+        PokemonType.FIRE,
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -2336,7 +2697,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
       );
 
       // Opponent has Fire resistance (-20)
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       opponentCard.setResistance(new Resistance(EnergyType.FIRE, '-20'));
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
@@ -2377,7 +2743,10 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -2394,7 +2763,8 @@ describe('EnergyAttachmentAnalyzerService', () => {
       // priority should be medium (damage increase but no knockout)
       expect(attachmentOptions.length).toBeGreaterThan(0);
       const damageOption = attachmentOptions.find(
-        (option) => option.increasesDamage === true && option.enablesKnockout === false,
+        (option) =>
+          option.increasesDamage === true && option.enablesKnockout === false,
       );
       expect(damageOption).toBeDefined();
       expect(damageOption!.enablesKnockout).toBe(false);
@@ -2410,9 +2780,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '60', // Base damage 60
         'A fire attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        fireAttack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [fireAttack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -2422,7 +2795,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       // Note: In real implementation, we would check if the opponent has an ability/effect
       // that prevents all damage. For this test, we'll simulate this by having the service
       // calculate 0 damage after prevention
@@ -2477,7 +2855,10 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -2515,9 +2896,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '50', // Base damage 50, but opponent reduces by 20 = 30
         'A fire attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        fireAttack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [fireAttack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -2527,7 +2911,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         [], // No energy
       );
 
-      const opponentCard = createPokemonCard('opponent-card-001', 'Pikachu', 60, []);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Pikachu',
+        60,
+        [],
+      );
       // Note: In real implementation, we would check if the opponent has an ability/effect
       // that reduces damage by 20. For this test, we'll simulate this by having the service
       // calculate reduced damage
@@ -2570,7 +2959,10 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -2587,7 +2979,8 @@ describe('EnergyAttachmentAnalyzerService', () => {
       // priority should be medium (damage increase but no knockout)
       expect(attachmentOptions.length).toBeGreaterThan(0);
       const damageOption = attachmentOptions.find(
-        (option) => option.increasesDamage === true && option.enablesKnockout === false,
+        (option) =>
+          option.increasesDamage === true && option.enablesKnockout === false,
       );
       expect(damageOption).toBeDefined();
       expect(damageOption!.enablesKnockout).toBe(false);
@@ -2603,9 +2996,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '60', // Base damage 60, but opponent prevents all damage
         'A fire attack',
       );
-      const playerCard = createPokemonCard('player-card-001', 'Charizard', 120, [
-        fireAttack,
-      ]);
+      const playerCard = createPokemonCard(
+        'player-card-001',
+        'Charizard',
+        120,
+        [fireAttack],
+      );
       const playerInstance = createCardInstance(
         'player-instance-001',
         'player-card-001',
@@ -2622,9 +3018,12 @@ describe('EnergyAttachmentAnalyzerService', () => {
         '60',
         'An opponent attack',
       );
-      const opponentCard = createPokemonCard('opponent-card-001', 'Blastoise', 100, [
-        opponentAttack,
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-card-001',
+        'Blastoise',
+        100,
+        [opponentAttack],
+      );
       const opponentInstance = createCardInstance(
         'opponent-instance-001',
         'opponent-card-001',
@@ -2677,8 +3076,14 @@ describe('EnergyAttachmentAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('player-card-001', playerCard);
       cardsMap.set('opponent-card-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const attachmentOptions = await service.evaluateAttachmentOptions(
@@ -2708,5 +3113,3 @@ describe('EnergyAttachmentAnalyzerService', () => {
     });
   });
 });
-
-

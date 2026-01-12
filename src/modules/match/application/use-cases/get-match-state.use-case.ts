@@ -1,9 +1,5 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import {
-  Match,
-  PlayerIdentifier,
-  PlayerActionType,
-} from '../../domain';
+import { Match, PlayerIdentifier, PlayerActionType } from '../../domain';
 import { IMatchRepository } from '../../domain/repositories';
 import { AvailableActionsService } from '../services';
 

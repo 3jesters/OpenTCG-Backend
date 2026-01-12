@@ -22,14 +22,14 @@ export class AiPlayerResponseDto {
     };
   }
 
-  static fromConfigArray(configs: Array<{
-    id: string;
-    name: string;
-    version: string;
-    description?: string;
-  }>): AiPlayerResponseDto[] {
+  static fromConfigArray(
+    configs: Array<{
+      id: string;
+      name: string;
+      version: string;
+      description?: string;
+    }>,
+  ): AiPlayerResponseDto[] {
     return configs.map((config) => this.fromConfig(config));
   }
 }
-
-

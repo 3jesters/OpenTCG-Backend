@@ -382,7 +382,6 @@ export class MatchStateMachineService {
     return { hasWinner: false };
   }
 
-
   /**
    * Get available actions for current state and phase
    * Delegates to AvailableActionsRegistry for cleaner separation of concerns

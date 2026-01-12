@@ -1,8 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { Match, PlayerIdentifier } from '../../domain';
-import {
-  IAiActionGeneratorService,
-} from '../../application/ports/ai-action-generator.interface';
+import { IAiActionGeneratorService } from '../../application/ports/ai-action-generator.interface';
 import { ExecuteActionDto } from '../../application/dto';
 
 /**
@@ -34,4 +32,3 @@ export class SimpleAiActionGeneratorService
     );
   }
 }
-

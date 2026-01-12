@@ -15,4 +15,3 @@ export interface AttackExecutionResult {
   coinFlipResults: CoinFlipResult[];
   actionData: any;
 }
-

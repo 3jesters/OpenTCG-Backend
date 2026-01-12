@@ -77,4 +77,3 @@ export class SearchCardsRequestDto {
   @Min(0)
   offset?: number;
 }
-

@@ -47,5 +47,9 @@ export function getServices(module: TestingModule) {
 }
 
 // Re-export helpers
-export const { createPokemonCard, createCardInstance, createTrainerCard, createEnergyCard } = helpers;
-
+export const {
+  createPokemonCard,
+  createCardInstance,
+  createTrainerCard,
+  createEnergyCard,
+} = helpers;

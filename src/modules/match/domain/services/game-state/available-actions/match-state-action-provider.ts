@@ -1,8 +1,4 @@
-import {
-  MatchState,
-  TurnPhase,
-  PlayerActionType,
-} from '../../../enums';
+import { MatchState, TurnPhase, PlayerActionType } from '../../../enums';
 import {
   AvailableActionsProvider,
   GameStateContext,
@@ -54,10 +50,7 @@ export class MatchStateActionProvider implements AvailableActionsProvider {
 
     // FIRST_PLAYER_SELECTION
     if (state === MatchState.FIRST_PLAYER_SELECTION) {
-      return [
-        PlayerActionType.CONFIRM_FIRST_PLAYER,
-        PlayerActionType.CONCEDE,
-      ];
+      return [PlayerActionType.CONFIRM_FIRST_PLAYER, PlayerActionType.CONCEDE];
     }
 
     // INITIAL_SETUP
@@ -79,4 +72,3 @@ export class MatchStateActionProvider implements AvailableActionsProvider {
     return [PlayerActionType.CONCEDE];
   }
 }
-

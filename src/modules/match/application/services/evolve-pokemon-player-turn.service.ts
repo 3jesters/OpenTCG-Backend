@@ -38,13 +38,7 @@ export class EvolvePokemonPlayerTurnService {
   async executeEvolvePokemon(
     params: EvolvePokemonPlayerTurnParams,
   ): Promise<Match> {
-    const {
-      dto,
-      match,
-      gameState,
-      playerIdentifier,
-      cardsMap,
-    } = params;
+    const { dto, match, gameState, playerIdentifier, cardsMap } = params;
 
     // Validate request
     const { evolutionCardId, target } = this.validateEvolvePokemonRequest(
@@ -78,17 +72,20 @@ export class EvolvePokemonPlayerTurnService {
     );
 
     // Validate evolution chain
-    await this.validateEvolution(targetPokemon.cardId, evolutionCardId, cardsMap);
+    await this.validateEvolution(
+      targetPokemon.cardId,
+      evolutionCardId,
+      cardsMap,
+    );
 
     // Execute evolution using execution service
-    const result =
-      await this.evolutionExecutionService.executeEvolvePokemon({
-        evolutionCardId,
-        target,
-        gameState,
-        playerIdentifier,
-        cardsMap,
-      });
+    const result = await this.evolutionExecutionService.executeEvolvePokemon({
+      evolutionCardId,
+      target,
+      gameState,
+      playerIdentifier,
+      cardsMap,
+    });
 
     // Create action summary
     const actionSummary = new ActionSummary(
@@ -287,10 +284,14 @@ export class EvolvePokemonPlayerTurnService {
     cardsMap: Map<string, Card>,
   ): Promise<void> {
     // Get both card entities
-    const currentPokemonCard =
-      await this.cardHelper.getCardEntity(currentPokemonCardId, cardsMap);
-    const evolutionCard =
-      await this.cardHelper.getCardEntity(evolutionCardId, cardsMap);
+    const currentPokemonCard = await this.cardHelper.getCardEntity(
+      currentPokemonCardId,
+      cardsMap,
+    );
+    const evolutionCard = await this.cardHelper.getCardEntity(
+      evolutionCardId,
+      cardsMap,
+    );
 
     // Validate that both are Pokemon cards
     if (currentPokemonCard.cardType !== CardType.POKEMON) {
@@ -376,4 +377,3 @@ export class EvolvePokemonPlayerTurnService {
     }
   }
 }
-

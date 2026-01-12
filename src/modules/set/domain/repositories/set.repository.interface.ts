@@ -50,4 +50,3 @@ export interface ISetRepository {
  * Symbol for dependency injection
  */
 export const ISetRepository = Symbol('ISetRepository');
-

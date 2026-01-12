@@ -49,8 +49,7 @@ export class CardStrengthCalculatorService {
     const attackStrength = this.calculateAttackStrength(card);
     const abilityStrength = this.calculateAbilityStrength(card);
 
-    const rawTotal =
-      hpStrength.raw + attackStrength.raw + abilityStrength.raw;
+    const rawTotal = hpStrength.raw + attackStrength.raw + abilityStrength.raw;
 
     // Adjust normalization max based on whether ability exists
     const normalizationMax = card.ability ? 300 : 250;
@@ -195,10 +194,7 @@ export class CardStrengthCalculatorService {
     // Handle combined damage (e.g., "30+20")
     if (damage.includes('+') && !damage.endsWith('+')) {
       const parts = damage.split('+');
-      return parts.reduce(
-        (sum, part) => sum + (parseInt(part, 10) || 0),
-        0,
-      );
+      return parts.reduce((sum, part) => sum + (parseInt(part, 10) || 0), 0);
     }
 
     // Regular damage
@@ -214,9 +210,7 @@ export class CardStrengthCalculatorService {
       return false;
     }
     const lowerText = text.toLowerCase();
-    return (
-      lowerText.includes('flip a coin') || lowerText.includes('coin flip')
-    );
+    return lowerText.includes('flip a coin') || lowerText.includes('coin flip');
   }
 
   private hasPoisonEffect(attack: Attack): boolean {
@@ -241,7 +235,9 @@ export class CardStrengthCalculatorService {
 
     const text = (attack.text || '').toLowerCase();
     const hasEffects =
-      attack.effects && Array.isArray(attack.effects) && attack.effects.length > 0;
+      attack.effects &&
+      Array.isArray(attack.effects) &&
+      attack.effects.length > 0;
 
     // Check for 20 HP poison (explicit mention)
     if (
@@ -412,8 +408,7 @@ export class CardStrengthCalculatorService {
     }
 
     const basePenalty = 1;
-    const energyMultiplier =
-      energyCost >= 4 ? 2.5 : energyCost >= 3 ? 1.5 : 1;
+    const energyMultiplier = energyCost >= 4 ? 2.5 : energyCost >= 3 ? 1.5 : 1;
 
     // Reduce penalty if attack is still efficient even with coin flip
     const damagePerEnergy = energyCost > 0 ? avgDamage / energyCost : 0;
@@ -473,7 +468,10 @@ export class CardStrengthCalculatorService {
     const energyDiscardMatch =
       text.match(/discard\s+(\d+)\s+energy/i) ||
       text.match(/discard\s+(\w+)\s+energy/i);
-    if (energyDiscardMatch || (text.includes('discard') && text.includes('energy'))) {
+    if (
+      energyDiscardMatch ||
+      (text.includes('discard') && text.includes('energy'))
+    ) {
       let amount = 0;
       if (energyDiscardMatch) {
         const amountStr = energyDiscardMatch[1];
@@ -498,7 +496,10 @@ export class CardStrengthCalculatorService {
     }
 
     // 4. Card discard penalty
-    if (text.includes('discard') && (text.includes('hand') || text.includes('deck'))) {
+    if (
+      text.includes('discard') &&
+      (text.includes('hand') || text.includes('deck'))
+    ) {
       const cardDiscardMatch = text.match(/discard\s+(\d+)\s+card/i);
       if (cardDiscardMatch) {
         const amount = parseInt(cardDiscardMatch[1], 10) || 1;
@@ -612,8 +613,7 @@ export class CardStrengthCalculatorService {
       }
 
       const energyCost = attack.energyCost.length;
-      let attackEfficiency =
-        energyCost > 0 ? averageDamage / energyCost : 0;
+      let attackEfficiency = energyCost > 0 ? averageDamage / energyCost : 0;
 
       // Calculate penalties
       const drawbackPenalty = this.calculateAttackDrawbackPenalty(attack, card);
@@ -839,4 +839,3 @@ export class CardStrengthCalculatorService {
     return 0;
   }
 }
-

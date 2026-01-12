@@ -106,4 +106,3 @@ export const createEnergyCard = (
   card.setEnergyType(energyType);
   return card;
 };
-

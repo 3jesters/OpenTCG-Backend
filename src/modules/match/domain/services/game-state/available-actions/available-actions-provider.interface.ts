@@ -44,4 +44,3 @@ export interface AvailableActionsProvider {
     currentPlayer?: PlayerIdentifier,
   ): PlayerActionType[];
 }
-

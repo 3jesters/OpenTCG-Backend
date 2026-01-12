@@ -4,7 +4,10 @@ import { CreateMatchUseCase } from './create-match.use-case';
 import { IMatchRepository } from '../../domain/repositories';
 import { Match, PlayerIdentifier, PlayerType, MatchState } from '../../domain';
 import { CreateMatchDto } from '../dto';
-import { AI_PLAYER_ID, getAiPlayerById } from '../../domain/constants/ai-player.constants';
+import {
+  AI_PLAYER_ID,
+  getAiPlayerById,
+} from '../../domain/constants/ai-player.constants';
 import { ValidateMatchDecksUseCase } from './validate-match-decks.use-case';
 
 describe('CreateMatchUseCase', () => {
@@ -110,15 +113,27 @@ describe('CreateMatchUseCase', () => {
       const savedMatch = new Match('match-1', 'tournament-1');
       savedMatch.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       savedMatch.setPlayerType(PlayerIdentifier.PLAYER1, PlayerType.HUMAN);
-      savedMatch.assignPlayer(AI_PLAYER_ID, 'ai-deck-1', PlayerIdentifier.PLAYER2);
+      savedMatch.assignPlayer(
+        AI_PLAYER_ID,
+        'ai-deck-1',
+        PlayerIdentifier.PLAYER2,
+      );
       savedMatch.setPlayerType(PlayerIdentifier.PLAYER2, PlayerType.AI);
       mockRepository.save.mockResolvedValue(savedMatch);
-      
+
       // Mock validateMatchDecksUseCase to return the validated match
       const validatedMatch = new Match('match-1', 'tournament-1');
-      validatedMatch.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      validatedMatch.assignPlayer(
+        'player-1',
+        'deck-1',
+        PlayerIdentifier.PLAYER1,
+      );
       validatedMatch.setPlayerType(PlayerIdentifier.PLAYER1, PlayerType.HUMAN);
-      validatedMatch.assignPlayer(AI_PLAYER_ID, 'ai-deck-1', PlayerIdentifier.PLAYER2);
+      validatedMatch.assignPlayer(
+        AI_PLAYER_ID,
+        'ai-deck-1',
+        PlayerIdentifier.PLAYER2,
+      );
       validatedMatch.setPlayerType(PlayerIdentifier.PLAYER2, PlayerType.AI);
       mockValidateMatchDecksUseCase.execute.mockResolvedValue(validatedMatch);
 
@@ -132,7 +147,9 @@ describe('CreateMatchUseCase', () => {
       expect(savedMatchArg.player2Id).toBe(AI_PLAYER_ID);
       expect(savedMatchArg.player2DeckId).toBe('ai-deck-1');
       expect(savedMatchArg.player2Type).toBe(PlayerType.AI);
-      expect(mockValidateMatchDecksUseCase.execute).toHaveBeenCalledWith('match-1');
+      expect(mockValidateMatchDecksUseCase.execute).toHaveBeenCalledWith(
+        'match-1',
+      );
     });
 
     it('should create a match vs specific AI player', async () => {
@@ -148,15 +165,27 @@ describe('CreateMatchUseCase', () => {
       const savedMatch = new Match('match-1', 'tournament-1');
       savedMatch.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
       savedMatch.setPlayerType(PlayerIdentifier.PLAYER1, PlayerType.HUMAN);
-      savedMatch.assignPlayer('AIPlayerV0.1', 'ai-deck-1', PlayerIdentifier.PLAYER2);
+      savedMatch.assignPlayer(
+        'AIPlayerV0.1',
+        'ai-deck-1',
+        PlayerIdentifier.PLAYER2,
+      );
       savedMatch.setPlayerType(PlayerIdentifier.PLAYER2, PlayerType.AI);
       mockRepository.save.mockResolvedValue(savedMatch);
-      
+
       // Mock validateMatchDecksUseCase to return the validated match
       const validatedMatch = new Match('match-1', 'tournament-1');
-      validatedMatch.assignPlayer('player-1', 'deck-1', PlayerIdentifier.PLAYER1);
+      validatedMatch.assignPlayer(
+        'player-1',
+        'deck-1',
+        PlayerIdentifier.PLAYER1,
+      );
       validatedMatch.setPlayerType(PlayerIdentifier.PLAYER1, PlayerType.HUMAN);
-      validatedMatch.assignPlayer('AIPlayerV0.1', 'ai-deck-1', PlayerIdentifier.PLAYER2);
+      validatedMatch.assignPlayer(
+        'AIPlayerV0.1',
+        'ai-deck-1',
+        PlayerIdentifier.PLAYER2,
+      );
       validatedMatch.setPlayerType(PlayerIdentifier.PLAYER2, PlayerType.AI);
       mockValidateMatchDecksUseCase.execute.mockResolvedValue(validatedMatch);
 
@@ -168,7 +197,9 @@ describe('CreateMatchUseCase', () => {
       expect(savedMatchArg.player2Id).toBe('AIPlayerV0.1');
       expect(savedMatchArg.player2DeckId).toBe('ai-deck-1');
       expect(savedMatchArg.player2Type).toBe(PlayerType.AI);
-      expect(mockValidateMatchDecksUseCase.execute).toHaveBeenCalledWith('match-1');
+      expect(mockValidateMatchDecksUseCase.execute).toHaveBeenCalledWith(
+        'match-1',
+      );
     });
 
     it('should throw error when vsAi is true but player1Id is missing', async () => {
@@ -267,5 +298,3 @@ describe('CreateMatchUseCase', () => {
     });
   });
 });
-
-

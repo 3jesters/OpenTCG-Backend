@@ -46,7 +46,10 @@ export class PlayPokemonPlayerTurnService {
     } = params;
 
     // Validate request
-    const { cardId } = this.validatePlayPokemonRequest(dto.actionData, gameState);
+    const { cardId } = this.validatePlayPokemonRequest(
+      dto.actionData,
+      gameState,
+    );
 
     // Execute play Pokemon using execution service
     const result = await this.playPokemonExecutionService.executePlayPokemon({
@@ -100,4 +103,3 @@ export class PlayPokemonPlayerTurnService {
     return { cardId };
   }
 }
-

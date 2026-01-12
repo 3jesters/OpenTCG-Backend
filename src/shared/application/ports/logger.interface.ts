@@ -50,5 +50,3 @@ export interface ILogger {
  * Used for dependency injection
  */
 export const ILogger = Symbol('ILogger');
-
-

@@ -13,7 +13,11 @@ import { ILogger } from '../../../../../shared/application/ports/logger.interfac
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
 import { TrainerEffect } from '../../../../card/domain/value-objects';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
 import {
   CardType,
   TrainerType,
@@ -22,7 +26,12 @@ import {
   TrainerEffectType,
 } from '../../../../card/domain/enums';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
-import { PokemonPosition, PlayerIdentifier, TurnPhase, StatusEffect } from '../../../domain/enums';
+import {
+  PokemonPosition,
+  PlayerIdentifier,
+  TurnPhase,
+  StatusEffect,
+} from '../../../domain/enums';
 import {
   TrainerCardOption,
   TrainerCardCategory,
@@ -110,10 +119,7 @@ describe('TrainerCardAnalyzerService', () => {
   };
 
   // Helper function to create a basic Energy card
-  const createEnergyCard = (
-    cardId: string,
-    energyType: EnergyType,
-  ): Card => {
+  const createEnergyCard = (cardId: string, energyType: EnergyType): Card => {
     const card = Card.createEnergyCard(
       `instance-${cardId}`,
       cardId,
@@ -239,8 +245,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('trainer-1', trainerCard);
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const options = await service.evaluateTrainerCardOptions(
@@ -294,7 +306,11 @@ describe('TrainerCardAnalyzerService', () => {
         50, // currentHp (50 HP total)
         50,
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Pikachu', 50);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Pikachu',
+        50,
+      );
       const playerState = new PlayerGameState(
         [],
         ['trainer-1'],
@@ -324,8 +340,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('trainer-1', trainerCard);
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const options = await service.evaluateTrainerCardOptions(
@@ -379,7 +401,11 @@ describe('TrainerCardAnalyzerService', () => {
         60, // currentHp (60 HP total)
         60,
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Pikachu', 60);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Pikachu',
+        60,
+      );
       const playerState = new PlayerGameState(
         [],
         ['trainer-1'],
@@ -409,8 +435,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('trainer-1', trainerCard);
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const options = await service.evaluateTrainerCardOptions(
@@ -464,7 +496,11 @@ describe('TrainerCardAnalyzerService', () => {
         60, // currentHp (60 HP total, will be knocked out by 60 damage)
         60,
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Pikachu', 60);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Pikachu',
+        60,
+      );
       const playerState = new PlayerGameState(
         [],
         ['trainer-1'],
@@ -494,8 +530,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('trainer-1', trainerCard);
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const options = await service.evaluateTrainerCardOptions(
@@ -552,7 +594,11 @@ describe('TrainerCardAnalyzerService', () => {
         60, // currentHp (60 HP total)
         60,
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Pikachu', 60);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Pikachu',
+        60,
+      );
       const playerState = new PlayerGameState(
         [],
         ['trainer-1'],
@@ -582,8 +628,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('trainer-1', trainerCard);
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const options = await service.evaluateTrainerCardOptions(
@@ -639,9 +691,12 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 100, [
-        new Attack('Hydro Pump', [EnergyType.WATER], '70', 'Deal 70 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        100,
+        [new Attack('Hydro Pump', [EnergyType.WATER], '70', 'Deal 70 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         ['trainer-1'],
@@ -671,8 +726,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('trainer-1', trainerCard);
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const options = await service.evaluateTrainerCardOptions(
@@ -725,9 +786,12 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 100, [
-        new Attack('Hydro Pump', [EnergyType.WATER], '30', 'Deal 30 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        100,
+        [new Attack('Hydro Pump', [EnergyType.WATER], '30', 'Deal 30 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         ['trainer-1'],
@@ -757,8 +821,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('trainer-1', trainerCard);
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const options = await service.evaluateTrainerCardOptions(
@@ -810,9 +880,12 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['fire-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 100, [
-        new Attack('Hydro Pump', [EnergyType.WATER], '25', 'Deal 25 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        100,
+        [new Attack('Hydro Pump', [EnergyType.WATER], '25', 'Deal 25 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         ['trainer-1'],
@@ -842,8 +915,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('trainer-1', trainerCard);
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const options = await service.evaluateTrainerCardOptions(
@@ -936,9 +1015,19 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['fire-energy-1', 'fire-energy-2'], // 2 energy
       );
-      const opponentCard1 = createPokemonCard('opponent-pokemon-001', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '80', 'Deal 80 damage'),
-      ]);
+      const opponentCard1 = createPokemonCard(
+        'opponent-pokemon-001',
+        'Charizard',
+        100,
+        [
+          new Attack(
+            'Fire Blast',
+            [EnergyType.FIRE, EnergyType.FIRE],
+            '80',
+            'Deal 80 damage',
+          ),
+        ],
+      );
       const opponentBench1 = createCardInstance(
         'opponent-bench-001',
         'opponent-pokemon-002',
@@ -947,10 +1036,20 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1'], // 1 energy
       );
-      const opponentCard2 = createPokemonCard('opponent-pokemon-002', 'Blastoise', 60, [
-        new Attack('Water Gun', [EnergyType.WATER], '30', 'Deal 30 damage'),
-      ]);
-      const playerState = new PlayerGameState([], ['trainer-1'], null, [], [], []);
+      const opponentCard2 = createPokemonCard(
+        'opponent-pokemon-002',
+        'Blastoise',
+        60,
+        [new Attack('Water Gun', [EnergyType.WATER], '30', 'Deal 30 damage')],
+      );
+      const playerState = new PlayerGameState(
+        [],
+        ['trainer-1'],
+        null,
+        [],
+        [],
+        [],
+      );
       const opponentState = new PlayerGameState(
         [],
         [],
@@ -1065,9 +1164,12 @@ describe('TrainerCardAnalyzerService', () => {
         TargetType.SELF,
         2,
       );
-      const healCard = createTrainerCard('potion-001', 'Potion', TrainerType.ITEM, [
-        healEffect,
-      ]);
+      const healCard = createTrainerCard(
+        'potion-001',
+        'Potion',
+        TrainerType.ITEM,
+        [healEffect],
+      );
       const drawCard = createTrainerCard(
         'professor-oak-001',
         "Professor Oak's",

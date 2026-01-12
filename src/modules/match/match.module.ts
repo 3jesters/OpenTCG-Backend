@@ -91,9 +91,7 @@ import {
   AttackActionHandler,
 } from './application/handlers/handlers';
 import { PlayerActionType } from './domain/enums';
-import {
-  IAiActionGeneratorService,
-} from './application/ports/ai-action-generator.interface';
+import { IAiActionGeneratorService } from './application/ports/ai-action-generator.interface';
 import { AiActionGeneratorService } from './infrastructure/ai/ai-action-generator.service';
 import { PokemonScoringService } from './infrastructure/ai/services/pokemon-scoring.service';
 import { OpponentAnalysisService } from './infrastructure/ai/services/opponent-analysis.service';
@@ -300,7 +298,10 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
           PlayerActionType.PLAY_TRAINER,
           playTrainerHandler,
         );
-        factory.registerHandler(PlayerActionType.USE_ABILITY, useAbilityHandler);
+        factory.registerHandler(
+          PlayerActionType.USE_ABILITY,
+          useAbilityHandler,
+        );
         factory.registerHandler(PlayerActionType.END_TURN, endTurnHandler);
         factory.registerHandler(
           PlayerActionType.GENERATE_COIN_FLIP,

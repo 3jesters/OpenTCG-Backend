@@ -105,10 +105,7 @@ export class PlayTrainerActionHandler
 
         if (actionData.handCardIndex !== undefined) {
           selectedIndex = actionData.handCardIndex;
-          if (
-            selectedIndex < 0 ||
-            selectedIndex >= playerState.hand.length
-          ) {
+          if (selectedIndex < 0 || selectedIndex >= playerState.hand.length) {
             throw new BadRequestException('Invalid handCardIndex');
           }
           if (playerState.hand[selectedIndex] !== actionData.handCardId) {
@@ -190,4 +187,3 @@ export class PlayTrainerActionHandler
     return await this.matchRepository.save(match);
   }
 }
-

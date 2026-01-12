@@ -9,10 +9,7 @@ import {
   StatusEffect,
   PokemonPosition,
 } from '../../domain';
-import {
-  PlayerGameState,
-  CardInstance,
-} from '../../domain/value-objects';
+import { PlayerGameState, CardInstance } from '../../domain/value-objects';
 import { IMatchRepository } from '../../domain/repositories';
 import { CardHelperService } from './card-helper.service';
 import { Card } from '../../../card/domain/entities';
@@ -45,7 +42,7 @@ export class RetreatExecutionService {
     this.validateRetreatRequest(gameState, playerIdentifier);
 
     const playerState = gameState.getPlayerState(playerIdentifier);
-    const actionData = dto.actionData as any;
+    const actionData = dto.actionData;
 
     // Validate active Pokemon exists
     if (!playerState.activePokemon) {
@@ -107,7 +104,7 @@ export class RetreatExecutionService {
 
     // 6. Validate energy availability and selection
     const selectedEnergyIds = actionData?.selectedEnergyIds || [];
-    
+
     if (retreatCost > 0) {
       // Check if enough energy is attached
       if (activePokemon.attachedEnergy.length < retreatCost) {
@@ -205,9 +202,7 @@ export class RetreatExecutionService {
     if (retreatCost > 0 && selectedEnergyIds.length > 0) {
       // Remove energy one by one to handle duplicates correctly
       // This ensures we only remove the first occurrence of each selected energy ID
-      const updatedAttachedEnergy = [
-        ...activePokemon.attachedEnergy,
-      ];
+      const updatedAttachedEnergy = [...activePokemon.attachedEnergy];
       for (const energyId of selectedEnergyIds) {
         const energyIndex = updatedAttachedEnergy.indexOf(energyId);
         if (energyIndex === -1) {
@@ -238,8 +233,10 @@ export class RetreatExecutionService {
 
     // 5. Update bench array (remove moved Pokemon, add retreating Pokemon, renumber)
     // First, remove the Pokemon that's moving to active
-    const benchWithoutMoved = playerState.bench.filter((_, i) => i !== benchIndex);
-    
+    const benchWithoutMoved = playerState.bench.filter(
+      (_, i) => i !== benchIndex,
+    );
+
     // Insert retreating Pokemon at the target position
     const benchWithRetreating = [
       ...benchWithoutMoved.slice(0, benchIndex),
@@ -282,7 +279,8 @@ export class RetreatExecutionService {
         benchPokemonInstanceId: benchPokemon.instanceId,
         benchPokemonCardId: benchPokemon.cardId,
         target: `BENCH_${benchIndex}`,
-        selectedEnergyIds: selectedEnergyIds.length > 0 ? selectedEnergyIds : undefined,
+        selectedEnergyIds:
+          selectedEnergyIds.length > 0 ? selectedEnergyIds : undefined,
         retreatCost,
       },
     );
@@ -364,4 +362,3 @@ export class RetreatExecutionService {
     );
   }
 }
-

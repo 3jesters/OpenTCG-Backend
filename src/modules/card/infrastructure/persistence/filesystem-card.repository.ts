@@ -40,18 +40,18 @@ export class FileSystemCardRepository implements ICardRepository {
       const filePath = this.getSetFilePath(setName);
       const data = await fs.readFile(filePath, 'utf-8');
       const json = JSON.parse(data);
-      
+
       // Handle both old format (array) and new format (object with metadata)
       const cardsData = Array.isArray(json) ? json : json.cards || [];
       const metadata = Array.isArray(json) ? null : json.metadata || null;
-      
+
       // Extract metadata for cardId generation
       const author = metadata?.author || 'pokemon';
       const version = metadata?.version || '1.0';
       const metadataSetName = metadata?.setName || setName;
-      
-      return cardsData.map((cardData: any) => 
-        this.jsonToCard(cardData, author, metadataSetName, version)
+
+      return cardsData.map((cardData: any) =>
+        this.jsonToCard(cardData, author, metadataSetName, version),
       );
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
@@ -79,7 +79,11 @@ export class FileSystemCardRepository implements ICardRepository {
   async findByCardId(cardId: string): Promise<Card | null> {
     const allCards = await this.findAll();
     const normalizedSearchId = this.normalizeCardId(cardId);
-    return allCards.find((card) => this.normalizeCardId(card.cardId) === normalizedSearchId) || null;
+    return (
+      allCards.find(
+        (card) => this.normalizeCardId(card.cardId) === normalizedSearchId,
+      ) || null
+    );
   }
 
   async findByCardIds(cardIds: string[]): Promise<Card[]> {
@@ -88,8 +92,12 @@ export class FileSystemCardRepository implements ICardRepository {
     }
 
     const allCards = await this.findAll();
-    const normalizedSearchIds = new Set(cardIds.map(id => this.normalizeCardId(id)));
-    return allCards.filter((card) => normalizedSearchIds.has(this.normalizeCardId(card.cardId)));
+    const normalizedSearchIds = new Set(
+      cardIds.map((id) => this.normalizeCardId(id)),
+    );
+    return allCards.filter((card) =>
+      normalizedSearchIds.has(this.normalizeCardId(card.cardId)),
+    );
   }
 
   async findBySetNameAndCardNumber(
@@ -173,7 +181,7 @@ export class FileSystemCardRepository implements ICardRepository {
     // Save each set
     for (const [setName, setCards] of cardsBySet.entries()) {
       const existingCards = await this.loadSetCards(setName);
-      
+
       // Merge new cards with existing ones
       const mergedCards = [...existingCards];
       for (const newCard of setCards) {
@@ -221,8 +229,21 @@ export class FileSystemCardRepository implements ICardRepository {
   ): Card {
     // Generate cardId if missing (cards in JSON files don't have cardId stored)
     let cardId = json.cardId;
-    if (!cardId && author && setName && version && json.name && json.cardNumber) {
-      cardId = this.generateCardId(author, setName, version, json.name, json.cardNumber);
+    if (
+      !cardId &&
+      author &&
+      setName &&
+      version &&
+      json.name &&
+      json.cardNumber
+    ) {
+      cardId = this.generateCardId(
+        author,
+        setName,
+        version,
+        json.name,
+        json.cardNumber,
+      );
     }
 
     // This is a simplified version that focuses on data storage
@@ -311,4 +332,3 @@ export class FileSystemCardRepository implements ICardRepository {
     };
   }
 }
-

@@ -1,5 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
 import { PlayerIdentifier, PokemonPosition } from '../../../domain/enums';
 import { Card } from '../../../../card/domain/entities';
 import { Attack } from '../../../../card/domain/value-objects';
@@ -74,10 +78,14 @@ export class EnergyAttachmentAnalyzerService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<SortedEnergyAttachmentOptionList> {
-    this.logger.debug('evaluateAttachmentOptions called', 'EnergyAttachmentAnalyzerService', {
-      playerIdentifier,
-      handSize: gameState.getPlayerState(playerIdentifier).hand.length,
-    });
+    this.logger.debug(
+      'evaluateAttachmentOptions called',
+      'EnergyAttachmentAnalyzerService',
+      {
+        playerIdentifier,
+        handSize: gameState.getPlayerState(playerIdentifier).hand.length,
+      },
+    );
 
     const playerState = gameState.getPlayerState(playerIdentifier);
     const opponentState = gameState.getOpponentState(playerIdentifier);
@@ -88,14 +96,21 @@ export class EnergyAttachmentAnalyzerService {
       cardsMap,
       getCardEntity,
     );
-    
-    this.logger.debug('Unique energy types found', 'EnergyAttachmentAnalyzerService', {
-      uniqueEnergyTypes,
-      count: uniqueEnergyTypes.length,
-    });
-    
+
+    this.logger.debug(
+      'Unique energy types found',
+      'EnergyAttachmentAnalyzerService',
+      {
+        uniqueEnergyTypes,
+        count: uniqueEnergyTypes.length,
+      },
+    );
+
     if (uniqueEnergyTypes.length === 0) {
-      this.logger.debug('No energy types in hand, returning empty array', 'EnergyAttachmentAnalyzerService');
+      this.logger.debug(
+        'No energy types in hand, returning empty array',
+        'EnergyAttachmentAnalyzerService',
+      );
       return [];
     }
 
@@ -112,17 +127,21 @@ export class EnergyAttachmentAnalyzerService {
     }
 
     if (energyCardsInHand.length === 0) {
-      this.logger.debug('No energy cards in hand, returning empty array', 'EnergyAttachmentAnalyzerService');
+      this.logger.debug(
+        'No energy cards in hand, returning empty array',
+        'EnergyAttachmentAnalyzerService',
+      );
       return [];
     }
 
     // Assess opponent threat
-    const opponentThreat = await this.opponentAnalysisService.analyzeOpponentThreat(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    );
+    const opponentThreat =
+      await this.opponentAnalysisService.analyzeOpponentThreat(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
 
     const options: EnergyAttachmentOption[] = [];
 
@@ -157,7 +176,10 @@ export class EnergyAttachmentAnalyzerService {
       const benchCard = await getCardEntity(benchInstance.cardId);
       if (benchCard.cardType === CardType.POKEMON) {
         const position = this.getBenchPosition(i);
-        const score = this.pokemonScoringService.calculateScore(benchCard, benchInstance);
+        const score = this.pokemonScoringService.calculateScore(
+          benchCard,
+          benchInstance,
+        );
         pokemonWithScores.push({
           pokemon: benchInstance,
           card: benchCard,
@@ -171,8 +193,15 @@ export class EnergyAttachmentAnalyzerService {
     pokemonWithScores.sort((a, b) => b.score - a.score);
 
     // Evaluate each energy card against each Pokemon
-    for (const { cardId: energyCardId, card: energyCard } of energyCardsInHand) {
-      for (const { pokemon, card: pokemonCard, position } of pokemonWithScores) {
+    for (const {
+      cardId: energyCardId,
+      card: energyCard,
+    } of energyCardsInHand) {
+      for (const {
+        pokemon,
+        card: pokemonCard,
+        position,
+      } of pokemonWithScores) {
         // Check if Pokemon can receive energy (no ability preventing it)
         if (this.canReceiveEnergy(pokemonCard)) {
           const option = await this.evaluateAttachmentOption(
@@ -191,7 +220,12 @@ export class EnergyAttachmentAnalyzerService {
           // Only include options that improve attacks (knockout, damage increase, or general attachment)
           // Include if it enables knockout, increases damage, or is a general attachment (priority >= 100)
           // Note: Options with priority <= 0 are overflow/not beneficial and should be excluded
-          if (option && (option.enablesKnockout || option.increasesDamage || option.priority >= 100)) {
+          if (
+            option &&
+            (option.enablesKnockout ||
+              option.increasesDamage ||
+              option.priority >= 100)
+          ) {
             options.push(option);
           }
         }
@@ -200,11 +234,15 @@ export class EnergyAttachmentAnalyzerService {
 
     // Sort options by priority
     const sorted = sortEnergyAttachmentOptions(options);
-    this.logger.info('Energy attachment options evaluated', 'EnergyAttachmentAnalyzerService', {
-      optionsCount: sorted.length,
-      topPriority: sorted[0]?.priority,
-      enablesKnockout: sorted[0]?.enablesKnockout,
-    });
+    this.logger.info(
+      'Energy attachment options evaluated',
+      'EnergyAttachmentAnalyzerService',
+      {
+        optionsCount: sorted.length,
+        topPriority: sorted[0]?.priority,
+        enablesKnockout: sorted[0]?.enablesKnockout,
+      },
+    );
     return sorted;
   }
 
@@ -224,10 +262,16 @@ export class EnergyAttachmentAnalyzerService {
     opponentThreat: any,
   ): Promise<EnergyAttachmentOption | null> {
     // Simulate attaching energy
-    const simulatedAttachedEnergy = [...(pokemon.attachedEnergy || []), energyCardId];
+    const simulatedAttachedEnergy = [
+      ...(pokemon.attachedEnergy || []),
+      energyCardId,
+    ];
 
     // Get energy card data for validation
-    const energyCardData = this.getEnergyCardData(simulatedAttachedEnergy, cardsMap);
+    const energyCardData = this.getEnergyCardData(
+      simulatedAttachedEnergy,
+      cardsMap,
+    );
 
     // Get Pokemon attacks
     const attacks = pokemonCard.attacks || [];
@@ -255,16 +299,18 @@ export class EnergyAttachmentAnalyzerService {
         pokemon.attachedEnergy || [],
         cardsMap,
       );
-      const canPerformWithout = this.attackEnergyValidatorService.validateEnergyRequirements(
-        attack,
-        currentEnergyData,
-      ).isValid;
+      const canPerformWithout =
+        this.attackEnergyValidatorService.validateEnergyRequirements(
+          attack,
+          currentEnergyData,
+        ).isValid;
 
       // Check attack with new energy
-      const canPerformWith = this.attackEnergyValidatorService.validateEnergyRequirements(
-        attack,
-        energyCardData,
-      ).isValid;
+      const canPerformWith =
+        this.attackEnergyValidatorService.validateEnergyRequirements(
+          attack,
+          energyCardData,
+        ).isValid;
 
       if (canPerformWith) {
         // Calculate damage with new energy
@@ -297,7 +343,10 @@ export class EnergyAttachmentAnalyzerService {
           getCardEntity,
         );
 
-        if (!bestAttackWithoutEnergy || damage > bestAttackWithoutEnergy.damage) {
+        if (
+          !bestAttackWithoutEnergy ||
+          damage > bestAttackWithoutEnergy.damage
+        ) {
           bestAttackWithoutEnergy = { attack, damage };
         }
       }
@@ -312,13 +361,15 @@ export class EnergyAttachmentAnalyzerService {
     const enablesKnockout =
       bestAttackWithEnergy.damage > 0 &&
       bestAttackWithEnergy.damage >= opponentActivePokemon.currentHp &&
-      (!bestAttackWithoutEnergy || bestAttackWithoutEnergy.damage < opponentActivePokemon.currentHp);
+      (!bestAttackWithoutEnergy ||
+        bestAttackWithoutEnergy.damage < opponentActivePokemon.currentHp);
 
     // Check if energy increases damage
     // If no attack was possible without energy, then energy enables an attack (increases damage from 0)
     // If an attack was possible, check if the new best attack does more damage
     const increasesDamage =
-      !bestAttackWithoutEnergy || bestAttackWithEnergy.damage > bestAttackWithoutEnergy.damage;
+      !bestAttackWithoutEnergy ||
+      bestAttackWithEnergy.damage > bestAttackWithoutEnergy.damage;
 
     // If damage is 0 (prevented), don't prioritize active Pokemon if we'll be knocked out
     if (
@@ -414,7 +465,9 @@ export class EnergyAttachmentAnalyzerService {
 
     return {
       energyCardId,
-      energyType: energyCard.energyType ? String(energyCard.energyType) : 'UNKNOWN',
+      energyType: energyCard.energyType
+        ? String(energyCard.energyType)
+        : 'UNKNOWN',
       targetPokemon: pokemon,
       targetCard: pokemonCard,
       enablesKnockout,
@@ -454,40 +507,41 @@ export class EnergyAttachmentAnalyzerService {
     const baseDamage = this.parseBaseDamage(attack.damage || '');
 
     // Use AttackDamageCalculationService to get accurate damage with weakness/resistance/prevention
-    const finalDamage = await this.attackDamageCalculationService.calculateFinalDamage({
-      baseDamage,
-      attack,
-      attackerCard,
-      defenderCard,
-      gameState,
-      playerIdentifier,
-      playerState,
-      opponentState,
-      calculateMinusDamageReduction: (
-        damage: number,
-        attack: Attack,
-        attackText: string,
-        attackerName: string,
-        playerState: PlayerGameState,
-        opponentState: PlayerGameState,
-      ) => damage, // Pass through for analysis
-      calculatePlusDamageBonus: async (
-        attack: Attack,
-        attackerName: string,
-        playerState: PlayerGameState,
-        opponentState: PlayerGameState,
-        attackText: string,
-        gameState: GameState,
-        playerIdentifier: PlayerIdentifier,
-      ) => 0, // No bonus for analysis
-      evaluateEffectConditions: async (
-        conditions: any[],
-        gameState: GameState,
-        playerIdentifier: PlayerIdentifier,
-        playerState: PlayerGameState,
-        opponentState: PlayerGameState,
-      ) => false, // No conditions for analysis
-    });
+    const finalDamage =
+      await this.attackDamageCalculationService.calculateFinalDamage({
+        baseDamage,
+        attack,
+        attackerCard,
+        defenderCard,
+        gameState,
+        playerIdentifier,
+        playerState,
+        opponentState,
+        calculateMinusDamageReduction: (
+          damage: number,
+          attack: Attack,
+          attackText: string,
+          attackerName: string,
+          playerState: PlayerGameState,
+          opponentState: PlayerGameState,
+        ) => damage, // Pass through for analysis
+        calculatePlusDamageBonus: async (
+          attack: Attack,
+          attackerName: string,
+          playerState: PlayerGameState,
+          opponentState: PlayerGameState,
+          attackText: string,
+          gameState: GameState,
+          playerIdentifier: PlayerIdentifier,
+        ) => 0, // No bonus for analysis
+        evaluateEffectConditions: async (
+          conditions: any[],
+          gameState: GameState,
+          playerIdentifier: PlayerIdentifier,
+          playerState: PlayerGameState,
+          opponentState: PlayerGameState,
+        ) => false, // No conditions for analysis
+      });
 
     return finalDamage;
   }
@@ -508,7 +562,10 @@ export class EnergyAttachmentAnalyzerService {
     }
 
     // Get current energy card data
-    const currentEnergyData = this.getEnergyCardData(currentAttachedEnergy, cardsMap);
+    const currentEnergyData = this.getEnergyCardData(
+      currentAttachedEnergy,
+      cardsMap,
+    );
 
     // Check what energy types are still needed
     const currentEnergyTypes: EnergyType[] = [];
@@ -534,8 +591,8 @@ export class EnergyAttachmentAnalyzerService {
     // Count current energy by type
     // Note: Any energy type can satisfy COLORLESS requirements
     const currentCounts = new Map<EnergyType, number>();
-    let totalEnergyCount = currentEnergyTypes.length; // Total energy cards (any type can satisfy COLORLESS)
-    
+    const totalEnergyCount = currentEnergyTypes.length; // Total energy cards (any type can satisfy COLORLESS)
+
     for (const type of currentEnergyTypes) {
       if (type !== EnergyType.COLORLESS) {
         currentCounts.set(type, (currentCounts.get(type) || 0) + 1);
@@ -546,7 +603,7 @@ export class EnergyAttachmentAnalyzerService {
     // Strategy: First satisfy specific type requirements, then use remaining energy for COLORLESS
     const stillNeeded: Array<{ type: EnergyType; count: number }> = [];
     let energyUsedForSpecificTypes = 0;
-    
+
     // First, satisfy non-COLORLESS requirements with exact type matches
     for (const [type, count] of requiredCounts.entries()) {
       if (type === EnergyType.COLORLESS) {
@@ -560,17 +617,24 @@ export class EnergyAttachmentAnalyzerService {
       // Track how much energy we used for this specific type requirement
       energyUsedForSpecificTypes += Math.min(current, count);
     }
-    
+
     // Now handle COLORLESS requirements
     // Any energy (including specific types) can satisfy COLORLESS
     // After using energy for specific type requirements, remaining energy can satisfy COLORLESS
     const colorlessRequired = requiredCounts.get(EnergyType.COLORLESS) || 0;
     if (colorlessRequired > 0) {
       // Energy available for COLORLESS = total energy - energy used for specific types
-      const energyAvailableForColorless = totalEnergyCount - energyUsedForSpecificTypes;
-      const colorlessNeeded = Math.max(0, colorlessRequired - energyAvailableForColorless);
+      const energyAvailableForColorless =
+        totalEnergyCount - energyUsedForSpecificTypes;
+      const colorlessNeeded = Math.max(
+        0,
+        colorlessRequired - energyAvailableForColorless,
+      );
       if (colorlessNeeded > 0) {
-        stillNeeded.push({ type: EnergyType.COLORLESS, count: colorlessNeeded });
+        stillNeeded.push({
+          type: EnergyType.COLORLESS,
+          count: colorlessNeeded,
+        });
       }
     }
 
@@ -593,7 +657,10 @@ export class EnergyAttachmentAnalyzerService {
           return providedAmount === needed.count;
         } else {
           // Check if provided types match needed type
-          return providedTypes.includes(needed.type) && providedAmount === needed.count;
+          return (
+            providedTypes.includes(needed.type) &&
+            providedAmount === needed.count
+          );
         }
       } else {
         // Multiple types needed - special energy can't match exactly
@@ -653,7 +720,10 @@ export class EnergyAttachmentAnalyzerService {
     }
 
     // Get current energy types
-    const currentEnergyData = this.getEnergyCardData(currentAttachedEnergy, cardsMap);
+    const currentEnergyData = this.getEnergyCardData(
+      currentAttachedEnergy,
+      cardsMap,
+    );
     const currentEnergyTypes: EnergyType[] = [];
     for (const cardData of currentEnergyData) {
       if (cardData.energyProvision) {
@@ -685,12 +755,12 @@ export class EnergyAttachmentAnalyzerService {
       energyType?: any;
       energyProvision?: any;
     }> = [];
-    
+
     // Add current energy cards
     for (const cardData of currentEnergyData) {
       energyCardDataArray.push(cardData);
     }
-    
+
     // Add new energy card data
     if (newEnergyCard.energyProvision) {
       energyCardDataArray.push({
@@ -706,10 +776,11 @@ export class EnergyAttachmentAnalyzerService {
     }
 
     // Check if attack can be performed with this energy
-    const validation = this.attackEnergyValidatorService.validateEnergyRequirements(
-      attack,
-      energyCardDataArray,
-    );
+    const validation =
+      this.attackEnergyValidatorService.validateEnergyRequirements(
+        attack,
+        energyCardDataArray,
+      );
 
     if (validation.isValid) {
       return 1; // This energy enables the attack in 1 turn
@@ -723,7 +794,7 @@ export class EnergyAttachmentAnalyzerService {
 
     // Count current energy (including new energy)
     const currentCounts = new Map<EnergyType, number>();
-    let totalEnergyCount = currentEnergyTypes.length;
+    const totalEnergyCount = currentEnergyTypes.length;
 
     for (const type of currentEnergyTypes) {
       if (type !== EnergyType.COLORLESS) {
@@ -749,8 +820,12 @@ export class EnergyAttachmentAnalyzerService {
 
     const colorlessRequired = requiredCounts.get(EnergyType.COLORLESS) || 0;
     if (colorlessRequired > 0) {
-      const energyAvailableForColorless = totalEnergyCount - energyUsedForSpecificTypes;
-      const colorlessNeeded = Math.max(0, colorlessRequired - energyAvailableForColorless);
+      const energyAvailableForColorless =
+        totalEnergyCount - energyUsedForSpecificTypes;
+      const colorlessNeeded = Math.max(
+        0,
+        colorlessRequired - energyAvailableForColorless,
+      );
       stillNeededCount += colorlessNeeded;
     }
 
@@ -788,7 +863,10 @@ export class EnergyAttachmentAnalyzerService {
     }
 
     // Check if any attached energy has the same type
-    const currentEnergyData = this.getEnergyCardData(currentAttachedEnergy, cardsMap);
+    const currentEnergyData = this.getEnergyCardData(
+      currentAttachedEnergy,
+      cardsMap,
+    );
     for (const cardData of currentEnergyData) {
       if (cardData.energyProvision) {
         const providedTypes = cardData.energyProvision.energyTypes || [];

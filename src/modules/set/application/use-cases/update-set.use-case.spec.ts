@@ -77,12 +77,12 @@ describe('UpdateSetUseCase', () => {
 
       mockRepository.findById.mockResolvedValue(privateSet);
 
-      await expect(
-        useCase.execute('custom-set', userId, dto),
-      ).rejects.toThrow(ForbiddenException);
-      await expect(
-        useCase.execute('custom-set', userId, dto),
-      ).rejects.toThrow('You do not have permission to edit set custom-set');
+      await expect(useCase.execute('custom-set', userId, dto)).rejects.toThrow(
+        ForbiddenException,
+      );
+      await expect(useCase.execute('custom-set', userId, dto)).rejects.toThrow(
+        'You do not have permission to edit set custom-set',
+      );
     });
 
     it('should throw ForbiddenException when trying to update global set', async () => {
@@ -99,12 +99,12 @@ describe('UpdateSetUseCase', () => {
 
       mockRepository.findById.mockResolvedValue(globalSet);
 
-      await expect(
-        useCase.execute('base-set', userId, dto),
-      ).rejects.toThrow(ForbiddenException);
-      await expect(
-        useCase.execute('base-set', userId, dto),
-      ).rejects.toThrow('Global sets cannot be edited');
+      await expect(useCase.execute('base-set', userId, dto)).rejects.toThrow(
+        ForbiddenException,
+      );
+      await expect(useCase.execute('base-set', userId, dto)).rejects.toThrow(
+        'Global sets cannot be edited',
+      );
     });
   });
 });

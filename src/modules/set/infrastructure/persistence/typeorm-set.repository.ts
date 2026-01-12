@@ -65,4 +65,3 @@ export class TypeOrmSetRepository implements ISetRepository {
     return entities.map(SetOrmMapper.toDomain);
   }
 }
-

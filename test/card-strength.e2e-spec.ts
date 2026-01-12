@@ -58,9 +58,13 @@ describe('Card Strength Calculation E2E', () => {
           expect(res.body.totalStrength).toBeGreaterThanOrEqual(0);
           expect(res.body.totalStrength).toBeLessThanOrEqual(100);
 
-          expect(['very_weak', 'weak', 'balanced', 'strong', 'too_strong']).toContain(
-            res.body.balanceCategory,
-          );
+          expect([
+            'very_weak',
+            'weak',
+            'balanced',
+            'strong',
+            'too_strong',
+          ]).toContain(res.body.balanceCategory);
 
           // Validate breakdown
           expect(res.body.breakdown).toHaveProperty('hpStrength');
@@ -210,7 +214,9 @@ describe('Card Strength Calculation E2E', () => {
 
       // Results should be identical
       expect(response1.body.totalStrength).toBe(response2.body.totalStrength);
-      expect(response1.body.balanceCategory).toBe(response2.body.balanceCategory);
+      expect(response1.body.balanceCategory).toBe(
+        response2.body.balanceCategory,
+      );
       expect(response1.body.breakdown).toEqual(response2.body.breakdown);
       expect(response1.body.penalties).toEqual(response2.body.penalties);
       expect(response1.body.bonuses).toEqual(response2.body.bonuses);
@@ -243,4 +249,3 @@ describe('Card Strength Calculation E2E', () => {
     });
   });
 });
-

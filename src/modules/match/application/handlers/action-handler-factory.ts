@@ -51,4 +51,3 @@ export class ActionHandlerFactory {
     return this.handlers.has(actionType);
   }
 }
-

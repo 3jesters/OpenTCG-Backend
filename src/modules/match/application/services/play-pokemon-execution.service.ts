@@ -5,7 +5,11 @@ import {
   PlayerGameState,
   CardInstance,
 } from '../../domain/value-objects';
-import { PlayerIdentifier, TurnPhase, PokemonPosition } from '../../domain/enums';
+import {
+  PlayerIdentifier,
+  TurnPhase,
+  PokemonPosition,
+} from '../../domain/enums';
 import { Card } from '../../../card/domain/entities';
 import { CardType, EvolutionStage } from '../../../card/domain/enums';
 import { IGetCardByIdUseCase } from '../../../card/application/ports/card-use-cases.interface';
@@ -118,4 +122,3 @@ export class PlayPokemonExecutionService {
     };
   }
 }
-

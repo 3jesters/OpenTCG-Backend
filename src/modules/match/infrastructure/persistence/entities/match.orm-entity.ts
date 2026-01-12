@@ -143,4 +143,3 @@ export class MatchOrmEntity {
   @Column({ type: 'jsonb', nullable: true })
   gameState: GameStateJson | null;
 }
-

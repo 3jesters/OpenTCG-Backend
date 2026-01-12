@@ -1,9 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index } from 'typeorm';
 
 /**
  * Set ORM Entity
@@ -44,4 +39,3 @@ export class SetOrmEntity {
   @Column({ type: 'text', nullable: true })
   logoUrl: string | null;
 }
-

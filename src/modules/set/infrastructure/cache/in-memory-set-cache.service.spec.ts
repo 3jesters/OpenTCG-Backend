@@ -8,8 +8,22 @@ describe('InMemorySetCacheService', () => {
 
   beforeEach(() => {
     service = new InMemorySetCacheService();
-    baseSet = new Set('base-set', 'Base Set', 'pokemon', '1999-01-09', 102, 'system');
-    jungleSet = new Set('jungle', 'Jungle', 'pokemon', '1999-06-16', 64, 'system');
+    baseSet = new Set(
+      'base-set',
+      'Base Set',
+      'pokemon',
+      '1999-01-09',
+      102,
+      'system',
+    );
+    jungleSet = new Set(
+      'jungle',
+      'Jungle',
+      'pokemon',
+      '1999-06-16',
+      64,
+      'system',
+    );
   });
 
   describe('add', () => {

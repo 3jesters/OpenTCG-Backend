@@ -36,4 +36,3 @@ export class SelectActivePokemonActionFilter extends BaseActionFilter {
     return [PlayerActionType.CONCEDE];
   }
 }
-

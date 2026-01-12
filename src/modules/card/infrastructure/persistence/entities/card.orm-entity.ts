@@ -1,9 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, PrimaryColumn, Index } from 'typeorm';
 import {
   CardType,
   EvolutionStage,
@@ -212,4 +207,3 @@ export class CardOrmEntity {
   @Index()
   isEditorCreated: boolean;
 }
-

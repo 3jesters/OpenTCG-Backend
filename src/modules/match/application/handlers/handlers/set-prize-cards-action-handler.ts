@@ -2,7 +2,13 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { BaseActionHandler } from '../base-action-handler';
 import { IActionHandler } from '../action-handler.interface';
 import { ExecuteActionDto } from '../../dto';
-import { Match, PlayerIdentifier, GameState, MatchState, PlayerActionType } from '../../../domain';
+import {
+  Match,
+  PlayerIdentifier,
+  GameState,
+  MatchState,
+  PlayerActionType,
+} from '../../../domain';
 import { Card } from '../../../../card/domain/entities';
 import { SetPrizeCardsUseCase } from '../../use-cases/set-prize-cards.use-case';
 import { IMatchRepository } from '../../../domain/repositories';
@@ -44,7 +50,10 @@ export class SetPrizeCardsActionHandler
     cardsMap: Map<string, Card>,
   ): Promise<Match> {
     // Delegate to existing use case
-    const savedMatch = await this.setPrizeCardsUseCase.execute(dto.matchId, dto.playerId);
+    const savedMatch = await this.setPrizeCardsUseCase.execute(
+      dto.matchId,
+      dto.playerId,
+    );
 
     // If match is still in SET_PRIZE_CARDS state, auto-trigger the OTHER player (if AI) to set prize cards
     if (savedMatch.state === MatchState.SET_PRIZE_CARDS) {
@@ -94,7 +103,9 @@ export class SetPrizeCardsActionHandler
         // Log error but don't fail the action - auto-set prize is best effort
         this.logger.error(
           `Error during AI auto-set prize cards for match ${dto.matchId}: ${autoSetPrizeError instanceof Error ? autoSetPrizeError.message : String(autoSetPrizeError)}`,
-          autoSetPrizeError instanceof Error ? autoSetPrizeError.stack : undefined,
+          autoSetPrizeError instanceof Error
+            ? autoSetPrizeError.stack
+            : undefined,
         );
       }
     }
@@ -102,4 +113,3 @@ export class SetPrizeCardsActionHandler
     return savedMatch;
   }
 }
-

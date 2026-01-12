@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Attack } from '../../../../../card/domain/value-objects/attack.value-object';
-import { PlayerGameState, CardInstance, GameState } from '../../../value-objects';
+import {
+  PlayerGameState,
+  CardInstance,
+  GameState,
+} from '../../../value-objects';
 import { PlayerIdentifier } from '../../../enums';
 import { EnergyType } from '../../../../../card/domain/enums/energy-type.enum';
 import { Card } from '../../../../../card/domain/entities';
@@ -12,9 +16,7 @@ import { AttackTextParserService } from './attack-text-parser.service';
  */
 @Injectable()
 export class AttackDamageCalculatorService {
-  constructor(
-    private readonly attackTextParser: AttackTextParserService,
-  ) {}
+  constructor(private readonly attackTextParser: AttackTextParserService) {}
 
   /**
    * Calculate plus damage bonus for "+" damage attacks
@@ -278,4 +280,3 @@ export class AttackDamageCalculatorService {
     return Math.max(0, baseDamage - reduction);
   }
 }
-

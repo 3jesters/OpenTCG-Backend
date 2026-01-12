@@ -121,7 +121,10 @@ export abstract class BaseActionFilter implements ActionFilterStrategy {
       if (this.canSelectActivePokemon(match, playerIdentifier)) {
         allowedActions.push(PlayerActionType.SET_ACTIVE_POKEMON);
       }
-    } else if (this.canSelectActivePokemon(match, playerIdentifier) && gameState) {
+    } else if (
+      this.canSelectActivePokemon(match, playerIdentifier) &&
+      gameState
+    ) {
       // Legacy check for backward compatibility (when phase is not SELECT_ACTIVE_POKEMON yet)
       // Check if knockout occurred and prize was selected
       const knockoutAttack = gameState.actionHistory
@@ -188,4 +191,3 @@ export abstract class BaseActionFilter implements ActionFilterStrategy {
     return actions.filter((action) => allowedActions.includes(action));
   }
 }
-

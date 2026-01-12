@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { GameState, PlayerGameState, CardInstance, CoinFlipResult } from '../../../value-objects';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+  CoinFlipResult,
+} from '../../../value-objects';
 import { PlayerIdentifier, StatusEffect } from '../../../enums';
 import { Attack } from '../../../../../card/domain/value-objects/attack.value-object';
 import { StatusConditionEffect } from '../../../../../card/domain/value-objects/attack-effect.value-object';
@@ -9,10 +14,10 @@ import { CoinFlipContext } from '../../../enums/coin-flip-context.enum';
 /**
  * Calculate the turn number when paralysis should be cleared for a given player
  * Paralysis is removed at the end of the affected player's next turn.
- * 
+ *
  * Player 1's turns are odd (1, 3, 5, 7...)
  * Player 2's turns are even (2, 4, 6, 8...)
- * 
+ *
  * @param currentTurn The current turn number
  * @param affectedPlayer The player whose Pokemon is paralyzed
  * @returns The turn number when paralysis should be cleared
@@ -118,13 +123,18 @@ export class AttackStatusEffectService {
           if (statusToApply) {
             // Calculate paralysis clear turn if applying PARALYZED
             // The target Pokemon belongs to the opponent (not the attacker)
-            const targetPlayer = playerIdentifier === PlayerIdentifier.PLAYER1
-              ? PlayerIdentifier.PLAYER2
-              : PlayerIdentifier.PLAYER1;
-            const paralysisClearsAtTurn = statusToApply === StatusEffect.PARALYZED
-              ? calculateParalysisClearTurn(gameState.turnNumber, targetPlayer)
-              : undefined;
-            
+            const targetPlayer =
+              playerIdentifier === PlayerIdentifier.PLAYER1
+                ? PlayerIdentifier.PLAYER2
+                : PlayerIdentifier.PLAYER1;
+            const paralysisClearsAtTurn =
+              statusToApply === StatusEffect.PARALYZED
+                ? calculateParalysisClearTurn(
+                    gameState.turnNumber,
+                    targetPlayer,
+                  )
+                : undefined;
+
             // Use withStatusEffectAdded to preserve existing status effects
             // Pokemon can have multiple status effects simultaneously (e.g., CONFUSED + POISONED)
             // Default poison damage is 10 if not specified
@@ -143,9 +153,10 @@ export class AttackStatusEffectService {
     // Fallback: parse status effect from attack text if not in structured effects
     // Only use fallback if there are no structured effects with conditions
     // (if structured effects exist but conditions failed, don't apply via fallback)
-    const hasStructuredStatusEffects = attack.hasEffects() &&
+    const hasStructuredStatusEffects =
+      attack.hasEffects() &&
       attack.getEffectsByType(AttackEffectType.STATUS_CONDITION).length > 0;
-    
+
     if (!statusApplied && !hasStructuredStatusEffects) {
       const parsedStatus = parseStatusEffectFromAttackText(attackText);
       if (parsedStatus) {
@@ -153,7 +164,7 @@ export class AttackStatusEffectService {
         const attackTextLower = attackText.toLowerCase();
         const requiresHeads = attackTextLower.includes('if heads');
         const requiresTails = attackTextLower.includes('if tails');
-        
+
         // If coin flip is required, check results before applying status
         if (requiresHeads || requiresTails) {
           if (attackCoinFlipResults.length === 0) {
@@ -164,13 +175,17 @@ export class AttackStatusEffectService {
               appliedStatus: null,
             };
           }
-          
+
           // Check if coin flip condition is met
-          const hasHeads = attackCoinFlipResults.some((result) => result.isHeads());
-          const hasTails = attackCoinFlipResults.some((result) => result.isTails());
-          
+          const hasHeads = attackCoinFlipResults.some((result) =>
+            result.isHeads(),
+          );
+          const hasTails = attackCoinFlipResults.some((result) =>
+            result.isTails(),
+          );
+
           const conditionMet = requiresHeads ? hasHeads : hasTails;
-          
+
           if (!conditionMet) {
             // Coin flip condition not met, don't apply status
             return {
@@ -180,16 +195,18 @@ export class AttackStatusEffectService {
             };
           }
         }
-        
+
         // Calculate paralysis clear turn if applying PARALYZED
         // The target Pokemon belongs to the opponent (not the attacker)
-        const targetPlayer = playerIdentifier === PlayerIdentifier.PLAYER1
-          ? PlayerIdentifier.PLAYER2
-          : PlayerIdentifier.PLAYER1;
-        const paralysisClearsAtTurn = parsedStatus === StatusEffect.PARALYZED
-          ? calculateParalysisClearTurn(gameState.turnNumber, targetPlayer)
-          : undefined;
-        
+        const targetPlayer =
+          playerIdentifier === PlayerIdentifier.PLAYER1
+            ? PlayerIdentifier.PLAYER2
+            : PlayerIdentifier.PLAYER1;
+        const paralysisClearsAtTurn =
+          parsedStatus === StatusEffect.PARALYZED
+            ? calculateParalysisClearTurn(gameState.turnNumber, targetPlayer)
+            : undefined;
+
         // Use withStatusEffectAdded to preserve existing status effects
         updatedPokemon = updatedPokemon.withStatusEffectAdded(
           parsedStatus,
@@ -235,4 +252,3 @@ export class AttackStatusEffectService {
     }
   }
 }
-

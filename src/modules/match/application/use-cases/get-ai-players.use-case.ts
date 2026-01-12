@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { AI_PLAYERS, AiPlayerConfig } from '../../domain/constants/ai-player.constants';
+import {
+  AI_PLAYERS,
+  AiPlayerConfig,
+} from '../../domain/constants/ai-player.constants';
 
 /**
  * Get AI Players Use Case
@@ -11,5 +14,3 @@ export class GetAiPlayersUseCase {
     return AI_PLAYERS;
   }
 }
-
-

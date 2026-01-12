@@ -46,7 +46,10 @@ export class GetAvailableSetsUseCase {
 
           if (errors.length === 0) {
             // Apply filters
-            if (author && metadataDto.author?.toLowerCase() !== author.toLowerCase()) {
+            if (
+              author &&
+              metadataDto.author?.toLowerCase() !== author.toLowerCase()
+            ) {
               continue;
             }
             if (official !== undefined && metadataDto.official !== official) {

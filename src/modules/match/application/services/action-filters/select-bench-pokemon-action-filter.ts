@@ -37,4 +37,3 @@ export class SelectBenchPokemonActionFilter extends BaseActionFilter {
     return actions;
   }
 }
-

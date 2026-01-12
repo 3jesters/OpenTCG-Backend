@@ -20,9 +20,7 @@ import { AttackKnockoutService } from '../attack/damage-application/attack-knock
  */
 @Injectable()
 export class StatusEffectProcessorService {
-  constructor(
-    private readonly attackKnockout: AttackKnockoutService,
-  ) {}
+  constructor(private readonly attackKnockout: AttackKnockoutService) {}
 
   /**
    * Process status effects between turns
@@ -30,7 +28,7 @@ export class StatusEffectProcessorService {
    * - Create sleep wake-up coin flips
    * - Clear paralyzed status based on turn number tracking
    * - Handle knockouts from poison/burn damage
-   * 
+   *
    * Note: Paralysis is removed at the end of the affected player's next turn.
    * We use turn number tracking to determine when to clear paralysis.
    */
@@ -88,7 +86,7 @@ export class StatusEffectProcessorService {
             const shouldClear =
               updatedActive.paralysisClearsAtTurn !== undefined &&
               gameState.turnNumber > updatedActive.paralysisClearsAtTurn;
-            
+
             if (shouldClear) {
               updatedActive = updatedActive.withStatusEffectRemoved(
                 StatusEffect.PARALYZED,
@@ -118,7 +116,8 @@ export class StatusEffectProcessorService {
               StatusEffect.ASLEEP,
               actionId,
             );
-            updatedGameState = updatedGameState.withCoinFlipState(coinFlipState);
+            updatedGameState =
+              updatedGameState.withCoinFlipState(coinFlipState);
           }
 
           // Update player state if Pokemon was modified
@@ -170,4 +169,3 @@ export class StatusEffectProcessorService {
     return updatedGameState;
   }
 }
-

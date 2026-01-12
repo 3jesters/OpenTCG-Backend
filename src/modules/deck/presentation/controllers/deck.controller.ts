@@ -114,8 +114,9 @@ export class DeckController {
 
     if (uniqueCardIds.length > 0) {
       // Batch fetch all cards in a single query
-      const cardsMap = await this.getCardByIdUseCase.getCardsByIds(uniqueCardIds);
-      
+      const cardsMap =
+        await this.getCardByIdUseCase.getCardsByIds(uniqueCardIds);
+
       // Convert Card entities to CardDetailDto
       for (const [cardId, card] of cardsMap.entries()) {
         cardDetailsMap.set(cardId, CardMapper.toCardDetailDto(card));

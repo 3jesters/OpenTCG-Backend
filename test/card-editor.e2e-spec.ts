@@ -84,7 +84,11 @@ describe('Card Editor E2E (Phase 2)', () => {
             expect(res.body.attacks).toHaveLength(1);
             expect(res.body.attacks[0]).toHaveProperty('name', 'Fire Blast');
             expect(res.body.attacks[0]).toHaveProperty('energyCost');
-            expect(res.body.attacks[0].energyCost).toEqual(['FIRE', 'FIRE', 'FIRE']);
+            expect(res.body.attacks[0].energyCost).toEqual([
+              'FIRE',
+              'FIRE',
+              'FIRE',
+            ]);
             expect(res.body.attacks[0]).toHaveProperty('damage', '100');
             expect(res.body.attacks[0]).toHaveProperty('text');
           });
@@ -132,7 +136,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           pokemonType: 'PSYCHIC',
           ability: {
             name: 'Damage Swap',
-            text: 'As often as you like during your turn, you may move 1 damage counter from 1 of your Pokemon to another as long as you don\'t Knock Out that Pokemon.',
+            text: "As often as you like during your turn, you may move 1 damage counter from 1 of your Pokemon to another as long as you don't Knock Out that Pokemon.",
             activationType: 'POKEMON_POWER',
             effects: [],
           },
@@ -147,7 +151,10 @@ describe('Card Editor E2E (Phase 2)', () => {
             expect(res.body).toHaveProperty('ability');
             expect(res.body.ability).toHaveProperty('name', 'Damage Swap');
             expect(res.body.ability).toHaveProperty('text');
-            expect(res.body.ability).toHaveProperty('activationType', 'POKEMON_POWER');
+            expect(res.body.ability).toHaveProperty(
+              'activationType',
+              'POKEMON_POWER',
+            );
           });
       });
 
@@ -260,8 +267,14 @@ describe('Card Editor E2E (Phase 2)', () => {
           .expect((res) => {
             expect(res.body.attacks[0]).toHaveProperty('effects');
             expect(res.body.attacks[0].effects).toHaveLength(1);
-            expect(res.body.attacks[0].effects[0]).toHaveProperty('effectType', 'STATUS_CONDITION');
-            expect(res.body.attacks[0].effects[0]).toHaveProperty('statusCondition', 'POISONED');
+            expect(res.body.attacks[0].effects[0]).toHaveProperty(
+              'effectType',
+              'STATUS_CONDITION',
+            );
+            expect(res.body.attacks[0].effects[0]).toHaveProperty(
+              'statusCondition',
+              'POISONED',
+            );
           });
       });
 
@@ -922,8 +935,12 @@ describe('Card Editor E2E (Phase 2)', () => {
         const afterCreation = new Date();
         const createdAt = new Date(response.body.createdAt);
 
-        expect(createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
-        expect(createdAt.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
+        expect(createdAt.getTime()).toBeGreaterThanOrEqual(
+          beforeCreation.getTime(),
+        );
+        expect(createdAt.getTime()).toBeLessThanOrEqual(
+          afterCreation.getTime(),
+        );
       });
 
       it('should set isEditorCreated to true', async () => {
@@ -1010,4 +1027,3 @@ describe('Card Editor E2E (Phase 2)', () => {
     });
   });
 });
-

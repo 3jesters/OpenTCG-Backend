@@ -107,4 +107,3 @@ export class TypeOrmCardRepository implements ICardRepository {
     return count > 0;
   }
 }
-

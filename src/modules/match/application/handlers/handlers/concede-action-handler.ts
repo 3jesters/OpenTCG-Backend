@@ -76,4 +76,3 @@ export class ConcedeActionHandler
     return await this.matchRepository.save(match);
   }
 }
-

@@ -22,7 +22,7 @@ export class SearchCardsUseCase {
     const allCards = await this.cardRepository.findAll();
 
     // Apply filters
-    let filteredCards = this.applyFilters(allCards, dto);
+    const filteredCards = this.applyFilters(allCards, dto);
 
     // Get total count before pagination
     const total = filteredCards.length;
@@ -48,10 +48,7 @@ export class SearchCardsUseCase {
   /**
    * Apply all filters to the card list
    */
-  private applyFilters(
-    cards: Card[],
-    dto: SearchCardsRequestDto,
-  ): Card[] {
+  private applyFilters(cards: Card[], dto: SearchCardsRequestDto): Card[] {
     let filtered = [...cards];
 
     // Filter by query (card name - case insensitive)
@@ -98,4 +95,3 @@ export class SearchCardsUseCase {
     return filtered;
   }
 }
-

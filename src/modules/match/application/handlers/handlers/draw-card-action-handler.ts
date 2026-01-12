@@ -120,4 +120,3 @@ export class DrawCardActionHandler
     return await this.matchRepository.save(match);
   }
 }
-

@@ -1,4 +1,10 @@
-import { Match, MatchState, MatchResult, PlayerIdentifier, PlayerType } from '../../domain';
+import {
+  Match,
+  MatchState,
+  MatchResult,
+  PlayerIdentifier,
+  PlayerType,
+} from '../../domain';
 import { WinCondition } from '../../domain/enums';
 
 /**

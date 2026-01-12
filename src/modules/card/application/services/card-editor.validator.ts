@@ -1,7 +1,19 @@
-import { Injectable, Inject, BadRequestException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { ICardRepository } from '../../domain/repositories';
 import { CreateCardRequestDto } from '../dto/create-card-request.dto';
-import { EnergyType, PokemonType, EvolutionStage, AttackEffectType, AbilityActivationType, AbilityEffectType } from '../../domain/enums';
+import {
+  EnergyType,
+  PokemonType,
+  EvolutionStage,
+  AttackEffectType,
+  AbilityActivationType,
+  AbilityEffectType,
+} from '../../domain/enums';
 import { Weakness } from '../../domain/value-objects/weakness.value-object';
 import { Resistance } from '../../domain/value-objects/resistance.value-object';
 import { StatusCondition } from '../../domain/enums/status-condition.enum';
@@ -91,7 +103,10 @@ export class CardEditorValidator {
   /**
    * Validate Pokemon selection
    */
-  private async validatePokemonSelection(pokemonName: string, pokemonNumber: string): Promise<void> {
+  private async validatePokemonSelection(
+    pokemonName: string,
+    pokemonNumber: string,
+  ): Promise<void> {
     if (!this.pokemonCache) {
       await this.loadPokemonList();
     }
@@ -107,7 +122,10 @@ export class CardEditorValidator {
     }
 
     // Verify name and number match
-    if (pokemon.name !== pokemonName || pokemon.pokemonNumber !== pokemonNumber) {
+    if (
+      pokemon.name !== pokemonName ||
+      pokemon.pokemonNumber !== pokemonNumber
+    ) {
       throw new UnprocessableEntityException(
         `Pokemon name "${pokemonName}" does not match Pokemon number "${pokemonNumber}".`,
       );
@@ -123,14 +141,18 @@ export class CardEditorValidator {
     }
 
     if (attacks.length > 2) {
-      throw new BadRequestException('Maximum 2 attacks allowed per Pokemon card.');
+      throw new BadRequestException(
+        'Maximum 2 attacks allowed per Pokemon card.',
+      );
     }
 
     for (const attack of attacks) {
       // Validate energy types
       for (const energyType of attack.energyCost) {
         if (!Object.values(EnergyType).includes(energyType)) {
-          throw new UnprocessableEntityException(`Invalid energy type: ${energyType}`);
+          throw new UnprocessableEntityException(
+            `Invalid energy type: ${energyType}`,
+          );
         }
       }
 
@@ -138,13 +160,22 @@ export class CardEditorValidator {
       if (attack.effects) {
         for (const effect of attack.effects) {
           if (!Object.values(AttackEffectType).includes(effect.effectType)) {
-            throw new UnprocessableEntityException(`Invalid attack effect type: ${effect.effectType}`);
+            throw new UnprocessableEntityException(
+              `Invalid attack effect type: ${effect.effectType}`,
+            );
           }
 
           // Validate status condition if present
           if (effect.effectType === AttackEffectType.STATUS_CONDITION) {
-            if (effect.statusCondition && !Object.values(StatusCondition).includes(effect.statusCondition as StatusCondition)) {
-              throw new UnprocessableEntityException(`Invalid status condition: ${effect.statusCondition}`);
+            if (
+              effect.statusCondition &&
+              !Object.values(StatusCondition).includes(
+                effect.statusCondition as StatusCondition,
+              )
+            ) {
+              throw new UnprocessableEntityException(
+                `Invalid status condition: ${effect.statusCondition}`,
+              );
             }
           }
         }
@@ -161,15 +192,21 @@ export class CardEditorValidator {
     }
 
     // Validate activation type
-    if (!Object.values(AbilityActivationType).includes(ability.activationType)) {
-      throw new UnprocessableEntityException(`Invalid ability activation type: ${ability.activationType}`);
+    if (
+      !Object.values(AbilityActivationType).includes(ability.activationType)
+    ) {
+      throw new UnprocessableEntityException(
+        `Invalid ability activation type: ${ability.activationType}`,
+      );
     }
 
     // Validate effects if present
     if (ability.effects) {
       for (const effect of ability.effects) {
         if (!Object.values(AbilityEffectType).includes(effect.effectType)) {
-          throw new UnprocessableEntityException(`Invalid ability effect type: ${effect.effectType}`);
+          throw new UnprocessableEntityException(
+            `Invalid ability effect type: ${effect.effectType}`,
+          );
         }
       }
     }
@@ -188,14 +225,18 @@ export class CardEditorValidator {
     try {
       new Weakness(weakness.type as unknown as EnergyType, weakness.modifier);
     } catch (error) {
-      throw new UnprocessableEntityException(`Invalid weakness: ${error.message}`);
+      throw new UnprocessableEntityException(
+        `Invalid weakness: ${error.message}`,
+      );
     }
   }
 
   /**
    * Validate resistance
    */
-  private validateResistance(resistance: CreateCardRequestDto['resistance']): void {
+  private validateResistance(
+    resistance: CreateCardRequestDto['resistance'],
+  ): void {
     if (!resistance) {
       return;
     }
@@ -203,9 +244,14 @@ export class CardEditorValidator {
     // Resistance uses EnergyType, but DTO uses PokemonType (they're the same enum values)
     // We'll validate by trying to create a Resistance value object
     try {
-      new Resistance(resistance.type as unknown as EnergyType, resistance.modifier);
+      new Resistance(
+        resistance.type as unknown as EnergyType,
+        resistance.modifier,
+      );
     } catch (error) {
-      throw new UnprocessableEntityException(`Invalid resistance: ${error.message}`);
+      throw new UnprocessableEntityException(
+        `Invalid resistance: ${error.message}`,
+      );
     }
   }
 
@@ -214,7 +260,9 @@ export class CardEditorValidator {
    */
   private validateStage(stage: EvolutionStage): void {
     if (!Object.values(EvolutionStage).includes(stage)) {
-      throw new UnprocessableEntityException(`Invalid evolution stage: ${stage}`);
+      throw new UnprocessableEntityException(
+        `Invalid evolution stage: ${stage}`,
+      );
     }
   }
 
@@ -223,8 +271,9 @@ export class CardEditorValidator {
    */
   private validatePokemonType(pokemonType: PokemonType): void {
     if (!Object.values(PokemonType).includes(pokemonType)) {
-      throw new UnprocessableEntityException(`Invalid Pokemon type: ${pokemonType}`);
+      throw new UnprocessableEntityException(
+        `Invalid Pokemon type: ${pokemonType}`,
+      );
     }
   }
 }
-

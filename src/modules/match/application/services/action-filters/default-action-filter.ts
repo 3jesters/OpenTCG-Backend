@@ -28,4 +28,3 @@ export class DefaultActionFilter extends BaseActionFilter {
     return actions;
   }
 }
-

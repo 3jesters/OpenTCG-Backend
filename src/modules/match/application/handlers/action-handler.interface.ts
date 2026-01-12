@@ -24,4 +24,3 @@ export interface IActionHandler {
     cardsMap: Map<string, Card>,
   ): Promise<Match>;
 }
-

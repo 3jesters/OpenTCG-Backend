@@ -75,7 +75,10 @@ export class ValidateMatchDecksUseCase {
           // Auto-approve for AI player 1 if applicable
           if (
             savedMatch.player1Id &&
-            this.playerTypeService.isAiPlayer(savedMatch.player1Id, savedMatch) &&
+            this.playerTypeService.isAiPlayer(
+              savedMatch.player1Id,
+              savedMatch,
+            ) &&
             !savedMatch.player1HasApprovedMatch
           ) {
             await this.processActionUseCase.execute(
@@ -96,7 +99,10 @@ export class ValidateMatchDecksUseCase {
           // Auto-approve for AI player 2 if applicable
           if (
             savedMatch.player2Id &&
-            this.playerTypeService.isAiPlayer(savedMatch.player2Id, savedMatch) &&
+            this.playerTypeService.isAiPlayer(
+              savedMatch.player2Id,
+              savedMatch,
+            ) &&
             !savedMatch.player2HasApprovedMatch
           ) {
             await this.processActionUseCase.execute(
@@ -118,7 +124,9 @@ export class ValidateMatchDecksUseCase {
           // The match is already in MATCH_APPROVAL state and validation succeeded
           this.logger.error(
             `Error during AI auto-approval for match ${matchId}: ${autoApprovalError instanceof Error ? autoApprovalError.message : String(autoApprovalError)}`,
-            autoApprovalError instanceof Error ? autoApprovalError.stack : undefined,
+            autoApprovalError instanceof Error
+              ? autoApprovalError.stack
+              : undefined,
           );
         }
       }

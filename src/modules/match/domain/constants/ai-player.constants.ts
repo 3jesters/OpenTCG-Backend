@@ -39,5 +39,3 @@ export function isAiPlayerId(playerId: string): boolean {
  * Default AI Player ID (for backward compatibility)
  */
 export const AI_PLAYER_ID = AI_PLAYERS[0].id;
-
-

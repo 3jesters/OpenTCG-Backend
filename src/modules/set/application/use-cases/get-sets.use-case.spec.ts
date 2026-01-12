@@ -80,12 +80,17 @@ describe('GetSetsUseCase', () => {
         'user-123',
       );
 
-      mockRepository.findAccessibleSets.mockResolvedValue([globalSet, privateSet]);
+      mockRepository.findAccessibleSets.mockResolvedValue([
+        globalSet,
+        privateSet,
+      ]);
 
       const result = await useCase.execute(undefined, 'user-123');
 
       expect(result).toHaveLength(2);
-      expect(mockRepository.findAccessibleSets).toHaveBeenCalledWith('user-123');
+      expect(mockRepository.findAccessibleSets).toHaveBeenCalledWith(
+        'user-123',
+      );
     });
 
     it('should return sets filtered by ownerId when ownerId provided', async () => {
@@ -106,7 +111,10 @@ describe('GetSetsUseCase', () => {
         'user-123',
       );
 
-      mockRepository.findByOwnerId.mockResolvedValue([privateSet1, privateSet2]);
+      mockRepository.findByOwnerId.mockResolvedValue([
+        privateSet1,
+        privateSet2,
+      ]);
 
       const result = await useCase.execute(undefined, undefined, 'user-123');
 

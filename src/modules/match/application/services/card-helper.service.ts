@@ -171,14 +171,11 @@ export class CardHelperService {
 
     // Fallback to individual query if not in map
     const cardDetail = await this.getCardByIdUseCase.execute(cardId);
-    
+
     if (cardDetail.hp === undefined || cardDetail.hp === null) {
-      throw new NotFoundException(
-        `Card HP not found for card ID: ${cardId}`,
-      );
+      throw new NotFoundException(`Card HP not found for card ID: ${cardId}`);
     }
 
     return cardDetail.hp;
   }
 }
-

@@ -38,4 +38,3 @@ export class TypeOrmTournamentRepository implements ITournamentRepository {
     await this.tournamentEntityRepository.delete(id);
   }
 }
-

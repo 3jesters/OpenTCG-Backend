@@ -115,4 +115,3 @@ export class CardStrengthResponseDto implements CardStrengthResult {
     return dto;
   }
 }
-

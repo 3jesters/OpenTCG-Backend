@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Match,
-  PlayerIdentifier,
-  PlayerActionType,
-} from '../../domain';
+import { Match, PlayerIdentifier, PlayerActionType } from '../../domain';
 import { MatchStateMachineService } from '../../domain/services';
 import { ActionFilterRegistry } from './action-filters';
 
@@ -73,4 +69,3 @@ export class AvailableActionsService {
     return filter.filter(availableActions, match, playerIdentifier);
   }
 }
-

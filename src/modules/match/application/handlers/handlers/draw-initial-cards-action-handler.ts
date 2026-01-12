@@ -2,7 +2,13 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { BaseActionHandler } from '../base-action-handler';
 import { IActionHandler } from '../action-handler.interface';
 import { ExecuteActionDto } from '../../dto';
-import { Match, PlayerIdentifier, GameState, MatchState, PlayerActionType } from '../../../domain';
+import {
+  Match,
+  PlayerIdentifier,
+  GameState,
+  MatchState,
+  PlayerActionType,
+} from '../../../domain';
 import { Card } from '../../../../card/domain/entities';
 import { DrawInitialCardsUseCase } from '../../use-cases/draw-initial-cards.use-case';
 import { IMatchRepository } from '../../../domain/repositories';
@@ -48,7 +54,7 @@ export class DrawInitialCardsActionHandler
       dto.matchId,
       dto.playerId,
     );
-    
+
     let savedMatch = result.match;
 
     // If match is still in DRAWING_CARDS state, auto-trigger the OTHER player (if AI) to draw
@@ -109,4 +115,3 @@ export class DrawInitialCardsActionHandler
     return savedMatch;
   }
 }
-

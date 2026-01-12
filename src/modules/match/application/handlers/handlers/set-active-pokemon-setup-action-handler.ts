@@ -1,4 +1,9 @@
-import { Injectable, Inject, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { BaseActionHandler } from '../base-action-handler';
 import { IActionHandler } from '../action-handler.interface';
 import { ExecuteActionDto } from '../../dto';
@@ -74,9 +79,7 @@ export class SetActivePokemonSetupActionHandler
 
     // Check if card is in hand or on bench
     const isInHand = playerState.hand.includes(cardId);
-    const benchIndex = playerState.bench.findIndex(
-      (p) => p.cardId === cardId,
-    );
+    const benchIndex = playerState.bench.findIndex((p) => p.cardId === cardId);
     const isOnBench = benchIndex !== -1;
 
     if (!isInHand && !isOnBench) {
@@ -184,8 +187,10 @@ export class SetActivePokemonSetupActionHandler
         // Get updated game state to check if opponent has set active Pokemon
         const updatedGameStateAfterSave = savedMatch.gameState;
         if (updatedGameStateAfterSave) {
-          const opponentState = updatedGameStateAfterSave.getPlayerState(opponentIdentifier);
-          const opponentHasActivePokemon = opponentState?.activePokemon !== null;
+          const opponentState =
+            updatedGameStateAfterSave.getPlayerState(opponentIdentifier);
+          const opponentHasActivePokemon =
+            opponentState?.activePokemon !== null;
 
           // Auto-trigger opponent AI player if applicable
           if (
@@ -205,7 +210,9 @@ export class SetActivePokemonSetupActionHandler
               savedMatch.id,
             );
             // Reload match after AI sets active Pokemon
-            const updatedMatch = await this.matchRepository.findById(dto.matchId);
+            const updatedMatch = await this.matchRepository.findById(
+              dto.matchId,
+            );
             if (updatedMatch) {
               return updatedMatch;
             }
@@ -215,7 +222,9 @@ export class SetActivePokemonSetupActionHandler
         // Log error but don't fail the action - auto-set active is best effort
         this.logger.error(
           `Error during AI auto-set active Pokemon for match ${dto.matchId}: ${autoSetActiveError instanceof Error ? autoSetActiveError.message : String(autoSetActiveError)}`,
-          autoSetActiveError instanceof Error ? autoSetActiveError.stack : undefined,
+          autoSetActiveError instanceof Error
+            ? autoSetActiveError.stack
+            : undefined,
         );
       }
     }
@@ -223,4 +232,3 @@ export class SetActivePokemonSetupActionHandler
     return savedMatch;
   }
 }
-

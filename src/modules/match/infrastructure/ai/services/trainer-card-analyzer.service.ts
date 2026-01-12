@@ -1,6 +1,14 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
-import { PlayerIdentifier, PokemonPosition, StatusEffect } from '../../../domain/enums';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
+import {
+  PlayerIdentifier,
+  PokemonPosition,
+  StatusEffect,
+} from '../../../domain/enums';
 import { Card } from '../../../../card/domain/entities';
 import { TrainerEffect } from '../../../../card/domain/value-objects';
 import { TrainerEffectType, CardType } from '../../../../card/domain/enums';
@@ -85,7 +93,9 @@ export class TrainerCardAnalyzerService {
   /**
    * Map trainer effect type to category
    */
-  private mapEffectTypeToCategory(effectType: TrainerEffectType): TrainerCardCategory {
+  private mapEffectTypeToCategory(
+    effectType: TrainerEffectType,
+  ): TrainerCardCategory {
     switch (effectType) {
       case TrainerEffectType.HEAL:
       case TrainerEffectType.CURE_STATUS:
@@ -134,10 +144,14 @@ export class TrainerCardAnalyzerService {
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
   ): Promise<SortedTrainerCardOptionList> {
-    this.logger.debug('evaluateTrainerCardOptions called', 'TrainerCardAnalyzerService', {
-      playerIdentifier,
-      handSize: gameState.getPlayerState(playerIdentifier).hand.length,
-    });
+    this.logger.debug(
+      'evaluateTrainerCardOptions called',
+      'TrainerCardAnalyzerService',
+      {
+        playerIdentifier,
+        handSize: gameState.getPlayerState(playerIdentifier).hand.length,
+      },
+    );
     const playerState = gameState.getPlayerState(playerIdentifier);
     const options: TrainerCardOption[] = [];
 
@@ -163,10 +177,14 @@ export class TrainerCardAnalyzerService {
     }
 
     const sorted = sortTrainerCardOptions(options);
-    this.logger.info('Trainer card options evaluated', 'TrainerCardAnalyzerService', {
-      optionsCount: sorted.length,
-      shouldPlayCount: sorted.filter(o => o.shouldPlay).length,
-    });
+    this.logger.info(
+      'Trainer card options evaluated',
+      'TrainerCardAnalyzerService',
+      {
+        optionsCount: sorted.length,
+        shouldPlayCount: sorted.filter((o) => o.shouldPlay).length,
+      },
+    );
     return sorted;
   }
 
@@ -191,7 +209,10 @@ export class TrainerCardAnalyzerService {
     );
 
     // Get primary effect type (highest priority)
-    const primaryEffectType = this.getPrimaryEffectType(card.trainerEffects, nonIgnoredEffects);
+    const primaryEffectType = this.getPrimaryEffectType(
+      card.trainerEffects,
+      nonIgnoredEffects,
+    );
     const category = await this.categorizeTrainerCard(card);
 
     // Check if playing would cause deck to be empty
@@ -399,7 +420,9 @@ export class TrainerCardAnalyzerService {
     targetCard?: Card;
     impact: TrainerCardImpact;
   }> {
-    const healEffect = effects.find((e) => e.effectType === TrainerEffectType.HEAL);
+    const healEffect = effects.find(
+      (e) => e.effectType === TrainerEffectType.HEAL,
+    );
     if (!healEffect || typeof healEffect.value !== 'number') {
       return {
         shouldPlay: false,
@@ -413,16 +436,21 @@ export class TrainerCardAnalyzerService {
     const opponentState = gameState.getOpponentState(playerIdentifier);
 
     // Get opponent sure attack damage
-    const opponentSureDamage = await this.opponentAnalysisService.calculateSureAttackDamage(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    );
+    const opponentSureDamage =
+      await this.opponentAnalysisService.calculateSureAttackDamage(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
 
     // Check active Pokemon first
-    if (playerState.activePokemon && healEffect.target === TargetType.ACTIVE_YOURS) {
-      const damage = playerState.activePokemon.maxHp - playerState.activePokemon.currentHp;
+    if (
+      playerState.activePokemon &&
+      healEffect.target === TargetType.ACTIVE_YOURS
+    ) {
+      const damage =
+        playerState.activePokemon.maxHp - playerState.activePokemon.currentHp;
 
       // Don't heal if healing amount exceeds damage
       if (healAmount > damage) {
@@ -449,7 +477,9 @@ export class TrainerCardAnalyzerService {
       // Check if healing would prevent knockout
       const hpAfterHeal = playerState.activePokemon.currentHp + healAmount;
       if (hpAfterHeal > opponentSureDamage) {
-        const activeCard = await getCardEntity(playerState.activePokemon.cardId);
+        const activeCard = await getCardEntity(
+          playerState.activePokemon.cardId,
+        );
         impact.preventsOurKnockout = true;
         return {
           shouldPlay: true,
@@ -508,7 +538,11 @@ export class TrainerCardAnalyzerService {
     impact: TrainerCardImpact;
   }> {
     // Score all bench Pokemon
-    const benchScores: Array<{ instance: CardInstance; card: Card; score: number }> = [];
+    const benchScores: Array<{
+      instance: CardInstance;
+      card: Card;
+      score: number;
+    }> = [];
 
     for (const benchInstance of playerState.bench) {
       const benchCard = await getCardEntity(benchInstance.cardId);
@@ -519,7 +553,10 @@ export class TrainerCardAnalyzerService {
         continue;
       }
 
-      const score = this.pokemonScoringService.calculateScore(benchCard, benchInstance);
+      const score = this.pokemonScoringService.calculateScore(
+        benchCard,
+        benchInstance,
+      );
       benchScores.push({ instance: benchInstance, card: benchCard, score });
     }
 
@@ -563,7 +600,9 @@ export class TrainerCardAnalyzerService {
     targetCard?: Card;
     impact: TrainerCardImpact;
   }> {
-    const increaseEffect = effects.find((e) => e.effectType === TrainerEffectType.INCREASE_DAMAGE);
+    const increaseEffect = effects.find(
+      (e) => e.effectType === TrainerEffectType.INCREASE_DAMAGE,
+    );
     if (!increaseEffect || typeof increaseEffect.value !== 'number') {
       return {
         shouldPlay: false,
@@ -585,12 +624,13 @@ export class TrainerCardAnalyzerService {
     }
 
     // Get available attacks
-    const availableAttacks = await this.actionPrioritizationService.findAvailableAttacks(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    );
+    const availableAttacks =
+      await this.actionPrioritizationService.findAvailableAttacks(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
 
     if (availableAttacks.length === 0) {
       return {
@@ -620,7 +660,10 @@ export class TrainerCardAnalyzerService {
     if (totalDamage >= opponentHp && baseDamage < opponentHp) {
       impact.enablesKnockout = true;
       // Enabling knockout also reduces rounds (from multiple rounds to 1)
-      const roundsWithoutIncrease = this.calculateRoundsToKnockout(opponentHp, baseDamage);
+      const roundsWithoutIncrease = this.calculateRoundsToKnockout(
+        opponentHp,
+        baseDamage,
+      );
       if (roundsWithoutIncrease > 1) {
         impact.reducesRoundsToKnockout = true;
       }
@@ -646,14 +689,22 @@ export class TrainerCardAnalyzerService {
     // Check if it reduces rounds to knockout
     // INCREASE_DAMAGE only applies to the first attack, then subsequent attacks use base damage
     // Calculate actual rounds by simulating damage
-    const roundsWithoutIncrease = this.calculateRoundsToKnockout(opponentHp, baseDamage);
-    const roundsWithIncrease = this.calculateRoundsToKnockoutWithFirstAttackBonus(
+    const roundsWithoutIncrease = this.calculateRoundsToKnockout(
       opponentHp,
       baseDamage,
-      increaseAmount,
     );
+    const roundsWithIncrease =
+      this.calculateRoundsToKnockoutWithFirstAttackBonus(
+        opponentHp,
+        baseDamage,
+        increaseAmount,
+      );
 
-    if (isFinite(roundsWithoutIncrease) && isFinite(roundsWithIncrease) && roundsWithIncrease < roundsWithoutIncrease) {
+    if (
+      isFinite(roundsWithoutIncrease) &&
+      isFinite(roundsWithIncrease) &&
+      roundsWithIncrease < roundsWithoutIncrease
+    ) {
       impact.reducesRoundsToKnockout = true;
       const activeCard = await getCardEntity(playerState.activePokemon.cardId);
       return {
@@ -690,7 +741,9 @@ export class TrainerCardAnalyzerService {
     targetCard?: Card;
     impact: TrainerCardImpact;
   }> {
-    const reduceEffect = effects.find((e) => e.effectType === TrainerEffectType.REDUCE_DAMAGE);
+    const reduceEffect = effects.find(
+      (e) => e.effectType === TrainerEffectType.REDUCE_DAMAGE,
+    );
     if (!reduceEffect || typeof reduceEffect.value !== 'number') {
       return {
         shouldPlay: false,
@@ -712,12 +765,13 @@ export class TrainerCardAnalyzerService {
     }
 
     // Get opponent sure attack damage
-    const opponentSureDamage = await this.opponentAnalysisService.calculateSureAttackDamage(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    );
+    const opponentSureDamage =
+      await this.opponentAnalysisService.calculateSureAttackDamage(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
 
     if (opponentSureDamage === 0) {
       return {
@@ -746,10 +800,14 @@ export class TrainerCardAnalyzerService {
     // Check if it increases rounds we can survive
     // REDUCE_DAMAGE applies to all attacks (damage reduction tool like Defender)
     // Calculate actual rounds by simulating damage
-    const roundsWithoutReduction = this.calculateRoundsToKnockout(playerHp, opponentSureDamage);
-    const roundsWithReduction = damageAfterReduction > 0 
-      ? this.calculateRoundsToKnockout(playerHp, damageAfterReduction) 
-      : Infinity;
+    const roundsWithoutReduction = this.calculateRoundsToKnockout(
+      playerHp,
+      opponentSureDamage,
+    );
+    const roundsWithReduction =
+      damageAfterReduction > 0
+        ? this.calculateRoundsToKnockout(playerHp, damageAfterReduction)
+        : Infinity;
 
     if (roundsWithReduction > roundsWithoutReduction) {
       impact.increasesRoundsWeCanSurvive = true;
@@ -828,7 +886,9 @@ export class TrainerCardAnalyzerService {
     targetCard?: Card;
     impact: TrainerCardImpact;
   }> {
-    const removeEffect = effects.find((e) => e.effectType === TrainerEffectType.REMOVE_ENERGY);
+    const removeEffect = effects.find(
+      (e) => e.effectType === TrainerEffectType.REMOVE_ENERGY,
+    );
     if (!removeEffect) {
       return {
         shouldPlay: false,
@@ -846,7 +906,9 @@ export class TrainerCardAnalyzerService {
 
     // Check active Pokemon
     if (opponentState.activePokemon) {
-      const activeCard = await getCardEntity(opponentState.activePokemon.cardId);
+      const activeCard = await getCardEntity(
+        opponentState.activePokemon.cardId,
+      );
       const damage = await this.getMaxDamageFromPokemon(
         opponentState.activePokemon,
         activeCard,
@@ -986,7 +1048,10 @@ export class TrainerCardAnalyzerService {
    * Calculate rounds to knockout by simulating damage
    * Returns the number of rounds needed to reduce HP to 0 or below
    */
-  private calculateRoundsToKnockout(hp: number, damagePerRound: number): number {
+  private calculateRoundsToKnockout(
+    hp: number,
+    damagePerRound: number,
+  ): number {
     if (damagePerRound <= 0) {
       return Infinity; // Cannot knockout with 0 or negative damage
     }
@@ -1019,7 +1084,7 @@ export class TrainerCardAnalyzerService {
     let rounds = 0;
 
     // First attack with bonus
-    remainingHp -= (baseDamage + bonusDamage);
+    remainingHp -= baseDamage + bonusDamage;
     rounds++;
 
     // Subsequent attacks with base damage
@@ -1030,7 +1095,6 @@ export class TrainerCardAnalyzerService {
 
     return rounds;
   }
-
 
   /**
    * Parse base damage from damage string
@@ -1231,16 +1295,17 @@ export class TrainerCardAnalyzerService {
     const opponentCard = await getCardEntity(opponentActive.cardId);
 
     // Check if active will be knocked out next turn
-    const activeWillBeKnockedOut = await this.opponentAnalysisService.canOpponentKnockout(
-      gameState,
-      playerIdentifier,
-      cardsMap,
-      getCardEntity,
-    );
+    const activeWillBeKnockedOut =
+      await this.opponentAnalysisService.canOpponentKnockout(
+        gameState,
+        playerIdentifier,
+        cardsMap,
+        getCardEntity,
+      );
 
     // Get player state for prize card checks
     const playerState = gameState.getPlayerState(playerIdentifier);
-    
+
     // Check game-losing scenario (next knockout would lose)
     const prizeCardsRemaining = playerState.getPrizeCardsRemaining();
     const isGameLosingScenario =
@@ -1301,7 +1366,8 @@ export class TrainerCardAnalyzerService {
       if (benchCanKnockout && !activeCanKnockout) {
         return {
           shouldConsider: true,
-          reason: 'Switching to bench Pokemon for faster win (1 prize remaining)',
+          reason:
+            'Switching to bench Pokemon for faster win (1 prize remaining)',
           bestBenchOption: bestBench.pokemon,
         };
       }
@@ -1309,7 +1375,8 @@ export class TrainerCardAnalyzerService {
       if (activeCanKnockout && !benchCanKnockout) {
         return {
           shouldConsider: false,
-          reason: 'Active can win this turn (1 prize remaining), no need to switch',
+          reason:
+            'Active can win this turn (1 prize remaining), no need to switch',
         };
       }
       // If both can knockout, compare rounds to knockout
@@ -1351,7 +1418,8 @@ export class TrainerCardAnalyzerService {
         if (benchRounds < activeRounds && !benchRequiresCoinToss) {
           return {
             shouldConsider: true,
-            reason: 'Switching to bench Pokemon for faster win (1 prize remaining)',
+            reason:
+              'Switching to bench Pokemon for faster win (1 prize remaining)',
             bestBenchOption: bestBench.pokemon,
           };
         }
@@ -1369,7 +1437,8 @@ export class TrainerCardAnalyzerService {
         // This should never be reached, but add as safety
         return {
           shouldConsider: true,
-          reason: 'Switching to bench Pokemon for faster win (1 prize remaining)',
+          reason:
+            'Switching to bench Pokemon for faster win (1 prize remaining)',
           bestBenchOption: bestBench.pokemon,
         };
       }
@@ -1379,13 +1448,15 @@ export class TrainerCardAnalyzerService {
       if (activeCanKnockout) {
         return {
           shouldConsider: false,
-          reason: 'Active can win this turn (1 prize remaining), no need to switch',
+          reason:
+            'Active can win this turn (1 prize remaining), no need to switch',
         };
       }
       if (benchCanKnockout) {
         return {
           shouldConsider: true,
-          reason: 'Switching to bench Pokemon for faster win (1 prize remaining)',
+          reason:
+            'Switching to bench Pokemon for faster win (1 prize remaining)',
           bestBenchOption: bestBench.pokemon,
         };
       }
@@ -1395,14 +1466,16 @@ export class TrainerCardAnalyzerService {
         if (bestBench.willSurvive) {
           return {
             shouldConsider: true,
-            reason: 'Next knockout would lose the game, switching to bench Pokemon that will survive',
+            reason:
+              'Next knockout would lose the game, switching to bench Pokemon that will survive',
             bestBenchOption: bestBench.pokemon,
             isGameLosingScenario: true,
           };
         } else {
           return {
             shouldConsider: false,
-            reason: 'Bench Pokemon will also be knocked out next turn, no point switching',
+            reason:
+              'Bench Pokemon will also be knocked out next turn, no point switching',
             isGameLosingScenario: true,
           };
         }
@@ -1417,7 +1490,8 @@ export class TrainerCardAnalyzerService {
       if (bestBench.willSurvive) {
         return {
           shouldConsider: true,
-          reason: 'Next knockout would lose the game, switching to bench Pokemon that will survive',
+          reason:
+            'Next knockout would lose the game, switching to bench Pokemon that will survive',
           bestBenchOption: bestBench.pokemon,
           isGameLosingScenario: true,
         };
@@ -1425,7 +1499,8 @@ export class TrainerCardAnalyzerService {
         // Bench will also be knocked out - no point switching
         return {
           shouldConsider: false,
-          reason: 'Bench Pokemon will also be knocked out next turn, no point switching',
+          reason:
+            'Bench Pokemon will also be knocked out next turn, no point switching',
           isGameLosingScenario: true,
         };
       }
@@ -1463,7 +1538,8 @@ export class TrainerCardAnalyzerService {
         if (isFinite(roundsToKnockout) && roundsToKnockout <= 2) {
           return {
             shouldConsider: false,
-            reason: 'Can knockout opponent in 2 turns with active and not threatened',
+            reason:
+              'Can knockout opponent in 2 turns with active and not threatened',
           };
         }
       }
@@ -1495,7 +1571,8 @@ export class TrainerCardAnalyzerService {
       if (benchDamage >= activeDamage) {
         return {
           shouldConsider: true,
-          reason: 'Active will be knocked out next turn, bench can do same or better damage (knockout)',
+          reason:
+            'Active will be knocked out next turn, bench can do same or better damage (knockout)',
           bestBenchOption: bestBench.pokemon,
         };
       }
@@ -1518,7 +1595,11 @@ export class TrainerCardAnalyzerService {
     playerIdentifier: PlayerIdentifier,
     cardsMap: Map<string, Card>,
     getCardEntity: (cardId: string) => Promise<Card>,
-  ): Promise<{ pokemon: CardInstance; card: Card; willSurvive: boolean } | null> {
+  ): Promise<{
+    pokemon: CardInstance;
+    card: Card;
+    willSurvive: boolean;
+  } | null> {
     let bestBench: {
       pokemon: CardInstance;
       card: Card;
@@ -1712,7 +1793,9 @@ export class TrainerCardAnalyzerService {
 
       // Check if attack has coin flip preconditions
       if (attack.hasPreconditions()) {
-        const coinFlips = attack.getPreconditionsByType(PreconditionType.COIN_FLIP);
+        const coinFlips = attack.getPreconditionsByType(
+          PreconditionType.COIN_FLIP,
+        );
         if (coinFlips.length > 0) {
           return true;
         }

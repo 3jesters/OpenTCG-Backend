@@ -28,7 +28,7 @@ export class GetCardByIdUseCase {
   async execute(cardId: string): Promise<CardDetailDto> {
     // Normalize the search cardId to handle double dashes and formatting issues
     const normalizedSearchId = this.normalizeCardId(cardId);
-    
+
     // Get all available sets
     const availableSets = await this.getAvailableSetsUseCase.execute();
 
@@ -43,8 +43,8 @@ export class GetCardByIdUseCase {
         );
 
         // Find the card with matching cardId (normalize both for comparison)
-        const cardSummary = setCards.cards.find((c) => 
-          this.normalizeCardId(c.cardId) === normalizedSearchId
+        const cardSummary = setCards.cards.find(
+          (c) => this.normalizeCardId(c.cardId) === normalizedSearchId,
         );
 
         if (cardSummary) {
@@ -75,7 +75,7 @@ export class GetCardByIdUseCase {
   async getCardEntity(cardId: string): Promise<Card> {
     // Normalize the search cardId to handle double dashes and formatting issues
     const normalizedSearchId = this.normalizeCardId(cardId);
-    
+
     // Get all available sets
     const availableSets = await this.getAvailableSetsUseCase.execute();
 
@@ -90,8 +90,8 @@ export class GetCardByIdUseCase {
         );
 
         // Find the card with matching cardId (normalize both for comparison)
-        const cardSummary = setCards.cards.find((c) => 
-          this.normalizeCardId(c.cardId) === normalizedSearchId
+        const cardSummary = setCards.cards.find(
+          (c) => this.normalizeCardId(c.cardId) === normalizedSearchId,
         );
 
         if (cardSummary) {
@@ -117,13 +117,13 @@ export class GetCardByIdUseCase {
    * Returns a Map keyed by cardId for O(1) lookup
    * Cards not found are omitted from the map
    * Note: File-based implementation does individual lookups (acceptable for dev/test)
-   * 
+   *
    * IMPORTANT: Uses the original search cardId as the map key (not the found card's cardId)
    * to handle cases where deck cardIds have different formatting (e.g., double dashes)
    */
   async getCardsByIds(cardIds: string[]): Promise<Map<string, Card>> {
     const cardsMap = new Map<string, Card>();
-    
+
     // For file-based implementation, do individual lookups
     // This is acceptable for dev/test environments
     await Promise.all(

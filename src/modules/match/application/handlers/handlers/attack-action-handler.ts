@@ -46,7 +46,7 @@ import { v4 as uuidv4 } from 'uuid';
 /**
  * Attack Action Handler
  * Handles Pokemon attacks during MAIN_PHASE or ATTACK phase
- * 
+ *
  * Note: This is a simplified handler. The full ATTACK implementation is ~2900 lines
  * and involves complex coin flip logic, damage calculation, status effects, etc.
  * For now, this handler extracts the core validation and basic attack flow.
@@ -185,10 +185,7 @@ export class AttackActionHandler
           // If knocked out, move to discard
           if (isKnockedOut) {
             const cardsToDiscard = activePokemon.getAllCardsToDiscard();
-            const discardPile = [
-              ...playerState.discardPile,
-              ...cardsToDiscard,
-            ];
+            const discardPile = [...playerState.discardPile, ...cardsToDiscard];
             updatedPlayerState = updatedPlayerState
               .withActivePokemon(null)
               .withDiscardPile(discardPile);
@@ -388,7 +385,11 @@ export class AttackActionHandler
       parseBenchDamage: (attackText: string) =>
         this.attackTextParser.parseBenchDamage(attackText),
       parseStatusEffectFromAttackText: (attackText: string) => {
-        const statusCondition = this.attackTextParser.parseStatusEffectFromAttackText(attackText, false);
+        const statusCondition =
+          this.attackTextParser.parseStatusEffectFromAttackText(
+            attackText,
+            false,
+          );
         if (!statusCondition) return null;
         // Map StatusConditionEffect to StatusEffect enum
         switch (statusCondition.statusCondition) {
@@ -456,7 +457,7 @@ export class AttackActionHandler
         playerState: PlayerGameState,
         opponentState: PlayerGameState,
       ) => {
-        let updatedPlayerState = playerState;
+        const updatedPlayerState = playerState;
         let updatedOpponentState = opponentState;
 
         for (const discardEffect of discardEffects) {
@@ -468,7 +469,8 @@ export class AttackActionHandler
               playerState,
               opponentState,
               undefined,
-              (cardId: string) => this.cardHelper.getCardEntity(cardId, cardsMap),
+              (cardId: string) =>
+                this.cardHelper.getCardEntity(cardId, cardsMap),
             );
 
           if (conditionsMet) {
@@ -499,7 +501,7 @@ export class AttackActionHandler
                 }
               } else {
                 // Select specific amount
-                const amount = discardEffect.amount as number;
+                const amount = discardEffect.amount;
                 let count = 0;
                 for (const energyId of attachedEnergy) {
                   if (count >= amount) break;
@@ -626,4 +628,3 @@ export class AttackActionHandler
     return await this.matchRepository.save(match);
   }
 }
-

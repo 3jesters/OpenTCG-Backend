@@ -69,8 +69,7 @@ export class AttackEnergyCostService {
       };
     }
 
-    const discardEffect =
-      discardEnergyCostEffects[0] as DiscardEnergyEffect;
+    const discardEffect = discardEnergyCostEffects[0] as DiscardEnergyEffect;
 
     // Validate that energy selection was provided
     if (!selectedEnergyIds || selectedEnergyIds.length === 0) {
@@ -99,9 +98,7 @@ export class AttackEnergyCostService {
     }
 
     // Discard energy BEFORE attack executes (this is a cost)
-    const updatedAttachedEnergy = [
-      ...playerState.activePokemon.attachedEnergy,
-    ];
+    const updatedAttachedEnergy = [...playerState.activePokemon.attachedEnergy];
     for (const energyId of selectedEnergyIds) {
       const energyIndex = updatedAttachedEnergy.indexOf(energyId);
       if (energyIndex === -1) {
@@ -115,7 +112,10 @@ export class AttackEnergyCostService {
     const updatedAttacker = playerState.activePokemon.withAttachedEnergy(
       updatedAttachedEnergy,
     );
-    const updatedDiscardPile = [...playerState.discardPile, ...selectedEnergyIds];
+    const updatedDiscardPile = [
+      ...playerState.discardPile,
+      ...selectedEnergyIds,
+    ];
     const updatedPlayerState = playerState
       .withActivePokemon(updatedAttacker)
       .withDiscardPile(updatedDiscardPile);
@@ -131,4 +131,3 @@ export class AttackEnergyCostService {
     };
   }
 }
-

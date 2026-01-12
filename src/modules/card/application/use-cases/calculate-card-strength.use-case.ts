@@ -40,4 +40,3 @@ export class CalculateCardStrengthUseCase
     return this.cardStrengthCalculator.calculateStrength(card);
   }
 }
-

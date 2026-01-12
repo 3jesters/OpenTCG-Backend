@@ -47,6 +47,7 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.staging
+!.env.example
 
 # Temp files
 *.swp
@@ -54,6 +55,8 @@ lerna-debug.log*
 *~
 .tmp
 .temp
+*.backup
+*.bak
 
 # Database
 *.sqlite

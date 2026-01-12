@@ -2,7 +2,13 @@ import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { BaseActionHandler } from '../base-action-handler';
 import { IActionHandler } from '../action-handler.interface';
 import { ExecuteActionDto } from '../../dto';
-import { Match, PlayerIdentifier, GameState, MatchState, PlayerActionType } from '../../../domain';
+import {
+  Match,
+  PlayerIdentifier,
+  GameState,
+  MatchState,
+  PlayerActionType,
+} from '../../../domain';
 import { Card } from '../../../../card/domain/entities';
 import { IMatchRepository } from '../../../domain/repositories';
 import { MatchStateMachineService } from '../../../domain/services';
@@ -111,41 +117,65 @@ export class ConfirmFirstPlayerActionHandler
           'ConfirmFirstPlayerActionHandler',
           {
             matchId: dto.matchId,
-            error: autoConfirmError instanceof Error ? autoConfirmError.message : String(autoConfirmError),
-            stack: autoConfirmError instanceof Error ? autoConfirmError.stack : undefined,
+            error:
+              autoConfirmError instanceof Error
+                ? autoConfirmError.message
+                : String(autoConfirmError),
+            stack:
+              autoConfirmError instanceof Error
+                ? autoConfirmError.stack
+                : undefined,
           },
         );
       }
     }
 
     // If match transitioned to PLAYER_TURN, auto-trigger first player if AI
-    if (savedMatch.state === MatchState.PLAYER_TURN && savedMatch.currentPlayer) {
+    if (
+      savedMatch.state === MatchState.PLAYER_TURN &&
+      savedMatch.currentPlayer
+    ) {
       try {
-        const firstPlayerId = savedMatch.currentPlayer === PlayerIdentifier.PLAYER1
-          ? savedMatch.player1Id
-          : savedMatch.player2Id;
-        
-        this.logger.debug('Checking if first player is AI', 'ConfirmFirstPlayerActionHandler', {
-          matchId: savedMatch.id,
-          currentPlayer: savedMatch.currentPlayer,
-          firstPlayerId,
-          firstPlayer: savedMatch.firstPlayer,
-        });
-        
-        if (firstPlayerId && this.playerTypeService.isAiPlayer(firstPlayerId, savedMatch)) {
-          this.logger.info('Auto-triggering AI first player to start match', 'ConfirmFirstPlayerActionHandler', {
+        const firstPlayerId =
+          savedMatch.currentPlayer === PlayerIdentifier.PLAYER1
+            ? savedMatch.player1Id
+            : savedMatch.player2Id;
+
+        this.logger.debug(
+          'Checking if first player is AI',
+          'ConfirmFirstPlayerActionHandler',
+          {
             matchId: savedMatch.id,
-            aiPlayerId: firstPlayerId,
-            playerIdentifier: savedMatch.currentPlayer,
-            phase: savedMatch.gameState?.phase,
-          });
-          
-          await this.processActionUseCase.execute({
-            playerId: firstPlayerId,
-            actionType: PlayerActionType.DRAW_CARD, // Placeholder - AI will generate
-            actionData: {},
-          }, savedMatch.id);
-          
+            currentPlayer: savedMatch.currentPlayer,
+            firstPlayerId,
+            firstPlayer: savedMatch.firstPlayer,
+          },
+        );
+
+        if (
+          firstPlayerId &&
+          this.playerTypeService.isAiPlayer(firstPlayerId, savedMatch)
+        ) {
+          this.logger.info(
+            'Auto-triggering AI first player to start match',
+            'ConfirmFirstPlayerActionHandler',
+            {
+              matchId: savedMatch.id,
+              aiPlayerId: firstPlayerId,
+              playerIdentifier: savedMatch.currentPlayer,
+              phase: savedMatch.gameState?.phase,
+            },
+          );
+
+          await this.processActionUseCase.execute(
+            {
+              playerId: firstPlayerId,
+              actionType: PlayerActionType.DRAW_CARD, // Placeholder - AI will generate
+              actionData: {},
+            },
+            savedMatch.id,
+          );
+
           // Reload match after AI action
           const updatedMatch = await this.matchRepository.findById(dto.matchId);
           if (updatedMatch) {
@@ -153,15 +183,18 @@ export class ConfirmFirstPlayerActionHandler
           }
         }
       } catch (error) {
-        this.logger.error('Error auto-triggering AI first player', 'ConfirmFirstPlayerActionHandler', {
-          matchId: savedMatch.id,
-          error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-        });
+        this.logger.error(
+          'Error auto-triggering AI first player',
+          'ConfirmFirstPlayerActionHandler',
+          {
+            matchId: savedMatch.id,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        );
       }
     }
 
     return savedMatch;
   }
 }
-

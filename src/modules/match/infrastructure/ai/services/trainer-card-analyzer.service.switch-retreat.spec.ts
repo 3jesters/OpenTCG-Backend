@@ -13,7 +13,11 @@ import { ILogger } from '../../../../../shared/application/ports/logger.interfac
 import { Card } from '../../../../card/domain/entities';
 import { Attack, CardRuleFactory } from '../../../../card/domain/value-objects';
 import { TrainerEffect } from '../../../../card/domain/value-objects';
-import { GameState, PlayerGameState, CardInstance } from '../../../domain/value-objects';
+import {
+  GameState,
+  PlayerGameState,
+  CardInstance,
+} from '../../../domain/value-objects';
 import {
   CardType,
   TrainerType,
@@ -22,7 +26,12 @@ import {
   TrainerEffectType,
 } from '../../../../card/domain/enums';
 import { TargetType } from '../../../../card/domain/enums/target-type.enum';
-import { PokemonPosition, PlayerIdentifier, TurnPhase, StatusEffect } from '../../../domain/enums';
+import {
+  PokemonPosition,
+  PlayerIdentifier,
+  TurnPhase,
+  StatusEffect,
+} from '../../../domain/enums';
 import {
   TrainerCardOption,
   TrainerCardCategory,
@@ -110,10 +119,7 @@ describe('TrainerCardAnalyzerService', () => {
   };
 
   // Helper function to create a basic Energy card
-  const createEnergyCard = (
-    cardId: string,
-    energyType: EnergyType,
-  ): Card => {
+  const createEnergyCard = (cardId: string, energyType: EnergyType): Card => {
     const card = Card.createEnergyCard(
       `instance-${cardId}`,
       cardId,
@@ -185,7 +191,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '50', 'Deal 50 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '50',
+          'Deal 50 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -194,7 +205,11 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         60,
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -223,7 +238,10 @@ describe('TrainerCardAnalyzerService', () => {
       const cardsMap = new Map<string, Card>();
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -251,7 +269,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '50', 'Deal 50 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '50',
+          'Deal 50 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -262,7 +285,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '70', 'Deal 70 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '70',
+          'Deal 70 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -271,7 +299,11 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         60,
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -301,8 +333,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -336,7 +374,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '50', 'Deal 50 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '50',
+          'Deal 50 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -357,9 +400,19 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['water-energy-1', 'water-energy-2'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 100, [
-        new Attack('Hydro Pump', [EnergyType.WATER, EnergyType.WATER], '100', 'Deal 100 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        100,
+        [
+          new Attack(
+            'Hydro Pump',
+            [EnergyType.WATER, EnergyType.WATER],
+            '100',
+            'Deal 100 damage',
+          ),
+        ],
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -389,9 +442,18 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('water-energy-2', createEnergyCard('water-energy-2', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-2',
+        createEnergyCard('water-energy-2', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -426,7 +488,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['electric-energy-1'], // Electric energy for Thunderbolt attack
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '50', 'Deal 50 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '50',
+          'Deal 50 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -437,7 +504,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '60', 'Deal 60 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '60',
+          'Deal 60 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -447,9 +519,12 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 100, [
-        new Attack('Water Gun', [EnergyType.WATER], '30', 'Deal 30 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        100,
+        [new Attack('Water Gun', [EnergyType.WATER], '30', 'Deal 30 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -479,10 +554,22 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('electric-energy-1', createEnergyCard('electric-energy-1', EnergyType.ELECTRIC));
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'electric-energy-1',
+        createEnergyCard('electric-energy-1', EnergyType.ELECTRIC),
+      );
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -510,9 +597,12 @@ describe('TrainerCardAnalyzerService', () => {
         TrainerEffectType.SWITCH_ACTIVE,
         TargetType.SELF,
       );
-      const switchCard = createTrainerCard('switch-001', 'Switch', TrainerType.ITEM, [
-        switchEffect,
-      ]);
+      const switchCard = createTrainerCard(
+        'switch-001',
+        'Switch',
+        TrainerType.ITEM,
+        [switchEffect],
+      );
       const activePokemon = createCardInstance(
         'active-001',
         'pokemon-001',
@@ -522,7 +612,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '40', 'Deal 40 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '40',
+          'Deal 40 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -533,7 +628,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '70', 'Deal 70 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '70',
+          'Deal 70 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -543,9 +643,12 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60, [
-        new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+        [new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         ['switch-001'], // Has Switch card
@@ -576,9 +679,18 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       // TODO: Implement evaluateSwitchRetreatStrategy method
@@ -615,7 +727,12 @@ describe('TrainerCardAnalyzerService', () => {
         [], // No energy attached (free retreat)
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '40', 'Deal 40 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '40',
+          'Deal 40 damage',
+        ),
       ]);
       activeCard.setRetreatCost(0); // Free retreat (retreat cost 0)
       const benchPokemon = createCardInstance(
@@ -627,7 +744,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '70', 'Deal 70 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '70',
+          'Deal 70 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -637,9 +759,12 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60, [
-        new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+        [new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -669,9 +794,18 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -705,7 +839,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '40', 'Deal 40 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '40',
+          'Deal 40 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -726,9 +865,12 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 100, [
-        new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        100,
+        [new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage')],
+      );
       // Player has 1 prize card remaining (losing next knockout = game over)
       const playerState = new PlayerGameState(
         [],
@@ -759,8 +901,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -797,7 +945,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '40', 'Deal 40 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '40',
+          'Deal 40 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -818,9 +971,12 @@ describe('TrainerCardAnalyzerService', () => {
         100,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 100, [
-        new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        100,
+        [new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -850,8 +1006,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -883,7 +1045,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'], // Has 1 energy (enough for retreat cost of 1)
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '40', 'Deal 40 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '40',
+          'Deal 40 damage',
+        ),
       ]);
       activeCard.setRetreatCost(1); // Set retreat cost to 1
       const benchPokemon = createCardInstance(
@@ -895,7 +1062,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '70', 'Deal 70 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '70',
+          'Deal 70 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -905,9 +1077,12 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60, [
-        new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+        [new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -937,9 +1112,18 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -970,9 +1154,12 @@ describe('TrainerCardAnalyzerService', () => {
         TrainerEffectType.SWITCH_ACTIVE,
         TargetType.SELF,
       );
-      const switchCard = createTrainerCard('switch-001', 'Switch', TrainerType.ITEM, [
-        switchEffect,
-      ]);
+      const switchCard = createTrainerCard(
+        'switch-001',
+        'Switch',
+        TrainerType.ITEM,
+        [switchEffect],
+      );
       const activePokemon = createCardInstance(
         'active-001',
         'pokemon-001',
@@ -982,7 +1169,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'], // Has energy, but should prefer trainer card
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '40', 'Deal 40 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '40',
+          'Deal 40 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -993,7 +1185,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '70', 'Deal 70 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '70',
+          'Deal 70 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -1003,9 +1200,12 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60, [
-        new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+        [new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         ['switch-001'], // Has Switch card
@@ -1036,9 +1236,18 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       // TODO: Implement evaluateSwitchRetreatStrategy method
@@ -1078,7 +1287,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '60', 'Deal 60 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '60',
+          'Deal 60 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -1089,7 +1303,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2', 'fire-energy-3'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Blastoise', 100, [
-        new Attack('Hydro Pump', [EnergyType.WATER, EnergyType.WATER, EnergyType.WATER], '70', 'Deal 70 damage'),
+        new Attack(
+          'Hydro Pump',
+          [EnergyType.WATER, EnergyType.WATER, EnergyType.WATER],
+          '70',
+          'Deal 70 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -1099,9 +1318,19 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1', 'water-energy-2'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60, [
-        new Attack('Hydro Pump', [EnergyType.WATER, EnergyType.WATER], '100', 'Deal 100 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+        [
+          new Attack(
+            'Hydro Pump',
+            [EnergyType.WATER, EnergyType.WATER],
+            '100',
+            'Deal 100 damage',
+          ),
+        ],
+      );
       // Player has 1 prize card remaining (winning condition)
       const playerState = new PlayerGameState(
         [],
@@ -1132,11 +1361,26 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('fire-energy-3', createEnergyCard('fire-energy-3', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('water-energy-2', createEnergyCard('water-energy-2', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-3',
+        createEnergyCard('fire-energy-3', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-2',
+        createEnergyCard('water-energy-2', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -1172,7 +1416,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '50', 'Deal 50 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '50',
+          'Deal 50 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -1183,7 +1432,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '60', 'Deal 60 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '60',
+          'Deal 60 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -1192,7 +1446,11 @@ describe('TrainerCardAnalyzerService', () => {
         60, // 60 HP (bench can KO in 1 turn, active cannot)
         60,
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+      );
       // Player has 1 prize card remaining (winning condition)
       const playerState = new PlayerGameState(
         [],
@@ -1223,8 +1481,14 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -1261,7 +1525,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '60', 'Deal 60 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '60',
+          'Deal 60 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -1272,7 +1541,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['water-energy-1', 'water-energy-2', 'water-energy-3'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Blastoise', 100, [
-        new Attack('Hydro Pump', [EnergyType.WATER, EnergyType.WATER, EnergyType.WATER], '120', 'Flip a coin. If tails, this attack does nothing.'),
+        new Attack(
+          'Hydro Pump',
+          [EnergyType.WATER, EnergyType.WATER, EnergyType.WATER],
+          '120',
+          'Flip a coin. If tails, this attack does nothing.',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -1281,7 +1555,11 @@ describe('TrainerCardAnalyzerService', () => {
         60, // 60 HP
         60,
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Pikachu', 60);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Pikachu',
+        60,
+      );
       // Player has 1 prize card remaining (winning condition)
       const playerState = new PlayerGameState(
         [],
@@ -1312,11 +1590,26 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
-      cardsMap.set('water-energy-2', createEnergyCard('water-energy-2', EnergyType.WATER));
-      cardsMap.set('water-energy-3', createEnergyCard('water-energy-3', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-2',
+        createEnergyCard('water-energy-2', EnergyType.WATER),
+      );
+      cardsMap.set(
+        'water-energy-3',
+        createEnergyCard('water-energy-3', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -1333,7 +1626,9 @@ describe('TrainerCardAnalyzerService', () => {
       // Active can win guaranteed, so prefer that
       expect(switchOption).toBeDefined();
       expect(switchOption!.shouldSwitch).toBe(false);
-      expect(switchOption!.reason.toLowerCase()).toMatch(/guaranteed|coin|toss|flip|certain/);
+      expect(switchOption!.reason.toLowerCase()).toMatch(
+        /guaranteed|coin|toss|flip|certain/,
+      );
       expect(switchOption!.reason.toLowerCase()).toContain('win');
     });
 
@@ -1357,7 +1652,12 @@ describe('TrainerCardAnalyzerService', () => {
         2, // paralysisClearsAtTurn
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '40', 'Deal 40 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '40',
+          'Deal 40 damage',
+        ),
       ]);
       const benchPokemon = createCardInstance(
         'bench-001',
@@ -1368,7 +1668,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '70', 'Deal 70 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '70',
+          'Deal 70 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -1378,9 +1683,12 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60, [
-        new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+        [new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -1410,9 +1718,18 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -1428,7 +1745,9 @@ describe('TrainerCardAnalyzerService', () => {
       // This should be a quick return without evaluating bench Pokemon options
       expect(switchOption).toBeDefined();
       expect(switchOption!.shouldSwitch).toBe(false);
-      expect(switchOption!.reason.toLowerCase()).toMatch(/retreat|switch|blocked|not allowed|cannot|paralyzed/);
+      expect(switchOption!.reason.toLowerCase()).toMatch(
+        /retreat|switch|blocked|not allowed|cannot|paralyzed/,
+      );
     });
 
     it('should return no switch immediately when Pokemon has CANNOT_RETREAT card rule', async () => {
@@ -1445,7 +1764,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1'],
       );
       const activeCard = createPokemonCard('pokemon-001', 'Pikachu', 100, [
-        new Attack('Thunderbolt', [EnergyType.ELECTRIC], '40', 'Deal 40 damage'),
+        new Attack(
+          'Thunderbolt',
+          [EnergyType.ELECTRIC],
+          '40',
+          'Deal 40 damage',
+        ),
       ]);
       // Set CANNOT_RETREAT rule on card
       activeCard.setCardRules([CardRuleFactory.cannotRetreat()]);
@@ -1458,7 +1782,12 @@ describe('TrainerCardAnalyzerService', () => {
         ['fire-energy-1', 'fire-energy-2'],
       );
       const benchCard = createPokemonCard('pokemon-002', 'Charizard', 100, [
-        new Attack('Fire Blast', [EnergyType.FIRE, EnergyType.FIRE], '70', 'Deal 70 damage'),
+        new Attack(
+          'Fire Blast',
+          [EnergyType.FIRE, EnergyType.FIRE],
+          '70',
+          'Deal 70 damage',
+        ),
       ]);
       const opponentActive = createCardInstance(
         'opponent-active-001',
@@ -1468,9 +1797,12 @@ describe('TrainerCardAnalyzerService', () => {
         60,
         ['water-energy-1'],
       );
-      const opponentCard = createPokemonCard('opponent-pokemon-001', 'Blastoise', 60, [
-        new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage'),
-      ]);
+      const opponentCard = createPokemonCard(
+        'opponent-pokemon-001',
+        'Blastoise',
+        60,
+        [new Attack('Water Gun', [EnergyType.WATER], '50', 'Deal 50 damage')],
+      );
       const playerState = new PlayerGameState(
         [],
         [],
@@ -1500,9 +1832,18 @@ describe('TrainerCardAnalyzerService', () => {
       cardsMap.set('pokemon-001', activeCard);
       cardsMap.set('pokemon-002', benchCard);
       cardsMap.set('opponent-pokemon-001', opponentCard);
-      cardsMap.set('fire-energy-1', createEnergyCard('fire-energy-1', EnergyType.FIRE));
-      cardsMap.set('fire-energy-2', createEnergyCard('fire-energy-2', EnergyType.FIRE));
-      cardsMap.set('water-energy-1', createEnergyCard('water-energy-1', EnergyType.WATER));
+      cardsMap.set(
+        'fire-energy-1',
+        createEnergyCard('fire-energy-1', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'fire-energy-2',
+        createEnergyCard('fire-energy-2', EnergyType.FIRE),
+      );
+      cardsMap.set(
+        'water-energy-1',
+        createEnergyCard('water-energy-1', EnergyType.WATER),
+      );
 
       // Act
       const switchOption = await service.evaluateSwitchRetreatStrategy(
@@ -1518,7 +1859,9 @@ describe('TrainerCardAnalyzerService', () => {
       // This should be a quick return without evaluating bench Pokemon options
       expect(switchOption).toBeDefined();
       expect(switchOption!.shouldSwitch).toBe(false);
-      expect(switchOption!.reason.toLowerCase()).toMatch(/retreat|switch|blocked|not allowed|cannot|rule/);
+      expect(switchOption!.reason.toLowerCase()).toMatch(
+        /retreat|switch|blocked|not allowed|cannot|rule/,
+      );
     });
   });
 });

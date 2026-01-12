@@ -213,7 +213,9 @@ export class CardInstance {
       status === StatusEffect.POISONED ? undefined : this.poisonDamageAmount;
     // Clear paralysisClearsAtTurn if removing PARALYZED
     const newParalysisClearsAtTurn =
-      status === StatusEffect.PARALYZED ? undefined : this.paralysisClearsAtTurn;
+      status === StatusEffect.PARALYZED
+        ? undefined
+        : this.paralysisClearsAtTurn;
     return new CardInstance(
       this.instanceId,
       this.cardId,

@@ -13,4 +13,3 @@ export * from './use-ability-action-handler';
 export * from './end-turn-action-handler';
 export * from './generate-coin-flip-action-handler';
 export * from './attack-action-handler';
-

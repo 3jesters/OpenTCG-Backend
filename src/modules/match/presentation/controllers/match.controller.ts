@@ -32,13 +32,8 @@ import {
   MatchListResponseDto,
   AiPlayerResponseDto,
 } from '../dto';
-import {
-  CreateMatchDto,
-  JoinMatchDto,
-} from '../../application/dto';
-import {
-  MatchState,
-} from '../../domain';
+import { CreateMatchDto, JoinMatchDto } from '../../application/dto';
+import { MatchState } from '../../domain';
 
 /**
  * Match Controller
@@ -191,8 +186,10 @@ export class MatchController {
     @Param('matchId') matchId: string,
     @Body() requestDto: ExecuteActionRequestDto,
   ): Promise<MatchStateResponseDto> {
-    const { match, availableActions } =
-      await this.processActionUseCase.execute(requestDto, matchId);
+    const { match, availableActions } = await this.processActionUseCase.execute(
+      requestDto,
+      matchId,
+    );
 
     return await MatchStateResponseDto.fromDomain(
       match,

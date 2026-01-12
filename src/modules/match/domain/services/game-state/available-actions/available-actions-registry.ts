@@ -4,7 +4,10 @@ import {
   PlayerIdentifier,
   PlayerActionType,
 } from '../../../enums';
-import { AvailableActionsProvider, GameStateContext } from './available-actions-provider.interface';
+import {
+  AvailableActionsProvider,
+  GameStateContext,
+} from './available-actions-provider.interface';
 import { MatchStateActionProvider } from './match-state-action-provider';
 import { PlayerTurnPhaseActionProvider } from './player-turn-phase-action-provider';
 
@@ -42,4 +45,3 @@ export class AvailableActionsRegistry {
     return [PlayerActionType.CONCEDE];
   }
 }
-
