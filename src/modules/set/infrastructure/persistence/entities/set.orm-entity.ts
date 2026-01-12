@@ -34,6 +34,10 @@ export class SetOrmEntity {
   @Index()
   official: boolean;
 
+  @Column({ type: 'varchar' })
+  @Index()
+  ownerId: string;
+
   @Column({ type: 'text', nullable: true })
   symbolUrl: string | null;
 

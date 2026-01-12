@@ -7,12 +7,16 @@ import { SetOrmEntity } from '../entities';
  */
 export class SetOrmMapper {
   static toDomain(ormEntity: SetOrmEntity): Set {
+    // Default to 'system' for backward compatibility during migration
+    const ownerId = ormEntity.ownerId || 'system';
+    
     const set = new Set(
       ormEntity.id,
       ormEntity.name,
       ormEntity.series,
       ormEntity.releaseDate,
       ormEntity.totalCards,
+      ownerId,
     );
 
     if (ormEntity.description) {
@@ -42,6 +46,7 @@ export class SetOrmMapper {
     ormEntity.totalCards = domainEntity.totalCards;
     ormEntity.description = domainEntity.description || null;
     ormEntity.official = domainEntity.official;
+    ormEntity.ownerId = domainEntity.ownerId;
     ormEntity.symbolUrl = domainEntity.symbolUrl || null;
     ormEntity.logoUrl = domainEntity.logoUrl || null;
 

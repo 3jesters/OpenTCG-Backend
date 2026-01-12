@@ -9,6 +9,8 @@ import { DatabaseModule } from '../../shared/infrastructure/database/database.mo
 import { CreateSetUseCase } from './application/use-cases/create-set.use-case';
 import { GetSetsUseCase } from './application/use-cases/get-sets.use-case';
 import { GetSetByIdUseCase } from './application/use-cases/get-set-by-id.use-case';
+import { UpdateSetUseCase } from './application/use-cases/update-set.use-case';
+import { DeleteSetUseCase } from './application/use-cases/delete-set.use-case';
 import { SetController } from './presentation/controllers/set.controller';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
@@ -39,6 +41,8 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     CreateSetUseCase,
     GetSetsUseCase,
     GetSetByIdUseCase,
+    UpdateSetUseCase,
+    DeleteSetUseCase,
   ],
   exports: [
     // Export cache and repository so other modules can access sets if needed

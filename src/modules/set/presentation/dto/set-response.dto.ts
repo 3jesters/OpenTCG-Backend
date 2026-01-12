@@ -11,10 +11,13 @@ export class SetResponseDto {
   totalCards: number;
   description?: string;
   official: boolean;
+  ownerId: string;
+  isGlobal: boolean;
+  canEdit: boolean;
   symbolUrl?: string;
   logoUrl?: string;
 
-  static fromDomain(set: Set): SetResponseDto {
+  static fromDomain(set: Set, userId?: string): SetResponseDto {
     return {
       id: set.id,
       name: set.name,
@@ -23,12 +26,15 @@ export class SetResponseDto {
       totalCards: set.totalCards,
       description: set.description,
       official: set.official,
+      ownerId: set.ownerId,
+      isGlobal: set.isGlobal(),
+      canEdit: userId ? set.canEdit(userId) : false,
       symbolUrl: set.symbolUrl,
       logoUrl: set.logoUrl,
     };
   }
 
-  static fromDomainArray(sets: Set[]): SetResponseDto[] {
-    return sets.map((set) => this.fromDomain(set));
+  static fromDomainArray(sets: Set[], userId?: string): SetResponseDto[] {
+    return sets.map((set) => this.fromDomain(set, userId));
   }
 }

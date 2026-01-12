@@ -13,6 +13,7 @@ export class Set {
   private _official: boolean;
   private _symbolUrl?: string;
   private _logoUrl?: string;
+  private readonly _ownerId: string;
 
   constructor(
     id: string,
@@ -20,6 +21,7 @@ export class Set {
     series: string,
     releaseDate: string,
     totalCards: number,
+    ownerId: string,
   ) {
     this._id = id;
     this._name = name;
@@ -27,6 +29,7 @@ export class Set {
     this._releaseDate = releaseDate;
     this._totalCards = totalCards;
     this._official = false;
+    this._ownerId = ownerId;
 
     this.validate();
   }
@@ -71,6 +74,10 @@ export class Set {
     return this._logoUrl;
   }
 
+  get ownerId(): string {
+    return this._ownerId;
+  }
+
   // ========================================
   // Business Logic - Setters with Validation
   // ========================================
@@ -106,6 +113,40 @@ export class Set {
     return this._official;
   }
 
+  /**
+   * Check if this set is global (owned by system)
+   */
+  isGlobal(): boolean {
+    return this._ownerId === 'system';
+  }
+
+  /**
+   * Check if this set is owned by a specific user
+   */
+  isOwnedBy(userId: string): boolean {
+    return this._ownerId === userId;
+  }
+
+  /**
+   * Check if a user can edit this set
+   * Global sets cannot be edited by anyone
+   * Private sets can only be edited by their owner
+   */
+  canEdit(userId: string): boolean {
+    if (this.isGlobal()) {
+      return false; // Global sets cannot be edited
+    }
+    return this.isOwnedBy(userId);
+  }
+
+  /**
+   * Check if a user can view this set
+   * All sets are visible to everyone
+   */
+  canView(userId: string): boolean {
+    return true; // All sets are visible
+  }
+
   // ========================================
   // Validation
   // ========================================
@@ -122,6 +163,9 @@ export class Set {
     }
     if (this._totalCards < 0) {
       throw new Error('Total cards must be greater than or equal to 0');
+    }
+    if (!this._ownerId || this._ownerId.trim() === '') {
+      throw new Error('Owner ID is required');
     }
   }
 }

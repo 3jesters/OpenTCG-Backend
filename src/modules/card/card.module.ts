@@ -35,6 +35,7 @@ import { CardStrengthCalculatorService } from './domain/services/card-strength-c
 import { CalculateCardStrengthUseCase } from './application/use-cases/calculate-card-strength.use-case';
 import { CreateCardUseCase } from './application/use-cases/create-card.use-case';
 import { SearchCardsUseCase } from './application/use-cases/search-cards.use-case';
+import { DuplicateCardUseCase } from './application/use-cases/duplicate-card.use-case';
 import { CardEditorValidator } from './application/services/card-editor.validator';
 import { CardEditorController } from './presentation/controllers/card-editor.controller';
 
@@ -105,6 +106,7 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
       provide: ISearchCardsUseCase,
       useClass: SearchCardsUseCase,
     },
+    DuplicateCardUseCase,
     CardEditorValidator,
     // File reader only for dev/test
     ...(nodeEnv === 'dev' || nodeEnv === 'test'

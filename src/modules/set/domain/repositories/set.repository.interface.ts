@@ -29,6 +29,21 @@ export interface ISetRepository {
    * Check if a set exists
    */
   exists(id: string): Promise<boolean>;
+
+  /**
+   * Find all sets owned by a specific user
+   */
+  findByOwnerId(ownerId: string): Promise<Set[]>;
+
+  /**
+   * Find all global sets (owned by system)
+   */
+  findGlobalSets(): Promise<Set[]>;
+
+  /**
+   * Find all sets accessible to a user (global + user's private sets)
+   */
+  findAccessibleSets(userId: string): Promise<Set[]>;
 }
 
 /**

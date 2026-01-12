@@ -97,16 +97,36 @@ export class FileSystemSetRepository implements ISetRepository {
     }
   }
 
+  async findByOwnerId(ownerId: string): Promise<Set[]> {
+    const allSets = await this.findAll();
+    return allSets.filter((set) => set.ownerId === ownerId);
+  }
+
+  async findGlobalSets(): Promise<Set[]> {
+    return this.findByOwnerId('system');
+  }
+
+  async findAccessibleSets(userId: string): Promise<Set[]> {
+    const allSets = await this.findAll();
+    return allSets.filter(
+      (set) => set.ownerId === 'system' || set.ownerId === userId,
+    );
+  }
+
   /**
    * Convert JSON to Set domain entity
    */
   private jsonToSet(json: any): Set {
+    // Default to 'system' for backward compatibility during migration
+    const ownerId = json.ownerId || 'system';
+
     const set = new Set(
       json.id,
       json.name,
       json.series,
       json.releaseDate,
       json.totalCards,
+      ownerId,
     );
 
     if (json.description) {
@@ -140,6 +160,7 @@ export class FileSystemSetRepository implements ISetRepository {
       totalCards: set.totalCards,
       description: set.description,
       official: set.official,
+      ownerId: set.ownerId,
       symbolUrl: set.symbolUrl,
       logoUrl: set.logoUrl,
     };

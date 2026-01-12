@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, HttpCode, HttpStatus, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, HttpCode, HttpStatus, Inject } from '@nestjs/common';
 import {
   IGetAvailableSetsUseCase,
   IPreviewSetUseCase,
@@ -6,6 +6,7 @@ import {
   ICalculateCardStrengthUseCase,
   ISearchCardsUseCase,
 } from '../../application/ports/card-use-cases.interface';
+import { DuplicateCardUseCase } from '../../application/use-cases/duplicate-card.use-case';
 import { GetAvailableSetsResponseDto } from '../dto/get-available-sets-response.dto';
 import { GetCardsResponseDto } from '../dto/get-cards-response.dto';
 import { CardDetailDto } from '../dto/card-detail.dto';
@@ -13,6 +14,7 @@ import { CardStrengthResponseDto } from '../dto/card-strength-response.dto';
 import { SearchCardsRequestDto } from '../dto/search-cards-request.dto';
 import { SearchCardsResponseDto } from '../dto/search-cards-response.dto';
 import { ListSetsRequestDto } from '../dto/list-sets-request.dto';
+import { DuplicateCardDto } from '../dto/duplicate-card.dto';
 
 /**
  * Card Controller
@@ -32,6 +34,7 @@ export class CardController {
     private readonly calculateCardStrengthUseCase: ICalculateCardStrengthUseCase,
     @Inject(ISearchCardsUseCase)
     private readonly searchCardsUseCase: ISearchCardsUseCase,
+    private readonly duplicateCardUseCase: DuplicateCardUseCase,
   ) {}
 
   /**
@@ -111,5 +114,28 @@ export class CardController {
   ): Promise<CardStrengthResponseDto> {
     const result = await this.calculateCardStrengthUseCase.execute(cardId);
     return CardStrengthResponseDto.fromDomain(result);
+  }
+
+  /**
+   * Duplicate a card from any set into a user's private set
+   * @param dto - Duplication request data
+   * @param userId - User ID from query parameter (placeholder for auth)
+   */
+  @Post('duplicate')
+  @HttpCode(HttpStatus.CREATED)
+  async duplicateCard(
+    @Body() dto: DuplicateCardDto,
+    @Query('userId') userId?: string,
+  ): Promise<CardDetailDto> {
+    // TODO: Replace with proper authentication when implemented
+    if (!userId) {
+      throw new Error('User ID is required. Provide ?userId=xxx for now.');
+    }
+    return await this.duplicateCardUseCase.execute(
+      dto.sourceCardId,
+      userId,
+      dto.targetSetId,
+      dto.targetSetName,
+    );
   }
 }

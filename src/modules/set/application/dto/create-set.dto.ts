@@ -46,4 +46,8 @@ export class CreateSetDto {
   @IsOptional()
   @IsString()
   logoUrl?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isGlobal?: boolean;
 }

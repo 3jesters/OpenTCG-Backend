@@ -43,5 +43,26 @@ export class TypeOrmSetRepository implements ISetRepository {
     const count = await this.setEntityRepository.count({ where: { id } });
     return count > 0;
   }
+
+  async findByOwnerId(ownerId: string): Promise<Set[]> {
+    const entities = await this.setEntityRepository.find({
+      where: { ownerId },
+    });
+    return entities.map(SetOrmMapper.toDomain);
+  }
+
+  async findGlobalSets(): Promise<Set[]> {
+    const entities = await this.setEntityRepository.find({
+      where: { ownerId: 'system' },
+    });
+    return entities.map(SetOrmMapper.toDomain);
+  }
+
+  async findAccessibleSets(userId: string): Promise<Set[]> {
+    const entities = await this.setEntityRepository.find({
+      where: [{ ownerId: 'system' }, { ownerId: userId }],
+    });
+    return entities.map(SetOrmMapper.toDomain);
+  }
 }
 

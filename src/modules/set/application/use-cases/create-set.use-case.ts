@@ -1,5 +1,6 @@
-import { Injectable, Inject, ConflictException } from '@nestjs/common';
+import { Injectable, Inject, ConflictException, ForbiddenException } from '@nestjs/common';
 import { ISetCache } from '../../domain/repositories/set-cache.interface';
+import { ISetRepository } from '../../domain/repositories/set.repository.interface';
 import { CreateSetDto } from '../dto/create-set.dto';
 import { Set } from '../../domain/entities/set.entity';
 
@@ -11,12 +12,30 @@ export class CreateSetUseCase {
   constructor(
     @Inject(ISetCache)
     private readonly setCache: ISetCache,
+    @Inject(ISetRepository)
+    private readonly setRepository: ISetRepository,
   ) {}
 
-  async execute(dto: CreateSetDto): Promise<Set> {
+  async execute(dto: CreateSetDto, userId: string): Promise<Set> {
     // Check if set already exists
-    if (this.setCache.exists(dto.id)) {
+    const exists = await this.setRepository.exists(dto.id);
+    if (exists) {
       throw new ConflictException(`Set with ID ${dto.id} already exists`);
+    }
+
+    // Determine ownerId and official flag based on isGlobal
+    let ownerId: string;
+    let official: boolean;
+
+    if (dto.isGlobal === true) {
+      // Only system can create global sets (enforce in controller/guard when auth is implemented)
+      // For now, we'll allow it but this should be restricted later
+      ownerId = 'system';
+      official = true;
+    } else {
+      // Private set owned by user
+      ownerId = userId;
+      official = dto.official ?? false;
     }
 
     // Create set entity
@@ -26,6 +45,7 @@ export class CreateSetUseCase {
       dto.series,
       dto.releaseDate,
       dto.totalCards,
+      ownerId,
     );
 
     // Set optional fields
@@ -33,9 +53,7 @@ export class CreateSetUseCase {
       set.setDescription(dto.description);
     }
 
-    if (dto.official !== undefined) {
-      set.setOfficial(dto.official);
-    }
+    set.setOfficial(official);
 
     if (dto.symbolUrl) {
       set.setSymbolUrl(dto.symbolUrl);
@@ -45,9 +63,12 @@ export class CreateSetUseCase {
       set.setLogoUrl(dto.logoUrl);
     }
 
-    // Add to cache
-    await this.setCache.add(set);
+    // Save to repository
+    const savedSet = await this.setRepository.save(set);
 
-    return set;
+    // Add to cache
+    await this.setCache.add(savedSet);
+
+    return savedSet;
   }
 }
