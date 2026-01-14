@@ -24,6 +24,8 @@ services:
       dockerfile: Dockerfile
     container_name: opentcg-app
     environment:
+      # Authentication: staging/production uses Google OAuth (not username auth)
+      # Local dev (NODE_ENV=dev) uses simple username authentication
       NODE_ENV: staging
       DB_HOST: postgres
       DB_PORT: 5432
@@ -31,6 +33,14 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DB_DATABASE: ${DB_DATABASE:-opentcg}
       PORT: ${PORT:-3000}
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-15m}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-7d}
+      # Google OAuth Configuration
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
     ports:
       - "${PORT:-3000}:3000"
     depends_on:
@@ -39,6 +49,27 @@ services:
     networks:
       - opentcg-network
     restart: unless-stopped
+
+  frontend:
+    build:
+      context: ../OpenTCG-Frontend/app
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE_URL: /api/v1
+    container_name: opentcg-frontend
+    ports:
+      - "${FRONTEND_PORT:-3001}:80"
+    depends_on:
+      - app
+    networks:
+      - opentcg-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 volumes:
   postgres_data:

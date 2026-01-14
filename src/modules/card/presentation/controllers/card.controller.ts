@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  UseGuards,
 } from '@nestjs/common';
 import {
   IGetAvailableSetsUseCase,
@@ -25,12 +26,17 @@ import { SearchCardsRequestDto } from '../dto/search-cards-request.dto';
 import { SearchCardsResponseDto } from '../dto/search-cards-response.dto';
 import { ListSetsRequestDto } from '../dto/list-sets-request.dto';
 import { DuplicateCardDto } from '../dto/duplicate-card.dto';
+import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard';
+import { CurrentUser } from '../../../auth/infrastructure/decorators/current-user.decorator';
+import type { JwtPayload } from '../../../auth/infrastructure/services/jwt.service';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 
 /**
  * Card Controller
  * Handles HTTP requests for card operations
  * Uses interface injection to support both file-based (dev/test) and database (staging/prod) implementations
  */
+@ApiTags('cards')
 @Controller('api/v1/cards')
 export class CardController {
   constructor(
@@ -129,21 +135,28 @@ export class CardController {
   /**
    * Duplicate a card from any set into a user's private set
    * @param dto - Duplication request data
-   * @param userId - User ID from query parameter (placeholder for auth)
+   * @param user - Authenticated user from JWT token
+   * @param userId - User ID from query parameter (for backward compatibility)
    */
   @Post('duplicate')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Duplicate a card into a user\'s private set' })
+  @ApiResponse({ status: 201, description: 'Card duplicated successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @HttpCode(HttpStatus.CREATED)
   async duplicateCard(
     @Body() dto: DuplicateCardDto,
+    @CurrentUser() user: JwtPayload,
     @Query('userId') userId?: string,
   ): Promise<CardDetailDto> {
-    // TODO: Replace with proper authentication when implemented
-    if (!userId) {
-      throw new Error('User ID is required. Provide ?userId=xxx for now.');
+    const effectiveUserId = user?.sub || userId;
+    if (!effectiveUserId) {
+      throw new Error('User ID is required. Please authenticate or provide ?userId=xxx for backward compatibility.');
     }
     return await this.duplicateCardUseCase.execute(
       dto.sourceCardId,
-      userId,
+      effectiveUserId,
       dto.targetSetId,
       dto.targetSetName,
     );

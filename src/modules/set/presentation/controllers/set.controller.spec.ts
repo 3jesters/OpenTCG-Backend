@@ -7,6 +7,7 @@ import { UpdateSetUseCase } from '../../application/use-cases/update-set.use-cas
 import { DeleteSetUseCase } from '../../application/use-cases/delete-set.use-case';
 import { CreateSetDto } from '../../application/dto/create-set.dto';
 import { Set } from '../../domain/entities/set.entity';
+import { JwtPayload } from '../../../auth/infrastructure/services/jwt.service';
 
 describe('SetController', () => {
   let controller: SetController;
@@ -72,7 +73,7 @@ describe('SetController', () => {
   });
 
   describe('create', () => {
-    it('should create a set and return SetResponseDto', async () => {
+    it('should create a set with JWT authentication (username auth mode)', async () => {
       const dto: CreateSetDto = {
         id: 'base-set',
         name: 'Base Set',
@@ -91,11 +92,77 @@ describe('SetController', () => {
       );
       createSetUseCase.execute.mockResolvedValue(set);
 
-      const result = await controller.create(dto, 'user-123');
+      // Mock JWT payload from username auth
+      const mockUser: JwtPayload = {
+        sub: 'user-123',
+        email: 'testuser',
+        name: 'testuser',
+      };
+
+      const result = await controller.create(dto, mockUser, undefined);
 
       expect(result.id).toBe('base-set');
       expect(result.name).toBe('Base Set');
       expect(createSetUseCase.execute).toHaveBeenCalledWith(dto, 'user-123');
+    });
+
+    it('should create a set with JWT authentication (Google OAuth mode)', async () => {
+      const dto: CreateSetDto = {
+        id: 'base-set',
+        name: 'Base Set',
+        series: 'pokemon',
+        releaseDate: '1999-01-09',
+        totalCards: 102,
+      };
+
+      const set = new Set(
+        'base-set',
+        'Base Set',
+        'pokemon',
+        '1999-01-09',
+        102,
+        'google-user-456',
+      );
+      createSetUseCase.execute.mockResolvedValue(set);
+
+      // Mock JWT payload from Google OAuth
+      const mockUser: JwtPayload = {
+        sub: 'google-user-456',
+        email: 'user@gmail.com',
+        name: 'Google User',
+      };
+
+      const result = await controller.create(dto, mockUser, undefined);
+
+      expect(result.id).toBe('base-set');
+      expect(result.name).toBe('Base Set');
+      expect(createSetUseCase.execute).toHaveBeenCalledWith(dto, 'google-user-456');
+    });
+
+    it('should fallback to userId query parameter when user is not authenticated', async () => {
+      const dto: CreateSetDto = {
+        id: 'base-set',
+        name: 'Base Set',
+        series: 'pokemon',
+        releaseDate: '1999-01-09',
+        totalCards: 102,
+      };
+
+      const set = new Set(
+        'base-set',
+        'Base Set',
+        'pokemon',
+        '1999-01-09',
+        102,
+        'fallback-user',
+      );
+      createSetUseCase.execute.mockResolvedValue(set);
+
+      // No user in request (undefined)
+      const result = await controller.create(dto, undefined, 'fallback-user');
+
+      expect(result.id).toBe('base-set');
+      expect(createSetUseCase.execute).toHaveBeenCalledWith(dto, 'fallback-user');
     });
   });
 
@@ -108,7 +175,7 @@ describe('SetController', () => {
 
       getSetsUseCase.execute.mockResolvedValue(sets);
 
-      const result = await controller.getAll();
+      const result = await controller.getAll(undefined, undefined, undefined, undefined);
 
       expect(result).toHaveLength(2);
       expect(result[0].id).toBe('base-set');
@@ -127,7 +194,7 @@ describe('SetController', () => {
 
       getSetsUseCase.execute.mockResolvedValue(sets);
 
-      const result = await controller.getAll('pokemon');
+      const result = await controller.getAll('pokemon', undefined, undefined, undefined);
 
       expect(result).toHaveLength(1);
       expect(result[0].series).toBe('pokemon');
@@ -151,7 +218,7 @@ describe('SetController', () => {
       );
       getSetByIdUseCase.execute.mockResolvedValue(set);
 
-      const result = await controller.getById('base-set');
+      const result = await controller.getById('base-set', undefined, undefined);
 
       expect(result.id).toBe('base-set');
       expect(result.name).toBe('Base Set');

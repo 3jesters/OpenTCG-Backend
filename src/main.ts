@@ -43,6 +43,17 @@ async function bootstrap() {
     .addTag('decks', 'Deck builder and validation')
     .addTag('matches', 'Game match management')
     .addTag('tournaments', 'Tournament system')
+    .addTag('auth', 'Authentication endpoints')
+    .addTag('users', 'User management')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Enter JWT token',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

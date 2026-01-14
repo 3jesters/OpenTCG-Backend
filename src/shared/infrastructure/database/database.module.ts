@@ -8,7 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
  * Only initializes TypeORM when NODE_ENV is not 'dev' or 'test'
  *
  * In dev/test mode, this module is imported but TypeORM is not initialized,
- * preventing database connection attempts.
+ * preventing database connection attempts. File-based repositories are used instead.
  */
 const nodeEnv = process.env.NODE_ENV || 'dev';
 const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
