@@ -41,6 +41,8 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      # Frontend URL for OAuth redirects
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
     ports:
       - "${PORT:-3000}:3000"
     depends_on:
