@@ -3,43 +3,43 @@
   "name": "Classic Grass Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-29T19:26:59.357Z",
+  "updatedAt": "2026-01-17T18:41:53.285Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
   "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
   "cards": [
     {
-      "cardId": "pokemon-base-set-v1.0-bulbasaur--46",
+      "cardId": "pokemon-base-set-v1.0-bulbasaur-13-46",
       "setName": "base-set",
       "quantity": 4
     },
     {
-      "cardId": "pokemon-base-set-v1.0-ivysaur--30",
+      "cardId": "pokemon-base-set-v1.0-ivysaur-20-30",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-venusaur--15",
+      "cardId": "pokemon-base-set-v1.0-venusaur-67-15",
       "setName": "base-set",
       "quantity": 1
     },
     {
-      "cardId": "pokemon-base-set-v1.0-tangela--68",
+      "cardId": "pokemon-base-set-v1.0-tangela-8-68",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-caterpie--47",
+      "cardId": "pokemon-base-set-v1.0-caterpie-13-47",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-weedle--71",
+      "cardId": "pokemon-base-set-v1.0-weedle-12-71",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-nidoran--57",
+      "cardId": "pokemon-base-set-v1.0-nidoran-20-57",
       "setName": "base-set",
       "quantity": 2
     },

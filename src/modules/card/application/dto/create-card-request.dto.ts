@@ -157,6 +157,16 @@ export class CreateCardRequestDto {
   @IsEnum(EvolutionStage)
   stage: EvolutionStage;
 
+  @ApiPropertyOptional({
+    description: 'Numeric level (used in older sets, e.g., 12, 45)',
+    example: 12,
+    minimum: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  level?: number;
+
   @ApiProperty({ description: 'Pokemon type', enum: PokemonType })
   @IsEnum(PokemonType)
   pokemonType: PokemonType;

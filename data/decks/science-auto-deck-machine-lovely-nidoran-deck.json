@@ -1,0 +1,82 @@
+{
+  "id": "science-auto-deck-machine-lovely-nidoran-deck",
+  "name": "Science Auto Deck Machine - Lovely Nidoran Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:16.424Z",
+  "updatedAt": "2026-01-23T19:23:03.524Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-computer-search--73",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-grass-energy--100",
+      "setName": "base-set",
+      "quantity": 9
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-item-finder--76",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-nidoking-23-11",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-nidoran-20-57",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-nidorino-25-38",
+      "setName": "base-set",
+      "quantity": 8
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
+      "setName": "base-set",
+      "quantity": 6
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pokemon-trader--79",
+      "setName": "base-set",
+      "quantity": 6
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-lickitung-10-38",
+      "setName": "jungle",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-nidoqueen-43-7",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-nidorina-24-40",
+      "setName": "jungle",
+      "quantity": 6
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "id": "lightning-auto-deck-machine-cute-pokemon-deck",
+  "name": "Lightning Auto Deck Machine - Cute Pokémon Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:12.130Z",
+  "updatedAt": "2026-01-23T19:23:03.515Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-clefairy-14-5",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-clefairy-doll--72",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-computer-search--73",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-defender--82",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-double-colorless-energy--97",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-fire-energy--99",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-lightning-energy--101",
+      "setName": "base-set",
+      "quantity": 8
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-lightning-energy--103",
+      "setName": "base-set",
+      "quantity": 6
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pikachu-12-60",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pluspower--86",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--90",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-raichu-40-14",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-scoop-up--80",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-water-energy--103",
+      "setName": "base-set",
+      "quantity": 6
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-raichu-45-14",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-clefable-34-1",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-eevee-12-51",
+      "setName": "jungle",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-flareon-28-3",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-jigglypuff-14-54",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-jolteon-29-4",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-pikachu-14-60",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-vaporeon-42-12",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-wigglytuff-36-16",
+      "setName": "jungle",
+      "quantity": 2
+    }
+  ]
+}

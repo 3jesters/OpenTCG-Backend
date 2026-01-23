@@ -1,0 +1,82 @@
+{
+  "id": "fighting-auto-deck-machine-first-strike-deck",
+  "name": "Fighting Auto Deck Machine - First Strike Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:26.480Z",
+  "updatedAt": "2026-01-23T19:22:23.531Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-defender--82",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-fighting-energy--98",
+      "setName": "base-set",
+      "quantity": 25
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--94",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-hitmonchan-33-7",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-machamp-67-8",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-machoke-40-34",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-machop-20-54",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pluspower--86",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--90",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-hitmonlee-30-7",
+      "setName": "fossil",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-mankey-7-55",
+      "setName": "jungle",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-primeape-45-43",
+      "setName": "jungle",
+      "quantity": 1
+    }
+  ]
+}

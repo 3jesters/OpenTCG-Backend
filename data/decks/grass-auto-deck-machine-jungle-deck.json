@@ -1,0 +1,142 @@
+{
+  "id": "grass-auto-deck-machine-jungle-deck",
+  "name": "Grass Auto Deck Machine - Jungle Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:00.409Z",
+  "updatedAt": "2026-01-23T19:23:03.506Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-defender--82",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-double-colorless-energy--97",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-full-heal--84",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-grass-energy--100",
+      "setName": "base-set",
+      "quantity": 26
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pluspower--86",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--90",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-arbok-27-31",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-ekans-10-45",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-golbat-29-34",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-zubat-10-56",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-bellsprout-11-49",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-gloom-35-37",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-kangaskhan-40-5",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-lickitung-10-38",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-oddish-8-58",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-paras-8-59",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-parasect-28-41",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-pinsir-24-9",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-poke-ball--64",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-venomoth-28-13",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-venonat-12-63",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-victreebel-42-14",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-vileplume-35-15",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-weepinbell-28-48",
+      "setName": "jungle",
+      "quantity": 1
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "id": "first-auto-deck-machine-charmander-friends-deck",
+  "name": "First Auto Deck Machine - Charmander & Friends Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:48:56.338Z",
+  "updatedAt": "2026-01-23T19:23:03.502Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-arcanine-45-23",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-caterpie-13-47",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-charmander-10-48",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-charmeleon-32-24",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-computer-search--73",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-dewgong-42-25",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-fire-energy--99",
+      "setName": "base-set",
+      "quantity": 11
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-full-heal--84",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-grass-energy--100",
+      "setName": "base-set",
+      "quantity": 8
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-growlithe-18-28",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-magmar-24-36",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-metapod-21-56",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-nidoran-20-57",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pluspower--86",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-ponyta-10-62",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--90",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-raticate-41-42",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-rattata-9-63",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-seel-12-43",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-water-energy--103",
+      "setName": "base-set",
+      "quantity": 6
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-goldeen-12-53",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-pinsir-24-9",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-seaking-28-46",
+      "setName": "jungle",
+      "quantity": 1
+    }
+  ]
+}

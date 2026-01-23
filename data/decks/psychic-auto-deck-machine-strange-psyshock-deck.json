@@ -1,0 +1,87 @@
+{
+  "id": "psychic-auto-deck-machine-strange-psyshock-deck",
+  "name": "Psychic Auto Deck Machine - Strange Psyshock Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:23.233Z",
+  "updatedAt": "2026-01-23T19:23:03.520Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-abra-10-45",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-alakazam-42-1",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-chansey-55-3",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-removal--93",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--94",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-kadabra-38-32",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pokemon-center--88",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-psychic-energy--102",
+      "setName": "base-set",
+      "quantity": 22
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-scoop-up--80",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-gambler--59",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-kangaskhan-40-5",
+      "setName": "jungle",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-mr-mime-28-6",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-snorlax-20-11",
+      "setName": "jungle",
+      "quantity": 2
+    }
+  ]
+}

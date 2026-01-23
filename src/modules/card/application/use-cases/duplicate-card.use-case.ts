@@ -85,6 +85,7 @@ export class DuplicateCardUseCase {
       targetSet.name,
       sourceCard.name,
       sourceCard.cardNumber,
+      sourceCard.level,
     );
 
     // Create new card using the same factory method as source card
@@ -162,6 +163,9 @@ export class DuplicateCardUseCase {
     if (sourceCard.stage) {
       targetCard.setStage(sourceCard.stage);
     }
+    if (sourceCard.level !== undefined) {
+      targetCard.setLevel(sourceCard.level);
+    }
     if (sourceCard.hp !== undefined) {
       targetCard.setHp(sourceCard.hp);
     }
@@ -219,13 +223,15 @@ export class DuplicateCardUseCase {
 
   /**
    * Generate a cardId for a card in a user's private set
-   * Format: {userId}-{setName}-v1.0-{cardName}-{cardNumber}
+   * Format: {userId}-{setName}-v1.0-{cardName}-{level}-{cardNumber} if level exists
+   * Format: {userId}-{setName}-v1.0-{cardName}--{cardNumber} if level is undefined
    */
   private generateCardIdForSet(
     userId: string,
     setName: string,
     cardName: string,
     cardNumber: string,
+    level?: number,
   ): string {
     const toKebabCase = (str: string): string => {
       return str
@@ -239,9 +245,17 @@ export class DuplicateCardUseCase {
     const userIdKebab = toKebabCase(userId);
     const setNameKebab = toKebabCase(setName);
     const cardNameKebab = toKebabCase(cardName);
+    const levelStr = level !== undefined ? level.toString() : '';
 
-    const cardId = `${userIdKebab}-${setNameKebab}-v1.0-${cardNameKebab}-${cardNumber}`;
-    return cardId.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+    // Build card ID with level if present, otherwise use double dash separator
+    let cardId: string;
+    if (levelStr === '') {
+      cardId = `${userIdKebab}-${setNameKebab}-v1.0-${cardNameKebab}--${cardNumber}`;
+    } else {
+      cardId = `${userIdKebab}-${setNameKebab}-v1.0-${cardNameKebab}-${levelStr}-${cardNumber}`;
+    }
+    // Remove any consecutive dashes that might have been created (but preserve double dash separator)
+    return cardId.replace(/-{3,}/g, '--').replace(/^-+|-+$/g, '');
   }
 
   /**

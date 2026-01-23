@@ -60,7 +60,12 @@ function generateCardId(
   const cardNameKebab = toKebabCase(cardName);
   const levelStr = level !== undefined ? level.toString() : '';
 
-  return `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${levelStr}-${cardNumber}`;
+  // Build card ID with level if present, otherwise use double dash separator
+  if (levelStr === '') {
+    return `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}--${cardNumber}`;
+  } else {
+    return `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${levelStr}-${cardNumber}`;
+  }
 }
 
 /**

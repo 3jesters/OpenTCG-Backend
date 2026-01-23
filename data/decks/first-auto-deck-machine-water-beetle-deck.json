@@ -1,0 +1,167 @@
+{
+  "id": "first-auto-deck-machine-water-beetle-deck",
+  "name": "First Auto Deck Machine - Water-Beetle Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:48:59.137Z",
+  "updatedAt": "2026-01-23T19:23:03.504Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-beedrill-32-17",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-full-heal--84",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-grass-energy--100",
+      "setName": "base-set",
+      "quantity": 12
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-gyarados-41-6",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-kakuna-23-33",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-magikarp-8-35",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-nidoking-23-11",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-nidoran-20-57",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-nidorino-25-38",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pluspower--86",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-poliwag-13-39",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-poliwhirl-28-40",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-poliwrath-48-13",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-water-energy--103",
+      "setName": "base-set",
+      "quantity": 10
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-weedle-12-71",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-articuno-35-2",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-energy-search--58",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-kingler-27-37",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-krabby-20-50",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-lapras-31-10",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-bellsprout-11-49",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-kangaskhan-40-5",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-lickitung-10-38",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-scyther-25-10",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-tauros-24-47",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-victreebel-42-14",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-weepinbell-28-48",
+      "setName": "jungle",
+      "quantity": 1
+    }
+  ]
+}

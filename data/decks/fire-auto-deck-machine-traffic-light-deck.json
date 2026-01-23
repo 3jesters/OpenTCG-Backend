@@ -1,0 +1,82 @@
+{
+  "id": "fire-auto-deck-machine-traffic-light-deck",
+  "name": "Fire Auto Deck Machine - Traffic Light Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:04.909Z",
+  "updatedAt": "2026-01-23T19:23:03.501Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-charmander-10-48",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-charmeleon-32-24",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-fire-energy--99",
+      "setName": "base-set",
+      "quantity": 15
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-lightning-energy--101",
+      "setName": "base-set",
+      "quantity": 8
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pikachu-12-60",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pluspower--86",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-ponyta-10-62",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-voltorb-10-69",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-water-energy--103",
+      "setName": "base-set",
+      "quantity": 8
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-energy-search--58",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-eevee-12-51",
+      "setName": "jungle",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-electrode-42-2",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-rapidash-33-44",
+      "setName": "jungle",
+      "quantity": 2
+    }
+  ]
+}

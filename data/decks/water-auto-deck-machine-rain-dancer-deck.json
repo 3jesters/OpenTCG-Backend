@@ -1,0 +1,97 @@
+{
+  "id": "water-auto-deck-machine-rain-dancer-deck",
+  "name": "Water Auto Deck Machine - Rain Dancer Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:10.946Z",
+  "updatedAt": "2026-01-23T19:23:03.527Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-blastoise-52-2",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-removal--93",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--90",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-squirtle-8-65",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-super-energy-removal--81",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-wartortle-22-44",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-water-energy--103",
+      "setName": "base-set",
+      "quantity": 23
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-gambler--59",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-horsea-19-48",
+      "setName": "fossil",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-lapras-31-10",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-seadra-23-41",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-goldeen-12-53",
+      "setName": "jungle",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-seaking-28-46",
+      "setName": "jungle",
+      "quantity": 3
+    }
+  ]
+}

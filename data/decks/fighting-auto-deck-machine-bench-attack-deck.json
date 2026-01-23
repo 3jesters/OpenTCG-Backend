@@ -1,0 +1,102 @@
+{
+  "id": "fighting-auto-deck-machine-bench-attack-deck",
+  "name": "Fighting Auto Deck Machine - Bench Attack Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:24.554Z",
+  "updatedAt": "2026-01-23T19:23:03.497Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-defender--82",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-fighting-energy--98",
+      "setName": "base-set",
+      "quantity": 17
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--94",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-hitmonchan-33-7",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-item-finder--76",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-lightning-energy--101",
+      "setName": "base-set",
+      "quantity": 12
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-maintenance--85",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pluspower--86",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-scoop-up--80",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-voltorb-10-69",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-hitmonlee-30-7",
+      "setName": "fossil",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-mr-fuji--57",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-zapdos-40-15",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-electrode-42-2",
+      "setName": "jungle",
+      "quantity": 2
+    }
+  ]
+}

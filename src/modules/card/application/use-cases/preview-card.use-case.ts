@@ -513,11 +513,17 @@ export class PreviewCardUseCase {
     const authorKebab = this.toKebabCase(author);
     const setNameKebab = this.toKebabCase(setName);
     const cardNameKebab = this.toKebabCase(dto.name);
+    const levelStr = dto.level !== undefined ? dto.level.toString() : '';
 
-    // Build card ID and normalize to remove any double dashes
-    const cardId = `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${dto.cardNumber}`;
-    // Remove any consecutive dashes that might have been created
-    return cardId.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+    // Build card ID with level if present, otherwise use double dash separator
+    let cardId: string;
+    if (levelStr === '') {
+      cardId = `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}--${dto.cardNumber}`;
+    } else {
+      cardId = `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${levelStr}-${dto.cardNumber}`;
+    }
+    // Remove any consecutive dashes that might have been created (but preserve double dash separator)
+    return cardId.replace(/-{3,}/g, '--').replace(/^-+|-+$/g, '');
   }
 
   private toKebabCase(str: string): string {

@@ -50,6 +50,11 @@ export class ImportCardDto {
   stage?: EvolutionStage;
 
   @IsOptional()
+  @IsNumber()
+  @Min(1)
+  level?: number;
+
+  @IsOptional()
   @IsString()
   evolvesFrom?: string;
 

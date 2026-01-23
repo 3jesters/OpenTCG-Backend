@@ -3,43 +3,43 @@
   "name": "Classic Fire Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-13T19:07:28.035Z",
+  "updatedAt": "2026-01-17T18:41:53.280Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
   "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
   "cards": [
     {
-      "cardId": "pokemon-base-set-v1.0-charmander--48",
+      "cardId": "pokemon-base-set-v1.0-charmander-10-48",
       "setName": "base-set",
       "quantity": 4
     },
     {
-      "cardId": "pokemon-base-set-v1.0-charmeleon--24",
+      "cardId": "pokemon-base-set-v1.0-charmeleon-32-24",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-charizard--4",
+      "cardId": "pokemon-base-set-v1.0-charizard-76-4",
       "setName": "base-set",
       "quantity": 1
     },
     {
-      "cardId": "pokemon-base-set-v1.0-ponyta--62",
+      "cardId": "pokemon-base-set-v1.0-ponyta-10-62",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-magmar--36",
+      "cardId": "pokemon-base-set-v1.0-magmar-24-36",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-vulpix--70",
+      "cardId": "pokemon-base-set-v1.0-vulpix-11-70",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-growlithe--28",
+      "cardId": "pokemon-base-set-v1.0-growlithe-18-28",
       "setName": "base-set",
       "quantity": 2
     },

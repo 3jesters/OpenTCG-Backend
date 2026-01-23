@@ -41,7 +41,7 @@ export class CreateCardUseCase {
 
     // Generate IDs
     const instanceId = uuidv4();
-    const cardId = this.generateCardId(dto.pokemonName, dto.pokemonNumber);
+    const cardId = this.generateCardId(dto.pokemonName, dto.pokemonNumber, dto.level);
     const cardNumber = this.generateCardNumber();
     const createdAt = new Date();
 
@@ -64,6 +64,11 @@ export class CreateCardUseCase {
     // Set Pokemon type and stage
     card.setPokemonType(dto.pokemonType);
     card.setStage(dto.stage);
+
+    // Set level if provided
+    if (dto.level !== undefined) {
+      card.setLevel(dto.level);
+    }
 
     // Set HP
     card.setHp(dto.hp);
@@ -156,11 +161,23 @@ export class CreateCardUseCase {
 
   /**
    * Generate cardId for editor-created cards
-   * Format: editor-{pokemonName}-{pokemonNumber}
+   * Format: editor-{pokemonName}-{level}-{pokemonNumber} if level exists
+   * Format: editor-{pokemonName}--{pokemonNumber} if level is undefined
    */
-  private generateCardId(pokemonName: string, pokemonNumber: string): string {
+  private generateCardId(
+    pokemonName: string,
+    pokemonNumber: string,
+    level?: number,
+  ): string {
     const nameKebab = this.toKebabCase(pokemonName);
-    return `editor-${nameKebab}-${pokemonNumber}`;
+    const levelStr = level !== undefined ? level.toString() : '';
+
+    // Build card ID with level if present, otherwise use double dash separator
+    if (levelStr === '') {
+      return `editor-${nameKebab}--${pokemonNumber}`;
+    } else {
+      return `editor-${nameKebab}-${levelStr}-${pokemonNumber}`;
+    }
   }
 
   /**

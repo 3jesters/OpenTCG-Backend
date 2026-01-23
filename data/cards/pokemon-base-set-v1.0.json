@@ -54,7 +54,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "Its brain can outperform a supercomputer. Its intelligence quotient is said to be 5,000.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/1.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/1.png",
+      "level": 42
     },
     {
       "name": "Blastoise",
@@ -101,7 +102,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "A brutal Pokémon with pressurized water jets on its shell. They are used for high speed tackles.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/2.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/2.png",
+      "level": 52
     },
     {
       "name": "Chansey",
@@ -144,7 +146,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "A rare and elusive Pokémon that is said to bring happiness to those who manage to get it.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/3.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/3.png",
+      "level": 55
     },
     {
       "name": "Charizard",
@@ -185,7 +188,9 @@
             "effectType": "BOOST_ATTACK",
             "target": "SELF",
             "modifier": 1,
-            "affectedTypes": ["FIRE"]
+            "affectedTypes": [
+              "FIRE"
+            ]
           }
         ]
       },
@@ -200,7 +205,8 @@
       "retreatCost": 3,
       "artist": "Mitsuhiro Arita",
       "description": "Spits fire that is hot enough to melt boulders. Known to cause forest fires unintentionally.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/4.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/4.png",
+      "level": 76
     },
     {
       "name": "Clefairy",
@@ -241,7 +247,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its magical and cute appeal has many admirers. It is rare and found only in certain areas.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/5.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/5.png",
+      "level": 14
     },
     {
       "name": "Gyarados",
@@ -286,7 +293,8 @@
       "retreatCost": 3,
       "artist": "Mitsuhiro Arita",
       "description": "Rarely seen in the wild. Huge and vicious, it is capable of destroying entire cities in a rage.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/6.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/6.png",
+      "level": 41
     },
     {
       "name": "Hitmonchan",
@@ -323,7 +331,8 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "While apparently doing nothing, it fires punches in lightning fast volleys that are impossible to see.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/7.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/7.png",
+      "level": 33
     },
     {
       "name": "Machamp",
@@ -366,7 +375,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "Using its heavy muscles, it throws powerful punches that can send the victim clear over the horizon.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/8.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/8.png",
+      "level": 67
     },
     {
       "name": "Magneton",
@@ -407,7 +417,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Formed by several Magnemites linked together. They frequently appear when sunspots flare up.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/9.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/9.png",
+      "level": 28
     },
     {
       "name": "Mewtwo",
@@ -452,7 +463,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "It was created by a scientist after years of horrific gene splicing and DNA engineering experiments.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/10.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/10.png",
+      "level": 53
     },
     {
       "name": "Nidoking",
@@ -492,7 +504,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "It uses its powerful tail in battle to smash, constrict, then break the prey's bones.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/11.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/11.png",
+      "level": 23
     },
     {
       "name": "Ninetales",
@@ -540,7 +553,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Very smart and very vengeful. Grabbing one of its many tails could result in a 1000-year curse.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/12.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/12.png",
+      "level": 32
     },
     {
       "name": "Poliwrath",
@@ -582,7 +596,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "An adept swimmer at both the front crawl and breast stroke. Easily overtakes the best human swimmers.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/13.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/13.png",
+      "level": 48
     },
     {
       "name": "Raichu",
@@ -623,7 +638,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its long tail serves as a ground to protect itself from its own high voltage power.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/14.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/14.png",
+      "level": 40
     },
     {
       "name": "Venusaur",
@@ -670,7 +686,8 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "The plant blooms when it is absorbing solar energy. It stays on the move to seek sunlight.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/15.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/15.png",
+      "level": 67
     },
     {
       "name": "Zapdos",
@@ -718,7 +735,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "A legendary bird Pokémon that is said to appear from clouds while dropping enormous lightning bolts.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/16.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/16.png",
+      "level": 64
     },
     {
       "name": "Beedrill",
@@ -752,7 +770,8 @@
       "retreatCost": 0,
       "artist": "Ken Sugimori",
       "description": "Flies at high speed and attacks using its large venomous stingers on its forelegs and tail.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/17.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/17.png",
+      "level": 32
     },
     {
       "name": "Dragonair",
@@ -797,7 +816,8 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "A mystical Pokémon that exudes a gentle aura. Has the ability to change climate conditions.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/18.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/18.png",
+      "level": 33
     },
     {
       "name": "Dugtrio",
@@ -842,7 +862,8 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "A team of Diglett triplets. It triggers huge earthquakes by burrowing 60 miles underground.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/19.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/19.png",
+      "level": 36
     },
     {
       "name": "Electabuzz",
@@ -878,7 +899,8 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "Normally found near power plants, they can wander away and cause major blackouts in cities.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/20.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/20.png",
+      "level": 35
     },
     {
       "name": "Electrode",
@@ -932,7 +954,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "It stores electric energy under very high pressure. It often explodes with little or no provocation.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/21.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/21.png",
+      "level": 40
     },
     {
       "name": "Pidgeotto",
@@ -975,7 +998,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Very protective of its sprawling territorial area, this Pokémon will fiercely peck at any intruder.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/22.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/22.png",
+      "level": 36
     },
     {
       "name": "Arcanine",
@@ -1024,7 +1048,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "A Pokémon that has been admired since the past for its beauty. It runs agilely as if on wings.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/23.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/23.png",
+      "level": 45
     },
     {
       "name": "Charmeleon",
@@ -1072,7 +1097,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "When it swings its burning tail, it elevates the temperature to unbearably high levels.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/24.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/24.png",
+      "level": 32
     },
     {
       "name": "Dewgong",
@@ -1113,7 +1139,8 @@
       "retreatCost": 3,
       "artist": "Mitsuhiro Arita",
       "description": "Stores thermal energy in its body. Swims at a steady 8 knots even in intensely cold waters.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/25.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/25.png",
+      "level": 42
     },
     {
       "name": "Dratini",
@@ -1144,7 +1171,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Long considered a mythical Pokémon until recently when a small colony was found living underwater.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/26.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/26.png",
+      "level": 10
     },
     {
       "name": "Farfetch'd",
@@ -1185,7 +1213,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "The sprig of green onions it holds is its weapon. It is used much like a metal sword.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/27.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/27.png",
+      "level": 20
     },
     {
       "name": "Growlithe",
@@ -1213,7 +1242,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Very protective of its territory. It will bark and bite to repel intruders from its space.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/28.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/28.png",
+      "level": 18
     },
     {
       "name": "Haunter",
@@ -1250,7 +1280,8 @@
       "retreatCost": 0,
       "artist": "Keiji Kinebuchi",
       "description": "Because of its ability to slip through block walls, it is said to be from another dimension.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/29.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/29.png",
+      "level": 22
     },
     {
       "name": "Ivysaur",
@@ -1290,7 +1321,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "When the bulb on its back grows large, it appears to lose the ability to stand on its hind legs.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/30.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/30.png",
+      "level": 20
     },
     {
       "name": "Jynx",
@@ -1326,7 +1358,8 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "It seductively wiggles its hips as it walks. It can cause people to dance in unison with it.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/31.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/31.png",
+      "level": 23
     },
     {
       "name": "Kadabra",
@@ -1373,7 +1406,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "It emits special alpha waves from its body that induce headaches just by being close by.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/32.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/32.png",
+      "level": 38
     },
     {
       "name": "Kakuna",
@@ -1411,7 +1445,8 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "Almost incapable of moving, this Pokémon can only harden its shell to protect itself from predators.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/33.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/33.png",
+      "level": 23
     },
     {
       "name": "Machoke",
@@ -1452,7 +1487,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "Its muscular body is so powerful, it must wear a power save belt to be able to regulate its motions.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/34.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/34.png",
+      "level": 40
     },
     {
       "name": "Magikarp",
@@ -1487,7 +1523,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "In the distant past, it was somewhat stronger than the horribly weak descendants that exist today.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/35.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/35.png",
+      "level": 8
     },
     {
       "name": "Magmar",
@@ -1533,7 +1570,8 @@
       "retreatCost": 2,
       "artist": "Ken Sugimori",
       "description": "Its body always burns with an orange glow that enables it to hide perfectly among flames.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/36.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/36.png",
+      "level": 24
     },
     {
       "name": "Magnemite",
@@ -1570,7 +1608,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Uses antigravity to stay suspended. Appears without warning and uses Thunder Wave and similar moves.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/53.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/53.png",
+      "level": 13
     },
     {
       "name": "Nidorino",
@@ -1610,7 +1649,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "An aggressive Pokémon that is quick to attack. The horn on its head secretes a powerful venom.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/37.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/37.png",
+      "level": 25
     },
     {
       "name": "Poliwag",
@@ -1638,7 +1678,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its newly grown legs prevent it from running. It appears to prefer swimming than trying to stand.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/59.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/59.png",
+      "level": 13
     },
     {
       "name": "Poliwhirl",
@@ -1677,7 +1718,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Capable of living in or out of water. When out of water, it sweats to keep its body slimy.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/38.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/38.png",
+      "level": 28
     },
     {
       "name": "Porygon",
@@ -1717,7 +1759,8 @@
       "retreatCost": 1,
       "artist": "Keiji Kinebuchi",
       "description": "A Pokémon that consists entirely of programming code. Capable of moving freely in cyberspace.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/39.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/39.png",
+      "level": 12
     },
     {
       "name": "Raticate",
@@ -1759,7 +1802,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "It uses its whiskers to maintain its balance. It apparently slows down if they are cut off.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/40.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/40.png",
+      "level": 41
     },
     {
       "name": "Seel",
@@ -1786,7 +1830,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "The protruding horn on its head is very hard. It is used for bashing through thick ice.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/41.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/41.png",
+      "level": 12
     },
     {
       "name": "Wartortle",
@@ -1825,7 +1870,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Often hides in water to stalk unwary prey. For swimming fast, it moves its ears to maintain balance.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/42.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/42.png",
+      "level": 22
     },
     {
       "name": "Abra",
@@ -1852,7 +1898,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Using its ability to read minds, it will identify impending danger and Teleport to safety.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/43.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/43.png",
+      "level": 10
     },
     {
       "name": "Bulbasaur",
@@ -1880,7 +1927,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "A strange seed was planted on its back at birth. The plant sprouts and grows with this Pokémon.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/44.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/44.png",
+      "level": 13
     },
     {
       "name": "Caterpie",
@@ -1920,7 +1968,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Its short feet are tipped with suction pads that enable it to tirelessly climb slopes and walls.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/45.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/45.png",
+      "level": 13
     },
     {
       "name": "Charmander",
@@ -1964,7 +2013,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Obviously prefers hot places. When it rains, steam is said to spout from the tip of its tail.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/46.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/46.png",
+      "level": 10
     },
     {
       "name": "Diglett",
@@ -2004,7 +2054,8 @@
       "retreatCost": 0,
       "artist": "Keiji Kinebuchi",
       "description": "Lives about one yard underground where it feeds on plant roots. It sometimes appears above ground.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/47.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/47.png",
+      "level": 8
     },
     {
       "name": "Doduo",
@@ -2037,7 +2088,8 @@
       "retreatCost": 0,
       "artist": "Mitsuhiro Arita",
       "description": "A bird that makes up for its poor flying with its fast foot speed. Leaves giant footprints.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/48.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/48.png",
+      "level": 10
     },
     {
       "name": "Drowzee",
@@ -2073,7 +2125,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Puts enemies to sleep then eats their dreams. Occasionally gets sick from eating bad dreams.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/49.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/49.png",
+      "level": 10
     },
     {
       "name": "Gastly",
@@ -2121,7 +2174,8 @@
       "retreatCost": 0,
       "artist": "Keiji Kinebuchi",
       "description": "Almost invisible, this gaseous Pokémon cloaks the target and puts it to sleep without notice.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/50.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/50.png",
+      "level": 8
     },
     {
       "name": "Koffing",
@@ -2157,7 +2211,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Because it stores several kinds of toxic gases in its body, it is prone to exploding without warning.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/51.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/51.png",
+      "level": 13
     },
     {
       "name": "Machop",
@@ -2184,7 +2239,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Loves to build its muscles. It trains in all styles of martial arts to become even stronger.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/52.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/52.png",
+      "level": 20
     },
     {
       "name": "Magikarp",
@@ -2211,7 +2267,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "In the distant past, it was somewhat stronger than the horribly weak descendants that exist today.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/35.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/35.png",
+      "level": 8
     },
     {
       "name": "Metapod",
@@ -2240,7 +2297,8 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "This Pokémon is vulnerable to attack while its shell is soft, exposing its weak and tender body.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/54.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/54.png",
+      "level": 21
     },
     {
       "name": "Nidoran♂",
@@ -2267,7 +2325,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Stiffens its ears to sense danger. The larger its horns, the more powerful its secreted venom.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/55.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/55.png",
+      "level": 20
     },
     {
       "name": "Onix",
@@ -2303,7 +2362,8 @@
       "retreatCost": 3,
       "artist": "Ken Sugimori",
       "description": "As it grows, the stone portions of its body harden to become similar to a diamond, but colored black.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/56.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/56.png",
+      "level": 12
     },
     {
       "name": "Pidgey",
@@ -2335,7 +2395,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "A common sight in forests and woods. It flaps its wings at ground level to kick up blinding sand.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/57.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/57.png",
+      "level": 8
     },
     {
       "name": "Pikachu",
@@ -2371,7 +2432,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "When several of these Pokémon gather, their electricity could build and cause lightning storms.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/58.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/58.png",
+      "level": 12
     },
     {
       "name": "Poliwag",
@@ -2399,7 +2461,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its newly grown legs prevent it from running. It appears to prefer swimming than trying to stand.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/59.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/59.png",
+      "level": 13
     },
     {
       "name": "Ponyta",
@@ -2436,7 +2499,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Its hooves are 10 times harder than diamonds. It can trample anything completely flat in little time.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/60.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/60.png",
+      "level": 10
     },
     {
       "name": "Rattata",
@@ -2467,7 +2531,8 @@
       "retreatCost": 0,
       "artist": "Ken Sugimori",
       "description": "Bites anything when it attacks. Small and very quick, it is a common sight in many places.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/61.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/61.png",
+      "level": 9
     },
     {
       "name": "Sandshrew",
@@ -2498,7 +2563,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "Burrows deep underground in arid locations far from water. It only emerges to hunt for food.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/62.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/62.png",
+      "level": 12
     },
     {
       "name": "Squirtle",
@@ -2534,7 +2600,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "After birth, its back swells and hardens into a shell. Powerfully sprays foam from its mouth.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/63.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/63.png",
+      "level": 8
     },
     {
       "name": "Starmie",
@@ -2580,7 +2647,8 @@
       "retreatCost": 0,
       "artist": "Keiji Kinebuchi",
       "description": "Its central core glows with the seven colors of the rainbow. Some people value the core as a gem.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/64.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/64.png",
+      "level": 28
     },
     {
       "name": "Staryu",
@@ -2607,7 +2675,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "An enigmatic Pokémon that can effortlessly regenerate any appendage it loses in battle.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/65.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/65.png",
+      "level": 15
     },
     {
       "name": "Tangela",
@@ -2645,7 +2714,8 @@
       "retreatCost": 2,
       "artist": "Mitsuhiro Arita",
       "description": "The whole body is swathed with wide vines that are similar to seaweed. Its vines shake as it walks.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/66.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/66.png",
+      "level": 8
     },
     {
       "name": "Voltorb",
@@ -2672,7 +2742,8 @@
       "retreatCost": 1,
       "artist": "Keiji Kinebuchi",
       "description": "Usually found in power plants. Easily mistaken for a Poké Ball, they have zapped many people.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/67.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/67.png",
+      "level": 10
     },
     {
       "name": "Vulpix",
@@ -2700,7 +2771,8 @@
       "retreatCost": 1,
       "artist": "Ken Sugimori",
       "description": "At the time of birth, it has just one tail. The tail splits from its tip as it grows older.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/68.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/68.png",
+      "level": 11
     },
     {
       "name": "Weedle",
@@ -2727,7 +2799,8 @@
       "retreatCost": 1,
       "artist": "Mitsuhiro Arita",
       "description": "Often found in forests, eating leaves. It has a sharp venomous stinger on its head.",
-      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/69.png"
+      "imageUrl": "https://www.pikawiz.com/images/thumbs/baseset/69.png",
+      "level": 12
     },
     {
       "name": "Clefairy Doll",

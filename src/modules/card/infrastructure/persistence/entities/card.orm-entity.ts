@@ -68,6 +68,9 @@ export class CardOrmEntity {
   })
   stage: EvolutionStage | null;
 
+  @Column({ type: 'integer', nullable: true })
+  level: number | null;
+
   @Column({ type: 'simple-array', default: '' })
   subtypes: string[];
 

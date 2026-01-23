@@ -1,0 +1,92 @@
+{
+  "id": "grass-auto-deck-machine-flower-power-deck",
+  "name": "Grass Auto Deck Machine - Flower Power Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:02.362Z",
+  "updatedAt": "2026-01-23T19:23:03.505Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-bulbasaur-13-46",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-energy-retrieval--83",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-grass-energy--100",
+      "setName": "base-set",
+      "quantity": 18
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-ivysaur-20-30",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pokemon-breeder--78",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--90",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-psychic-energy--102",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-venusaur-67-15",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-exeggcute-14-52",
+      "setName": "jungle",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-exeggutor-35-35",
+      "setName": "jungle",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-gloom-35-37",
+      "setName": "jungle",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-oddish-8-58",
+      "setName": "jungle",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-vileplume-35-15",
+      "setName": "jungle",
+      "quantity": 2
+    }
+  ]
+}

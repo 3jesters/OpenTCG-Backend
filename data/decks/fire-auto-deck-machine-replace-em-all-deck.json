@@ -1,0 +1,77 @@
+{
+  "id": "fire-auto-deck-machine-replace-em-all-deck",
+  "name": "Fire Auto Deck Machine - Replace ‘Em All Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:03.506Z",
+  "updatedAt": "2026-01-23T19:23:03.500Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-arcanine-45-23",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-doduo-10-50",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-fire-energy--99",
+      "setName": "base-set",
+      "quantity": 27
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-growlithe-18-28",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-gust-of-wind--94",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-lass--77",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-ninetales-32-12",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pidgeotto-36-22",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pidgey-8-59",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-vulpix-11-70",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-dodrio-28-34",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-pidgeot-40-8",
+      "setName": "jungle",
+      "quantity": 1
+    }
+  ]
+}

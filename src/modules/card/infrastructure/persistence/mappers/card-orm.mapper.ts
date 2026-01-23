@@ -54,6 +54,10 @@ export class CardOrmMapper {
       card.setStage(ormEntity.stage);
     }
 
+    if (ormEntity.level !== null && ormEntity.level !== undefined) {
+      card.setLevel(ormEntity.level);
+    }
+
     ormEntity.subtypes.forEach((subtype) => {
       if (subtype) card.addSubtype(subtype);
     });
@@ -229,6 +233,7 @@ export class CardOrmMapper {
     ormEntity.cardType = domainEntity.cardType;
     ormEntity.pokemonType = domainEntity.pokemonType || null;
     ormEntity.stage = domainEntity.stage || null;
+    ormEntity.level = domainEntity.level ?? null;
     ormEntity.subtypes = domainEntity.subtypes;
 
     // Evolution Chain

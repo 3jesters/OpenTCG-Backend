@@ -243,6 +243,7 @@ export class FileSystemCardRepository implements ICardRepository {
         version,
         json.name,
         json.cardNumber,
+        json.level,
       );
     }
 
@@ -263,12 +264,17 @@ export class FileSystemCardRepository implements ICardRepository {
     );
 
     // Set additional fields as needed
+    if (json.level !== undefined) {
+      card.setLevel(json.level);
+    }
+
     return card;
   }
 
   /**
    * Generate cardId using the same logic as PreviewCardUseCase
-   * Format: {author}-{setName}-v{version}-{cardName}-{cardNumber}
+   * Format: {author}-{setName}-v{version}-{cardName}-{level}-{cardNumber} if level exists
+   * Format: {author}-{setName}-v{version}-{cardName}--{cardNumber} if level is undefined
    */
   private generateCardId(
     author: string,
@@ -276,15 +282,22 @@ export class FileSystemCardRepository implements ICardRepository {
     version: string,
     cardName: string,
     cardNumber: string,
+    level?: number,
   ): string {
     const authorKebab = this.toKebabCase(author);
     const setNameKebab = this.toKebabCase(setName);
     const cardNameKebab = this.toKebabCase(cardName);
+    const levelStr = level !== undefined ? level.toString() : '';
 
-    // Build card ID and normalize to remove any double dashes
-    const cardId = `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${cardNumber}`;
-    // Remove any consecutive dashes that might have been created
-    return cardId.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+    // Build card ID with level if present, otherwise use double dash separator
+    let cardId: string;
+    if (levelStr === '') {
+      cardId = `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}--${cardNumber}`;
+    } else {
+      cardId = `${authorKebab}-${setNameKebab}-v${version}-${cardNameKebab}-${levelStr}-${cardNumber}`;
+    }
+    // Remove any consecutive dashes that might have been created (but preserve double dash separator)
+    return cardId.replace(/-{3,}/g, '--').replace(/^-+|-+$/g, '');
   }
 
   /**

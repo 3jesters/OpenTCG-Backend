@@ -186,5 +186,54 @@ describe('DuplicateCardUseCase', () => {
         useCase.execute('source-card-id', 'user-123', 'custom-set'),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('should preserve level in duplicated card and include it in cardId', async () => {
+      const sourceCard = Card.createPokemonCard(
+        'instance-1',
+        'source-card-id',
+        '025',
+        'Pikachu',
+        'Base Set',
+        '25/102',
+        Rarity.COMMON,
+        'Description',
+        'Artist',
+        '/image.png',
+      );
+      sourceCard.setHp(60);
+      sourceCard.setPokemonType('ELECTRIC' as any);
+      sourceCard.setLevel(12); // Set level on source card
+
+      const targetSet = new Set(
+        'custom-set',
+        'Custom Set',
+        'pokemon',
+        '2024-01-01',
+        0,
+        'user-123',
+      );
+
+      mockGetCardByIdUseCase.getCardEntity.mockResolvedValue(sourceCard);
+      mockSetRepository.findById.mockResolvedValue(targetSet);
+      mockCardRepository.save.mockImplementation(async (card) => card);
+      mockCardRepository.findBySetName.mockResolvedValue([]);
+      mockSetRepository.save.mockImplementation(async (set) => set);
+
+      const result = await useCase.execute(
+        'source-card-id',
+        'user-123',
+        'custom-set',
+      );
+
+      expect(result).toBeDefined();
+      expect(mockCardRepository.save).toHaveBeenCalled();
+      
+      // Verify the saved card has level preserved
+      const savedCard = mockCardRepository.save.mock.calls[0][0] as Card;
+      expect(savedCard.level).toBe(12);
+      
+      // Verify cardId includes level
+      expect(savedCard.cardId).toContain('-12-');
+    });
   });
 });

@@ -367,4 +367,132 @@ describe('Card Entity - Card Rules', () => {
       expect(sorted[4].priority).toBe(RulePriority.NORMAL);
     });
   });
+
+  describe('Level Support', () => {
+    let pokemonCard: Card;
+    let trainerCard: Card;
+    let energyCard: Card;
+
+    beforeEach(() => {
+      pokemonCard = new Card(
+        '550e8400-e29b-41d4-a716-446655440000',
+        'base-set-025-pikachu',
+        '025',
+        'Pikachu',
+        'Base Set',
+        '025/102',
+        Rarity.COMMON,
+        CardType.POKEMON,
+        'A friendly Pokémon',
+        'Ken Sugimori',
+        '/images/pikachu.png',
+      );
+      pokemonCard.setPokemonType(PokemonType.ELECTRIC);
+      pokemonCard.setStage(EvolutionStage.BASIC);
+      pokemonCard.setHp(60);
+
+      trainerCard = new Card(
+        '550e8400-e29b-41d4-a716-446655440001',
+        'base-set-92-bill',
+        undefined,
+        'Bill',
+        'Base Set',
+        '92/102',
+        Rarity.COMMON,
+        CardType.TRAINER,
+        'Draw 2 cards',
+        'Ken Sugimori',
+        '/images/bill.png',
+      );
+
+      energyCard = new Card(
+        '550e8400-e29b-41d4-a716-446655440002',
+        'base-set-99-fire-energy',
+        undefined,
+        'Fire Energy',
+        'Base Set',
+        '99/102',
+        Rarity.COMMON,
+        CardType.ENERGY,
+        'Basic Fire Energy',
+        'Ken Sugimori',
+        '/images/fire-energy.png',
+      );
+    });
+
+    describe('get level', () => {
+      it('should return undefined initially', () => {
+        expect(pokemonCard.level).toBeUndefined();
+      });
+
+      it('should return set level value', () => {
+        pokemonCard.setLevel(12);
+        expect(pokemonCard.level).toBe(12);
+      });
+    });
+
+    describe('setLevel', () => {
+      it('should set level for Pokemon cards', () => {
+        pokemonCard.setLevel(12);
+        expect(pokemonCard.level).toBe(12);
+      });
+
+      it('should accept positive integers in valid range', () => {
+        pokemonCard.setLevel(1);
+        expect(pokemonCard.level).toBe(1);
+
+        pokemonCard.setLevel(45);
+        expect(pokemonCard.level).toBe(45);
+
+        pokemonCard.setLevel(100);
+        expect(pokemonCard.level).toBe(100);
+      });
+
+      it('should throw error for Trainer cards', () => {
+        expect(() => {
+          trainerCard.setLevel(12);
+        }).toThrow('Level can only be set on Pokemon cards');
+      });
+
+      it('should throw error for Energy cards', () => {
+        expect(() => {
+          energyCard.setLevel(12);
+        }).toThrow('Level can only be set on Pokemon cards');
+      });
+
+      it('should throw error for negative level', () => {
+        expect(() => {
+          pokemonCard.setLevel(-1);
+        }).toThrow('Level must be a positive integer');
+      });
+
+      it('should throw error for zero level', () => {
+        expect(() => {
+          pokemonCard.setLevel(0);
+        }).toThrow('Level must be a positive integer');
+      });
+
+      it('should throw error for non-integer level', () => {
+        expect(() => {
+          pokemonCard.setLevel(12.5 as any);
+        }).toThrow('Level must be a positive integer');
+      });
+
+      it('should allow updating level', () => {
+        pokemonCard.setLevel(12);
+        expect(pokemonCard.level).toBe(12);
+
+        pokemonCard.setLevel(45);
+        expect(pokemonCard.level).toBe(45);
+      });
+    });
+
+    describe('backward compatibility', () => {
+      it('should work normally for cards without level', () => {
+        expect(pokemonCard.level).toBeUndefined();
+        expect(pokemonCard.hp).toBe(60);
+        expect(pokemonCard.stage).toBe(EvolutionStage.BASIC);
+      });
+    });
+  });
 });

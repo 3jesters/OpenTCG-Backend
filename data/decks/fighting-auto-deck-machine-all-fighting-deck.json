@@ -1,0 +1,132 @@
+{
+  "id": "fighting-auto-deck-machine-all-fighting-deck",
+  "name": "Fighting Auto Deck Machine - All Fighting Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:23.904Z",
+  "updatedAt": "2026-01-23T19:23:03.482Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-diglett-8-49",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-dugtrio-36-19",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-fighting-energy--98",
+      "setName": "base-set",
+      "quantity": 26
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-hitmonchan-33-7",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-machamp-67-8",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-machoke-40-34",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-machop-20-54",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-onix-12-58",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-potion--90",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-sandshrew-12-64",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-geodude-16-46",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-golem-36-35",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-graveler-29-36",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-hitmonlee-30-7",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-sandslash-33-40",
+      "setName": "fossil",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-cubone-13-50",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-mankey-7-55",
+      "setName": "jungle",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-marowak-26-39",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-primeape-45-43",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-rhydon-48-45",
+      "setName": "jungle",
+      "quantity": 1
+    },
+    {
+      "cardId": "pokemon-jungle-v1.0-rhyhorn-18-61",
+      "setName": "jungle",
+      "quantity": 2
+    }
+  ]
+}

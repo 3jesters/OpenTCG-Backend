@@ -1,0 +1,92 @@
+{
+  "id": "science-auto-deck-machine-wonders-of-science-deck",
+  "name": "Science Auto Deck Machine - Wonders of Science Deck",
+  "createdBy": "system",
+  "createdAt": "2026-01-17T18:49:19.497Z",
+  "updatedAt": "2026-01-23T19:23:03.525Z",
+  "tournamentId": "classic-tournament",
+  "isValid": true,
+  "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
+  "cards": [
+    {
+      "cardId": "pokemon-base-set-v1.0-bill--92",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-computer-search--73",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-full-heal--84",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-grass-energy--100",
+      "setName": "base-set",
+      "quantity": 17
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-impostor-professor-oak--75",
+      "setName": "base-set",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-koffing-13-53",
+      "setName": "base-set",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-maintenance--85",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-mewtwo-53-10",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-pokedex--87",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-porygon-12-41",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-psychic-energy--102",
+      "setName": "base-set",
+      "quantity": 8
+    },
+    {
+      "cardId": "pokemon-base-set-v1.0-switch--96",
+      "setName": "base-set",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-energy-search--58",
+      "setName": "fossil",
+      "quantity": 2
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-grimer-17-47",
+      "setName": "fossil",
+      "quantity": 4
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-muk-34-13",
+      "setName": "fossil",
+      "quantity": 3
+    },
+    {
+      "cardId": "pokemon-fossil-v1.0-weezing-27-44",
+      "setName": "fossil",
+      "quantity": 3
+    }
+  ]
+}

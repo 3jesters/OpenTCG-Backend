@@ -43,6 +43,7 @@ export class Card {
   private readonly _cardType: CardType;
   private _pokemonType?: PokemonType; // For Pokémon cards
   private _stage?: EvolutionStage; // Evolution stage
+  private _level?: number; // Numeric level (used in older sets, e.g., 12, 45)
   private _subtypes: string[]; // e.g., ["Pokémon V", "Rapid Strike"]
 
   // ========================================
@@ -183,6 +184,10 @@ export class Card {
     return this._stage;
   }
 
+  get level(): number | undefined {
+    return this._level;
+  }
+
   get subtypes(): string[] {
     return [...this._subtypes]; // Return copy
   }
@@ -291,6 +296,16 @@ export class Card {
       throw new Error('Evolution stage can only be set on Pokemon cards');
     }
     this._stage = stage;
+  }
+
+  setLevel(level: number): void {
+    if (this._cardType !== CardType.POKEMON) {
+      throw new Error('Level can only be set on Pokemon cards');
+    }
+    if (level <= 0 || !Number.isInteger(level)) {
+      throw new Error('Level must be a positive integer');
+    }
+    this._level = level;
   }
 
   addSubtype(subtype: string): void {

@@ -3,53 +3,53 @@
   "name": "Classic Water Starter Deck",
   "createdBy": "system",
   "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2025-12-29T19:26:59.354Z",
+  "updatedAt": "2026-01-17T18:41:53.296Z",
   "tournamentId": "classic-tournament",
   "isValid": true,
   "cardBackImageUrl": "https://www.pikawiz.com/images/pokemonback.png",
   "cards": [
     {
-      "cardId": "pokemon-base-set-v1.0-squirtle--65",
+      "cardId": "pokemon-base-set-v1.0-squirtle-8-65",
       "setName": "base-set",
       "quantity": 4
     },
     {
-      "cardId": "pokemon-base-set-v1.0-wartortle--44",
+      "cardId": "pokemon-base-set-v1.0-wartortle-22-44",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-blastoise--2",
+      "cardId": "pokemon-base-set-v1.0-blastoise-52-2",
       "setName": "base-set",
       "quantity": 1
     },
     {
-      "cardId": "pokemon-base-set-v1.0-poliwag--39",
+      "cardId": "pokemon-base-set-v1.0-poliwag-13-39",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-poliwhirl--40",
+      "cardId": "pokemon-base-set-v1.0-poliwhirl-28-40",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-poliwrath--13",
+      "cardId": "pokemon-base-set-v1.0-poliwrath-48-13",
       "setName": "base-set",
       "quantity": 1
     },
     {
-      "cardId": "pokemon-base-set-v1.0-seel--43",
+      "cardId": "pokemon-base-set-v1.0-seel-12-43",
       "setName": "base-set",
       "quantity": 3
     },
     {
-      "cardId": "pokemon-base-set-v1.0-starmie--66",
+      "cardId": "pokemon-base-set-v1.0-starmie-28-66",
       "setName": "base-set",
       "quantity": 2
     },
     {
-      "cardId": "pokemon-base-set-v1.0-staryu--67",
+      "cardId": "pokemon-base-set-v1.0-staryu-15-67",
       "setName": "base-set",
       "quantity": 2
     },
