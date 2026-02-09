@@ -25,7 +25,8 @@ import { UsernameAuthService } from './infrastructure/services/username-auth.ser
 import { FindOrCreateUserUseCase } from '../user/application/use-cases/find-or-create-user.use-case';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
-const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
+// TEMPORARY: Force file system mode for all environments (including production)
+const shouldInitializeDb = false; // nodeEnv !== 'dev' && nodeEnv !== 'test';
 // Select auth method based on environment or config
 // Use username auth for dev/test, Google OAuth for staging/production
 const useUsernameAuth = nodeEnv === 'dev' || nodeEnv === 'test' || process.env.AUTH_METHOD === 'username';
@@ -81,9 +82,8 @@ const useUsernameAuth = nodeEnv === 'dev' || nodeEnv === 'test' || process.env.A
     {
       provide: ITokenRepository,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? FileSystemTokenRepository
-          : TypeOrmTokenRepository,
+        // TEMPORARY: Always use file system
+        FileSystemTokenRepository, // nodeEnv === 'dev' || nodeEnv === 'test' ? FileSystemTokenRepository : TypeOrmTokenRepository,
     },
     // Use cases
     GoogleLoginUseCase,

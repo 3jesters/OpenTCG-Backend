@@ -10,7 +10,8 @@ import { UserOrmEntity } from './infrastructure/persistence/entities/user.orm-en
 import { DatabaseModule } from '../../shared/infrastructure/database/database.module';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
-const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
+// TEMPORARY: Force file system mode for all environments (including production)
+const shouldInitializeDb = false; // nodeEnv !== 'dev' && nodeEnv !== 'test';
 
 /**
  * User Module
@@ -28,9 +29,8 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     {
       provide: IUserRepository,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? FileSystemUserRepository
-          : TypeOrmUserRepository,
+        // TEMPORARY: Always use file system
+        FileSystemUserRepository, // nodeEnv === 'dev' || nodeEnv === 'test' ? FileSystemUserRepository : TypeOrmUserRepository,
     },
     // Use cases
     FindOrCreateUserUseCase,

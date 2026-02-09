@@ -11,7 +11,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
  * preventing database connection attempts. File-based repositories are used instead.
  */
 const nodeEnv = process.env.NODE_ENV || 'dev';
-const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
+// TEMPORARY: Force file system mode for all environments (including production)
+const shouldInitializeDb = false; // nodeEnv !== 'dev' && nodeEnv !== 'test';
 
 // Conditionally create the TypeORM module configuration
 const typeOrmImports = shouldInitializeDb
@@ -30,6 +31,9 @@ const typeOrmImports = shouldInitializeDb
             entities: [__dirname + '/../../../**/*.orm-entity{.ts,.js}'],
             synchronize: configService.get<string>('NODE_ENV') === 'staging',
             logging: configService.get<string>('NODE_ENV') === 'staging',
+            ssl: {
+              rejectUnauthorized: false, // RDS uses self-signed certificates
+            },
           };
         },
       }),

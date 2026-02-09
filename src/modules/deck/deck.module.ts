@@ -29,7 +29,8 @@ import { TournamentModule } from '../tournament/tournament.module';
 import { CardModule } from '../card/card.module';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
-const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
+// TEMPORARY: Force file system mode for all environments (including production)
+const shouldInitializeDb = false; // nodeEnv !== 'dev' && nodeEnv !== 'test';
 
 /**
  * Deck Module
@@ -48,9 +49,8 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     {
       provide: IDeckRepository,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? JsonDeckRepository
-          : TypeOrmDeckRepository,
+        // TEMPORARY: Always use file system
+        JsonDeckRepository, // nodeEnv === 'dev' || nodeEnv === 'test' ? JsonDeckRepository : TypeOrmDeckRepository,
     },
     // Use Cases
     CreateDeckUseCase,

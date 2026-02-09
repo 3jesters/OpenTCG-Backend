@@ -13,7 +13,8 @@ import { DeleteTournamentUseCase } from './application/use-cases/delete-tourname
 import { TournamentController } from './presentation/controllers/tournament.controller';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
-const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
+// TEMPORARY: Force file system mode for all environments (including production)
+const shouldInitializeDb = false; // nodeEnv !== 'dev' && nodeEnv !== 'test';
 
 @Module({
   imports: [
@@ -27,9 +28,8 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     {
       provide: ITournamentRepository,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? JsonTournamentRepository
-          : TypeOrmTournamentRepository,
+        // TEMPORARY: Always use file system
+        JsonTournamentRepository, // nodeEnv === 'dev' || nodeEnv === 'test' ? JsonTournamentRepository : TypeOrmTournamentRepository,
     },
     // Use cases
     CreateTournamentUseCase,

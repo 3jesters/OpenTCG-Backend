@@ -9,7 +9,7 @@
   "containerDefinitions": [
     {
       "name": "opentcg-backend",
-      "image": "766050776668.dkr.ecr.eu-north-1.amazonaws.com/opentcg-backend:latest",
+      "image": "766050776668.dkr.ecr.eu-west-1.amazonaws.com/opentcg-backend:latest",
       "portMappings": [
         {
           "containerPort": 3000,
@@ -34,6 +34,10 @@
           "value": "opentcg"
         },
         {
+          "name": "DB_HOST",
+          "value": "opentcg-db.cluster-cd008i4ewexc.eu-west-1.rds.amazonaws.com"
+        },
+        {
           "name": "JWT_ACCESS_TOKEN_EXPIRATION",
           "value": "15m"
         },
@@ -44,43 +48,39 @@
       ],
       "secrets": [
         {
-          "name": "DB_HOST",
-          "valueFrom": "arn:aws:secretsmanager:eu-north-1:766050776668:secret:opentcg/db-host"
-        },
-        {
           "name": "DB_USERNAME",
-          "valueFrom": "arn:aws:secretsmanager:eu-north-1:766050776668:secret:opentcg/db-username"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:766050776668:secret:rds!cluster-4b3e3ef1-3cf5-4576-a60e-6d39c9cb0f2f-fSJVrq:username::"
         },
         {
           "name": "DB_PASSWORD",
-          "valueFrom": "arn:aws:secretsmanager:eu-north-1:766050776668:secret:opentcg/db-password"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:766050776668:secret:rds!cluster-4b3e3ef1-3cf5-4576-a60e-6d39c9cb0f2f-fSJVrq:password::"
         },
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:eu-north-1:766050776668:secret:opentcg/jwt-secret"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:766050776668:secret:opentcg/jwt-secret-qNufqb:secret::"
         },
         {
           "name": "GOOGLE_CLIENT_ID",
-          "valueFrom": "arn:aws:secretsmanager:eu-north-1:766050776668:secret:opentcg/google-client-id"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:766050776668:secret:opentcg/google-client-id-35N7Lh"
         },
         {
           "name": "GOOGLE_CLIENT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:eu-north-1:766050776668:secret:opentcg/google-client-secret"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:766050776668:secret:opentcg/google-client-secret-92luMA"
         },
         {
           "name": "GOOGLE_CALLBACK_URL",
-          "valueFrom": "arn:aws:secretsmanager:eu-north-1:766050776668:secret:opentcg/google-callback-url"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:766050776668:secret:opentcg/google-callback-url-I8CL1z"
         },
         {
           "name": "FRONTEND_URL",
-          "valueFrom": "arn:aws:secretsmanager:eu-north-1:766050776668:secret:opentcg/frontend-url"
+          "valueFrom": "arn:aws:secretsmanager:eu-west-1:766050776668:secret:opentcg/frontend-url-4sEYDn"
         }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/opentcg-backend",
-          "awslogs-region": "eu-north-1",
+          "awslogs-region": "eu-west-1",
           "awslogs-stream-prefix": "ecs"
         }
       },

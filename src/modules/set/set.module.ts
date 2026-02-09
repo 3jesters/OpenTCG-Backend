@@ -14,7 +14,8 @@ import { DeleteSetUseCase } from './application/use-cases/delete-set.use-case';
 import { SetController } from './presentation/controllers/set.controller';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
-const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
+// TEMPORARY: Force file system mode for all environments (including production)
+const shouldInitializeDb = false; // nodeEnv !== 'dev' && nodeEnv !== 'test';
 
 @Module({
   imports: [
@@ -33,9 +34,8 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     {
       provide: ISetRepository,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? FileSystemSetRepository
-          : TypeOrmSetRepository,
+        // TEMPORARY: Always use file system
+        FileSystemSetRepository, // nodeEnv === 'dev' || nodeEnv === 'test' ? FileSystemSetRepository : TypeOrmSetRepository,
     },
     // Use cases
     CreateSetUseCase,

@@ -40,7 +40,8 @@ import { CardEditorValidator } from './application/services/card-editor.validato
 import { CardEditorController } from './presentation/controllers/card-editor.controller';
 
 const nodeEnv = process.env.NODE_ENV || 'dev';
-const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
+// TEMPORARY: Force file system mode for all environments (including production)
+const shouldInitializeDb = false; // nodeEnv !== 'dev' && nodeEnv !== 'test';
 
 /**
  * Card Module
@@ -61,38 +62,33 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     {
       provide: ICardRepository,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? FileSystemCardRepository
-          : TypeOrmCardRepository,
+        // TEMPORARY: Always use file system
+        FileSystemCardRepository, // nodeEnv === 'dev' || nodeEnv === 'test' ? FileSystemCardRepository : TypeOrmCardRepository,
     },
     // Use case providers with interfaces (conditional based on environment)
     {
       provide: IGetCardByIdUseCase,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? GetCardByIdUseCase
-          : GetCardByIdDbUseCase,
+        // TEMPORARY: Always use file system use cases
+        GetCardByIdUseCase, // nodeEnv === 'dev' || nodeEnv === 'test' ? GetCardByIdUseCase : GetCardByIdDbUseCase,
     },
     {
       provide: IGetAvailableSetsUseCase,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? GetAvailableSetsUseCase
-          : GetAvailableSetsDbUseCase,
+        // TEMPORARY: Always use file system use cases
+        GetAvailableSetsUseCase, // nodeEnv === 'dev' || nodeEnv === 'test' ? GetAvailableSetsUseCase : GetAvailableSetsDbUseCase,
     },
     {
       provide: IPreviewCardUseCase,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? PreviewCardUseCase
-          : PreviewCardDbUseCase,
+        // TEMPORARY: Always use file system use cases
+        PreviewCardUseCase, // nodeEnv === 'dev' || nodeEnv === 'test' ? PreviewCardUseCase : PreviewCardDbUseCase,
     },
     {
       provide: IPreviewSetUseCase,
       useClass:
-        nodeEnv === 'dev' || nodeEnv === 'test'
-          ? PreviewSetUseCase
-          : PreviewSetDbUseCase,
+        // TEMPORARY: Always use file system use cases
+        PreviewSetUseCase, // nodeEnv === 'dev' || nodeEnv === 'test' ? PreviewSetUseCase : PreviewSetDbUseCase,
     },
     {
       provide: ICalculateCardStrengthUseCase,
@@ -109,14 +105,11 @@ const shouldInitializeDb = nodeEnv !== 'dev' && nodeEnv !== 'test';
     DuplicateCardUseCase,
     CardEditorValidator,
     // File reader only for dev/test
-    ...(nodeEnv === 'dev' || nodeEnv === 'test'
-      ? [
-          {
-            provide: IFileReader,
-            useClass: FileReaderService,
-          },
-        ]
-      : []),
+    // TEMPORARY: Always provide file reader
+    {
+      provide: IFileReader,
+      useClass: FileReaderService,
+    },
     // Domain services
     CardStrengthCalculatorService,
   ],
