@@ -16,6 +16,7 @@ import {
   IPreviewCardUseCase,
   ICalculateCardStrengthUseCase,
   ISearchCardsUseCase,
+  IGetCardByIdUseCase,
 } from '../../application/ports/card-use-cases.interface';
 import { DuplicateCardUseCase } from '../../application/use-cases/duplicate-card.use-case';
 import { GetAvailableSetsResponseDto } from '../dto/get-available-sets-response.dto';
@@ -50,6 +51,8 @@ export class CardController {
     private readonly calculateCardStrengthUseCase: ICalculateCardStrengthUseCase,
     @Inject(ISearchCardsUseCase)
     private readonly searchCardsUseCase: ISearchCardsUseCase,
+    @Inject(IGetCardByIdUseCase)
+    private readonly getCardByIdUseCase: IGetCardByIdUseCase,
     private readonly duplicateCardUseCase: DuplicateCardUseCase,
   ) {}
 
@@ -130,6 +133,22 @@ export class CardController {
   ): Promise<CardStrengthResponseDto> {
     const result = await this.calculateCardStrengthUseCase.execute(cardId);
     return CardStrengthResponseDto.fromDomain(result);
+  }
+
+  /**
+   * Get a card by its full cardId
+   * Searches across all available sets to find the card
+   * Must be placed after more specific routes to avoid conflicts
+   */
+  @Get(':cardId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get card by cardId' })
+  @ApiResponse({ status: 200, description: 'Card found', type: CardDetailDto })
+  @ApiResponse({ status: 404, description: 'Card not found' })
+  async getCardById(
+    @Param('cardId') cardId: string,
+  ): Promise<CardDetailDto> {
+    return await this.getCardByIdUseCase.execute(cardId);
   }
 
   /**

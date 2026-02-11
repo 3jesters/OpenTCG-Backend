@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 
 describe('Card Editor E2E (Phase 2)', () => {
   let app: INestApplication;
+  let accessToken: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -20,11 +21,26 @@ describe('Card Editor E2E (Phase 2)', () => {
       }),
     );
     await app.init();
+
+    // Card editor endpoints require JWT; get token via username login (dev)
+    // Username is used as email in dev - use a valid email format so User entity validation passes
+    const loginRes = await request(app.getHttpServer())
+      .post('/api/v1/auth/login/username')
+      .send({ username: 'test-user@test.com' });
+    if (loginRes.body?.accessToken) {
+      accessToken = loginRes.body.accessToken;
+    }
   });
 
   afterAll(async () => {
     await app.close();
   });
+
+  /** POST with Authorization header (supertest .set chains on the request, not the agent) */
+  const authPost = (url: string) =>
+    request(app.getHttpServer())
+      .post(url)
+      .set('Authorization', accessToken ? `Bearer ${accessToken}` : '');
 
   describe('POST /api/v1/cards/editor/create', () => {
     describe('Successful Card Creation', () => {
@@ -38,8 +54,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -75,8 +90,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -118,8 +132,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -143,8 +156,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -176,8 +188,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -201,8 +212,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -224,8 +234,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -260,8 +269,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -321,8 +329,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -353,8 +360,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -368,8 +374,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -383,8 +388,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -398,8 +402,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -413,8 +416,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -428,8 +430,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           pokemonType: 'ELECTRIC',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -446,8 +447,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -462,8 +462,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -500,8 +499,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -523,8 +521,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -546,8 +543,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -569,8 +565,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -592,8 +587,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -616,8 +610,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -647,8 +640,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -670,8 +662,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -691,8 +682,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -712,8 +702,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -734,8 +723,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -760,8 +748,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -778,8 +765,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -794,8 +780,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(400);
       });
@@ -814,8 +799,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -834,8 +818,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -854,8 +837,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -874,8 +856,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -892,8 +873,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -908,8 +888,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(422);
       });
@@ -927,8 +906,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        const response = await request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        const response = await authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201);
 
@@ -953,8 +931,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -972,8 +949,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'custom-user-123',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {
@@ -993,8 +969,7 @@ describe('Card Editor E2E (Phase 2)', () => {
           createdBy: 'test-user',
         };
 
-        return request(app.getHttpServer())
-          .post('/api/v1/cards/editor/create')
+        return authPost('/api/v1/cards/editor/create')
           .send(createCardDto)
           .expect(201)
           .expect((res) => {

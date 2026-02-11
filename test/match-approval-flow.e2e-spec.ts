@@ -44,6 +44,16 @@ describe('Match Approval Flow E2E', () => {
   const waitForDeckValidation = () =>
     new Promise((resolve) => setTimeout(resolve, 500));
 
+  /** Get cardId from hand array (hand may be string[] or Array<{ cardId: string }>) */
+  const getCardIdFromHand = (hand: unknown[], index: number): string => {
+    const entry = hand[index] ?? hand[0];
+    if (entry == null) throw new Error('Hand is empty');
+    if (typeof entry === 'object' && entry !== null && 'cardId' in entry) {
+      return (entry as { cardId: string }).cardId;
+    }
+    return String(entry);
+  };
+
   it('should complete full match approval and initial setup flow', async () => {
     // Set deterministic shuffle seed for this test only
     process.env.MATCH_SHUFFLE_SEED = '12345';
@@ -241,7 +251,10 @@ describe('Match Approval Flow E2E', () => {
         .post(`/api/v1/matches/${MATCH_ID}/state`)
         .send({ playerId: PLAYER2_ID })
         .expect(200);
-      const player2ActiveCard = player2State6.body.playerState.hand[0];
+      const player2ActiveCard = getCardIdFromHand(
+        player2State6.body.playerState.hand,
+        0,
+      );
       await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)
         .send({
@@ -261,7 +274,10 @@ describe('Match Approval Flow E2E', () => {
       expect(player1State7.body.opponentState.activePokemon).toBeNull(); // Hidden until player 1 also selects
 
       // 20. Player 1 sets active Pokemon
-      const player1ActiveCard = player1State7.body.playerState.hand[0];
+      const player1ActiveCard = getCardIdFromHand(
+        player1State7.body.playerState.hand,
+        0,
+      );
       await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)
         .send({
@@ -289,7 +305,10 @@ describe('Match Approval Flow E2E', () => {
         .post(`/api/v1/matches/${MATCH_ID}/state`)
         .send({ playerId: PLAYER2_ID })
         .expect(200);
-      const player2BenchCard = player2State7.body.playerState.hand[1];
+      const player2BenchCard = getCardIdFromHand(
+        player2State7.body.playerState.hand,
+        1,
+      );
       await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)
         .send({
@@ -317,8 +336,11 @@ describe('Match Approval Flow E2E', () => {
 
       expect(player2State3.body.state).toBe('SELECT_BENCH_POKEMON');
 
-      // 22. Player 1 sets bench Pokemon
-      const player1BenchCard = player1State7.body.playerState.hand[1];
+      // 22. Player 1 sets bench Pokemon (use state after setting active: player1State8)
+      const player1BenchCard = getCardIdFromHand(
+        player1State8.body.playerState.hand,
+        1,
+      );
       await request(server())
         .post(`/api/v1/matches/${MATCH_ID}/actions`)
         .send({
@@ -536,7 +558,10 @@ describe('Match Approval Flow E2E', () => {
         .send({ playerId: PLAYER1_ID })
         .expect(200);
 
-      const player1ActiveCard = player1State.body.playerState.hand[0];
+      const player1ActiveCard = getCardIdFromHand(
+        player1State.body.playerState.hand,
+        0,
+      );
       await request(server())
         .post(`/api/v1/matches/${COIN_TOSS_MATCH_ID}/actions`)
         .send({
@@ -551,7 +576,10 @@ describe('Match Approval Flow E2E', () => {
         .send({ playerId: PLAYER2_ID })
         .expect(200);
 
-      const player2ActiveCard = player2State.body.playerState.hand[0];
+      const player2ActiveCard = getCardIdFromHand(
+        player2State.body.playerState.hand,
+        0,
+      );
       await request(server())
         .post(`/api/v1/matches/${COIN_TOSS_MATCH_ID}/actions`)
         .send({

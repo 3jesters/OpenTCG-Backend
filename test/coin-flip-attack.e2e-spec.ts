@@ -32,6 +32,40 @@ describe('Coin Flip Attack E2E', () => {
       baseMatchState = JSON.parse(matchData);
     } catch (error) {
       // If file doesn't exist, create a minimal base match state
+      const player1State = {
+        deck: [],
+        hand: [],
+        discardPile: [],
+        activePokemon: {
+          instanceId: 'test-instance-1',
+          cardId: 'pokemon-base-set-v1.0-vulpix--70',
+          position: 'ACTIVE',
+          currentHp: 50,
+          maxHp: 50,
+          attachedEnergy: [],
+          statusEffect: 'NONE',
+          damageCounters: 0,
+        },
+        bench: [],
+        prizeCards: [],
+      };
+      const player2State = {
+        deck: [],
+        hand: [],
+        discardPile: [],
+        activePokemon: {
+          instanceId: 'test-instance-2',
+          cardId: 'pokemon-base-set-v1.0-nidoran--57',
+          position: 'ACTIVE',
+          currentHp: 40,
+          maxHp: 40,
+          attachedEnergy: [],
+          statusEffect: 'NONE',
+          damageCounters: 0,
+        },
+        bench: [],
+        prizeCards: [],
+      };
       baseMatchState = {
         tournamentId: 'classic-tournament',
         player1Id: 'test-player-1',
@@ -54,64 +88,15 @@ describe('Coin Flip Attack E2E', () => {
         player1HasApprovedMatch: true,
         player2HasApprovedMatch: true,
         gameState: {
-          player1State: {
-            deck: [],
-            hand: [],
-            discardPile: [],
-            activePokemon: {
-              instanceId: 'test-instance-1',
-              cardId: 'pokemon-base-set-v1.0-vulpix--70',
-              position: 'ACTIVE',
-              currentHp: 50,
-              maxHp: 50,
-              attachedEnergy: [],
-              statusEffect: 'NONE',
-              damageCounters: 0,
-            },
-            bench: [],
-            prizeCards: [],
-          },
-          player2State: {
-            deck: [],
-            hand: [],
-            discardPile: [],
-            activePokemon: {
-              instanceId: 'test-instance-2',
-              cardId: 'pokemon-base-set-v1.0-nidoran--57',
-              position: 'ACTIVE',
-              currentHp: 40,
-              maxHp: 40,
-              attachedEnergy: [],
-              statusEffect: 'NONE',
-              damageCounters: 0,
-            },
-            bench: [],
-            prizeCards: [],
-          },
+          player1State,
+          player2State,
           turnNumber: 1,
           phase: 'MAIN_PHASE',
-          currentPlayer: 'PLAYER2',
+          currentPlayer: 'PLAYER1', // so attack test (as test-player-1 = PLAYER1) is valid
           coinFlipState: null,
           lastAction: null,
           actionHistory: [],
           abilityUsageThisTurn: {},
-          player1State: baseMatchState.gameState?.player1State || {
-            deck: [],
-            hand: [],
-            discardPile: [],
-            activePokemon: {
-              instanceId: 'test-instance-1',
-              cardId: 'pokemon-base-set-v1.0-vulpix--70',
-              position: 'ACTIVE',
-              currentHp: 50,
-              maxHp: 50,
-              attachedEnergy: [],
-              statusEffect: 'NONE',
-              damageCounters: 0,
-            },
-            bench: [],
-            prizeCards: [],
-          },
         },
       };
     }

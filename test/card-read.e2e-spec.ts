@@ -114,10 +114,10 @@ describe('Card Preview API (e2e)', () => {
           expect(res.body.ability).toHaveProperty('effects');
           expect(Array.isArray(res.body.ability.effects)).toBe(true);
           expect(res.body.ability.effects.length).toBeGreaterThan(0);
-          // Verify effect structure
+          // Verify effect structure (Damage Swap uses MOVE_DAMAGE_COUNTER)
           const effect = res.body.ability.effects[0];
           expect(effect).toHaveProperty('effectType');
-          expect(effect.effectType).toBe('HEAL');
+          expect(effect.effectType).toBe('MOVE_DAMAGE_COUNTER');
         });
     });
 
@@ -141,6 +141,71 @@ describe('Card Preview API (e2e)', () => {
           expect(effect.energyType).toBe('WATER');
           expect(effect.targetPokemonType).toBe('WATER');
         });
+    });
+  });
+
+  describe('GET /api/v1/cards/:cardId (get card by cardId)', () => {
+    it('should return 404 when cardId does not exist', () => {
+      return request(app.getHttpServer())
+        .get('/api/v1/cards/non-existent-set-v1.0-fake--999')
+        .expect(404)
+        .expect((res) => {
+          expect(res.body.message).toContain('not found');
+          expect(res.body.statusCode).toBe(404);
+        });
+    });
+
+    it('should return full card details when cardId exists', async () => {
+      // Resolve cardId from set preview (Alakazam is card 1 in base-set)
+      const previewRes = await request(app.getHttpServer())
+        .get('/api/v1/cards/sets/preview/pokemon/base-set/v1.0')
+        .expect(200);
+
+      const alakazamSummary = previewRes.body.cards.find(
+        (c: { cardNumber: string }) => c.cardNumber === '1',
+      );
+      expect(alakazamSummary).toBeDefined();
+      const cardId = alakazamSummary.cardId;
+
+      const res = await request(app.getHttpServer())
+        .get(`/api/v1/cards/${encodeURIComponent(cardId)}`)
+        .expect(200);
+
+      const card = res.body;
+      expect(card).toHaveProperty('cardId', cardId);
+      expect(card).toHaveProperty('instanceId');
+      expect(card).toHaveProperty('name', 'Alakazam');
+      expect(card).toHaveProperty('cardNumber', '1');
+      expect(card).toHaveProperty('setName');
+      expect(card).toHaveProperty('cardType', 'POKEMON');
+      expect(card).toHaveProperty('rarity');
+      expect(card).toHaveProperty('artist');
+      expect(card).toHaveProperty('imageUrl');
+      expect(card).toHaveProperty('hp');
+      expect(card).toHaveProperty('ability');
+      expect(card.ability).toHaveProperty('name', 'Damage Swap');
+      expect(card).toHaveProperty('attacks');
+      expect(Array.isArray(card.attacks)).toBe(true);
+    });
+
+    it('should return same card via cardId as via set preview path', async () => {
+      // Get Blastoise (card 2) via preview path
+      const previewRes = await request(app.getHttpServer())
+        .get('/api/v1/cards/sets/preview/pokemon/base-set/v1.0/card/2')
+        .expect(200);
+      const viaPreview = previewRes.body;
+
+      // Get same card via cardId
+      const cardId = viaPreview.cardId;
+      const byIdRes = await request(app.getHttpServer())
+        .get(`/api/v1/cards/${encodeURIComponent(cardId)}`)
+        .expect(200);
+      const viaCardId = byIdRes.body;
+
+      expect(viaCardId.cardId).toBe(viaPreview.cardId);
+      expect(viaCardId.name).toBe(viaPreview.name);
+      expect(viaCardId.cardNumber).toBe(viaPreview.cardNumber);
+      expect(viaCardId.name).toBe('Blastoise');
     });
   });
 });

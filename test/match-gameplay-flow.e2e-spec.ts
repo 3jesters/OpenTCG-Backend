@@ -289,11 +289,10 @@ describe('Match Gameplay Flow E2E', () => {
     expect(player1StateBeforeDraw.body.state).toBe('PLAYER_TURN');
     expect(player1StateBeforeDraw.body.currentPlayer).toBe('PLAYER1');
     expect(player1StateBeforeDraw.body.phase).toBe('DRAW');
-    // Current player should see DRAW_CARD, END_TURN, and CONCEDE
+    // In DRAW phase only DRAW_CARD and CONCEDE are available (END_TURN is in MAIN_PHASE)
     expect(player1StateBeforeDraw.body.availableActions).toContain('DRAW_CARD');
-    expect(player1StateBeforeDraw.body.availableActions).toContain('END_TURN');
     expect(player1StateBeforeDraw.body.availableActions).toContain('CONCEDE');
-    expect(player1StateBeforeDraw.body.availableActions.length).toBe(3);
+    expect(player1StateBeforeDraw.body.availableActions.length).toBe(2);
 
     // Step 0.5: Verify non-current player (PLAYER2) only sees CONCEDE
     const player2StateBeforeDraw = await request(server())
